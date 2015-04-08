@@ -120,7 +120,7 @@
 			</goals>
 			<configuration>
 			    <includeGroupIds>org.graphity</includeGroupIds>
-			    <includes>**\/*.xsl,**\/*.ttl,**\/*.rdf,**\/*.owl</includes>
+			    <includes>**\/*.ttl,**\/*.rdf,**\/*.owl</includes>
 			    <outputDirectory>${project.build.directory}/classes</outputDirectory>
 			</configuration>
 		    </execution>

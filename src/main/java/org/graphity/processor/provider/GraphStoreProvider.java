@@ -21,7 +21,6 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.ext.ContextResolver;
 import org.graphity.processor.model.GraphStoreFactory;
-import org.graphity.processor.util.DataManager;
 import org.graphity.core.model.GraphStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +57,7 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
         return super.getGraphStore();
    }
 
-    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, Dataset dataset, DataManager dataManager)
+    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, Dataset dataset, org.graphity.core.util.DataManager dataManager)
     {
         return GraphStoreFactory.create(request, servletConfig, dataset, dataManager);        
     }

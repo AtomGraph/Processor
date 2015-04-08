@@ -17,25 +17,20 @@
 package org.graphity.processor;
 
 import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.query.ARQ;
 import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.util.FileManager;
-import com.hp.hpl.jena.util.LocationMapper;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import org.graphity.processor.locator.PrefixMapper;
+import org.graphity.core.provider.DataManagerProvider;
 import org.graphity.processor.model.impl.ResourceBase;
-import org.graphity.processor.provider.DataManagerProvider;
 import org.graphity.processor.provider.DatasetProvider;
 import org.graphity.core.provider.ModelProvider;
 import org.graphity.core.provider.QueryParamProvider;
 import org.graphity.core.provider.ResultSetWriter;
 import org.graphity.core.provider.UpdateRequestReader;
-import org.graphity.processor.util.DataManager;
 import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
@@ -44,7 +39,6 @@ import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
-import org.graphity.core.vocabulary.G;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.arq.ARQFactory;
@@ -79,8 +73,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 	singletons.add(new UpdateRequestReader());
         
         singletons.add(new DataManagerProvider());
-        singletons.add(new org.graphity.processor.provider.DataManagerProvider());
-        singletons.add(new org.graphity.core.provider.DataManagerProvider());
         singletons.add(new DatasetProvider());
         singletons.add(new OntologyProvider());
         singletons.add(new OntClassMatcher());
@@ -114,6 +106,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
 	// initialize locally cached ontology mapping
+        /*
 	LocationMapper mapper = new PrefixMapper("prefix-mapping.n3"); // check if file exists?
 	LocationMapper.setGlobalLocationMapper(mapper);
 	if (log.isDebugEnabled()) log.debug("LocationMapper.get(): {}", LocationMapper.get());
@@ -126,6 +119,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 	if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
 
         OntDocumentManager.getInstance().setFileManager(FileManager.get());
+        */
         OntDocumentManager.getInstance().setCacheModels(true); // lets cache the ontologies FTW!!
 	if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
     }
