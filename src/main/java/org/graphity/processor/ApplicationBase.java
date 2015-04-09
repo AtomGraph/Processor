@@ -104,22 +104,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 
 	SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
-        
-	// initialize locally cached ontology mapping
-        /*
-	LocationMapper mapper = new PrefixMapper("prefix-mapping.n3"); // check if file exists?
-	LocationMapper.setGlobalLocationMapper(mapper);
-	if (log.isDebugEnabled()) log.debug("LocationMapper.get(): {}", LocationMapper.get());
-
-        DataManager manager = new DataManager(mapper, ARQ.getContext(), getPreemptiveAuth(getServletConfig(), G.preemptiveAuth));
-        FileManager.setStdLocators(manager);
-	manager.addLocatorLinkedData();
-	manager.removeLocatorURL();
-        FileManager.setGlobalFileManager(manager);
-	if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
-
-        OntDocumentManager.getInstance().setFileManager(FileManager.get());
-        */
         OntDocumentManager.getInstance().setCacheModels(true); // lets cache the ontologies FTW!!
 	if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
     }
