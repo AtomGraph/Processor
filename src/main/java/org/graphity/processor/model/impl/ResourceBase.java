@@ -497,9 +497,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 		return rb.build();
 	    }
 	    
-	    //UpdateRequest deleteRequest = getUpdateRequest(getMatchedOntClass(), GP.update, this);
-	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdateRequest());
-	    Iterator<com.hp.hpl.jena.update.Update> it = getUpdateRequest().getOperations().iterator();
+	    UpdateRequest request = getUpdateRequest(getQuerySolutionMap());
+	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
+	    Iterator<com.hp.hpl.jena.update.Update> it = request.getOperations().iterator();
 	    while (it.hasNext()) deleteInsertRequest.add(it.next());
 	}
 	
@@ -527,8 +527,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response delete()
     {
 	if (log.isDebugEnabled()) log.debug("DELETEing resource: {} matched OntClass: {}", this, getMatchedOntClass());
-	if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdateRequest());
-	getSPARQLEndpoint().post(getUpdateRequest(), null, null);
+	
+        UpdateRequest request = getUpdateRequest(getQuerySolutionMap());
+        if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
+	getSPARQLEndpoint().post(request, null, null);
 	
 	return Response.noContent().build();
     }
@@ -544,8 +546,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Model describe()
     {
-	return getSPARQLEndpoint().loadModel(new ParameterizedSparqlString(getQuery().toString(),
-                getQuerySolutionMap()).asQuery());
+	return getSPARQLEndpoint().loadModel(getQuery(getQuerySolutionMap()));
     }
 
     /**
@@ -981,6 +982,19 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     }
 
     /**
+     * Returns Query with query bindings for the current request applied to the query string.
+     * 
+     * @param qsm query solution map
+     * @return query
+     */
+    public Query getQuery(QuerySolutionMap qsm)
+    {
+	if (qsm == null) throw new IllegalArgumentException("QuerySolutionMap cannot be null");
+        
+        return new ParameterizedSparqlString(getQuery().toString(), qsm).asQuery();
+    }
+    
+    /**
      * Returns Graph Store of this resource.
      * 
      * @return graph store object
@@ -1005,7 +1019,20 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         return updateRequest;
     }
-    
+
+    /**
+     * Returns UpdateRequest with query bindings for the current request applied to the query string.
+     * 
+     * @param qsm query solution map
+     * @return update request
+     */
+    public UpdateRequest getUpdateRequest(QuerySolutionMap qsm)
+    {
+	if (qsm == null) throw new IllegalArgumentException("QuerySolutionMap cannot be null");
+        
+        return new ParameterizedSparqlString(getUpdateRequest().toString(), qsm).asUpdate();
+    }
+
     /**
      * Returns HTTP headers of the current request.
      * 
