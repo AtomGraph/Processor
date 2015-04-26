@@ -17,7 +17,7 @@
 
 <#> a owl:Ontology ;
     owl:imports sp:, spin:, dqc:, sioc:, foaf: ;
-    owl:versionInfo "1.1.1" ;
+    owl:versionInfo "1.1.2" ;
     dct:title "Graphity Processor ontology" ;
     rdfs:label "Graphity Processor ontology" ;
     dct:description "Graphity Linked Data processor ontology. Should be imported and reused by all extending applications" ;
