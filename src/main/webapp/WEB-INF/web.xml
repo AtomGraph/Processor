@@ -43,6 +43,12 @@
             <param-name>http://graphity.org/gp#sitemap</param-name>
             <param-value>http://graphity.org/gp#</param-value>
         </init-param>
+        <!--
+        <init-param>
+            <param-name>http://graphity.org/gp#cacheSitemap</param-name>
+            <param-value>false</param-value>
+        </init-param>
+        -->
         <init-param>
             <param-name>http://graphity.org/g#resultLimit</param-name>
             <param-value>100</param-value>

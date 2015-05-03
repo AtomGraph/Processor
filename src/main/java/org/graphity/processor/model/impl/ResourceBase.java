@@ -57,6 +57,7 @@ import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
+import org.graphity.processor.query.SelectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.SPINFactory;
@@ -87,6 +88,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private Boolean desc;
     private Long limit, offset;
     private QueryBuilder queryBuilder;
+    private SelectBuilder subSelectBuilder;
     private UpdateRequest updateRequest;
     private QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
@@ -172,11 +174,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             
             if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
             {
-                if (queryBuilder.getSubSelectBuilder() == null)
+                if (queryBuilder.getSubSelectBuilders().isEmpty())
                 {
                     if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
                     throw new ConfigurationException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
                 }
+                
+                subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
+                if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
                 try
                 {
@@ -190,7 +195,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     }
                     
                     if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-                    queryBuilder.getSubSelectBuilder().replaceOffset(offset);
+                    subSelectBuilder.replaceOffset(offset);
 
                     if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
                         limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
@@ -202,7 +207,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     }
                     
                     if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-                    queryBuilder.getSubSelectBuilder().replaceLimit(limit);
+                    subSelectBuilder.replaceLimit(limit);
 
                     if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
                         this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
@@ -218,15 +223,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                         if (desc == null) desc = false; // ORDERY BY is ASC() by default
 
                         if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                        queryBuilder.getSubSelectBuilder().replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
                             orderBy(orderBy, desc);
                     }
 
-                    if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())) &&
-                        queryBuilder.getSubSelectBuilder() != null)
+                    if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
                     {
                         if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
-                        queryBuilder.getSubSelectBuilder().replaceLimit(Long.valueOf(0));
+                        subSelectBuilder.replaceLimit(Long.valueOf(0));
                     }
                 }
                 catch (NumberFormatException ex)
@@ -236,7 +240,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             }
 
             if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
-            addProperty(SPIN.query, getQueryBuilder());
+            addProperty(SPIN.query, queryBuilder);
         }
         catch (ConfigurationException ex)
         {
@@ -422,7 +426,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
-	ResIterator resIt = model.listSubjectsWithProperty(RDF.type, FOAF.Document);	
+	ResIterator resIt = model.listSubjectsWithProperty(RDF.type, FOAF.Document);
 	try
 	{
             while (resIt.hasNext())
@@ -1013,6 +1017,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public QueryBuilder getQueryBuilder()
     {
 	return queryBuilder;
+    }
+
+    public SelectBuilder getSubSelectBuilder()
+    {
+	return subSelectBuilder;
     }
 
     public UpdateRequest getUpdateRequest()

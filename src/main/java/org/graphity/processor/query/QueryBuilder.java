@@ -23,6 +23,7 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.vocabulary.RDF;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -50,7 +51,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 {
     private static final Logger log = LoggerFactory.getLogger(QueryBuilder.class);
     private final org.topbraid.spin.model.Query query;
-    private Select subSelect = null;
+    private final List<SelectBuilder> subSelectBuilders = new ArrayList<>();
 
     private final ElementVisitor elementVisitor = new AbstractElementVisitor()
     {
@@ -58,9 +59,14 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	@Override
 	public void visit(SubQuery subQuery)
 	{
-		org.topbraid.spin.model.Query sub = subQuery.getQuery();
-		// only SELECTs can be subqueries??
-		if (sub.canAs(Select.class)) setSubSelect(sub.as(Select.class));
+            org.topbraid.spin.model.Query sub = subQuery.getQuery();
+            // only SELECTs can be subqueries??
+            if (sub.canAs(Select.class))
+            {
+                Select select = sub.as(Select.class);
+                if (log.isTraceEnabled()) log.trace("Found sub-SELECT: {}", select);
+                subSelectBuilders.add(SelectBuilder.fromSelect(select));
+            }
 	}
 
     };
@@ -166,29 +172,23 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	    addProperty(SP.where, getModel().createList(new RDFNode[]{element}));
 	else
 	    getPropertyResourceValue(SP.where).
-		    as(RDFList.class).
-		    add(element);
+                as(RDFList.class).
+                add(element);
 	
 	return this;
     }
 	
-    public SelectBuilder getSubSelectBuilder()
+    public List<SelectBuilder> getSubSelectBuilders()
     {
-	setSubSelect(null); // clear any previously found sub-SELECTs
+	subSelectBuilders.clear(); // clear any previously found sub-SELECTs
 	
 	if (getWhere() != null)
 	{
 	    ElementWalker walker = new ElementWalker(getElementVisitor(), null);
 	    walker.visit(getWhere());
-	    
-	    if (getSubSelect() != null)
-	    {
-		if (log.isTraceEnabled()) log.trace("Found sub-SELECT: {}", getSubSelect());
-		return SelectBuilder.fromSelect(getSubSelect());
-	    }
 	}
 	
-	return null;
+	return subSelectBuilders;
     }
     
     public QueryBuilder subQuery(Select select)
@@ -456,17 +456,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	    it.close();
 	}
     }
-
-    protected Select getSubSelect()
-    {
-	return subSelect;
-    }
-
-    protected void setSubSelect(Select subSelect)
-    {
-	this.subSelect = subSelect;
-    }
-
+    
     public ElementVisitor getElementVisitor()
     {
 	return elementVisitor;

@@ -39,6 +39,7 @@ import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
+import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.arq.ARQFactory;
@@ -104,8 +105,13 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 
 	SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
-        OntDocumentManager.getInstance().setCacheModels(true); // lets cache the ontologies FTW!!
-	if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
+
+        boolean cacheSitemap = true;
+        if (getServletConfig().getInitParameter(GP.cacheSitemap.getURI()) != null)
+            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(GP.cacheSitemap.getURI()));
+        
+        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
+        if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
     }
     
     /**

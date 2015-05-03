@@ -113,6 +113,8 @@ public final class GP
     public static final DatatypeProperty desc = m_model.createDatatypeProperty( NS + "desc" );
 
     public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
+
+    public static final DatatypeProperty cacheSitemap = m_model.createDatatypeProperty( NS + "cacheSitemap" );
     
     public static final ObjectProperty mode = m_model.createObjectProperty( NS + "mode" );
     
