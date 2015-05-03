@@ -38,7 +38,7 @@
     rdfs:isDefinedBy <#> .
 
 <#baseUri> a owl:ObjectProperty ;
-    rdfs:label "Base URI" ;
+    rdfs:label "Application base URI" ;
     rdfs:domain <#Application> ;
     rdfs:comment "Base URI of the application" ;
     rdfs:isDefinedBy <#> .
@@ -105,6 +105,7 @@
 <#cacheControl> a owl:AnnotationProperty ;
     rdfs:subPropertyOf http:fieldValue ;
     rdfs:label "Cache control" ;
+    rdfs:comment "Value of the HTTP Cache-Control response header" ;
     rdfs:seeAlso <http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.1.3> ;
     rdfs:isDefinedBy <#> .
 
@@ -146,7 +147,7 @@
 <#lang> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range rdf:langString ;
-    rdfs:label "Language" ;
+    rdfs:label "Content language" ;
     rdfs:seeAlso <http://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal> ;
     rdfs:isDefinedBy <#> .
 
@@ -162,12 +163,7 @@
 <#constructorOf> a owl:ObjectProperty ;
     rdfs:domain <#Constructor> ;
     rdfs:range <#Container> ;
-    rdfs:label "Constructor resource" ;
-    rdfs:isDefinedBy <#> .
-
-<#mode> a owl:ObjectProperty ;
-    rdfs:range <#Mode> ;
-    rdfs:label "Layout mode" ;
+    rdfs:label "Links constructor resource to its container" ;
     rdfs:isDefinedBy <#> .
 
 <#limit> a owl:DatatypeProperty ;
@@ -199,14 +195,6 @@
     rdfs:range xsd:string ;
     rdfs:label "URI slug" ;
     rdfs:comment "A string that will be used to build URI from template such as /{slug}" ;
-    rdfs:isDefinedBy <#> .
-
-<#construct> a owl:ObjectProperty ;
-    rdfs:label "CONSTRUCT template" ;
-    rdfs:domain <#Container> ;
-    rdfs:range foaf:Document ;
-    rdfs:comment "Links to the item template for this container" ;
-    rdfs:seeAlso <#ConstructMode> ;
     rdfs:isDefinedBy <#> .
 
 <#mode> a owl:ObjectProperty ;
