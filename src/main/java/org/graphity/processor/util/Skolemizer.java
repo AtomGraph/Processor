@@ -96,7 +96,6 @@ public class Skolemizer
         return this;
     }
 
-
     public static Skolemizer fromOntModel(OntModel ontModel)
     {
         return newInstance().ontModel(ontModel);

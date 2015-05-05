@@ -21,6 +21,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.ext.Provider;
 import org.graphity.processor.vocabulary.HTTP;
 
 /**
@@ -28,6 +29,7 @@ import org.graphity.processor.vocabulary.HTTP;
  * 
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
+@Provider
 abstract public class ExceptionMapperBase
 {
 

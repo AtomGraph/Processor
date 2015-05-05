@@ -16,36 +16,81 @@
 
 package org.graphity.processor.mapper;
 
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.net.URI;
+import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Providers;
 import org.graphity.processor.exception.ConstraintViolationException;
+import org.graphity.processor.model.QueriedResource;
 import org.graphity.processor.util.Link;
+import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.constraints.SPINConstraints;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class ConstraintViolationExceptionMapper implements ExceptionMapper<ConstraintViolationException>
+public class ConstraintViolationExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ConstraintViolationException>
 {
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
+    
+    @Context UriInfo uriInfo;    
+    @Context private Providers providers;
+    
+    public UriInfo getUriInfo()
+    {
+        return uriInfo;
+    }
     
     @Override
     public Response toResponse(ConstraintViolationException cve)
     {
 	//if (log.isDebugEnabled()) log.debug("ConstraintViolation root: {} source: {}", e.getConstraintViolation().getRoot(), e.getConstraintViolation().getSource());
 
-        SPINConstraints.addConstraintViolationsRDF(cve.getConstraintViolations(), cve.getModel(), true);
-        Link classLink = new Link(URI.create(cve.getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
-	
-	return Response.ok(cve). // TO-DO: use ModelResponse instead
-		status(Response.Status.BAD_REQUEST).
+        Resource exception = toResource(cve, Response.Status.BAD_REQUEST,
+            ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
+        cve.getModel().add(exception.getModel());
+     
+        if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
+        {
+            URI mode = URI.create(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
+            if (mode.equals(URI.create(GP.ConstructMode.getURI())))
+            {
+                QueriedResource match = (QueriedResource)getUriInfo().getMatchedResources().get(0);
+                Model entity = (Model)match.describe(); // (Model)match.get().getEntity();
+                cve.getModel().add(entity);
+            }
+        }
+        
+        Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
+        //Link cvLink = new Link(URI.create(SPIN.ConstraintViolation.getURI()), RDF.type.getLocalName(), null);
+
+        return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
+                //entity(exception.getModel().add(cve.getModel())).
+                entity(cve).
                 header("Link", classLink.toString()).
-		build();
+                //header("Link", cvLink.toString()).
+                build();
     }
     
+    public Providers getProviders()
+    {
+        return providers;
+    }
+
+    public OntClass getMatchedOntClass()
+    {
+	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
+	return cr.getContext(OntClass.class);
+    }
+
 }

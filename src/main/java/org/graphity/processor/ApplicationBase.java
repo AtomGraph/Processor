@@ -23,22 +23,22 @@ import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
 import org.graphity.core.provider.DataManagerProvider;
 import org.graphity.processor.model.impl.ResourceBase;
 import org.graphity.processor.provider.DatasetProvider;
-import org.graphity.core.provider.ModelProvider;
 import org.graphity.core.provider.QueryParamProvider;
 import org.graphity.core.provider.ResultSetWriter;
 import org.graphity.core.provider.UpdateRequestReader;
 import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
+import org.graphity.processor.provider.ConstraintViolationProvider;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
+import org.graphity.processor.provider.ValidatingModelProvider;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,8 +55,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 
     private final Set<Class<?>> classes = new HashSet<>();
     private final Set<Object> singletons = new HashSet<>();
-
-    private @Context UriInfo uriInfo;
     
     /**
      * Initializes root resource classes and provider singletons
@@ -68,7 +66,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         
 	classes.add(ResourceBase.class); // handles /
 
-	singletons.add(new ModelProvider());
+	singletons.add(new ValidatingModelProvider());
 	singletons.add(new ResultSetWriter());
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());
@@ -81,7 +79,8 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 	singletons.add(new SPARQLEndpointOriginProvider());
         singletons.add(new GraphStoreProvider());
         singletons.add(new GraphStoreOriginProvider());
-	singletons.add(new NotFoundExceptionMapper());
+        singletons.add(new ConstraintViolationProvider());
+        singletons.add(new NotFoundExceptionMapper());
 	singletons.add(new ConstraintViolationExceptionMapper());	
 	singletons.add(new org.graphity.processor.mapper.jena.QueryExceptionHTTPMapper());
 	singletons.add(new org.graphity.processor.mapper.jena.QueryParseExceptionMapper());

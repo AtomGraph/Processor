@@ -16,10 +16,10 @@
 
 package org.graphity.processor.exception;
 
-import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.rdf.model.Model;
 import java.util.List;
 import org.topbraid.spin.constraints.ConstraintViolation;
+import org.topbraid.spin.constraints.SPINConstraints;
 
 /**
  *
@@ -29,13 +29,12 @@ public class ConstraintViolationException extends RuntimeException
 {
     private final List<ConstraintViolation> cvs;
     private final Model model;
-    private final OntClass matchedOntClass;
     
-    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model, OntClass matchedOntClass)
+    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
     {
 	this.cvs = cvs;
 	this.model = model;
-        this.matchedOntClass = matchedOntClass;
+        SPINConstraints.addConstraintViolationsRDF(cvs, this.model, true);
     }
 
     public List<ConstraintViolation> getConstraintViolations()
@@ -46,11 +45,6 @@ public class ConstraintViolationException extends RuntimeException
     public Model getModel()
     {
 	return model;
-    }
-    
-    public OntClass getMatchedOntClass()
-    {
-        return matchedOntClass;
     }
     
 }
