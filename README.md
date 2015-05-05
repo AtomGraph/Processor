@@ -69,73 +69,140 @@ brevity, all URIs are relativized against the webapp's base URI):
 @prefix void:  <http://rdfs.org/ns/void#> .
 @prefix gp:    <http://graphity.org/gp#> .
 
-<graphity-processor/service>
+<service>
         a               foaf:Document , gp:GraphStore ;
         dct:title       "Graph Store Protocol endpoint" ;
-        sioc:has_space  <graphity-processor/> .
+        sioc:has_space  <> .
 
-<graphity-processor/templates>
+<templates>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "templates"^^xsd:string ;
         dct:title        "Templates" ;
-        sioc:has_parent  <graphity-processor/> .
+        sioc:has_parent  <> .
 
-<graphity-processor/ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <graphity-processor/ontologies> ;
+        gp:constructorOf  <ontologies> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<graphity-processor/ontologies>
+<ontologies>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "ontologies"^^xsd:string ;
         dct:title        "Ontologies" ;
-        sioc:has_parent  <graphity-processor/> .
+        sioc:has_parent  <> .
 
-<graphity-processor/queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <graphity-processor/queries> ;
+        gp:constructorOf  <queries> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<graphity-processor/>
+<>
         a                gp:Space , sioc:Container , sioc:Space , gp:Container , foaf:Document ;
-        rdfs:seeAlso     <graphity-processor/sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
+        rdfs:seeAlso     <sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
         dct:description  "Generic Linked Data browser and end-user-oriented platform" ;
         dct:title        "Graphity Client" ;
-        foaf:logo        <graphity-processor/static/img/graphity-logo.svg> ;
+        foaf:logo        <static/img/graphity-logo.svg> ;
         foaf:maker       <http://graphityhq.com/#company> .
 
-<graphity-processor/sparql>
+<sparql>
         a               foaf:Document , gp:SPARQLEndpoint ;
         dct:title       "SPARQL endpoint" ;
-        sioc:has_space  <graphity-processor/> .
+        sioc:has_space  <> .
 
-<graphity-processor/templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <graphity-processor/templates> ;
+        gp:constructorOf  <templates> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<graphity-processor/?offset=0&limit=20>
+<?offset=0&limit=20>
         a          gp:Page , foaf:Document ;
         gp:limit   "20"^^xsd:long ;
         gp:offset  "0"^^xsd:long ;
-        gp:pageOf  <graphity-processor/> ;
+        gp:pageOf  <> ;
         <http://www.w3.org/1999/xhtml/vocab#next>
-                <graphity-processor/?offset=20&limit=20> .
+                <?offset=20&limit=20> .
 
-<graphity-processor/?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
+<?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <graphity-processor/> ;
+        gp:constructorOf  <> ;
         gp:forClass       gp:Container ;
         gp:mode           gp:ConstructMode .
 
-<graphity-processor/queries>
+<queries>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "queries"^^xsd:string ;
         dct:title        "Queries" ;
-        sioc:has_parent  <graphity-processor/> .
+        sioc:has_parent  <> .
+<service>
+        a               foaf:Document , gp:GraphStore ;
+        dct:title       "Graph Store Protocol endpoint" ;
+        sioc:has_space  <> .
+
+<templates>
+        a                gp:Container , sioc:Container , foaf:Document ;
+        gp:slug          "templates"^^xsd:string ;
+        dct:title        "Templates" ;
+        sioc:has_parent  <> .
+
+<ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <ontologies> ;
+        gp:forClass       gp:Item ;
+        gp:mode           gp:ConstructMode .
+
+<ontologies>
+        a                gp:Container , sioc:Container , foaf:Document ;
+        gp:slug          "ontologies"^^xsd:string ;
+        dct:title        "Ontologies" ;
+        sioc:has_parent  <> .
+
+<queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <queries> ;
+        gp:forClass       gp:Item ;
+        gp:mode           gp:ConstructMode .
+
+<>
+        a                gp:Space , sioc:Container , sioc:Space , gp:Container , foaf:Document ;
+        rdfs:seeAlso     <sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
+        dct:description  "Generic Linked Data browser and end-user-oriented platform" ;
+        dct:title        "Graphity Client" ;
+        foaf:logo        <static/img/graphity-logo.svg> ;
+        foaf:maker       <http://graphityhq.com/#company> .
+
+<sparql>
+        a               foaf:Document , gp:SPARQLEndpoint ;
+        dct:title       "SPARQL endpoint" ;
+        sioc:has_space  <> .
+
+<templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <templates> ;
+        gp:forClass       gp:Item ;
+        gp:mode           gp:ConstructMode .
+
+<?offset=0&limit=20>
+        a          gp:Page , foaf:Document ;
+        gp:limit   "20"^^xsd:long ;
+        gp:offset  "0"^^xsd:long ;
+        gp:pageOf  <> ;
+        <http://www.w3.org/1999/xhtml/vocab#next>
+                <?offset=20&limit=20> .
+
+<?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <> ;
+        gp:forClass       gp:Container ;
+        gp:mode           gp:ConstructMode .
+
+<queries>
+        a                gp:Container , sioc:Container , foaf:Document ;
+        gp:slug          "queries"^^xsd:string ;
+        dct:title        "Queries" ;
+        sioc:has_parent  <> .
 ```
 
 Support
