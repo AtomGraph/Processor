@@ -54,7 +54,7 @@ For open-source, we recommend trying Jena's [TDB](http://jena.apache.org/documen
 Demonstration
 =============
 
-Here's the Linked Data output of the [root resource](wiki/Data-hierarchy) when Graphity Processor is run as a standalone webapp:
+Here's the Linked Data output of the [root resource](../../wiki/Data-hierarchy) when Graphity Processor is run as a standalone webapp:
 
 ```
 @prefix sioc:  <http://rdfs.org/sioc/ns#> .
