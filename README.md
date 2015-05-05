@@ -54,7 +54,8 @@ For open-source, we recommend trying Jena's [TDB](http://jena.apache.org/documen
 Demonstration
 =============
 
-Here's the Linked Data output of the [root resource](../../wiki/Data-hierarchy) when Graphity Processor is run as a standalone webapp:
+Here's the Linked Data output of the [root resource](../../wiki/Data-hierarchy) description when Graphity Processor is run as a standalone webapp (for
+brevity, all URIs are relativized against the webapp's base URI):
 
 ```
 @prefix sioc:  <http://rdfs.org/sioc/ns#> .
@@ -68,73 +69,73 @@ Here's the Linked Data output of the [root resource](../../wiki/Data-hierarchy) 
 @prefix void:  <http://rdfs.org/ns/void#> .
 @prefix gp:    <http://graphity.org/gp#> .
 
-<http://localhost:8080/graphity-processor/service>
+<graphity-processor/service>
         a               foaf:Document , gp:GraphStore ;
         dct:title       "Graph Store Protocol endpoint" ;
-        sioc:has_space  <http://localhost:8080/graphity-processor/> .
+        sioc:has_space  <graphity-processor/> .
 
-<http://localhost:8080/graphity-processor/templates>
+<graphity-processor/templates>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "templates"^^xsd:string ;
         dct:title        "Templates" ;
-        sioc:has_parent  <http://localhost:8080/graphity-processor/> .
+        sioc:has_parent  <graphity-processor/> .
 
-<http://localhost:8080/graphity-processor/ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<graphity-processor/ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <http://localhost:8080/graphity-processor/ontologies> ;
+        gp:constructorOf  <graphity-processor/ontologies> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<http://localhost:8080/graphity-processor/ontologies>
+<graphity-processor/ontologies>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "ontologies"^^xsd:string ;
         dct:title        "Ontologies" ;
-        sioc:has_parent  <http://localhost:8080/graphity-processor/> .
+        sioc:has_parent  <graphity-processor/> .
 
-<http://localhost:8080/graphity-processor/queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<graphity-processor/queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <http://localhost:8080/graphity-processor/queries> ;
+        gp:constructorOf  <graphity-processor/queries> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<http://localhost:8080/graphity-processor/>
+<graphity-processor/>
         a                gp:Space , sioc:Container , sioc:Space , gp:Container , foaf:Document ;
-        rdfs:seeAlso     <http://localhost:8080/graphity-processor/sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
+        rdfs:seeAlso     <graphity-processor/sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
         dct:description  "Generic Linked Data browser and end-user-oriented platform" ;
         dct:title        "Graphity Client" ;
-        foaf:logo        <http://localhost:8080/graphity-processor/static/img/graphity-logo.svg> ;
+        foaf:logo        <graphity-processor/static/img/graphity-logo.svg> ;
         foaf:maker       <http://graphityhq.com/#company> .
 
-<http://localhost:8080/graphity-processor/sparql>
+<graphity-processor/sparql>
         a               foaf:Document , gp:SPARQLEndpoint ;
         dct:title       "SPARQL endpoint" ;
-        sioc:has_space  <http://localhost:8080/graphity-processor/> .
+        sioc:has_space  <graphity-processor/> .
 
-<http://localhost:8080/graphity-processor/templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<graphity-processor/templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <http://localhost:8080/graphity-processor/templates> ;
+        gp:constructorOf  <graphity-processor/templates> ;
         gp:forClass       gp:Item ;
         gp:mode           gp:ConstructMode .
 
-<http://localhost:8080/graphity-processor/?offset=0&limit=20>
+<graphity-processor/?offset=0&limit=20>
         a          gp:Page , foaf:Document ;
         gp:limit   "20"^^xsd:long ;
         gp:offset  "0"^^xsd:long ;
-        gp:pageOf  <http://localhost:8080/graphity-processor/> ;
+        gp:pageOf  <graphity-processor/> ;
         <http://www.w3.org/1999/xhtml/vocab#next>
-                <http://localhost:8080/graphity-processor/?offset=20&limit=20> .
+                <graphity-processor/?offset=20&limit=20> .
 
-<http://localhost:8080/graphity-processor/?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
+<graphity-processor/?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <http://localhost:8080/graphity-processor/> ;
+        gp:constructorOf  <graphity-processor/> ;
         gp:forClass       gp:Container ;
         gp:mode           gp:ConstructMode .
 
-<http://localhost:8080/graphity-processor/queries>
+<graphity-processor/queries>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "queries"^^xsd:string ;
         dct:title        "Queries" ;
-        sioc:has_parent  <http://localhost:8080/graphity-processor/> .
+        sioc:has_parent  <graphity-processor/> .
 ```
 
 Support
