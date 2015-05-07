@@ -3,7 +3,7 @@ Graphity Processor is a Java backend for building declarative, read-write Linked
 What Graphity Processor provides for users as out-of-the-box generic features:
 * declarative control of published and accepted data using URI and SPARQL templates
 * pagination on container resources, with ordering by property columns
-* constructor mode with returns a CONSTRUCT template of expected data input
+* constructor mode which returns a CONSTRUCT template of expected data input
 * control of RDF input quality with SPARQL-based constraints
 * SPARQL endpoint and Graph Store Protocol endpoint
 * HTTP content negotiation and caching
