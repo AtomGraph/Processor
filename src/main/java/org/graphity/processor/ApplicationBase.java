@@ -38,7 +38,7 @@ import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
-import org.graphity.processor.provider.ValidatingModelProvider;
+import org.graphity.processor.provider.SkolemizingModelProvider;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -66,7 +66,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         
 	classes.add(ResourceBase.class); // handles /
 
-	singletons.add(new ValidatingModelProvider());
+	singletons.add(new SkolemizingModelProvider());
 	singletons.add(new ResultSetWriter());
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());

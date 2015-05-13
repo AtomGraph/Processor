@@ -9,6 +9,7 @@
 @prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
 @prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
+@prefix spl:    <http://spinrdf.org/spl#> .
 @prefix dqc:	<http://semwebquality.org/ontologies/dq-constraints#> .
 @prefix dct:	<http://purl.org/dc/terms/> .
 @prefix vann:	<http://purl.org/vocab/vann/> .
@@ -234,11 +235,18 @@
 # RESOURCE TEMPLATES
 
 <#Space> a rdfs:Class, owl:Class, <#Template> ;
-     rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, <#Container> ;
-     <#uriTemplate> "/" ;
-     <#query> <#DescribeWithChildren> ;
-     <#defaultLimit> 20 ;
+    rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, <#Container> ;
+    <#uriTemplate> "/" ;
+    <#query> <#DescribeWithChildren> ;
+    <#defaultLimit> 20 ;
+    spin:constraint [ a dqc:MissingProperties ;
+	    sp:arg1 <#Space> ;
+	    sp:arg2 <#slug>
+	] , [ a <#MissingType> ;
+	    sp:arg1 foaf:Document
+	] ;
      rdfs:label "Space" ;
+     rdfs:comment "Application space that all resources belong to (usually also root container)" ;
      rdfs:isDefinedBy <#> .
 
 <#Container> a rdfs:Class, owl:Class, <#Template> ;
@@ -270,8 +278,11 @@
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#Container> ;
 	    sp:arg2 <#slug>
+	] , [ a <#MissingType> ;
+	    sp:arg1 foaf:Document
 	] ;
     rdfs:label "Container" ;
+    rdfs:comment "First-level container" ;
     rdfs:isDefinedBy <#> .
 
 <#Item> a rdfs:Class, owl:Class, <#Template> ;
@@ -301,8 +312,11 @@
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#Item> ;
 	    sp:arg2 <#slug>
+	] , [ a <#MissingType> ;
+	    sp:arg1 foaf:Document
 	] ;
     rdfs:label "Item" ;
+    rdfs:comment "Child item of a first-level container" ;
     rdfs:isDefinedBy <#> .
 
 <#Topic> a rdfs:Class, owl:Class ;
@@ -338,6 +352,19 @@
 <#ConstructMode> a <#Mode> ;
     rdfs:label "Create" ;
     rdfs:comment "Container responds with CONSTRUCTed template for gp:forClass value" ;
+    rdfs:isDefinedBy <#> .
+
+# SPIN TEMPLATES
+
+<#MissingType> a spin:Template ;
+    rdfs:subClassOf dqc:MissingElementConstraints ;
+    rdfs:label "Missing type" ;
+    spin:body <#ConstructMissingType> ;
+    spin:labelTemplate "Instance does not have a mandatory RDF type {?arg1}"^^xsd:string ;
+    spin:constraint [ a spl:Argument ;
+        spl:predicate sp:arg1 ;
+        spl:valueType rdfs:Class
+    ] ;
     rdfs:isDefinedBy <#> .
 
 # QUERIES
@@ -433,4 +460,18 @@ WHERE {
         ?primaryTopic foaf:isPrimaryTopicOf ?this .
         ?primaryTopic ?p ?o .
     }
+}"""^^xsd:string .
+
+# ====
+
+<#ConstructMissingType> a sp:Construct, sp:Query ;
+      sp:text """CONSTRUCT {
+    _:b0 a spin:ConstraintViolation .
+    _:b0 spin:violationRoot ?this .
+    _:b0 spin:violationPath rdf:type .
+}
+WHERE {
+    NOT EXISTS {
+        ?this a ?arg1 .
+    } 
 }"""^^xsd:string .

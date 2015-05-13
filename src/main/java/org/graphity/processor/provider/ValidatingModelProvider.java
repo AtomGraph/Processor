@@ -46,7 +46,12 @@ public class ValidatingModelProvider extends ModelProvider
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException
     {
-        return validate(super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream));
+        return process(super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream));
+    }
+
+    public Model process(Model model)
+    {
+        return validate(model);
     }
     
     public Model validate(Model model)
