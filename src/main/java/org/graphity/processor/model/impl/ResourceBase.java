@@ -29,6 +29,7 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
+import com.sun.jersey.server.impl.application.WebApplicationContext;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -156,91 +157,98 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         try
         {
-            Query query = getQuery(getMatchedOntClass(), GP.query);
-            if (query == null && getRequest().getMethod().equalsIgnoreCase("GET"))
+            if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
             {
-                if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
-                throw new ConfigurationException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+                updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
+                if (updateRequest == null)
+                {
+                    if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
+                    throw new ConfigurationException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
+                }
             }
-            queryBuilder = QueryBuilder.fromQuery(query, getModel());
 
-            updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
-            if (updateRequest == null && (getRequest().getMethod().equalsIgnoreCase("PUT") ||
-                    getRequest().getMethod().equalsIgnoreCase("DELETE")))
+            if (getRequest().getMethod().equalsIgnoreCase("GET") ||
+                    getRequest().getMethod().equalsIgnoreCase("PUT") ||
+                    getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
             {
-                if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
-                throw new ConfigurationException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
-            }
+                Query query = getQuery(getMatchedOntClass(), GP.query);
+                if (query == null)
+                {
+                    if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
+                    throw new ConfigurationException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+                }
+                queryBuilder = QueryBuilder.fromQuery(query, getModel());
             
-            if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
-            {
-                if (queryBuilder.getSubSelectBuilders().isEmpty())
+                if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
                 {
-                    if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
-                    throw new ConfigurationException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
-                }
-                
-                subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
-                if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
-
-                try
-                {
-                    if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
-                        offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
-                    else
+                    if (queryBuilder.getSubSelectBuilders().isEmpty())
                     {
-                        Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
-                        if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
-                        this.offset = defaultOffset;
+                        if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
+                        throw new ConfigurationException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
                     }
-                    
-                    if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-                    subSelectBuilder.replaceOffset(offset);
 
-                    if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
-                        limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
-                    else
-                    {
-                        Long defaultLimit =  getLongValue(getMatchedOntClass(), GP.defaultLimit);
-                        //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
-                        this.limit = defaultLimit;                        
-                    }
-                    
-                    if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-                    subSelectBuilder.replaceLimit(limit);
+                    subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
+                    if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-                    if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-                        this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
-                    else
-                        this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
-                    
-                    if (this.orderBy != null)
+                    try
                     {
-                        if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
-                            desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+                        if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
+                            offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
                         else
-                            desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
-                        if (desc == null) desc = false; // ORDERY BY is ASC() by default
+                        {
+                            Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
+                            if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
+                            this.offset = defaultOffset;
+                        }
 
-                        if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                            orderBy(orderBy, desc);
+                        if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
+                        subSelectBuilder.replaceOffset(offset);
+
+                        if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
+                            limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
+                        else
+                        {
+                            Long defaultLimit =  getLongValue(getMatchedOntClass(), GP.defaultLimit);
+                            //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
+                            this.limit = defaultLimit;                        
+                        }
+
+                        if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
+                        subSelectBuilder.replaceLimit(limit);
+
+                        if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+                            this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
+                        else
+                            this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
+
+                        if (this.orderBy != null)
+                        {
+                            if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
+                                desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+                            else
+                                desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
+                            if (desc == null) desc = false; // ORDERY BY is ASC() by default
+
+                            if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                            subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                                orderBy(orderBy, desc);
+                        }
+
+                        if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+                        {
+                            if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
+                            subSelectBuilder.replaceLimit(Long.valueOf(0));
+                        }
                     }
-
-                    if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+                    catch (NumberFormatException ex)
                     {
-                        if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
-                        subSelectBuilder.replaceLimit(Long.valueOf(0));
+                        throw new WebApplicationException(ex);
                     }
                 }
-                catch (NumberFormatException ex)
-                {
-                    throw new WebApplicationException(ex);
-                }
-            }
 
-            if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
-            addProperty(SPIN.query, queryBuilder);
+                if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
+                addProperty(SPIN.query, queryBuilder);
+            }
         }
         catch (ConfigurationException ex)
         {
@@ -1016,6 +1024,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public QueryBuilder getQueryBuilder()
     {
+        if (queryBuilder == null) throw new IllegalStateException("QueryBuilder should not be null at this point. Check initialization in init()");
+        
 	return queryBuilder;
     }
 
@@ -1026,6 +1036,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
     public UpdateRequest getUpdateRequest()
     {
+        if (updateRequest == null) throw new IllegalStateException("UpdateRequest should not be null at this point. Check initialization in init()");
+        
         return updateRequest;
     }
 

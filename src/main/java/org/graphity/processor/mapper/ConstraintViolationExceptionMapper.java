@@ -21,6 +21,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
@@ -29,7 +30,6 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Providers;
 import org.graphity.processor.exception.ConstraintViolationException;
-import org.graphity.processor.model.QueriedResource;
 import org.graphity.processor.util.Link;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
@@ -43,8 +43,9 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
 {
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
     
-    @Context UriInfo uriInfo;    
+    @Context private UriInfo uriInfo;
     @Context private Providers providers;
+    @Context private ResourceContext resourceContext;
     
     public UriInfo getUriInfo()
     {
@@ -64,10 +65,11 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         {
             URI mode = URI.create(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
             if (mode.equals(URI.create(GP.ConstructMode.getURI())))
-            {
-                QueriedResource match = (QueriedResource)getUriInfo().getMatchedResources().get(0);
-                Model entity = (Model)match.describe(); // (Model)match.get().getEntity();
-                cve.getModel().add(entity);
+            {                
+                cve.getModel().add(getResourceContext().
+                        matchResource(getUriInfo().getRequestUri(),
+                                org.graphity.core.model.QueriedResource.class).
+                        describe());
             }
         }
         
@@ -87,6 +89,11 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         return providers;
     }
 
+    public ResourceContext getResourceContext()
+    {
+        return resourceContext;
+    }
+    
     public OntClass getMatchedOntClass()
     {
 	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
