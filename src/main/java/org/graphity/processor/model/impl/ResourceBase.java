@@ -378,7 +378,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", model, graphURI);
 
-	Resource created = getURIResource(model, FOAF.Document);
+	Resource created = getURIResource(model, RDF.type, FOAF.Document);
 	if (created == null)
 	{
 	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
@@ -403,9 +403,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return Response.seeOther(createdURI).build();
     }
 
-    public Resource getURIResource(Model model, Resource type)
+    public Resource getURIResource(Model model, Property property, Resource object)
     {
-	ResIterator it = model.listSubjectsWithProperty(RDF.type, type);
+	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+	if (object == null) throw new IllegalArgumentException("Object Resource cannot be null");
+
+        ResIterator it = model.listSubjectsWithProperty(property, object);
 
 	try
 	{
