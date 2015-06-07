@@ -16,6 +16,7 @@
 
 package org.graphity.processor.mapper.jena;
 
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.atlas.web.HttpException;
@@ -31,11 +32,20 @@ public class HttpExceptionMapper extends ExceptionMapperBase implements Exceptio
     @Override
     public Response toResponse(HttpException ex)
     {
+        return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
+                    getModel(), getVariants()).
+                status(Response.Status.INTERNAL_SERVER_ERROR).
+                build();
+
+        /*
 	return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
                 entity(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-                        null).
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
                     getModel()).
 		build();
+        */
     }
 
 }

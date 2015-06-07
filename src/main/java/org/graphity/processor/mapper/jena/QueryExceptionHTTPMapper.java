@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.mapper.jena;
 
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.engine.http.QueryExceptionHTTP;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -33,19 +34,21 @@ public class QueryExceptionHTTPMapper extends ExceptionMapperBase implements Exc
 
     @Override
     public Response toResponse(QueryExceptionHTTP ex)
-    {
+    {        
         if (ex.getResponseCode() > 0)
-            return Response.status(ex.getResponseCode()).
-                    entity(toResource(ex, Response.Status.fromStatusCode(ex.getResponseCode()),
-                            null).
-                        getModel()).
-                    build();
+            return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+                getResponseBuilder(toResource(ex, Response.Status.fromStatusCode(ex.getResponseCode()),
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
+                    getModel(), getVariants()).
+                status(ex.getResponseCode()).
+                build();
         else
-            return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
-                    entity(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-                            null).
-                        getModel()).
-                    build();
+            return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
+                    getModel(), getVariants()).
+                status(Response.Status.INTERNAL_SERVER_ERROR).
+                build();
     }
 
 }

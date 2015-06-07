@@ -31,11 +31,20 @@ public class NotFoundExceptionMapper extends ExceptionMapperBase implements Exce
     @Override
     public Response toResponse(NotFoundException ex)
     {
+        return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+                getResponseBuilder(toResource(ex, Response.Status.NOT_FOUND,
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#NotFound")).
+                    getModel(), getVariants()).
+                status(Response.Status.NOT_FOUND).
+                build();
+
+        /*
 	return Response.status(Response.Status.NOT_FOUND).
                 entity(toResource(ex, Response.Status.NOT_FOUND,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#NotFound")).
                     getModel()).
 		build();
+        */
     }
     
 }

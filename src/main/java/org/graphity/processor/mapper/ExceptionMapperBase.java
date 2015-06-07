@@ -20,7 +20,17 @@ import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.Provider;
 import org.graphity.processor.vocabulary.HTTP;
 
@@ -32,6 +42,8 @@ import org.graphity.processor.vocabulary.HTTP;
 @Provider
 abstract public class ExceptionMapperBase
 {
+
+    @Context private Request request;
 
     public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
     {
@@ -51,4 +63,63 @@ abstract public class ExceptionMapperBase
         return resource;
     }
 
+    /*
+    public Response toResponse(RuntimeException ex)
+    {
+	return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+                getResponseBuilder(toResource(ex, getStatus(ex), getResource(ex)).getModel(), getVariants()).
+                    status(getStatus(ex)).
+                    build();
+    }
+    
+    public abstract Status getStatus(RuntimeException ex);
+    
+    public abstract Resource getResource(RuntimeException ex);
+    */
+    
+    public List<Variant> getVariants()
+    {
+        return getVariantListBuilder().add().build();
+    }
+
+    public Variant.VariantListBuilder getVariantListBuilder()
+    {
+        org.graphity.core.model.impl.Response response = org.graphity.core.model.impl.Response.fromRequest(getRequest());
+        return response.getVariantListBuilder(getMediaTypes(), getLanguages(), getEncodings());
+    }
+
+    public List<MediaType> getMediaTypes()
+    {
+        List<MediaType> list = new ArrayList<>();
+        Map<String, String> utf8Param = new HashMap<>();
+        utf8Param.put("charset", "UTF-8");
+        
+        Iterator<MediaType> it = org.graphity.core.MediaType.getRegistered().iterator();
+        while (it.hasNext())
+        {
+            MediaType registered = it.next();
+            list.add(new MediaType(registered.getType(), registered.getSubtype(), utf8Param));
+        }
+        
+        MediaType rdfXml = new MediaType(org.graphity.core.MediaType.APPLICATION_RDF_XML_TYPE.getType(), org.graphity.core.MediaType.APPLICATION_RDF_XML_TYPE.getSubtype(), utf8Param);
+        list.add(0, rdfXml); // first one becomes default
+        
+        return list;
+    }
+    
+    public List<Locale> getLanguages()
+    {
+        return new ArrayList<>();
+    }
+
+    public List<String> getEncodings()
+    {
+        return new ArrayList<>();
+    }
+        
+    public Request getRequest()
+    {
+        return request;
+    }
+    
 }

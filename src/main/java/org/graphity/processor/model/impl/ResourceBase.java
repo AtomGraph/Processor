@@ -85,6 +85,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;
+    private final URI mode;    
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -93,7 +94,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private UpdateRequest updateRequest;
     private QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
-    private URI mode;
 
     /**
      * Public JAX-RS constructor. Suitable for subclassing.
@@ -139,6 +139,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(GP.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
 
+        if (uriInfo.getQueryParameters().containsKey(GP.mode.getLocalName()))
+            this.mode = URI.create(uriInfo.getQueryParameters().getFirst(GP.mode.getLocalName()));
+        else mode = null;
+
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
 
@@ -150,10 +154,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
 	addProperty(RDF.type, getMatchedOntClass());
-
-        if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
-            this.mode = URI.create(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
-        else mode = null;
 
         try
         {
