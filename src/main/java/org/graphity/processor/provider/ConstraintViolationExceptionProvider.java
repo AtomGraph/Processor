@@ -25,6 +25,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
@@ -72,8 +73,9 @@ public class ConstraintViolationExceptionProvider implements MessageBodyWriter<C
     {            
 	if (log.isTraceEnabled()) log.trace("Writing Model with HTTP headers: {} MediaType: {}", headerMap, mediaType);
         
-        getProviders().getMessageBodyWriter(Model.class, Model.class, annotations, mediaType).
-                writeTo(cve.getModel(), type, genericType, annotations, mediaType, headerMap, entityStream);
+        MessageBodyWriter<Model> reader = getProviders().getMessageBodyWriter(Model.class, Model.class, annotations, mediaType);
+        if (reader == null) throw new WebApplicationException(Response.Status.NOT_ACCEPTABLE);
+        reader.writeTo(cve.getModel(), type, genericType, annotations, mediaType, headerMap, entityStream);
     }
     
 }

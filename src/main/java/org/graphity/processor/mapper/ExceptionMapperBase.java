@@ -94,27 +94,6 @@ abstract public class ExceptionMapperBase
         org.graphity.core.model.impl.Response response = org.graphity.core.model.impl.Response.fromRequest(getRequest());
         return response.getVariantListBuilder(getMediaTypes().getModelMediaTypes(), getLanguages(), getEncodings());
     }
-
-    /*
-    public List<MediaType> getMediaTypes()
-    {
-        List<MediaType> list = new ArrayList<>();
-        Map<String, String> utf8Param = new HashMap<>();
-        utf8Param.put("charset", "UTF-8");
-        
-        Iterator<MediaType> it = org.graphity.core.MediaType.getRegistered().iterator();
-        while (it.hasNext())
-        {
-            MediaType registered = it.next();
-            list.add(new MediaType(registered.getType(), registered.getSubtype(), utf8Param));
-        }
-        
-        MediaType rdfXml = new MediaType(org.graphity.core.MediaType.APPLICATION_RDF_XML_TYPE.getType(), org.graphity.core.MediaType.APPLICATION_RDF_XML_TYPE.getSubtype(), utf8Param);
-        list.add(0, rdfXml); // first one becomes default
-        
-        return list;
-    }
-    */
     
     public List<Locale> getLanguages()
     {

@@ -169,7 +169,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 }
             }
 
-            if (getRequest().getMethod().equalsIgnoreCase("GET") ||
+             if (getRequest().getMethod().equalsIgnoreCase("GET") ||
+                    (getRequest().getMethod().equalsIgnoreCase("POST") && getMode().equals(URI.create(GP.ConstructMode.getURI()))) |
                     getRequest().getMethod().equalsIgnoreCase("PUT") ||
                     getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
             {
