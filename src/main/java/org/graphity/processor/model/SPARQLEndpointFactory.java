@@ -20,6 +20,7 @@ import org.graphity.processor.model.impl.SPARQLEndpointBase;
 import com.hp.hpl.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
+import org.graphity.core.MediaTypes;
 import org.graphity.core.util.DataManager;
 import org.graphity.core.model.SPARQLEndpoint;
 
@@ -36,14 +37,15 @@ public class SPARQLEndpointFactory extends org.graphity.core.model.SPARQLEndpoin
      * 
      * @param request current request
      * @param servletConfig webapp context
+     * @param mediaTypes supported media types
      * @param dataset dataset of the store
      * @param dataManager RDF data manager for this endpoint
      * @return new endpoint
      */
-    public static SPARQLEndpoint create(Request request, ServletConfig servletConfig,
+    public static SPARQLEndpoint create(Request request, ServletConfig servletConfig, MediaTypes mediaTypes,
             Dataset dataset, DataManager dataManager)
     {
-	return new SPARQLEndpointBase(request, servletConfig, dataset, dataManager);
+	return new SPARQLEndpointBase(request, servletConfig, mediaTypes, dataset, dataManager);
     }
     
 }

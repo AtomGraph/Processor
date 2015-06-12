@@ -20,6 +20,7 @@ import com.hp.hpl.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.ext.ContextResolver;
+import org.graphity.core.MediaTypes;
 import org.graphity.processor.model.GraphStoreFactory;
 import org.graphity.core.model.GraphStore;
 import org.slf4j.Logger;
@@ -52,14 +53,14 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
     public GraphStore getGraphStore()
     {
         if (getGraphStoreOrigin() == null) // use local graph store
-            return GraphStoreFactory.create(getRequest(), getServletConfig(), getDataset(), getDataManager());
+            return GraphStoreFactory.create(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
         
         return super.getGraphStore();
    }
 
-    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, Dataset dataset, org.graphity.core.util.DataManager dataManager)
+    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.DataManager dataManager)
     {
-        return GraphStoreFactory.create(request, servletConfig, dataset, dataManager);        
+        return GraphStoreFactory.create(request, servletConfig, mediaTypes, dataset, dataManager);        
     }
     
 }

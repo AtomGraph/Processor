@@ -24,6 +24,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import org.graphity.core.provider.DataManagerProvider;
+import org.graphity.core.provider.MediaTypesProvider;
 import org.graphity.processor.model.impl.ResourceBase;
 import org.graphity.processor.provider.DatasetProvider;
 import org.graphity.core.provider.QueryParamProvider;
@@ -65,12 +66,13 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         super(servletConfig);
         
 	classes.add(ResourceBase.class); // handles /
+        //classes.add(NotFoundExceptionMapper.class);
 
 	singletons.add(new SkolemizingModelProvider());
 	singletons.add(new ResultSetWriter());
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());
-        
+        singletons.add(new MediaTypesProvider());
         singletons.add(new DataManagerProvider());
         singletons.add(new DatasetProvider());
         singletons.add(new OntologyProvider());

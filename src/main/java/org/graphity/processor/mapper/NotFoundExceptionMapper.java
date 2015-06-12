@@ -28,6 +28,15 @@ import org.graphity.processor.exception.NotFoundException;
 public class NotFoundExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<NotFoundException>
 {
     
+    //private final MediaTypes mediaTypes;
+    
+    /*
+    public NotFoundExceptionMapper(@Context MediaTypes mediaTypes)
+    {
+        this.mediaTypes = mediaTypes;
+    }
+    */      
+    
     @Override
     public Response toResponse(NotFoundException ex)
     {

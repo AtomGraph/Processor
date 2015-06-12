@@ -21,6 +21,7 @@ import org.graphity.processor.model.impl.GraphStoreBase;
 import com.hp.hpl.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
+import org.graphity.core.MediaTypes;
 import org.graphity.core.util.DataManager;
 import org.graphity.core.model.GraphStore;
 
@@ -37,14 +38,15 @@ public class GraphStoreFactory extends org.graphity.core.model.GraphStoreFactory
      * 
      * @param request current request
      * @param servletConfig webapp context
+     * @param mediaTypes
      * @param dataset dataset of the store
      * @param dataManager RDF data manager for this graph store
      * @return graph store instance
      */
-    public static GraphStore create(Request request, ServletConfig servletConfig,
+    public static GraphStore create(Request request, ServletConfig servletConfig, MediaTypes mediaTypes,
             Dataset dataset, DataManager dataManager)
     {
-	return new GraphStoreBase(request, servletConfig, dataset, dataManager);
+	return new GraphStoreBase(request, servletConfig, mediaTypes, dataset, dataManager);
     }
 
 }

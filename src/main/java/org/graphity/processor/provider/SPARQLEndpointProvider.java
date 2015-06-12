@@ -20,6 +20,7 @@ import com.hp.hpl.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.ext.ContextResolver;
+import org.graphity.core.MediaTypes;
 import org.graphity.processor.model.SPARQLEndpointFactory;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.slf4j.Logger;
@@ -52,14 +53,14 @@ public class SPARQLEndpointProvider extends org.graphity.core.provider.SPARQLEnd
     public SPARQLEndpoint getSPARQLEndpoint()
     {
         if (getSPARQLEndpointOrigin() == null) // use local endpoint
-            return getSPARQLEndpoint(getRequest(), getServletConfig(), getDataset(), getDataManager());
+            return getSPARQLEndpoint(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
 
         return super.getSPARQLEndpoint();
     }
     
-    public SPARQLEndpoint getSPARQLEndpoint(Request request, ServletConfig servletConfig, Dataset dataset, org.graphity.core.util.DataManager dataManager)
+    public SPARQLEndpoint getSPARQLEndpoint(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.DataManager dataManager)
     {
-        return SPARQLEndpointFactory.create(request, servletConfig, dataset, dataManager);
+        return SPARQLEndpointFactory.create(request, servletConfig, mediaTypes, dataset, dataManager);
     }
 
 }

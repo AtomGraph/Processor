@@ -21,17 +21,16 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
+import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import javax.ws.rs.ext.Providers;
+import org.graphity.core.MediaTypes;
 import org.graphity.processor.vocabulary.HTTP;
 
 /**
@@ -44,7 +43,9 @@ abstract public class ExceptionMapperBase
 {
 
     @Context private Request request;
-
+    @Context private Providers providers;
+    //@Context private MediaTypes mediaTypes;
+    
     public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
     {
 	if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
@@ -77,6 +78,12 @@ abstract public class ExceptionMapperBase
     public abstract Resource getResource(RuntimeException ex);
     */
     
+    public MediaTypes getMediaTypes()
+    {
+	ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
+	return cr.getContext(MediaTypes.class);
+    }
+    
     public List<Variant> getVariants()
     {
         return getVariantListBuilder().add().build();
@@ -85,9 +92,10 @@ abstract public class ExceptionMapperBase
     public Variant.VariantListBuilder getVariantListBuilder()
     {
         org.graphity.core.model.impl.Response response = org.graphity.core.model.impl.Response.fromRequest(getRequest());
-        return response.getVariantListBuilder(getMediaTypes(), getLanguages(), getEncodings());
+        return response.getVariantListBuilder(getMediaTypes().getModelMediaTypes(), getLanguages(), getEncodings());
     }
 
+    /*
     public List<MediaType> getMediaTypes()
     {
         List<MediaType> list = new ArrayList<>();
@@ -106,6 +114,7 @@ abstract public class ExceptionMapperBase
         
         return list;
     }
+    */
     
     public List<Locale> getLanguages()
     {
@@ -120,6 +129,11 @@ abstract public class ExceptionMapperBase
     public Request getRequest()
     {
         return request;
+    }
+    
+    public Providers getProviders()
+    {
+        return providers;
     }
     
 }

@@ -22,6 +22,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
+import org.graphity.core.MediaTypes;
 import org.graphity.core.util.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -40,10 +41,10 @@ public class GraphStoreBase extends org.graphity.core.model.impl.GraphStoreBase
     private final Dataset dataset;
     private final DataManager dataManager;
         
-    public GraphStoreBase(@Context Request request, @Context ServletConfig servletConfig,
+    public GraphStoreBase(@Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
             @Context Dataset dataset, @Context DataManager dataManager)
     {
-        super(request, servletConfig);
+        super(request, servletConfig, mediaTypes);
 	if (dataset == null) throw new IllegalArgumentException("Dataset cannot be null");
         if (dataManager == null) throw new IllegalArgumentException("DataManager cannot be null");
         this.dataset = dataset;

@@ -46,6 +46,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
+import org.graphity.core.MediaTypes;
 import org.graphity.processor.exception.NotFoundException;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.query.QueryBuilder;
@@ -105,6 +106,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param uriInfo URI information of the current request
      * @param request current request
      * @param servletConfig webapp context
+     * @param mediaTypes supported media types
      * @param endpoint SPARQL endpoint of this resource
      * @param graphStore Graph Store of this resource
      * @param ontClass matched ontology class
@@ -112,10 +114,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
+            @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
             @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, endpoint);
+	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
         if (ontClass == null)
         {
@@ -824,7 +826,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return super.getResponseBuilder(model).header("Link", classLink.toString());
     }
 
-    public List<Locale> getLanguages(Property property)
+    public List<Locale> getLanguages(Property property) throws ConfigurationException
     {
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
@@ -836,7 +838,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             while (it.hasNext())
             {
                 Statement stmt = it.next();
-                if (stmt.getObject().isLiteral()) languages.add(new Locale(stmt.getString()));
+                if (!stmt.getObject().isLiteral())
+                {
+                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (gp:language is not literal)", getMatchedOntClass().getURI());
+                    throw new ConfigurationException("Illegal non-literal gp:language value for template '" + getMatchedOntClass().getURI() +"'");
+                }
+                
+                languages.add(Locale.forLanguageTag(stmt.getString()));
             }
         }
         finally
@@ -850,7 +858,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public List<Locale> getLanguages()
     {
-        return getLanguages(GP.lang);
+        try
+        {
+            return getLanguages(GP.lang);
+        }
+        catch (ConfigurationException ex)
+        {
+            throw new WebApplicationException(ex);
+        }
     }
     
     /**

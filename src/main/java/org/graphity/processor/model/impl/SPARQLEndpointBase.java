@@ -24,6 +24,7 @@ import com.hp.hpl.jena.update.UpdateRequest;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
+import org.graphity.core.MediaTypes;
 import org.graphity.core.util.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,13 +48,14 @@ public class SPARQLEndpointBase extends org.graphity.core.model.impl.SPARQLEndpo
      * 
      * @param dataset ontology of this webapp
      * @param dataManager RDF data manager for this endpoint
+     * @param mediaTypes supported media types
      * @param request current request
      * @param servletConfig webapp context
      */
-    public SPARQLEndpointBase(@Context Request request, @Context ServletConfig servletConfig,
+    public SPARQLEndpointBase(@Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
             @Context Dataset dataset, @Context DataManager dataManager)
     {
-	super(request, servletConfig);
+	super(request, servletConfig, mediaTypes);
         if (dataset == null) throw new IllegalArgumentException("Dataset cannot be null");
         if (dataManager == null) throw new IllegalArgumentException("DataManager cannot be null");
         this.dataset = dataset;

@@ -27,7 +27,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Providers;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.util.Link;
 import org.graphity.processor.vocabulary.GP;
@@ -43,7 +42,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
     
     @Context private UriInfo uriInfo;
-    @Context private Providers providers;
+    //@Context private Providers providers;
     @Context private ResourceContext resourceContext;
     
     public UriInfo getUriInfo()
@@ -83,11 +82,14 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
                 build();
     }
     
+    /*
+    @Override
     public Providers getProviders()
     {
         return providers;
     }
-
+    */
+    
     public ResourceContext getResourceContext()
     {
         return resourceContext;
