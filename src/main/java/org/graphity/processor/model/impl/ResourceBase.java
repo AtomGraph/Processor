@@ -34,11 +34,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
@@ -48,17 +46,16 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import org.graphity.core.MediaTypes;
 import org.graphity.processor.exception.NotFoundException;
-import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.InsertDataBuilder;
 import org.graphity.processor.util.Link;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
-import org.graphity.processor.vocabulary.XHV;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
+import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.query.SelectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,6 +84,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;
     private final URI mode;    
+    private final Hypermedia hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -108,13 +106,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param servletConfig webapp context
      * @param mediaTypes supported media types
      * @param endpoint SPARQL endpoint of this resource
+     * @param hypermedia
      * @param graphStore Graph Store of this resource
      * @param ontClass matched ontology class
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
+            @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint,
+            @Context Hypermedia hypermedia, @Context GraphStore graphStore,
             @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
@@ -128,6 +128,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
+	if (hypermedia == null) throw new IllegalArgumentException("Hypermedia cannot be null");
 
         OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
         model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
@@ -137,7 +138,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-
+        this.hypermedia = hypermedia;
+        
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(GP.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
 
@@ -577,6 +579,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public Model addMetadata(Model model)
     {
+        /*
 	if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
 	{
             Map<Property, OntClass> childrenClasses = new HashMap<>();
@@ -625,7 +628,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             {
                 resIt.close();
             }
-            
+            */
             if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
             {
                 try
@@ -660,6 +663,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
                 }
             }
+            /*
             else
             {                    
                 if (getLimit() != null)
@@ -693,8 +697,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 }
             }
         }
+        */
         
-        return model;
+        return getHypermedia().addStates(this, UriBuilder.fromUri(getURI()), model); // model
     }
     
     /**
@@ -1087,6 +1092,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public ResourceContext getResourceContext()
     {
         return resourceContext;
+    }
+
+    public Hypermedia getHypermedia()
+    {
+        return hypermedia;
     }
 
     @Override

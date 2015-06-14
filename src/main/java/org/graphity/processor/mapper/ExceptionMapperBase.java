@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Variant;
@@ -92,7 +93,12 @@ abstract public class ExceptionMapperBase
     public Variant.VariantListBuilder getVariantListBuilder()
     {
         org.graphity.core.model.impl.Response response = org.graphity.core.model.impl.Response.fromRequest(getRequest());
-        return response.getVariantListBuilder(getMediaTypes().getModelMediaTypes(), getLanguages(), getEncodings());
+        return response.getVariantListBuilder(getModelMediaTypes(), getLanguages(), getEncodings());
+    }
+    
+    public List<MediaType> getModelMediaTypes()
+    {
+        return getMediaTypes().getModelMediaTypes();
     }
     
     public List<Locale> getLanguages()
