@@ -347,16 +347,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	    return Response.seeOther(getStateUriBuilder(getOffset(), getLimit(), getOrderBy(), getDesc(), getMode()).build()).build();
 	}
 
-	Model description = describe();
-	if (description.isEmpty())
-	{
-	    if (log.isDebugEnabled()) log.debug("Description Model is empty; returning 404 Not Found");
-	    throw new NotFoundException("Description Model is empty");
-	}
-
-        description = addMetadata(description);
-        if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
-	return getResponse(description);
+        //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
+	return super.get();
     }
     
     /**
@@ -505,7 +497,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
 	}
 	
-	Model description = describe();	
+	Model description = super.describe();	
 	UpdateRequest deleteInsertRequest = UpdateFactory.create();
 	
 	if (!description.isEmpty()) // remove existing representation
@@ -567,7 +559,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Model describe()
     {
-	return getSPARQLEndpoint().loadModel(getQuery(getQuerySolutionMap()));
+	return addHypermedia(super.describe());
     }
 
     /**
@@ -577,7 +569,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param model target RDF model
      * @return description model with metadata
      */
-    public Model addMetadata(Model model)
+    public Model addHypermedia(Model model)
     {
         /*
 	if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
@@ -1014,21 +1006,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Query getQuery()
     {
         Query query = getQueryBuilder().build();            
-        query.setBaseURI(getUriInfo().getBaseUri().toString());            
-	return query;
-    }
-
-    /**
-     * Returns Query with query bindings for the current request applied to the query string.
-     * 
-     * @param qsm query solution map
-     * @return query
-     */
-    public Query getQuery(QuerySolutionMap qsm)
-    {
-	if (qsm == null) throw new IllegalArgumentException("QuerySolutionMap cannot be null");
-        
-        return new ParameterizedSparqlString(getQuery().toString(), qsm).asQuery();
+        query.setBaseURI(getUriInfo().getBaseUri().toString());  
+        return new ParameterizedSparqlString(query.toString(), getQuerySolutionMap()).asQuery();        
     }
     
     /**
