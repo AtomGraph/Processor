@@ -29,7 +29,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.graphity.core.model.QueriedResource;
 import org.graphity.processor.exception.ConstraintViolationException;
-import org.graphity.processor.util.Link;
+import org.graphity.core.util.Link;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

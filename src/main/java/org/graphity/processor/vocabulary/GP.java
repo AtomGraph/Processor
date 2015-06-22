@@ -90,14 +90,6 @@ public final class GP
         
     public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
     
-    public static final ObjectProperty baseUri = m_model.createObjectProperty( NS + "baseUri" );
-
-    public static final ObjectProperty absolutePath = m_model.createObjectProperty( NS + "absolutePath" );
-
-    public static final ObjectProperty requestUri = m_model.createObjectProperty( NS + "requestUri" );
-
-    public static final DatatypeProperty httpHeaders = m_model.createDatatypeProperty( NS + "httpHeaders" );
-
     public static final ObjectProperty forClass = m_model.createObjectProperty( NS + "forClass" );
 
     public static final ObjectProperty datasetLocation = m_model.createObjectProperty( NS + "datasetLocation" );

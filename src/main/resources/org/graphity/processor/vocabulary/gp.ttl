@@ -38,26 +38,6 @@
     rdfs:comment "OWL ontology with resource classes (templates)" ;
     rdfs:isDefinedBy <#> .
 
-<#baseUri> a owl:ObjectProperty ;
-    rdfs:label "Application base URI" ;
-    rdfs:domain <#Application> ;
-    rdfs:comment "Base URI of the application" ;
-    rdfs:isDefinedBy <#> .
-
-<#absolutePath> a owl:ObjectProperty ;
-    rdfs:label "Absolute path URI" ;
-    rdfs:domain http:Request ;
-    rdfs:comment "Absolute path of the request" ;
-    rdfs:seeAlso http:absoluteURI ;
-    rdfs:isDefinedBy <#> .
-
-<#requestUri> a owl:ObjectProperty ;
-    rdfs:label "Request URI" ;
-    rdfs:domain http:Request ;
-    rdfs:comment "Absolute path of the request" ;
-    rdfs:seeAlso http:requestURI ;
-    rdfs:isDefinedBy <#> .
-
 # ANNOTATION PROPERTIES
 
 <#query> a owl:AnnotationProperty ;
@@ -253,7 +233,7 @@
     rdfs:subClassOf foaf:Document, sioc:Container ,
         [ a owl:Restriction ;
             owl:onProperty sioc:has_parent ;
-            owl:allValuesFrom <#Space>
+            owl:allValuesFrom <#Container>
         ] ;
     <#uriTemplate> "/{container}" ;
     <#skolemTemplate> "/{slug}" ;

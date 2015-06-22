@@ -2,6 +2,7 @@
 
 [] lm:mapping
 
+   [ lm:name "http://graphity.org/gps#" ;                           lm:altName "org/graphity/processor/vocabulary/gps.ttl" ] ,
    [ lm:name "http://graphity.org/gp#" ;                            lm:altName "org/graphity/processor/vocabulary/gp.ttl" ] ,
    [ lm:name "http://graphity.org/g#" ;                             lm:altName "org/graphity/processor/vocabulary/g.ttl" ] ,   
    [ lm:name "http://rdfs.org/sioc/ns#" ;			    lm:altName "org/graphity/processor/vocabulary/sioc.owl" ] ,

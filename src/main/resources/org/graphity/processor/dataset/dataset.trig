@@ -7,14 +7,13 @@
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 @prefix gc:     <http://graphity.org/gc#> .
 @prefix gp:	<http://graphity.org/gp#> .
-@prefix gcs:	<http://graphity.org/gcs#> .
+@prefix gps:	<http://graphity.org/gcs#> .
 
 <> a sioc:Space, gp:Space, sioc:Container, gp:Container, foaf:Document ;
-    dct:title "Graphity Client" ;
-    dct:description "Generic Linked Data browser and end-user-oriented platform" ;
-    foaf:logo <static/img/graphity-logo.svg> ;
+    dct:title "Graphity Processor" ;
+    dct:description "Generic Linked Data processor" ;
     foaf:maker <http://graphityhq.com/#company> ;
-    rdfs:seeAlso gcs: , <sparql>, <http://graphityhq.com>, <http://semantic-web.dk> .
+    rdfs:seeAlso gps: , <sparql>, <http://graphityhq.com>, <http://graphity.org> .
 
 <sparql> a foaf:Document, gp:SPARQLEndpoint ;
     sioc:has_space <> ;
@@ -45,10 +44,6 @@
     sioc:has_parent <resources> ;
     dct:title "Labelled resources" .
 
-<properties/labelled> a gp:Container, sioc:Container, foaf:Document ;
-    sioc:has_parent <properties> ;
-    dct:title "Labelled properties" .
-
 # ontologies 
 
 <ontologies/graphity-processor> a foaf:Document, sioc:Item, gp:Item ;
@@ -56,10 +51,10 @@
     dct:title "Graphity Processor ontology document" ;
     foaf:primaryTopic gp: .
 
-<ontologies/graphity-client> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/graphity-processor> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <ontologies> ;
-    dct:title "Graphity Client ontology document" ;
-    foaf:primaryTopic gc: .
+    dct:title "Graphity Processor ontology document" ;
+    foaf:primaryTopic gp: .
 
 <ontologies/foaf> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <ontologies> ;
@@ -75,34 +70,34 @@
 
 <templates/template-container> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <templates> ;
-    foaf:primaryTopic gcs:TemplateContainer .
+    foaf:primaryTopic gps:TemplateContainer .
 
 <templates/template-document> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <templates> ;
-    foaf:primaryTopic gcs:TemplateItem .
+    foaf:primaryTopic gps:TemplateItem .
 
 <templates/query-container> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <templates> ;
-    foaf:primaryTopic gcs:QueryContainer .
+    foaf:primaryTopic gps:QueryContainer .
 
 <templates/query-document> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <templates> ;
-    foaf:primaryTopic gcs:QueryItem .
+    foaf:primaryTopic gps:QueryItem .
 
 <templates/label-resources-container> a foaf:Document, sioc:Item, gp:Item ;
     sioc:has_container <templates> ;
-    foaf:primaryTopic gcs:LabelResourcesContainer .
+    foaf:primaryTopic gps:LabelResourcesContainer .
 
 # queries
 
-<queries/describe-graph-label-resources> a foaf:Document, sioc:Item, gp:Item, gcs:QueryItem ;
+<queries/describe-graph-label-resources> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
     sioc:has_container <queries> ;
-    foaf:primaryTopic gcs:DescribeLabelResources .
+    foaf:primaryTopic gps:DescribeLabelResources .
 
-<queries/temp> a foaf:Document, sioc:Item, gp:Item, gcs:QueryItem ;
+<queries/temp> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
     sioc:has_container <queries> ;
     foaf:primaryTopic <queries/temp#this> .
 
-<queries/temp#this>    a       <http://spinrdf.org/sp#Describe>, <http://spinrdf.org/sp#Query>, gcs:Query ; # redefined to avoid importing gs: vocab with {path: *}
+<queries/temp#this>    a       <http://spinrdf.org/sp#Describe>, <http://spinrdf.org/sp#Query>, gps:Query ; # redefined to avoid importing gs: vocab with {path: *}
     foaf:isPrimaryTopicOf <queries/temp> ;
     <http://spinrdf.org/sp#text> """DESCRIBE ?this"""^^xsd:string .

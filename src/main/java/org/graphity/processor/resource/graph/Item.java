@@ -50,10 +50,10 @@ public class Item extends ResourceBase
     private static final Logger log = LoggerFactory.getLogger(Item.class);
 
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
-            @Context Hypermedia hypermedia, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
+            @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
             @Context OntClass matchedOntClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, endpoint, hypermedia, graphStore,
+	super(uriInfo, request, servletConfig, mediaTypes, endpoint, graphStore,
                 matchedOntClass, httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
     }

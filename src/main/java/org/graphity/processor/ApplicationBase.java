@@ -35,7 +35,6 @@ import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.provider.ConstraintViolationExceptionProvider;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
-import org.graphity.processor.provider.HypermediaProvider;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.ModifiersProvider;
@@ -78,7 +77,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         singletons.add(new MediaTypesProvider());
         singletons.add(new QueriedResourceProvider());
         singletons.add(new ModifiersProvider());
-        singletons.add(new HypermediaProvider());
         singletons.add(new DataManagerProvider());
         singletons.add(new DatasetProvider());
         singletons.add(new OntologyProvider());
@@ -144,17 +142,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
     public Set<Object> getSingletons()
     {
 	return singletons;
-    }
-
-    public boolean getPreemptiveAuth(ServletConfig servletConfig, Property property)
-    {
-	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        boolean preemptiveAuth = false;
-        if (servletConfig.getInitParameter(property.getURI()) != null)
-            preemptiveAuth = Boolean.parseBoolean(servletConfig.getInitParameter(property.getURI()).toString());
-        return preemptiveAuth;
     }
     
 }
