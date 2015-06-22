@@ -16,10 +16,8 @@ For a compatible frontend framework for end-user applications, see [Graphity Cli
 Getting started
 ===============
 
-* [what is Linked Data](../../wiki/What-is-Linked-Data)
-* [how Graphity Processor works](../../wiki/How-Graphity-works)
+* [how Graphity Processor works](../../wiki/How-Graphity-Processor-works)
 * [installing Graphity Processor](../../wiki/Installation)
-* [extending Graphity Processor](../../wiki/Extending-Graphity)
 * [configuring Graphity Processor](../../wiki/Configuration)
 * [JavaDoc](http://graphity.github.io/graphity-processor/apidocs)
 
