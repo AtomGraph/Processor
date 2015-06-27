@@ -35,14 +35,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
      rdfs:label "Space" ;
      rdfs:isDefinedBy <#> .
 
-<#Crap> a rdfs:Class, owl:Class, gp:Template ;
-     rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, gp:Container ;
-     gp:uriTemplate "/" ;
-     gp:query gp:DescribeWithChildren ;
-     gp:limit 20 ;
-     rdfs:label "Crap" ;
-     rdfs:isDefinedBy <#> .
-
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, gp:Container, sioc:Container,
         [ a owl:Restriction ;
