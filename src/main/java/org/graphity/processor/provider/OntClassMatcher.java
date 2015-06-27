@@ -34,7 +34,9 @@ import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 import javax.ws.rs.core.Context;
@@ -137,22 +139,28 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
     {
 	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        TreeMap<UriTemplate, OntClass> matchedClasses = new TreeMap<>(UriTemplate.COMPARATOR);
+        TreeMap<UriTemplate, List<OntClass>> uriTemplateOntClassMap = new TreeMap<>(UriTemplate.COMPARATOR);
 
         // the main sitemap has precedence
-        matchedClasses.putAll(matchOntClasses(ontModel, path, property, true));
-        if (!matchedClasses.isEmpty())
+        uriTemplateOntClassMap.putAll(matchOntClasses(ontModel, path, property, true));
+        if (!uriTemplateOntClassMap.isEmpty())
         {
-            if (log.isDebugEnabled()) log.debug("Matched UriTemplate: {} OntClass: {}", matchedClasses.firstKey(), matchedClasses.firstEntry().getValue());
-            return matchedClasses.firstEntry().getValue();
+            if (log.isDebugEnabled()) log.debug("Matched UriTemplate: {} OntClass: {}", uriTemplateOntClassMap.firstKey(), uriTemplateOntClassMap.firstEntry().getValue());
+            List<OntClass> matchedOntClasses = uriTemplateOntClassMap.firstEntry().getValue();
+            if (matchedOntClasses.size() > 1)
+                if (log.isWarnEnabled()) log.warn("URI '{}' was matched by more than one gp:Template: {}", path, matchedOntClasses);
+            return matchedOntClasses.get(0);
         }
 
         // gp:Templates from imported ontologies have lower precedence
-        matchedClasses.putAll(matchOntClasses(ontModel, path, property, false));
-        if (!matchedClasses.isEmpty())
+        uriTemplateOntClassMap.putAll(matchOntClasses(ontModel, path, property, false));
+        if (!uriTemplateOntClassMap.isEmpty())
         {
-            if (log.isDebugEnabled()) log.debug("Matched imported UriTemplate: {} OntClass: {}", matchedClasses.firstKey(), matchedClasses.firstEntry().getValue());
-            return matchedClasses.firstEntry().getValue();
+            if (log.isDebugEnabled()) log.debug("Matched imported UriTemplate: {} OntClass: {}", uriTemplateOntClassMap.firstKey(), uriTemplateOntClassMap.firstEntry().getValue());
+            List<OntClass> matchedOntClasses = uriTemplateOntClassMap.firstEntry().getValue();
+            if (matchedOntClasses.size() > 1)
+                if (log.isWarnEnabled()) log.warn("URI '{}' was matched by more than one gp:Template: {}", path, matchedOntClasses);
+            return matchedOntClasses.get(0);
         }
         
         if (log.isDebugEnabled()) log.debug("Path {} has no OntClass match in this OntModel", path);
@@ -169,13 +177,13 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param inBaseModel whether to only use base model statements
      * @return URI template/ontology class map
      */
-    public Map<UriTemplate, OntClass> matchOntClasses(OntModel ontModel, CharSequence path, Property property, boolean inBaseModel)
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(OntModel ontModel, CharSequence path, Property property, boolean inBaseModel)
     {
 	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
         if (path == null) throw new IllegalArgumentException("Path being matched cannot be null");
  	if (property == null) throw new IllegalArgumentException("URI template property cannot be null");
 
-        Map<UriTemplate, OntClass> matchedClasses = new HashMap<>();
+        Map<UriTemplate, List<OntClass>> matchedClasses = new HashMap<>();
         StmtIterator it = ontModel.listStatements(null, property, (RDFNode)null);
 
         try
@@ -197,7 +205,10 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                         {
                             if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
                             if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
-                            matchedClasses.put(uriTemplate, ontClass);
+
+                            if (!matchedClasses.containsKey(uriTemplate))
+                                matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
+                            matchedClasses.get(uriTemplate).add(ontClass);
                         }
                         else
                             if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);

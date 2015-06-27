@@ -1,4 +1,4 @@
-@base           <http://graphity.org/gcs> .
+@base           <http://graphity.org/gps> .
 
 # @prefix :	<#> .
 @prefix gc:     <http://graphity.org/gc#> .
@@ -33,6 +33,14 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
      gp:query gp:DescribeWithChildren ;
      gp:limit 20 ;
      rdfs:label "Space" ;
+     rdfs:isDefinedBy <#> .
+
+<#Crap> a rdfs:Class, owl:Class, gp:Template ;
+     rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, gp:Container ;
+     gp:uriTemplate "/" ;
+     gp:query gp:DescribeWithChildren ;
+     gp:limit 20 ;
+     rdfs:label "Crap" ;
      rdfs:isDefinedBy <#> .
 
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
@@ -71,14 +79,14 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
                     PREFIX sioc:    <http://rdfs.org/sioc/ns#>
                     PREFIX gp:      <http://graphity.org/gp#>
                     PREFIX gc:      <http://graphity.org/gc#>
-                    PREFIX gcs:     <http://graphity.org/gcs#>
+                    PREFIX gps:     <http://graphity.org/gps#>
                     PREFIX spin:    <http://spinrdf.org/spin#>
 
                     CONSTRUCT {
-                        _:this a foaf:Document, sioc:Item, gcs:TemplateItem ;
+                        _:this a foaf:Document, sioc:Item, gps:TemplateItem ;
                             foaf:primaryTopic _:template ;
                             gp:slug " "^^xsd:string .
-                        _:template a owl:Class, gp:Template, gcs:Template ;
+                        _:template a owl:Class, gp:Template, gps:Template ;
                             rdfs:subClassOf foaf:Document, sioc:Item,
                                 [ a owl:Restriction ;
                                     owl:onProperty sioc:has_container ;
@@ -165,15 +173,15 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
                     PREFIX sioc:    <http://rdfs.org/sioc/ns#>
                     PREFIX gp:      <http://graphity.org/gp#>
                     PREFIX gc:      <http://graphity.org/gc#>
-                    PREFIX gcs:     <http://graphity.org/gcs#>
+                    PREFIX gps:     <http://graphity.org/gps#>
                     PREFIX sp:      <http://spinrdf.org/sp#>
                     PREFIX spin:    <http://spinrdf.org/spin#>
 
                     CONSTRUCT {
-                        _:this a foaf:Document, sioc:Item, gcs:QueryItem ;
+                        _:this a foaf:Document, sioc:Item, gps:QueryItem ;
                             foaf:primaryTopic _:query ;
                             gp:slug " "^^xsd:string .
-                        _:query a sp:Query, gcs:Query ;
+                        _:query a sp:Query, gps:Query ;
                             foaf:isPrimaryTopicOf _:this ;
                             rdfs:label " " ;
                             sp:text "DESCRIBE ?this"^^xsd:string .
