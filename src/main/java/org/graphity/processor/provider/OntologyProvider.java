@@ -19,6 +19,7 @@ package org.graphity.processor.provider;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
@@ -44,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @see com.hp.hpl.jena.ontology.OntModel
  */
 @Provider
-public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, OntModel> implements ContextResolver<OntModel>
+public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, Ontology> implements ContextResolver<Ontology>
 {
     private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
 
@@ -55,7 +56,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
     public OntologyProvider()
     {
-	super(OntModel.class);
+	super(Ontology.class);
     }
 
     public ServletConfig getServletConfig()
@@ -74,46 +75,48 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     }
 
     @Override
-    public Injectable<OntModel> getInjectable(ComponentContext cc, Context context)
+    public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
     {
 	//if (log.isDebugEnabled()) log.debug("OntologyProvider UriInfo: {} ResourceConfig.getProperties(): {}", uriInfo, resourceConfig.getProperties());
 	
-	return new Injectable<OntModel>()
+	return new Injectable<Ontology>()
 	{
 	    @Override
-	    public OntModel getValue()
+	    public Ontology getValue()
 	    {
-		return getOntModel();
+		return getOntology();
 	    }
 	};
     }
 
     @Override
-    public OntModel getContext(Class<?> type)
+    public Ontology getContext(Class<?> type)
     {
-	return getOntModel();
+	return getOntology();
     }
 
     /**
-     * Returns configured ontology model.
+     * Returns configured sitemap ontology.
      * Uses <code>gp:sitemap</code> context parameter value from web.xml as dataset location.
      * 
      * @return ontology model
      */
-    public OntModel getOntModel()
+    public Ontology getOntology()
     {
         try
         {
-            OntModel ontModel = getOntModel(getOntologyURI());
+            String ontologyURI = getOntologyURI();
+            OntModel ontModel = getOntModel(ontologyURI);
+            Ontology ontology = ontModel.getOntology(ontologyURI);
 
-            if (ontModel.isEmpty())
+            if (ontology == null)
             {
-                if (log.isErrorEnabled()) log.error("Sitemap ontology is empty; processing aborted");
+                if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
                 throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
             }
-
-            if (log.isDebugEnabled()) log.debug("Ontology size: {}", ontModel.size());
-            return ontModel;
+            
+            if (log.isDebugEnabled()) log.debug("Ontology size: {}", ontology.getOntModel().size());
+            return ontology;
         }
         catch (ConfigurationException ex)
         {

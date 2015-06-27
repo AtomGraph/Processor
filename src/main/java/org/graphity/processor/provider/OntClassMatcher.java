@@ -19,6 +19,7 @@ package org.graphity.processor.provider;
 import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.ontology.Restriction;
 import com.hp.hpl.jena.ontology.UnionClass;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -302,8 +303,13 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
     public OntModel getOntModel()
     {
-	ContextResolver<OntModel> cr = getProviders().getContextResolver(OntModel.class, null);
-	return cr.getContext(OntModel.class);
+        return getOntology().getOntModel();
+    }
+
+    public Ontology getOntology()
+    {
+	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+	return cr.getContext(Ontology.class);
     }
 
     public UriInfo getUriInfo()
