@@ -7,7 +7,7 @@
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 @prefix gc:     <http://graphity.org/gc#> .
 @prefix gp:	<http://graphity.org/gp#> .
-@prefix gps:	<http://graphity.org/gcs#> .
+@prefix gps:	<http://graphity.org/gps#> .
 
 <> a sioc:Space, gp:Space, sioc:Container, gp:Container, foaf:Document ;
     dct:title "Graphity Processor" ;
