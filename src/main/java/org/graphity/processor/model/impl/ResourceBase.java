@@ -598,7 +598,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 {
                     Resource childContainer = resIt.next();
                     URI childURI = URI.create(childContainer.getURI());
-                    OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
+                    //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
+                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getMatchedOntClass().getIsDefinedBy().as(Ontology.class), childURI, getUriInfo().getBaseUri());
                     Map<Property, OntClass> grandChildrenClasses = new HashMap<>();
                     grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_PARENT, childClass));
                     grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_CONTAINER, childClass));
@@ -615,6 +616,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                             addProperty(GP.constructorOf, childContainer);                    
                     }
                 }
+            }
+            catch (ConfigurationException ex)
+            {
+                throw new WebApplicationException(ex);
             }
             finally
             {

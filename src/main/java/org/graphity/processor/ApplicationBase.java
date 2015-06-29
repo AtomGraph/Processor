@@ -17,7 +17,6 @@
 package org.graphity.processor;
 
 import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.rdf.model.Property;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;

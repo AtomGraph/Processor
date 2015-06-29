@@ -43,6 +43,21 @@
             <param-name>http://graphity.org/gp#sitemap</param-name>
             <param-value>http://graphity.org/gps#</param-value>
         </init-param>
+        <init-param>
+            <param-name>http://graphity.org/gp#templateQuery</param-name>
+            <param-value><![CDATA[
+PREFIX gp:	<http://graphity.org/gp#>
+PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+
+SELECT *
+{
+    # ?template rdfs:subClassOf* foaf:Document
+    ?template rdfs:isDefinedBy ?isDefinedBy ;
+        gp:uriTemplate ?uriTemplate .
+    FILTER isLiteral(?uriTemplate)
+}
+]]></param-value>
+        </init-param>
         <!--
         <init-param>
             <param-name>http://graphity.org/gp#cacheSitemap</param-name>

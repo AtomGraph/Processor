@@ -16,7 +16,7 @@
 
 package org.graphity.processor.model.impl;
 
-import org.graphity.processor.model.Modifiers;
+import org.graphity.processor.util.Modifiers;
 
 /**
  *

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.graphity.processor.model;
+package org.graphity.processor.util;
 
 /**
  *

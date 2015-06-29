@@ -32,7 +32,6 @@ import org.graphity.processor.model.impl.ResourceBase;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
-import org.graphity.processor.model.Hypermedia;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

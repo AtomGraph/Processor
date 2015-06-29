@@ -26,7 +26,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
-import org.graphity.processor.model.Modifiers;
+import org.graphity.processor.util.Modifiers;
 import org.graphity.processor.model.impl.ModifiersBase;
 import org.graphity.processor.vocabulary.GP;
 
