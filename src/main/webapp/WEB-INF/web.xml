@@ -51,8 +51,8 @@ PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
 
 SELECT *
 {
-    # ?template rdfs:subClassOf* foaf:Document
-    ?template rdfs:isDefinedBy ?isDefinedBy ;
+    # ?Template rdfs:subClassOf* foaf:Document
+    ?Template rdfs:isDefinedBy ?isDefinedBy ;
         gp:uriTemplate ?uriTemplate .
     FILTER isLiteral(?uriTemplate)
 }

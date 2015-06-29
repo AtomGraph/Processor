@@ -44,8 +44,10 @@ import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
 import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
@@ -150,7 +152,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @return URI template/class mapping
      * @throws javax.naming.ConfigurationException
      */
-    public  Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology sitemap, CharSequence path) throws ConfigurationException
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology sitemap, CharSequence path) throws ConfigurationException
     {
         if (sitemap == null) throw new IllegalArgumentException("Ontology cannot be null");
 
@@ -163,26 +165,22 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         while (templates.hasNext())
         {
             QuerySolution solution = templates.next();
-            Resource template = solution.getResource("template");
+            Resource template = solution.getResource(GP.Template.getLocalName());
             OntClass ontClass = sitemap.getOntModel().getOntResource(template).asClass();
-            //if (ontClass.hasSuperClass(FOAF.Document) && 
-            //        ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+            UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
+            HashMap<String, String> map = new HashMap<>();
+
+            if (uriTemplate.match(path, map))
             {
-                UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
-                HashMap<String, String> map = new HashMap<>();
+                if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
+                if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
 
-                if (uriTemplate.match(path, map))
-                {
-                    if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
-                    if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
-
-                    if (!matchedClasses.containsKey(uriTemplate))
-                        matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
-                    matchedClasses.get(uriTemplate).add(ontClass);
-                }
-                else
-                    if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
+                if (!matchedClasses.containsKey(uriTemplate))
+                    matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
+                matchedClasses.get(uriTemplate).add(ontClass);
             }
+            else
+                if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
         }
         qex.close();
 
@@ -198,7 +196,16 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        matchedClasses.putAll(matchOntClasses(servletConfig, importedOntology, path));
+                        Map<UriTemplate, List<OntClass>> matchedImportClasses = matchOntClasses(servletConfig, importedOntology, path);
+                        Iterator<Entry<UriTemplate, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
+                        while (entries.hasNext())
+                        {
+                            Entry<UriTemplate, List<OntClass>> entry = entries.next();
+                            if (matchedClasses.containsKey(entry.getKey()))
+                                matchedClasses.get(entry.getKey()).addAll(entry.getValue());
+                            else
+                                matchedClasses.put(entry.getKey(), entry.getValue());
+                        }
                     }
                 }
             }
@@ -208,7 +215,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
             }
         }
 
-        return matchedClasses;    
+        return matchedClasses;
     }   
     
     /**
@@ -300,7 +307,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                             if (classIt.hasNext())
                             {
                                 OntClass matchingClass = classIt.next();
-                                if (log.isDebugEnabled()) log.debug("Value {} matched endpoint OntClass {}", ontClass, matchingClass);
+                                if (log.isDebugEnabled()) log.debug("Value {} matched OntClass {}", ontClass, matchingClass);
                                 //return matchingClass;
                                 matchedClasses.put(property, matchingClass);
                             }

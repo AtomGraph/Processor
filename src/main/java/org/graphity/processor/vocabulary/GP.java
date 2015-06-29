@@ -50,6 +50,8 @@ public final class GP
 
     public static final OntClass Sitemap = m_model.createClass( NS + "Sitemap" );
 
+    public static final OntClass Template = m_model.createClass( NS + "Template" );
+    
     public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
 
     public static final OntClass GraphStore = m_model.createClass( NS + "GraphStore" );
