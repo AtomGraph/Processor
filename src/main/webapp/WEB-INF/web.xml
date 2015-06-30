@@ -44,17 +44,29 @@
             <param-value>http://graphity.org/gps#</param-value>
         </init-param>
         <init-param>
-            <param-name>http://graphity.org/gp#templateQuery</param-name>
+            <param-name>http://graphity.org/gp#templatesQuery</param-name>
             <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>
+PREFIX owl:	<http://www.w3.org/2002/07/owl#>
 PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 
 SELECT *
 {
     # ?Template rdfs:subClassOf* foaf:Document
-    ?Template rdfs:isDefinedBy ?isDefinedBy ;
+    ?Template a owl:Class, gp:Template ;
+        rdfs:isDefinedBy ?isDefinedBy ;
+        gp:query ?query ;
         gp:uriTemplate ?uriTemplate .
+    FILTER isURI(?query)
     FILTER isLiteral(?uriTemplate)
+    OPTIONAL {
+        ?Template rdfs:subClassOf [ a owl:Restriction ;
+            owl:allValuesFrom ?allValuesFrom ;
+            owl:onProperty ?onProperty
+        ] .
+        # ?onProperty a owl:ObjectProperty .
+    }
 }
 ]]></param-value>
         </init-param>

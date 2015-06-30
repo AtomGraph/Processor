@@ -19,6 +19,8 @@ package org.graphity.processor.provider;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Model;
+import javax.naming.ConfigurationException;
+import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -39,6 +41,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     
     @Context private Request request;
     @Context private UriInfo uriInfo;
+    @Context private ServletConfig servletConfig;
     
     @Override
     public Model process(Model model)
@@ -49,21 +52,27 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         {
             try
             {
-                return skolemize(getUriInfo(), getOntModel(), getOntClass(), new OntClassMatcher(), model);
+                return skolemize(getServletConfig(), getUriInfo(), getOntModel(), getOntClass(), new OntClassMatcher(), model);
             }
             catch (IllegalArgumentException ex)
             {
                 if (log.isErrorEnabled()) log.error("Blank node skolemization failed for model: {}", model);
                 throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
             }
+            catch (ConfigurationException ex)
+            {
+                if (log.isErrorEnabled()) log.error("Configuration error: {}", ex);
+                throw new WebApplicationException(ex);                
+            }
         }
         
         return model;
     }
     
-    public Model skolemize(UriInfo uriInfo, OntModel ontModel, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model)
+    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, OntModel ontModel, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model) throws ConfigurationException
     {
         return Skolemizer.fromOntModel(ontModel).
+                servletConfig(servletConfig).
                 uriInfo(uriInfo).
                 ontClass(ontClass).
                 ontClassMatcher(ontClassMatcher).
@@ -85,5 +94,10 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     {
         return request;
     }
-    
+
+    public ServletConfig getServletConfig()
+    {
+        return servletConfig;
+    }
+
 }

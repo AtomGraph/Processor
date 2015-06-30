@@ -16,13 +16,11 @@
 
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.ontology.Restriction;
-import com.hp.hpl.jena.ontology.UnionClass;
 import com.hp.hpl.jena.query.ParameterizedSparqlString;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.query.QueryExecution;
@@ -35,6 +33,7 @@ import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.uri.UriTemplate;
@@ -132,14 +131,29 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 	return matchOntClass(servletConfig, ontology, path);
     }
     
-    public Query getQuery(ServletConfig servletConfig, Ontology sitemap) throws ConfigurationException
+    public Query getQuery(Query query, QuerySolutionMap qsm)
     {
-        QuerySolutionMap qsm = new QuerySolutionMap();
-        qsm.add(RDFS.isDefinedBy.getLocalName(), sitemap);
-        Query query = getQuery(servletConfig, GP.templateQuery);
-        if (query == null) throw new ConfigurationException("Property '" + GP.templateQuery.getURI() + "' needs to be set in config");
+        if (query == null) throw new IllegalArgumentException("Query cannot be null");
+        if (qsm == null) throw new IllegalArgumentException("QuerySolution cannot be null");
         
         return new ParameterizedSparqlString(query.toString(), qsm).asQuery();
+    }
+    
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, CharSequence path) throws ConfigurationException
+    {
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
+
+        QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
+        ResultSet templates = qex.execSelect();
+        try
+        {
+            return matchOntClasses(servletConfig, templates, ontology, path);
+        }
+        finally
+        {
+            qex.close();
+        }
     }
     
     /**
@@ -147,26 +161,29 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * This method uses Jersey implementation of the JAX-RS URI matching algorithm.
      * 
      * @param servletConfig
-     * @param sitemap sitemap ontology
+     * @param templates
+     * @param ontology sitemap ontology
      * @param path URI path
      * @return URI template/class mapping
      * @throws javax.naming.ConfigurationException
      */
-    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology sitemap, CharSequence path) throws ConfigurationException
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, ResultSet templates, Ontology ontology, CharSequence path) throws ConfigurationException
     {
-        if (sitemap == null) throw new IllegalArgumentException("Ontology cannot be null");
+        if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+        if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
 
-        if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, sitemap);
+        if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         Map<UriTemplate, List<OntClass>> matchedClasses = new HashMap<>();
 
-        QueryExecution qex = QueryExecutionFactory.create(getQuery(servletConfig, sitemap), sitemap.getOntModel());
-        ResultSet templates = qex.execSelect();
+        //QueryExecution qex = QueryExecutionFactory.create(getQuery(servletConfig, GP.templateQuery, ontology), ontology.getOntModel());
+        //ResultSet templates = qex.execSelect();
 
         while (templates.hasNext())
         {
             QuerySolution solution = templates.next();
             Resource template = solution.getResource(GP.Template.getLocalName());
-            OntClass ontClass = sitemap.getOntModel().getOntResource(template).asClass();
+            OntClass ontClass = ontology.getOntModel().getOntResource(template).asClass();
             UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
             HashMap<String, String> map = new HashMap<>();
 
@@ -182,11 +199,10 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
             else
                 if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
         }
-        qex.close();
 
         if (matchedClasses.isEmpty())
         {
-            ExtendedIterator<OntResource> imports = sitemap.listImports();
+            ExtendedIterator<OntResource> imports = ontology.listImports();
             try
             {
                 while (imports.hasNext())
@@ -281,62 +297,60 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         return null;
     }
 
-    public Map<Property, OntClass> matchOntClasses(OntModel ontModel, Property property, OntClass ontClass)
+    public Map<Property, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) throws ConfigurationException
     {
-	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
+	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-        
-        Map<Property, OntClass> matchedClasses = new HashMap<>();        
-        ExtendedIterator<Restriction> it = ontModel.listRestrictions();        
+
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
+        qsm.add(OWL.allValuesFrom.getLocalName(), ontClass);
+
+        QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
         try
         {
-            while (it.hasNext())
-            {
-                Restriction restriction = it.next();	    
-                if (restriction.canAs(AllValuesFromRestriction.class))
-                {
-                    AllValuesFromRestriction avfr = restriction.asAllValuesFromRestriction();
-                    if (avfr.getOnProperty().equals(property) &&
-                            (avfr.hasAllValuesFrom(ontClass) ||
-                                (avfr.getAllValuesFrom().canAs(UnionClass.class) && avfr.getAllValuesFrom().as(UnionClass.class).listOperands().toList().contains(ontClass))))
-                    {
-                        ExtendedIterator<OntClass> classIt = avfr.listSubClasses(true);
-                        try
-                        {
-                            if (classIt.hasNext())
-                            {
-                                OntClass matchingClass = classIt.next();
-                                if (log.isDebugEnabled()) log.debug("Value {} matched OntClass {}", ontClass, matchingClass);
-                                //return matchingClass;
-                                matchedClasses.put(property, matchingClass);
-                            }
-                        }
-                        finally
-                        {
-                            classIt.close();
-                        }    
-                    }
-                }
-            }
+            return matchOntClasses(qex.execSelect());
         }
         finally
         {
-            it.close();
+            qex.close();
         }
-        
+    }
+    
+    public Map<Property, List<OntClass>> matchOntClasses(ResultSet templates) throws ConfigurationException
+    {
+        if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
+
+        //if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, sitemap);
+        Map<Property, List<OntClass>> matchedClasses = new HashMap<>();
+
+        while (templates.hasNext())
+        {
+            QuerySolution solution = templates.next();
+            if (solution.contains(GP.Template.getLocalName()) && solution.contains(OWL.onProperty.getLocalName()))
+            {
+                OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
+                Property onProperty = solution.getResource(OWL.onProperty.getLocalName()).as(Property.class);
+
+                if (!matchedClasses.containsKey(onProperty))
+                    matchedClasses.put(onProperty, new ArrayList<OntClass>());
+                matchedClasses.get(onProperty).add(template);
+            }
+        }
+                
         return matchedClasses;
     }
 
-    public Query getQuery(ServletConfig servletConfig, Property property)
+    public Query getQuery(ServletConfig servletConfig, DatatypeProperty property)
     {
         if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        Object query = servletConfig.getInitParameter(property.getURI());
-        if (query != null)
+        
+	Object ontologyQuery = servletConfig.getInitParameter(property.getURI());
+        if (ontologyQuery != null)
         {
-            ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
+            ParameterizedSparqlString queryString = new ParameterizedSparqlString(ontologyQuery.toString());
             return queryString.asQuery();
         }
         

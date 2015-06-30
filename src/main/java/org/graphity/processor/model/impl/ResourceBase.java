@@ -577,46 +577,27 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
 	{
-            Map<Property, OntClass> childrenClasses = new HashMap<>();
-            childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_PARENT, getMatchedOntClass()));
-            childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
-
-            Iterator<OntClass> it = childrenClasses.values().iterator();
-            while (it.hasNext())
-            {
-                OntClass forClass = it.next();
-                String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                        queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                    Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                        addProperty(RDF.type, FOAF.Document).
-                        addProperty(RDF.type, GP.Constructor).
-                        addProperty(GP.forClass, forClass).
-                        addProperty(GP.constructorOf, this);
-            }
-
-            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
             try
             {
-                while (resIt.hasNext())
+                Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
+                childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), getMatchedOntClass()));
+                //childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
+
+                Iterator<List<OntClass>> it = childrenClasses.values().iterator();
+                while (it.hasNext())
                 {
-                    Resource childContainer = resIt.next();
-                    URI childURI = URI.create(childContainer.getURI());
-                    //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
-                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
-                    Map<Property, OntClass> grandChildrenClasses = new HashMap<>();
-                    grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_PARENT, childClass));
-                    grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_CONTAINER, childClass));
-                    Iterator<OntClass> gccIt = grandChildrenClasses.values().iterator();
-                    while (gccIt.hasNext())
+                    List<OntClass> forClasses = it.next();
+                    Iterator<OntClass> forIt = forClasses.iterator();
+                    while (forIt.hasNext())
                     {
-                        OntClass forClass = gccIt.next();
-                        String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                        Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                            addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.forClass, forClass).                                    
-                            addProperty(GP.constructorOf, childContainer);                    
+                        OntClass forClass = forIt.next();
+                        String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                                addProperty(RDF.type, FOAF.Document).
+                                addProperty(RDF.type, GP.Constructor).
+                                addProperty(GP.forClass, forClass).
+                                addProperty(GP.constructorOf, this);
                     }
                 }
             }
@@ -626,7 +607,47 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             }
             finally
             {
-                resIt.close();
+                //it.close();
+            }
+            
+            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
+            try
+            {
+                while (resIt.hasNext())
+                {
+                    Resource childContainer = resIt.next();
+                    URI childURI = URI.create(childContainer.getURI());
+                    //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
+                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
+                    Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
+                    grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), childClass));
+
+                    Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
+                    while (gccIt.hasNext())
+                    {
+                        List<OntClass> forClasses = gccIt.next();
+                        Iterator<OntClass> forIt = forClasses.iterator();
+                        while (forIt.hasNext())
+                        {
+                            OntClass forClass = forIt.next();
+                            String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                                addProperty(RDF.type, FOAF.Document).
+                                addProperty(RDF.type, GP.Constructor).
+                                addProperty(GP.forClass, forClass).                                    
+                                addProperty(GP.constructorOf, childContainer);
+                        }
+                    }
+                }
+            }
+            catch (ConfigurationException ex)
+            {
+                throw new WebApplicationException(ex);
+            }
+            finally
+            {
+                //resIt.close();
             }
 
             if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))

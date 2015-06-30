@@ -18,6 +18,7 @@ package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -36,6 +37,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import javax.naming.ConfigurationException;
+import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.processor.provider.OntClassMatcher;
@@ -55,6 +58,8 @@ public class Skolemizer
     private static final Logger log = LoggerFactory.getLogger(Skolemizer.class);
 
     private UriInfo uriInfo;
+    private ServletConfig servletConfig;
+    private Ontology ontology;
     private OntClass ontClass;
     private OntModel ontModel;
     private OntClassMatcher ontClassMatcher;
@@ -96,12 +101,26 @@ public class Skolemizer
         return this;
     }
 
+    public Skolemizer servletConfig(ServletConfig servletConfig)
+    {
+	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+        this.servletConfig = servletConfig;
+        return this;
+    }
+
+    public Skolemizer ontology(Ontology ontology)
+    {
+	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+        this.ontology = ontology;
+        return this;
+    }
+
     public static Skolemizer fromOntModel(OntModel ontModel)
     {
         return newInstance().ontModel(ontModel);
     }
     
-    public Model build(Model model)
+    public Model build(Model model) throws ConfigurationException
     {
     	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
@@ -142,7 +161,7 @@ public class Skolemizer
         return ResourceFactory.createResource(getUriInfo().getAbsolutePath().toString());
     }
     
-    public URI build(Resource resource)
+    public URI build(Resource resource) throws ConfigurationException
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
@@ -183,12 +202,15 @@ public class Skolemizer
                 OntClass docClass = getOntClassMatcher().matchOntClass(doc, getOntClass());
                 if (docClass != null)
                 {
-                    Map<Property, OntClass> matchingClasses = getOntClassMatcher().matchOntClasses(getOntModel(), FOAF.isPrimaryTopicOf, docClass);
+                    /*
+                    Map<Property, List<OntClass>> matchingClasses =
+                            getOntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), FOAF.isPrimaryTopicOf, docClass);
                     if (!matchingClasses.isEmpty())
                     {
-                        OntClass topicClass = matchingClasses.values().iterator().next();
+                        OntClass topicClass = matchingClasses.values().iterator().next().get(0);
                         return build(resource, UriBuilder.fromUri(getBaseResource(doc).getURI()), topicClass);
                     }
+                    */
                 }
             }
         }
@@ -335,6 +357,16 @@ public class Skolemizer
     public OntClassMatcher getOntClassMatcher()
     {
         return ontClassMatcher;
+    }
+
+    public ServletConfig getServletConfig()
+    {
+        return servletConfig;
+    }
+
+    public Ontology getOntology()
+    {
+        return ontology;
     }
 
 }
