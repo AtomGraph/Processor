@@ -16,11 +16,11 @@
  */
 package org.graphity.processor.provider;
 
+import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -29,7 +29,6 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
@@ -84,7 +83,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 	    @Override
 	    public Ontology getValue()
 	    {
-		return getOntology();
+                return getOntology();
 	    }
 	};
     }
@@ -92,30 +91,19 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     @Override
     public Ontology getContext(Class<?> type)
     {
-	return getOntology();
+        return getOntology();
     }
 
-    /**
-     * Returns configured sitemap ontology.
-     * Uses <code>gp:sitemap</code> context parameter value from web.xml as dataset location.
-     * 
-     * @return ontology model
-     */
     public Ontology getOntology()
     {
         try
         {
-            String ontologyURI = getOntologyURI();
-            OntModel ontModel = getOntModel(ontologyURI);
-            Ontology ontology = ontModel.getOntology(ontologyURI);
-
+            Ontology ontology = getOntology(getServletConfig(), GP.sitemap);
             if (ontology == null)
             {
                 if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
-                throw new WebApplicationException(Response.Status.INTERNAL_SERVER_ERROR);
+                throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
             }
-            
-            if (log.isDebugEnabled()) log.debug("Ontology size: {}", ontology.getOntModel().size());
             return ontology;
         }
         catch (ConfigurationException ex)
@@ -123,28 +111,44 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new WebApplicationException(ex);
         }
     }
-
-    public String getOntologyURI(Property property)
-    {
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        Object ontology = getServletConfig().getInitParameter(property.getURI());
-        if (ontology != null) return ontology.toString();
-
-        return null;
-    }
     
-    public String getOntologyURI() throws ConfigurationException
+    /**
+     * Returns configured sitemap ontology.
+     * Uses <code>gp:sitemap</code> context parameter value from web.xml as dataset location.
+     * 
+     * @param ontModel
+     * @param ontologyURI
+     * @return ontology model
+     */
+    public Ontology getOntology(OntModel ontModel, String ontologyURI)
     {
-        String ontologyURI = getOntologyURI(GP.sitemap);
+        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
+        if (ontologyURI == null) throw new IllegalArgumentException("Ontology URI String cannot be null");
         
+        return ontModel.getOntology(ontologyURI);
+    }
+            
+    public Ontology getOntology(ServletConfig servletConfig, ObjectProperty property) throws ConfigurationException
+    {
+        String ontologyURI = getOntologyURI(servletConfig, property);
         if (ontologyURI == null)
         {
             if (log.isErrorEnabled()) log.error("Sitemap ontology URI (gp:sitemap) not configured");
             throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
         }
 
-        return ontologyURI;
+        return getOntology(getOntModel(ontologyURI), ontologyURI);
+    }
+    
+    public String getOntologyURI(ServletConfig servletConfig, ObjectProperty property)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Object ontology = servletConfig.getInitParameter(property.getURI());
+        if (ontology != null) return ontology.toString();
+
+        return null;
     }
     
     /**

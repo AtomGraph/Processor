@@ -83,6 +83,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
 
     private final GraphStore graphStore;
+    private final Ontology ontology;
     private final OntClass matchedOntClass;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
@@ -111,22 +112,23 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param mediaTypes supported media types
      * @param endpoint SPARQL endpoint of this resource
      * @param graphStore Graph Store of this resource
+     * @param ontology principal ontology
      * @param ontClass matched ontology class
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
+            @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
+	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (ontClass == null)
         {
             if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template OntClass, returning 404 Not Found", getURI());
             throw new NotFoundException("Resource has not matched any template");
         }
-        
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
@@ -134,6 +136,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
         model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
         this.ontResource = model.createOntResource(getURI());
+        this.ontology = ontology;
         this.matchedOntClass = ontClass;
         this.querySolutionMap = new QuerySolutionMap();
         this.graphStore = graphStore;
@@ -599,7 +602,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     Resource childContainer = resIt.next();
                     URI childURI = URI.create(childContainer.getURI());
                     //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
-                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getMatchedOntClass().getIsDefinedBy().as(Ontology.class), childURI, getUriInfo().getBaseUri());
+                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
                     Map<Property, OntClass> grandChildrenClasses = new HashMap<>();
                     grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_PARENT, childClass));
                     grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getOntModel(), SIOC.HAS_CONTAINER, childClass));
@@ -987,6 +990,16 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return matchedOntClass;
     }
 
+    /**
+     * Returns the principal ontology.
+     * 
+     * @return ontology
+     */
+    public Ontology getOntology()
+    {
+        return ontology;
+    }
+    
     /**
      * Returns the cache control of this resource, if specified.
      * The control value can be specified as a <code>gp:cacheControl</code> value restriction on an ontology class in

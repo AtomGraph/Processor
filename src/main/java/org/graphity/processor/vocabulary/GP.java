@@ -98,7 +98,7 @@ public final class GP
 
     public static final ObjectProperty datasetLocation = m_model.createObjectProperty( NS + "datasetLocation" );
 
-    public static final DatatypeProperty sitemap = m_model.createDatatypeProperty( NS + "sitemap" );
+    public static final ObjectProperty sitemap = m_model.createObjectProperty( NS + "sitemap" );
     
     public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
     

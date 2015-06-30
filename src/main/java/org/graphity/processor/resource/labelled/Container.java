@@ -17,6 +17,7 @@
 package org.graphity.processor.resource.labelled;
 
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.core.ResourceContext;
@@ -47,11 +48,11 @@ public class Container extends ResourceBase
     
     public Container(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
             @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
+            @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes,
                 endpoint, graphStore,
-                ontClass, httpHeaders, resourceContext);
+                ontology, ontClass, httpHeaders, resourceContext);
 	this.searchString = uriInfo.getQueryParameters().getFirst(RDFS.label.getLocalName());
     }
 
