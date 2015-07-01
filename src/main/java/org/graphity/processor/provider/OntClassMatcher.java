@@ -268,6 +268,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         return null;
     }
 
+    // does this belong to Skolemizer instead?
     public OntClass matchOntClass(Resource resource, OntClass parentClass)
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -310,7 +311,40 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
         try
         {
-            return matchOntClasses(qex.execSelect());
+            Map<Property, List<OntClass>> matchedClasses = matchOntClasses(qex.execSelect());
+
+            if (matchedClasses.isEmpty())
+            {
+                ExtendedIterator<OntResource> imports = ontology.listImports();
+                try
+                {
+                    while (imports.hasNext())
+                    {
+                        OntResource importRes = imports.next();
+                        if (importRes.canAs(Ontology.class))
+                        {
+                            Ontology importedOntology = importRes.asOntology();
+                            // traverse imports recursively
+                            Map<Property, List<OntClass>> matchedImportClasses = matchOntClasses(servletConfig, importedOntology, ontClass);
+                            Iterator<Entry<Property, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
+                            while (entries.hasNext())
+                            {
+                                Entry<Property, List<OntClass>> entry = entries.next();
+                                if (matchedClasses.containsKey(entry.getKey()))
+                                    matchedClasses.get(entry.getKey()).addAll(entry.getValue());
+                                else
+                                    matchedClasses.put(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    imports.close();
+                }
+            }
+
+            return matchedClasses;
         }
         finally
         {

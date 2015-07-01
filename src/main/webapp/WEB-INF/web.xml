@@ -47,6 +47,7 @@
             <param-name>http://graphity.org/gp#templatesQuery</param-name>
             <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl:	<http://www.w3.org/2002/07/owl#>
 PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sioc:	<http://rdfs.org/sioc/ns#>
@@ -58,14 +59,26 @@ SELECT *
         rdfs:isDefinedBy ?isDefinedBy ;
         gp:query ?query ;
         gp:uriTemplate ?uriTemplate .
-    FILTER isURI(?query)
+    FILTER (?Template != gp:SPARQLEndpoint)
+    FILTER (?Template != gp:GraphStore)
+    FILTER (isURI(?query) || isBlank(?query))
     FILTER isLiteral(?uriTemplate)
     OPTIONAL {
-        ?Template rdfs:subClassOf [ a owl:Restriction ;
-            owl:allValuesFrom ?allValuesFrom ;
-            owl:onProperty ?onProperty
-        ] .
+        ?Template rdfs:subClassOf ?Restriction .
+        ?Restriction a owl:Restriction ;
+            owl:onProperty ?onProperty .
         # ?onProperty a owl:ObjectProperty .
+        {
+            ?Restriction owl:allValuesFrom ?allValuesFrom
+        }
+        UNION
+        {
+            ?Restriction owl:allValuesFrom [ a owl:Class ;
+                owl:unionOf [
+                    rdf:rest*/rdf:first ?allValuesFrom
+                ]
+            ]
+        }
     }
 }
 ]]></param-value>
