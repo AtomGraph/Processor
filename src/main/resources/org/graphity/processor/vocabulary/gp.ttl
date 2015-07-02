@@ -218,6 +218,7 @@
     rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, <#Container> ;
     <#uriTemplate> "/" ;
     <#query> <#DescribeWithChildren> ;
+    <#template> <#SpaceConstructor> ;
     <#defaultLimit> 20 ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#Space> ;
@@ -229,6 +230,21 @@
      rdfs:comment "Application space that all resources belong to (usually also root container)" ;
      rdfs:isDefinedBy <#> .
 
+<#SpaceConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX dct:     <http://purl.org/dc/terms/>
+
+      CONSTRUCT {
+          _:this a foaf:Document, gp:Space, sioc:Space, gp:Container, sioc:Container ;
+              gp:slug " "^^xsd:string ;
+              dct:title " " .
+      }
+      WHERE {}""" .
+
 <#Container> a rdfs:Class, owl:Class, <#Template> ;
     rdfs:subClassOf foaf:Document, sioc:Container ,
         [ a owl:Restriction ;
@@ -239,22 +255,7 @@
     <#skolemTemplate> "/{slug}" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
-    <#template>
-              [ a       sp:Construct ;
-                sp:text """
-                    PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-                    PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-                    PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-                    PREFIX gp:      <http://graphity.org/gp#>
-                    PREFIX dct:     <http://purl.org/dc/terms/>
-
-                    CONSTRUCT {
-                        _:this a foaf:Document, gp:Container, sioc:Container ;
-                            gp:slug " "^^xsd:string ;
-                            dct:title " " .
-                    }
-                    WHERE {}"""
-              ] ;
+    <#template> <#ContainerConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#Container> ;
 	    sp:arg2 <#slug>
@@ -264,6 +265,21 @@
     rdfs:label "Container" ;
     rdfs:comment "First-level container" ;
     rdfs:isDefinedBy <#> .
+
+<#ContainerConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX dct:     <http://purl.org/dc/terms/>
+
+      CONSTRUCT {
+          _:this a foaf:Document, gp:Container, sioc:Container ;
+              gp:slug " "^^xsd:string ;
+              dct:title " " .
+      }
+      WHERE {}""" .
 
 <#Item> a rdfs:Class, owl:Class, <#Template> ;
     rdfs:subClassOf foaf:Document, sioc:Item,
@@ -275,20 +291,7 @@
     <#skolemTemplate> "/{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
-    <#template>
-              [ a       sp:Construct ;
-                sp:text """
-                    PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-                    PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-                    PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-                    PREFIX gp:      <http://graphity.org/gp#>
-
-                    CONSTRUCT {
-                        _:this a foaf:Document, gp:Item, sioc:Item ;
-                            gp:slug " "^^xsd:string .
-                    }
-                    WHERE {}"""
-              ] ;
+    <#template> <#ItemConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#Item> ;
 	    sp:arg2 <#slug>
@@ -298,6 +301,19 @@
     rdfs:label "Item" ;
     rdfs:comment "Child item of a first-level container" ;
     rdfs:isDefinedBy <#> .
+
+<#ItemConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+
+      CONSTRUCT {
+          _:this a foaf:Document, gp:Item, sioc:Item ;
+              gp:slug " "^^xsd:string .
+      }
+      WHERE {}""" .
 
 <#Topic> a rdfs:Class, owl:Class ;
     rdfs:subClassOf owl:Class,

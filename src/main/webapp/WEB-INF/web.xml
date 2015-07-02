@@ -58,10 +58,12 @@ SELECT *
     ?Template a owl:Class, gp:Template ;
         rdfs:isDefinedBy ?isDefinedBy ;
         gp:query ?query ;
-        gp:uriTemplate ?uriTemplate .
+        gp:uriTemplate ?uriTemplate ;
+        gp:template ?construct . # rename property to gp:construct(or) ?
     FILTER (?Template != gp:SPARQLEndpoint)
     FILTER (?Template != gp:GraphStore)
-    FILTER (isURI(?query) || isBlank(?query))
+    # FILTER (isURI(?query) || isBlank(?query))
+    # FILTER (isURI(?construct) || isBlank(?construct))
     FILTER isLiteral(?uriTemplate)
     OPTIONAL {
         ?Template rdfs:subClassOf ?Restriction .

@@ -38,6 +38,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
     gp:query gp:DescribeWithChildren ;
+    gp:template gp:ContainerConstructor ;
     rdfs:label "Template container" ;
     rdfs:isDefinedBy <#> .
 
@@ -53,49 +54,49 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:query gp:DescribeWithTopic ;
     gp:update gp:DeleteWithTopic ;
-    gp:template
-              [ a       sp:Construct ;
-                sp:text """
-                    PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-                    PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-                    PREFIX owl:     <http://www.w3.org/2002/07/owl#>
-                    PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-                    PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-                    PREFIX gp:      <http://graphity.org/gp#>
-                    PREFIX gc:      <http://graphity.org/gc#>
-                    PREFIX gps:     <http://graphity.org/gps#>
-                    PREFIX spin:    <http://spinrdf.org/spin#>
-
-                    CONSTRUCT {
-                        _:this a foaf:Document, sioc:Item, gps:TemplateItem ;
-                            foaf:primaryTopic _:template ;
-                            gp:slug " "^^xsd:string .
-                        _:template a owl:Class, gp:Template, gps:Template ;
-                            rdfs:subClassOf foaf:Document, sioc:Item,
-                                [ a owl:Restriction ;
-                                    owl:onProperty sioc:has_container ;
-                                    owl:hasValue _:container
-                                ] ;
-                            foaf:isPrimaryTopicOf _:this ;
-                            rdfs:label " " ;
-                            gp:uriTemplate " " ;
-                            gp:skolemTemplate " " ;
-                            gp:defaultLimit 20 ;
-                            gp:defaultOffset 0 ;
-                            gp:defaultOrderBy " "^^xsd:string ;
-                            gp:cacheControl "no-cache" ;
-                            gp:loadClass _:javaClass ;
-                            gp:query gp:Describe ;
-                            gc:supportedMode gc:ReadMode .
-                    }
-                    WHERE {}"""
-              ] ;
+    gp:template <#TemplateItemConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#TemplateItem> ;
 	    sp:arg2 gp:slug
 	] ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
+
+<#TemplateItemConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX gc:      <http://graphity.org/gc#>
+      PREFIX gps:     <http://graphity.org/gps#>
+      PREFIX spin:    <http://spinrdf.org/spin#>
+
+      CONSTRUCT {
+          _:this a foaf:Document, sioc:Item, gps:TemplateItem ;
+              foaf:primaryTopic _:template ;
+              gp:slug " "^^xsd:string .
+          _:template a owl:Class, gp:Template, gps:Template ;
+              rdfs:subClassOf foaf:Document, sioc:Item,
+                  [ a owl:Restriction ;
+                      owl:onProperty sioc:has_container ;
+                      owl:hasValue _:container
+                  ] ;
+              foaf:isPrimaryTopicOf _:this ;
+              rdfs:label " " ;
+              gp:uriTemplate " " ;
+              gp:skolemTemplate " " ;
+              gp:defaultLimit 20 ;
+              gp:defaultOffset 0 ;
+              gp:defaultOrderBy " "^^xsd:string ;
+              gp:cacheControl "no-cache" ;
+              gp:loadClass _:javaClass ;
+              gp:query gp:Describe ;
+              gc:supportedMode gc:ReadMode .
+      }
+      WHERE {}""" .
 
 <#Template> a rdfs:Class, owl:Class ;
     rdfs:subClassOf gp:Template,
@@ -132,6 +133,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
     gp:query gp:DescribeWithChildren ;
+    gp:template gp:ContainerConstructor ;
     rdfs:label "Query container" ;
     rdfs:isDefinedBy <#> .
 
@@ -147,37 +149,37 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:query gp:DescribeWithTopic ;
     gp:update gp:DeleteWithTopic ;
-    gp:template
-              [ a       sp:Construct ;
-                sp:text """
-                    PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-                    PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-                    PREFIX owl:     <http://www.w3.org/2002/07/owl#>
-                    PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-                    PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-                    PREFIX gp:      <http://graphity.org/gp#>
-                    PREFIX gc:      <http://graphity.org/gc#>
-                    PREFIX gps:     <http://graphity.org/gps#>
-                    PREFIX sp:      <http://spinrdf.org/sp#>
-                    PREFIX spin:    <http://spinrdf.org/spin#>
-
-                    CONSTRUCT {
-                        _:this a foaf:Document, sioc:Item, gps:QueryItem ;
-                            foaf:primaryTopic _:query ;
-                            gp:slug " "^^xsd:string .
-                        _:query a sp:Query, gps:Query ;
-                            foaf:isPrimaryTopicOf _:this ;
-                            rdfs:label " " ;
-                            sp:text "DESCRIBE ?this"^^xsd:string .
-                    }
-                    WHERE {}"""
-              ] ;
+    gp:template <#QueryItemConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#QueryItem> ;
 	    sp:arg2 gp:slug
 	] ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
+
+<#QueryItemConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX gc:      <http://graphity.org/gc#>
+      PREFIX gps:     <http://graphity.org/gps#>
+      PREFIX sp:      <http://spinrdf.org/sp#>
+      PREFIX spin:    <http://spinrdf.org/spin#>
+
+      CONSTRUCT {
+          _:this a foaf:Document, sioc:Item, gps:QueryItem ;
+              foaf:primaryTopic _:query ;
+              gp:slug " "^^xsd:string .
+          _:query a sp:Query, gps:Query ;
+              foaf:isPrimaryTopicOf _:this ;
+              rdfs:label " " ;
+              sp:text "DESCRIBE ?this"^^xsd:string .
+      }
+      WHERE {}""" .
 
 <#Query> a rdfs:Class, owl:Class ;
     rdfs:subClassOf sp:Query,
