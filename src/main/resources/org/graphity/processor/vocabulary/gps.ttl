@@ -28,7 +28,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # templates
 
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Container, sioc:Container,
+    rdfs:subClassOf foaf:Document, sioc:Container, # gp:Container, 
         [ a owl:Restriction ;
             owl:onProperty sioc:has_parent ;
             owl:allValuesFrom gp:Space
@@ -43,7 +43,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#TemplateItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item,
+    rdfs:subClassOf foaf:Document, # gp:Item,
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#TemplateContainer>
@@ -123,7 +123,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # queries
 
 <#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Container, sioc:Container,
+    rdfs:subClassOf foaf:Document, sioc:Container, # gp:Container, 
         [ a owl:Restriction ;
             owl:onProperty sioc:has_parent ;
             owl:allValuesFrom gp:Space
@@ -138,7 +138,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#QueryItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item, 
+    rdfs:subClassOf foaf:Document, # gp:Item, 
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#QueryContainer>
@@ -202,7 +202,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # lookup
 
 <#LabelResourcesContainer> a owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Container, sioc:Container ;
+    rdfs:subClassOf foaf:Document, sioc:Container ; # gp:Container, 
     gp:uriTemplate "/resources/labelled" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;
     gp:defaultLimit 20 ;

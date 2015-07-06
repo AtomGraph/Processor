@@ -52,19 +52,52 @@ PREFIX owl:	<http://www.w3.org/2002/07/owl#>
 PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
 PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 
-SELECT *
+CONSTRUCT
+{
+    ?Template a owl:Class, gp:Template ;
+        ?AnnotationProperty ?value ;
+        rdfs:isDefinedBy ?isDefinedBy .
+}
 {
     # ?Template rdfs:subClassOf* foaf:Document
     ?Template a owl:Class, gp:Template ;
-        rdfs:isDefinedBy ?isDefinedBy ;
-        gp:query ?query ;
-        gp:uriTemplate ?uriTemplate ;
-        gp:template ?construct . # rename property to gp:construct(or) ?
+        rdfs:isDefinedBy ?isDefinedBy .
+        # gp:query ?query ;
+        # gp:template ?construct . # rename property to gp:construct(or) ?
+    ?AnnotationProperty a owl:AnnotationProperty ;
+        rdfs:isDefinedBy gp: .
+    # three levels of annotation inheritance:
+    {
+        ?Template ?AnnotationProperty ?value .
+    }
+    UNION
+    {
+        FILTER NOT EXISTS
+        {
+            ?Template ?AnnotationProperty ?value .
+        }
+        ?Template rdfs:subClassOf ?subClassOf .
+        {
+            ?subClassOf ?AnnotationProperty ?value .
+        }
+        UNION
+        {
+            FILTER NOT EXISTS
+            {
+                ?subClassOf ?AnnotationProperty ?value .
+            }
+            ?subClassOf rdfs:subClassOf ?subClassOf1 .
+            {
+                ?subClassOf1 ?AnnotationProperty ?value .
+            }
+        }
+    }
+    FILTER (?AnnotationProperty IN (gp:uriTemplate, gp:query, gp:template))
     FILTER (?Template != gp:SPARQLEndpoint)
     FILTER (?Template != gp:GraphStore)
     # FILTER (isURI(?query) || isBlank(?query))
     # FILTER (isURI(?construct) || isBlank(?construct))
-    FILTER isLiteral(?uriTemplate)
+    # FILTER isLiteral(?uriTemplate)
     OPTIONAL {
         ?Template rdfs:subClassOf ?Restriction .
         ?Restriction a owl:Restriction ;

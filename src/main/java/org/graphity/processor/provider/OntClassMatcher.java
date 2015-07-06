@@ -28,7 +28,9 @@ import com.hp.hpl.jena.query.QueryExecutionFactory;
 import com.hp.hpl.jena.query.QuerySolution;
 import com.hp.hpl.jena.query.QuerySolutionMap;
 import com.hp.hpl.jena.query.ResultSet;
+import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
@@ -145,7 +147,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
 
         QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
-        ResultSet templates = qex.execSelect();
+        Model templates = qex.execConstruct();
         try
         {
             return matchOntClasses(servletConfig, templates, ontology, path);
@@ -167,6 +169,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @return URI template/class mapping
      * @throws javax.naming.ConfigurationException
      */
+    /*
     public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, ResultSet templates, Ontology ontology, CharSequence path) throws ConfigurationException
     {
         if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
@@ -176,28 +179,28 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         Map<UriTemplate, List<OntClass>> matchedClasses = new HashMap<>();
 
-        //QueryExecution qex = QueryExecutionFactory.create(getQuery(servletConfig, GP.templateQuery, ontology), ontology.getOntModel());
-        //ResultSet templates = qex.execSelect();
-
         while (templates.hasNext())
         {
             QuerySolution solution = templates.next();
             Resource template = solution.getResource(GP.Template.getLocalName());
-            OntClass ontClass = ontology.getOntModel().getOntResource(template).asClass();
-            UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
-            HashMap<String, String> map = new HashMap<>();
-
-            if (uriTemplate.match(path, map))
+            if (solution.contains(GP.uriTemplate.getLocalName()))
             {
-                if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
-                if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+                UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
+                HashMap<String, String> map = new HashMap<>();
 
-                if (!matchedClasses.containsKey(uriTemplate))
-                    matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
-                matchedClasses.get(uriTemplate).add(ontClass);
+                if (uriTemplate.match(path, map))
+                {
+                    OntClass ontClass = ontology.getOntModel().getOntResource(template).asClass();
+                    if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
+                    if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+
+                    if (!matchedClasses.containsKey(uriTemplate))
+                        matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
+                    matchedClasses.get(uriTemplate).add(ontClass);
+                }
+                else
+                    if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
             }
-            else
-                if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
         }
 
         if (matchedClasses.isEmpty())
@@ -233,6 +236,84 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
         return matchedClasses;
     }   
+    */
+    
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Model templates, Ontology ontology, CharSequence path) throws ConfigurationException
+    {
+        if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+        if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
+
+        if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
+        Map<UriTemplate, List<OntClass>> matchedClasses = new HashMap<>();
+
+        ResIterator it = templates.listResourcesWithProperty(RDF.type, GP.Template);
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource template = it.next();
+                if (!template.hasProperty(GP.uriTemplate))
+                {
+                    if (log.isDebugEnabled()) log.debug("gp:templatesQuery does not return {} value for {}", GP.uriTemplate, template);
+                    throw new WebApplicationException(new ConfigurationException("gp:templatesQuery does not return " + GP.uriTemplate + " value for " + template));
+                }
+                
+                UriTemplate uriTemplate = new UriTemplate(template.getProperty(GP.uriTemplate).getString());
+                HashMap<String, String> map = new HashMap<>();
+
+                if (uriTemplate.match(path, map))
+                {
+                    OntClass ontClass = ontology.getOntModel().getOntResource(template).asClass();
+                    if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
+                    if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+
+                    if (!matchedClasses.containsKey(uriTemplate))
+                        matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
+                    matchedClasses.get(uriTemplate).add(ontClass);
+                }
+                else
+                    if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
+            }
+
+            if (matchedClasses.isEmpty())
+            {
+                ExtendedIterator<OntResource> imports = ontology.listImports();
+                try
+                {
+                    while (imports.hasNext())
+                    {
+                        OntResource importRes = imports.next();
+                        if (importRes.canAs(Ontology.class))
+                        {
+                            Ontology importedOntology = importRes.asOntology();
+                            // traverse imports recursively
+                            Map<UriTemplate, List<OntClass>> matchedImportClasses = matchOntClasses(servletConfig, importedOntology, path);
+                            Iterator<Entry<UriTemplate, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
+                            while (entries.hasNext())
+                            {
+                                Entry<UriTemplate, List<OntClass>> entry = entries.next();
+                                if (matchedClasses.containsKey(entry.getKey()))
+                                    matchedClasses.get(entry.getKey()).addAll(entry.getValue());
+                                else
+                                    matchedClasses.put(entry.getKey(), entry.getValue());
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    imports.close();
+                }
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+
+        return matchedClasses;
+    }
     
     /**
      * Given a relative URI and URI template property, returns ontology class with a matching URI template, if any.
