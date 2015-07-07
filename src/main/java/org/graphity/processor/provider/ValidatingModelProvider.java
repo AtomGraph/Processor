@@ -17,6 +17,7 @@
 package org.graphity.processor.provider;
 
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import java.io.IOException;
 import java.io.InputStream;
@@ -56,13 +57,13 @@ public class ValidatingModelProvider extends ModelProvider
     
     public Model validate(Model model)
     {
-        return Validator.fromOntModel(getOntModel()).validate(model);
+        return Validator.fromOntModel(getOntology().getOntModel()).validate(model);
     }
         
-    public OntModel getOntModel()
+    public Ontology getOntology()
     {
-	ContextResolver<OntModel> cr = getProviders().getContextResolver(OntModel.class, null);
-	return cr.getContext(OntModel.class);
+	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+	return cr.getContext(Ontology.class);
     }
 
     public Providers getProviders()

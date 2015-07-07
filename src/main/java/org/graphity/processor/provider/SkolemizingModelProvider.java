@@ -17,7 +17,7 @@
 package org.graphity.processor.provider;
 
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
@@ -52,7 +52,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         {
             try
             {
-                return skolemize(getServletConfig(), getUriInfo(), getOntModel(), getOntClass(), new OntClassMatcher(), model);
+                return skolemize(getServletConfig(), getUriInfo(), getOntology(), getOntClass(), new OntClassMatcher(), model);
             }
             catch (IllegalArgumentException ex)
             {
@@ -69,9 +69,9 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         return model;
     }
     
-    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, OntModel ontModel, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model) throws ConfigurationException
+    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model) throws ConfigurationException
     {
-        return Skolemizer.fromOntModel(ontModel).
+        return Skolemizer.fromOntology(ontology).
                 servletConfig(servletConfig).
                 uriInfo(uriInfo).
                 ontClass(ontClass).

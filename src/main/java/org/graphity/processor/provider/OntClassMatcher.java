@@ -389,7 +389,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
         qsm.add(OWL.allValuesFrom.getLocalName(), ontClass);
 
-        QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
+        QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.restrictionsQuery), qsm), ontology.getOntModel());
         try
         {
             Map<Property, List<OntClass>> matchedClasses = matchOntClasses(qex.execSelect());

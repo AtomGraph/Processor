@@ -215,7 +215,7 @@
 # RESOURCE TEMPLATES
 
 <#Space> a rdfs:Class, owl:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document, sioc:Space, sioc:Container, <#Container> ;
+    rdfs:subClassOf foaf:Document, sioc:Space; # sioc:Container, <#Container> ;
     <#uriTemplate> "/" ;
     <#query> <#DescribeWithChildren> ;
     <#template> <#SpaceConstructor> ;

@@ -17,7 +17,6 @@
 package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -61,7 +60,7 @@ public class Skolemizer
     private ServletConfig servletConfig;
     private Ontology ontology;
     private OntClass ontClass;
-    private OntModel ontModel;
+    // private OntModel ontModel;
     private OntClassMatcher ontClassMatcher;
     
     protected Skolemizer()
@@ -87,16 +86,18 @@ public class Skolemizer
         return this;
     }
 
+    /*
     public Skolemizer ontModel(OntModel ontModel)
     {
 	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
         this.ontModel = ontModel;
         return this;
     }
-
+    */
+    
     public Skolemizer ontClassMatcher(OntClassMatcher ontClassMatcher)
     {
-	if (ontClassMatcher == null) throw new IllegalArgumentException("OntModel cannot be null");
+	if (ontClassMatcher == null) throw new IllegalArgumentException("OntClassMatcher cannot be null");
         this.ontClassMatcher = ontClassMatcher;
         return this;
     }
@@ -115,11 +116,18 @@ public class Skolemizer
         return this;
     }
 
+    /*
     public static Skolemizer fromOntModel(OntModel ontModel)
     {
         return newInstance().ontModel(ontModel);
     }
-    
+    */
+
+    public static Skolemizer fromOntology(Ontology ontology)
+    {
+        return newInstance().ontology(ontology);
+    }
+
     public Model build(Model model) throws ConfigurationException
     {
     	if (model == null) throw new IllegalArgumentException("Model cannot be null");
@@ -202,15 +210,13 @@ public class Skolemizer
                 OntClass docClass = getOntClassMatcher().matchOntClass(doc, getOntClass());
                 if (docClass != null)
                 {
-                    /*
                     Map<Property, List<OntClass>> matchingClasses =
-                            getOntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), FOAF.isPrimaryTopicOf, docClass);
+                            getOntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), docClass);
                     if (!matchingClasses.isEmpty())
                     {
                         OntClass topicClass = matchingClasses.values().iterator().next().get(0);
                         return build(resource, UriBuilder.fromUri(getBaseResource(doc).getURI()), topicClass);
                     }
-                    */
                 }
             }
         }
@@ -349,11 +355,13 @@ public class Skolemizer
         return ontClass;
     }
     
+    /*
     public OntModel getOntModel()
     {
         return ontModel;
     }
-
+    */
+    
     public OntClassMatcher getOntClassMatcher()
     {
         return ontClassMatcher;

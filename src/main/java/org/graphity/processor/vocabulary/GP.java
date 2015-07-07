@@ -114,6 +114,8 @@ public final class GP
 
     public static final DatatypeProperty templatesQuery = m_model.createDatatypeProperty( NS + "templatesQuery" );
 
+    public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
+
     public static final ObjectProperty mode = m_model.createObjectProperty( NS + "mode" );
     
     public static final ObjectProperty constructorOf = m_model.createObjectProperty( NS + "constructorOf" );
