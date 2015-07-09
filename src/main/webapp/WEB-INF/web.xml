@@ -55,66 +55,101 @@ PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 CONSTRUCT
 {
     ?Template a owl:Class, gp:Template ;
-        ?AnnotationProperty ?value ;
+        # ?AnnotationProperty ?value ;
+        gp:uriTemplate ?uriTemplate ;
+        gp:query ?query ;
+        gp:template ?construct ;
+        gp:subClassOf ?subClassOf ; # for debug purposes
+        gp:subClassOf1 ?subClassOf1 ; # for debug purposes
+        # rdfs:subClassOf ?Restriction ;
         rdfs:isDefinedBy ?isDefinedBy .
+    #?Restriction a owl:Restriction ;
+    #    owl:onProperty ?onProperty .
 }
 {
     # ?Template rdfs:subClassOf* foaf:Document
     ?Template a owl:Class, gp:Template ;
         rdfs:isDefinedBy ?isDefinedBy .
-        # gp:query ?query ;
-        # gp:template ?construct . # rename property to gp:construct(or) ?
-    ?AnnotationProperty a owl:AnnotationProperty ;
-        rdfs:isDefinedBy gp: .
+    #?AnnotationProperty a owl:AnnotationProperty ;
+    #    rdfs:isDefinedBy gp: .
     # three levels of annotation inheritance:
     {
-        ?Template ?AnnotationProperty ?value .
+        ?Template gp:uriTemplate ?uriTemplate .
     }
     UNION
     {
-        FILTER NOT EXISTS
+       FILTER NOT EXISTS { ?Template gp:uriTemplate ?TemplateUriTemplate . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf gp:uriTemplate ?uriTemplate .
+    }
+    UNION
+    {
+       FILTER NOT EXISTS { ?Template gp:uriTemplate ?TemplateUriTemplate . } 
+       FILTER NOT EXISTS { ?subClassOf gp:uriTemplate ?subClassOfUriTemplate . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf rdfs:subClassOf ?subClassOf1 .
+       ?subClassOf1 gp:uriTemplate ?uriTemplate .
+    }
+    {
+        ?Template gp:query ?query .
+    }
+    UNION
+    {
+       FILTER NOT EXISTS { ?Template gp:query ?TemplateQuery . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf gp:query ?query .
+    }
+    UNION
+    {
+       FILTER NOT EXISTS { ?Template gp:query ?TemplateQuery . } 
+       FILTER NOT EXISTS { ?subClassOf gp:query ?subClassOfQuery . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf rdfs:subClassOf ?subClassOf1 .
+       ?subClassOf1 gp:query ?query .
+    }
+    {
+        ?Template gp:query ?query .
+    }
+    UNION
+    {
+       FILTER NOT EXISTS { ?Template gp:query ?TemplateQuery . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf gp:query ?query .
+    }
+    UNION
+    {
+       FILTER NOT EXISTS { ?Template gp:query ?TemplateQuery . } 
+       FILTER NOT EXISTS { ?subClassOf gp:query ?subClassOfQuery . } 
+       ?Template rdfs:subClassOf ?subClassOf .
+       ?subClassOf rdfs:subClassOf ?subClassOf1 .
+       ?subClassOf1 gp:query ?query .
+    }
+    OPTIONAL
+    {
         {
-            ?Template ?AnnotationProperty ?value .
-        }
-        ?Template rdfs:subClassOf ?subClassOf .
-        {
-            ?subClassOf ?AnnotationProperty ?value .
+            ?Template gp:template ?construct .
         }
         UNION
         {
-            FILTER NOT EXISTS
-            {
-                ?subClassOf ?AnnotationProperty ?value .
-            }
-            ?subClassOf rdfs:subClassOf ?subClassOf1 .
-            {
-                ?subClassOf1 ?AnnotationProperty ?value .
-            }
+           FILTER NOT EXISTS { ?Template gp:template ?TemplateConstruct . } 
+           ?Template rdfs:subClassOf ?subClassOf .
+           ?subClassOf gp:template ?construct .
+        }
+        UNION
+        {
+           FILTER NOT EXISTS { ?Template gp:template ?TemplateConstruct . } 
+           FILTER NOT EXISTS { ?subClassOf gp:template ?subClassOfConstruct . } 
+           ?Template rdfs:subClassOf ?subClassOf .
+           ?subClassOf rdfs:subClassOf ?subClassOf1 .
+           ?subClassOf1 gp:template ?construct .
         }
     }
-    FILTER (?AnnotationProperty IN (gp:uriTemplate, gp:query, gp:template))
+    # FILTER (?AnnotationProperty IN (gp:uriTemplate, gp:query, gp:template))
     FILTER (?Template != gp:SPARQLEndpoint)
     FILTER (?Template != gp:GraphStore)
     # FILTER (isURI(?query) || isBlank(?query))
     # FILTER (isURI(?construct) || isBlank(?construct))
     # FILTER isLiteral(?uriTemplate)
-    OPTIONAL {
-        ?Template rdfs:subClassOf ?Restriction .
-        ?Restriction a owl:Restriction ;
-            owl:onProperty ?onProperty .
-        # ?onProperty a owl:ObjectProperty .
-        {
-            ?Restriction owl:allValuesFrom ?allValuesFrom
-        }
-        UNION
-        {
-            ?Restriction owl:allValuesFrom [ a owl:Class ;
-                owl:unionOf [
-                    rdf:rest*/rdf:first ?allValuesFrom
-                ]
-            ]
-        }
-    }
 }
 ]]></param-value>
         </init-param>

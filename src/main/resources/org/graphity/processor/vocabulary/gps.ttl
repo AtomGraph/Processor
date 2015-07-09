@@ -28,32 +28,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # templates
 
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, # gp:Container, 
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_parent ;
-            owl:allValuesFrom gp:Space
-        ] ;
-    gp:uriTemplate "/templates" ;
-    gp:defaultLimit 20 ;
+    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+        #[ a owl:Restriction ;
+        #    owl:onProperty sioc:has_parent ;
+        #    owl:allValuesFrom gp:Container
+        #] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
-    gp:query gp:DescribeWithChildren ;
-    gp:template gp:ContainerConstructor ;
+    gp:uriTemplate "/templates" ;
     rdfs:label "Template container" ;
     rdfs:isDefinedBy <#> .
 
 <#TemplateItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, # gp:Item,
+    rdfs:subClassOf foaf:Document, gp:Item,
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#TemplateContainer>
         ] ;
-    gp:uriTemplate "/templates/{item}" ;
-    gp:skolemTemplate "/{slug}" ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:query gp:DescribeWithTopic ;
-    gp:update gp:DeleteWithTopic ;
+    gp:uriTemplate "/templates/{item}" ;
     gp:template <#TemplateItemConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#TemplateItem> ;
@@ -123,32 +117,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # queries
 
 <#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, # gp:Container, 
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_parent ;
-            owl:allValuesFrom gp:Space
-        ] ;
-    gp:uriTemplate "/queries" ;
-    gp:defaultLimit 20 ;
+    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+        #[ a owl:Restriction ;
+        #    owl:onProperty sioc:has_parent ;
+        #    owl:allValuesFrom gp:Space
+        #] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
-    gp:query gp:DescribeWithChildren ;
-    gp:template gp:ContainerConstructor ;
+    gp:uriTemplate "/queries" ;
     rdfs:label "Query container" ;
     rdfs:isDefinedBy <#> .
 
 <#QueryItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, # gp:Item, 
+    rdfs:subClassOf foaf:Document, gp:Item, 
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#QueryContainer>
         ] ;
-    gp:uriTemplate "/queries/{item}" ;
-    gp:skolemTemplate "/{slug}" ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:query gp:DescribeWithTopic ;
-    gp:update gp:DeleteWithTopic ;
+    gp:uriTemplate "/queries/{item}" ;
     gp:template <#QueryItemConstructor> ;
     spin:constraint [ a dqc:MissingProperties ;
 	    sp:arg1 <#QueryItem> ;
@@ -202,7 +190,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # lookup
 
 <#LabelResourcesContainer> a owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container ; # gp:Container, 
+    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
     gp:uriTemplate "/resources/labelled" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;
     gp:defaultLimit 20 ;

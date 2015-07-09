@@ -148,6 +148,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
         QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.templatesQuery), qsm), ontology.getOntModel());
         Model templates = qex.execConstruct();
+        ontology.getOntModel().add(templates); // hack?
         try
         {
             return matchOntClasses(servletConfig, templates, ontology, path);
@@ -338,8 +339,8 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         uriTemplateOntClassMap.putAll(matchOntClasses(servletConfig, ontology, path));
         if (!uriTemplateOntClassMap.isEmpty())
         {
-            if (log.isDebugEnabled()) log.debug("Matched UriTemplate: {} OntClass: {}", uriTemplateOntClassMap.firstKey(), uriTemplateOntClassMap.firstEntry().getValue());
             List<OntClass> matchedOntClasses = uriTemplateOntClassMap.firstEntry().getValue();
+            if (log.isDebugEnabled()) log.debug("Matched UriTemplate: {} OntClass: {}", uriTemplateOntClassMap.firstKey(), matchedOntClasses);
             if (matchedOntClasses.size() > 1)
                 if (log.isWarnEnabled()) log.warn("URI '{}' was matched by more than one gp:Template: {}", path, matchedOntClasses);
             return matchedOntClasses.get(0);

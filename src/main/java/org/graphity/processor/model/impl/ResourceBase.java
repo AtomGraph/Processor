@@ -575,141 +575,144 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public Model addHypermedia(Model model)
     {
-        try
-        {
-            Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-            childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), getMatchedOntClass()));
-            //childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
-
-            Iterator<List<OntClass>> it = childrenClasses.values().iterator();
-            while (it.hasNext())
+	//if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
+	{
+            try
             {
-                List<OntClass> forClasses = it.next();
-                Iterator<OntClass> forIt = forClasses.iterator();
-                while (forIt.hasNext())
-                {
-                    OntClass forClass = forIt.next();
-                    String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                        Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                            addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.forClass, forClass).
-                            addProperty(GP.constructorOf, this);
-                }
-            }
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
-        finally
-        {
-            //it.close();
-        }
+                Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
+                childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), getMatchedOntClass()));
+                //childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
 
-        ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
-        try
-        {
-            while (resIt.hasNext())
-            {
-                Resource childContainer = resIt.next();
-                URI childURI = URI.create(childContainer.getURI());
-                //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
-                OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
-                Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), childClass));
-
-                Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
-                while (gccIt.hasNext())
+                Iterator<List<OntClass>> it = childrenClasses.values().iterator();
+                while (it.hasNext())
                 {
-                    List<OntClass> forClasses = gccIt.next();
+                    List<OntClass> forClasses = it.next();
                     Iterator<OntClass> forIt = forClasses.iterator();
                     while (forIt.hasNext())
                     {
                         OntClass forClass = forIt.next();
-                        String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                        Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                            addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.forClass, forClass).                                    
-                            addProperty(GP.constructorOf, childContainer);
+                        String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                                addProperty(RDF.type, FOAF.Document).
+                                addProperty(RDF.type, GP.Constructor).
+                                addProperty(GP.forClass, forClass).
+                                addProperty(GP.constructorOf, this);
                     }
                 }
-            }
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
-        finally
-        {
-            //resIt.close();
-        }
-
-        if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
-        {
-            try
-            {
-                if (!getUriInfo().getQueryParameters().containsKey(GP.forClass.getLocalName()))
-                    throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value not supplied");
-
-                URI forClassURI = new URI(getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
-                OntClass forClass = getOntModel().createClass(forClassURI.toString());
-                if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
-
-                Query templateQuery = getQuery(forClass, GP.template);
-                if (templateQuery == null)
-                {
-                    if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
-                    throw new ConfigurationException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
-                }
-
-                QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
-                Model templateModel = qex.execConstruct();
-                model.add(templateModel);
-                if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
-                qex.close();
             }
             catch (ConfigurationException ex)
             {
-                throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+                throw new WebApplicationException(ex);
             }
-            catch (URISyntaxException ex)
+            finally
             {
-                if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but gp:forClass value is not a URI: '{}'", getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
-                throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
+                //it.close();
             }
-        }
-        else
-        {                    
-            if (getLimit() != null)
+            
+            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
+            try
             {
-                if (log.isDebugEnabled()) log.debug("Adding Page metadata: gp:pageOf {}", this);
-                String pageURI = getStateUriBuilder(getOffset(), getLimit(), getOrderBy(), getDesc(), null).build().toString();
-                Resource page = createState(model.createResource(pageURI), getOffset(), getLimit(), getOrderBy(), getDesc(), null).
-                        addProperty(RDF.type, FOAF.Document).
-                        addProperty(RDF.type, GP.Page).
-                        addProperty(GP.pageOf, this);
-
-                if (getOffset() != null && getLimit() != null)
+                while (resIt.hasNext())
                 {
-                    if (getOffset() >= getLimit())
-                    {
-                        String prevURI = getStateUriBuilder(getOffset() - getLimit(), getLimit(), getOrderBy(), getDesc(), getMode()).build().toString();
-                        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", getURI(), prevURI);
-                        page.addProperty(XHV.prev, model.createResource(prevURI));
-                    }
+                    Resource childContainer = resIt.next();
+                    URI childURI = URI.create(childContainer.getURI());
+                    //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
+                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
+                    Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
+                    grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), childClass));
 
-                    // no way to know if there's a next page without counting results (either total or in current page)
-                    //int subjectCount = describe().listSubjects().toList().size();
-                    //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
-                    //if (subjectCount >= getLimit())
+                    Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
+                    while (gccIt.hasNext())
                     {
-                        String nextURI = getStateUriBuilder(getOffset() + getLimit(), getLimit(), getOrderBy(), getDesc(), getMode()).build().toString();
-                        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", getURI(), nextURI);
-                        page.addProperty(XHV.next, model.createResource(nextURI));
+                        List<OntClass> forClasses = gccIt.next();
+                        Iterator<OntClass> forIt = forClasses.iterator();
+                        while (forIt.hasNext())
+                        {
+                            OntClass forClass = forIt.next();
+                            String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                                addProperty(RDF.type, FOAF.Document).
+                                addProperty(RDF.type, GP.Constructor).
+                                addProperty(GP.forClass, forClass).                                    
+                                addProperty(GP.constructorOf, childContainer);
+                        }
+                    }
+                }
+            }
+            catch (ConfigurationException ex)
+            {
+                throw new WebApplicationException(ex);
+            }
+            finally
+            {
+                //resIt.close();
+            }
+
+            if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+            {
+                try
+                {
+                    if (!getUriInfo().getQueryParameters().containsKey(GP.forClass.getLocalName()))
+                        throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value not supplied");
+
+                    URI forClassURI = new URI(getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
+                    OntClass forClass = getOntModel().createClass(forClassURI.toString());
+                    if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
+
+                    Query templateQuery = getQuery(forClass, GP.template);
+                    if (templateQuery == null)
+                    {
+                        if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
+                        throw new ConfigurationException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
+                    }
+                    
+                    QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
+                    Model templateModel = qex.execConstruct();
+                    model.add(templateModel);
+                    if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
+                    qex.close();
+                }
+                catch (ConfigurationException ex)
+                {
+                    throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+                }
+                catch (URISyntaxException ex)
+                {
+                    if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but gp:forClass value is not a URI: '{}'", getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
+                    throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
+                }
+            }
+            else
+            {                    
+                if (getLimit() != null)
+                {
+                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: gp:pageOf {}", this);
+                    String pageURI = getStateUriBuilder(getOffset(), getLimit(), getOrderBy(), getDesc(), null).build().toString();
+                    Resource page = createState(model.createResource(pageURI), getOffset(), getLimit(), getOrderBy(), getDesc(), null).
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Page).
+                            addProperty(GP.pageOf, this);
+
+                    if (getOffset() != null && getLimit() != null)
+                    {
+                        if (getOffset() >= getLimit())
+                        {
+                            String prevURI = getStateUriBuilder(getOffset() - getLimit(), getLimit(), getOrderBy(), getDesc(), getMode()).build().toString();
+                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", getURI(), prevURI);
+                            page.addProperty(XHV.prev, model.createResource(prevURI));
+                        }
+
+                        // no way to know if there's a next page without counting results (either total or in current page)
+                        //int subjectCount = describe().listSubjects().toList().size();
+                        //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
+                        //if (subjectCount >= getLimit())
+                        {
+                            String nextURI = getStateUriBuilder(getOffset() + getLimit(), getLimit(), getOrderBy(), getDesc(), getMode()).build().toString();
+                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", getURI(), nextURI);
+                            page.addProperty(XHV.next, model.createResource(nextURI));
+                        }
                     }
                 }
             }
