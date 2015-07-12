@@ -188,7 +188,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 }
                 queryBuilder = QueryBuilder.fromQuery(query, getModel());
             
-                if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
+                if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
                 {
                     if (queryBuilder.getSubSelectBuilders().isEmpty())
                     {
@@ -217,9 +217,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                             limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
                         else
                         {
-                            Long defaultLimit =  getLongValue(getMatchedOntClass(), GP.defaultLimit);
+                            Long defaultLimit = getLongValue(getMatchedOntClass(), GP.defaultLimit);
                             //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
-                            this.limit = defaultLimit;                        
+                            this.limit = defaultLimit;
                         }
 
                         if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
@@ -344,7 +344,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         // gp:Container always redirect to first gp:Page
-	if ((getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
+	if ((getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
             && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
@@ -448,7 +448,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
                 ObjectProperty memberProperty = SIOC.HAS_CONTAINER;
                 // use actual this resource types instead?
-                if (getMatchedOntClass().hasSuperClass(GP.Container) && res.hasProperty(RDF.type, GP.Container))
+                if (hasSuperClass(getMatchedOntClass(), GP.Container) && res.hasProperty(RDF.type, GP.Container))
                     memberProperty = SIOC.HAS_PARENT;
 
                 if (!res.hasProperty(memberProperty))
@@ -566,6 +566,19 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return addHypermedia(super.describe());
     }
 
+    public boolean hasSuperClass(OntClass subClass, OntClass superClass)
+    {
+        ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
+        
+        while (extIt.hasNext())
+        {
+            OntClass nextClass = extIt.next();
+            if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
+        }
+
+        return false;
+    }
+    
     /**
      * Adds run-time metadata to RDF description.
      * In case a container is requested, page resource with HATEOS previous/next links is added to the model.
@@ -575,13 +588,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public Model addHypermedia(Model model)
     {
-	//if (getMatchedOntClass().equals(GP.Container) || getMatchedOntClass().hasSuperClass(GP.Container))
+	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
             try
             {
                 Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
                 childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), getMatchedOntClass()));
-                //childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
 
                 Iterator<List<OntClass>> it = childrenClasses.values().iterator();
                 while (it.hasNext())
@@ -617,7 +629,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 {
                     Resource childContainer = resIt.next();
                     URI childURI = URI.create(childContainer.getURI());
-                    //OntClass childClass = new OntClassMatcher().matchOntClass(getOntModel(), childURI, getUriInfo().getBaseUri());
                     OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
                     Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
                     grandChildrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), childClass));

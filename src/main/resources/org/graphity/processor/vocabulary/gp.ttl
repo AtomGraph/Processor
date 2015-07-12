@@ -214,21 +214,21 @@
 
 # RESOURCE TEMPLATES
 
-<#Space> a rdfs:Class, owl:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document, sioc:Space; # sioc:Container, <#Container> ;
-    <#uriTemplate> "/" ;
-    <#query> <#DescribeWithChildren> ;
-    <#template> <#SpaceConstructor> ;
-    <#defaultLimit> 20 ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#Space> ;
-	    sp:arg2 <#slug>
-	] , [ a <#MissingType> ;
-	    sp:arg1 foaf:Document
-	] ;
-     rdfs:label "Space" ;
-     rdfs:comment "Application space that all resources belong to (usually also root container)" ;
-     rdfs:isDefinedBy <#> .
+#<#Space> a rdfs:Class, owl:Class, <#Template> ;
+#    rdfs:subClassOf foaf:Document, sioc:Space ;
+#    <#uriTemplate> "/" ;
+#    <#query> <#DescribeWithChildren> ;
+#    <#template> <#SpaceConstructor> ;
+#    <#defaultLimit> 20 ;
+#    spin:constraint [ a dqc:MissingProperties ;
+#	    sp:arg1 <#Space> ;
+#	    sp:arg2 <#slug>
+#	] , [ a <#MissingType> ;
+#	    sp:arg1 foaf:Document
+#	] ;
+#     rdfs:label "Space" ;
+#     rdfs:comment "Application space that all resources belong to (usually also root container)" ;
+#     rdfs:isDefinedBy <#> .
 
 <#SpaceConstructor> a       sp:Construct ;
   sp:text """
@@ -251,7 +251,7 @@
             owl:onProperty sioc:has_parent ;
             owl:allValuesFrom <#Container>
         ] ;
-    <#uriTemplate> "/{container}" ;
+    <#uriTemplate> "/{path: [^/]*}" ; # ([^/]+?)
     <#skolemTemplate> "/{slug}" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
@@ -286,8 +286,12 @@
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#Container>
+        ] ,
+        [ a owl:Restriction ;
+            owl:onProperty sioc:has_space ;
+            owl:allValuesFrom <#Space>
         ] ;
-    <#uriTemplate> "/{container}/{item}" ;
+    <#uriTemplate> "/{container: [^/]*}/{path: [^/]*}" ;
     <#skolemTemplate> "/{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;

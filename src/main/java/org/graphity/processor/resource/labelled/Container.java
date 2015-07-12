@@ -61,7 +61,8 @@ public class Container extends ResourceBase
     {
         super.init();
 
-	if (!(getSearchString() == null || getSearchString().isEmpty()) && getMatchedOntClass().hasSuperClass(GP.Container) &&
+	if (!(getSearchString() == null || getSearchString().isEmpty()) &&
+                hasSuperClass(getMatchedOntClass(), GP.Container) &&
                 getSubSelectBuilder() != null)
 	{
             getSubSelectBuilder().filter(RDFS.label.getLocalName(), getQueryBuilder().quoteRegexMeta(getSearchString())); // escape special regex() characters!

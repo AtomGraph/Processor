@@ -49,10 +49,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/templates/{item}" ;
     gp:template <#TemplateItemConstructor> ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#TemplateItem> ;
-	    sp:arg2 gp:slug
-	] ;
+#    spin:constraint [ a dqc:MissingProperties ;
+#	    sp:arg1 <#TemplateItem> ;
+#	    sp:arg2 gp:slug
+#	] ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
 
@@ -138,10 +138,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{item}" ;
     gp:template <#QueryItemConstructor> ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#QueryItem> ;
-	    sp:arg2 gp:slug
-	] ;
+#    spin:constraint [ a dqc:MissingProperties ;
+#	    sp:arg1 <#QueryItem> ;
+#	    sp:arg2 gp:slug
+#	] ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 

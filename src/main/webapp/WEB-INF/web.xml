@@ -157,6 +157,7 @@ CONSTRUCT
             <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
             <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>
+PREFIX gpl:	<http://graphity.org/gpl#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX owl:	<http://www.w3.org/2002/07/owl#>
 PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
@@ -166,33 +167,10 @@ SELECT *
 {
     # ?Template rdfs:subClassOf* foaf:Document
     ?Template a owl:Class, gp:Template ;
-    {
-        ?Template rdfs:subClassOf ?Restriction .
-    }
-    UNION
-    {
-        FILTER NOT EXISTS
-        {
-            ?Template rdfs:subClassOf ?Restriction .                
-        }
-        ?Template rdfs:subClassOf ?subClassOf .
-        {
-            ?subClassOf rdfs:subClassOf ?Restriction .                
-        }
-        #UNION
-        #{
-        #    FILTER NOT EXISTS
-        #    {
-        #        ?subClassOf rdfs:subClassOf ?Restriction .                
-        #    }
-        #    ?subClassOf rdfs:subClassOf ?subClassOf1 .
-        #    {
-        #        Y
-        #    }
-        #}
-    }                
+        rdfs:subClassOf ?Restriction .
     ?Restriction a owl:Restriction ;
         owl:onProperty ?onProperty .
+    FILTER (?Template != gpl:GraphContainer)
     FILTER (?onProperty IN (sioc:has_parent, sioc:has_container))
     # ?onProperty a owl:ObjectProperty .
     {
