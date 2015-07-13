@@ -19,7 +19,7 @@ package org.graphity.processor.mapper;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.graphity.processor.exception.NotFoundException;
+import org.graphity.core.exception.NotFoundException;
 
 /**
  *
@@ -27,15 +27,6 @@ import org.graphity.processor.exception.NotFoundException;
  */
 public class NotFoundExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<NotFoundException>
 {
-    
-    //private final MediaTypes mediaTypes;
-    
-    /*
-    public NotFoundExceptionMapper(@Context MediaTypes mediaTypes)
-    {
-        this.mediaTypes = mediaTypes;
-    }
-    */      
     
     @Override
     public Response toResponse(NotFoundException ex)

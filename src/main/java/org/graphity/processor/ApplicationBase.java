@@ -67,7 +67,6 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         super(servletConfig);
         
 	classes.add(ResourceBase.class); // handles /
-        //classes.add(NotFoundExceptionMapper.class);
 
 	singletons.add(new SkolemizingModelProvider());
 	singletons.add(new ResultSetWriter());

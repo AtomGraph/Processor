@@ -214,37 +214,6 @@
 
 # RESOURCE TEMPLATES
 
-#<#Space> a rdfs:Class, owl:Class, <#Template> ;
-#    rdfs:subClassOf foaf:Document, sioc:Space ;
-#    <#uriTemplate> "/" ;
-#    <#query> <#DescribeWithChildren> ;
-#    <#template> <#SpaceConstructor> ;
-#    <#defaultLimit> 20 ;
-#    spin:constraint [ a dqc:MissingProperties ;
-#	    sp:arg1 <#Space> ;
-#	    sp:arg2 <#slug>
-#	] , [ a <#MissingType> ;
-#	    sp:arg1 foaf:Document
-#	] ;
-#     rdfs:label "Space" ;
-#     rdfs:comment "Application space that all resources belong to (usually also root container)" ;
-#     rdfs:isDefinedBy <#> .
-
-<#SpaceConstructor> a       sp:Construct ;
-  sp:text """
-      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-      PREFIX gp:      <http://graphity.org/gp#>
-      PREFIX dct:     <http://purl.org/dc/terms/>
-
-      CONSTRUCT {
-          _:this a foaf:Document, gp:Space, sioc:Space, gp:Container, sioc:Container ;
-              gp:slug " "^^xsd:string ;
-              dct:title " " .
-      }
-      WHERE {}""" .
-
 <#Container> a rdfs:Class, owl:Class, <#Template> ;
     rdfs:subClassOf foaf:Document, sioc:Container ,
         [ a owl:Restriction ;
@@ -286,10 +255,6 @@
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#Container>
-        ] ,
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_space ;
-            owl:allValuesFrom <#Space>
         ] ;
     <#uriTemplate> "/{container: [^/]*}/{path: [^/]*}" ;
     <#skolemTemplate> "/{slug}" ;
@@ -395,10 +360,6 @@ DESCRIBE ?this ?doc ?thing WHERE {
             {
                 SELECT DISTINCT ?doc ?thing
                 WHERE {
-                    {
-                        ?doc sioc:has_space ?this
-                    }
-                    UNION
                     {
                         ?doc sioc:has_parent ?this
                     }

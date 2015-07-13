@@ -16,7 +16,6 @@
 
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import java.io.IOException;

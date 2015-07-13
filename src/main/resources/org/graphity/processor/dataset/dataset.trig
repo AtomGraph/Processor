@@ -9,7 +9,7 @@
 @prefix gp:	<http://graphity.org/gp#> .
 @prefix gps:	<http://graphity.org/gps#> .
 
-<> a sioc:Space, gp:Space, sioc:Container, gp:Container, foaf:Document ;
+<> a sioc:Space, sioc:Container, gp:Container, foaf:Document ;
     dct:title "Graphity Processor" ;
     dct:description "Generic Linked Data processor" ;
     foaf:maker <http://graphityhq.com/#company> ;

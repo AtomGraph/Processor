@@ -47,7 +47,7 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import org.graphity.core.MediaTypes;
-import org.graphity.processor.exception.NotFoundException;
+import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.InsertDataBuilder;
 import org.graphity.core.util.Link;
