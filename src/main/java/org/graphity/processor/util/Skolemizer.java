@@ -36,10 +36,10 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
@@ -224,7 +224,7 @@ public class Skolemizer
         return null;
     }
 
-    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass)
+    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass) throws ConfigurationException
     {
         // build URI relative to absolute path
         return build(resource, baseBuilder, getSkolemTemplate(ontClass, GP.skolemTemplate));
@@ -241,16 +241,7 @@ public class Skolemizer
         // add fragment identifier for non-information resources
         if (!resource.hasProperty(RDF.type, FOAF.Document)) builder.fragment("this"); // FOAF.isPrimaryTopicOf?
 
-        try
-        {
-            return build(resource, new UriTemplateParser(itemTemplate), builder);
-        }
-        catch (IllegalArgumentException ex)
-        {
-            if (log.isDebugEnabled()) log.debug("Building URI from resource {} failed", resource);
-            throw new IllegalArgumentException("POSTed Resources '" + resource + "' is missing properties required by its URI template '" + itemTemplate + "'");
-            // map to WebApplicationException
-        }
+        return build(resource, new UriTemplateParser(itemTemplate), builder);
     }
     
     protected URI build(Resource resource, UriTemplateParser parser, UriBuilder builder)
@@ -334,7 +325,7 @@ public class Skolemizer
 	return null;
     }
 
-    protected String getSkolemTemplate(OntClass ontClass, Property property)
+    protected String getSkolemTemplate(OntClass ontClass, Property property) throws ConfigurationException
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
@@ -342,7 +333,8 @@ public class Skolemizer
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
             return ontClass.getPropertyValue(property).asLiteral().getString();
         
-        return null;
+        if (log.isErrorEnabled()) log.error("Property '{}' not defined for template '{}'", property, ontClass);
+        throw new ConfigurationException("gp:skolemTemplate not defined for '" + ontClass.getURI() +"'");
     }
 
     public UriInfo getUriInfo()

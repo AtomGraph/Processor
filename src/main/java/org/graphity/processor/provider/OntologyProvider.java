@@ -24,15 +24,14 @@ import com.hp.hpl.jena.ontology.Ontology;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,8 +95,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
     public Ontology getOntology()
     {
-        try
-        {
+        //try
+        //{
             Ontology ontology = getOntology(getServletConfig(), GP.sitemap);
             if (ontology == null)
             {
@@ -105,11 +104,11 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
                 throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
             }
             return ontology;
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
+        //}
+        //catch (ConfigurationException ex)
+        //{
+        //    throw new WebApplicationException(ex);
+        //}
     }
     
     /**
@@ -128,7 +127,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return ontModel.getOntology(ontologyURI);
     }
             
-    public Ontology getOntology(ServletConfig servletConfig, ObjectProperty property) throws ConfigurationException
+    public Ontology getOntology(ServletConfig servletConfig, ObjectProperty property) // throws ConfigurationException
     {
         String ontologyURI = getOntologyURI(servletConfig, property);
         if (ontologyURI == null)

@@ -50,13 +50,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -100,14 +100,14 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
     public OntClass getOntClass()
     {
-        try
-        {
+        //try
+        //{
             return matchOntClass(getServletConfig(), getOntology(), getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
+        //}
+        //catch (ConfigurationException ex)
+        //{
+        //    throw new WebApplicationException(ex);
+        //}
     }
     
     /**
@@ -118,9 +118,8 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param uri absolute URI being matched
      * @param base base URI
      * @return matching ontology class or null, if none
-     * @throws javax.naming.ConfigurationException
      */
-    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, URI uri, URI base) throws ConfigurationException
+    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, URI uri, URI base) // throws ConfigurationException
     {
 	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
 	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
@@ -141,7 +140,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         return new ParameterizedSparqlString(query.toString(), qsm).asQuery();
     }
     
-    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, CharSequence path) throws ConfigurationException
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, CharSequence path) // throws ConfigurationException
     {
         QuerySolutionMap qsm = new QuerySolutionMap();
         qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
@@ -168,77 +167,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param ontology sitemap ontology
      * @param path URI path
      * @return URI template/class mapping
-     * @throws javax.naming.ConfigurationException
-     */
-    /*
-    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, ResultSet templates, Ontology ontology, CharSequence path) throws ConfigurationException
-    {
-        if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
-        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
-        if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
-
-        if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
-        Map<UriTemplate, List<OntClass>> matchedClasses = new HashMap<>();
-
-        while (templates.hasNext())
-        {
-            QuerySolution solution = templates.next();
-            Resource template = solution.getResource(GP.Template.getLocalName());
-            if (solution.contains(GP.uriTemplate.getLocalName()))
-            {
-                UriTemplate uriTemplate = new UriTemplate(solution.getLiteral(GP.uriTemplate.getLocalName()).getString());
-                HashMap<String, String> map = new HashMap<>();
-
-                if (uriTemplate.match(path, map))
-                {
-                    OntClass ontClass = ontology.getOntModel().getOntResource(template).asClass();
-                    if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
-                    if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
-
-                    if (!matchedClasses.containsKey(uriTemplate))
-                        matchedClasses.put(uriTemplate, new ArrayList<OntClass>());
-                    matchedClasses.get(uriTemplate).add(ontClass);
-                }
-                else
-                    if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
-            }
-        }
-
-        if (matchedClasses.isEmpty())
-        {
-            ExtendedIterator<OntResource> imports = ontology.listImports();
-            try
-            {
-                while (imports.hasNext())
-                {
-                    OntResource importRes = imports.next();
-                    if (importRes.canAs(Ontology.class))
-                    {
-                        Ontology importedOntology = importRes.asOntology();
-                        // traverse imports recursively
-                        Map<UriTemplate, List<OntClass>> matchedImportClasses = matchOntClasses(servletConfig, importedOntology, path);
-                        Iterator<Entry<UriTemplate, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
-                        while (entries.hasNext())
-                        {
-                            Entry<UriTemplate, List<OntClass>> entry = entries.next();
-                            if (matchedClasses.containsKey(entry.getKey()))
-                                matchedClasses.get(entry.getKey()).addAll(entry.getValue());
-                            else
-                                matchedClasses.put(entry.getKey(), entry.getValue());
-                        }
-                    }
-                }
-            }
-            finally
-            {
-                imports.close();
-            }
-        }
-
-        return matchedClasses;
-    }   
-    */
-    
+     */    
     public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Model templates, Ontology ontology, CharSequence path) throws ConfigurationException
     {
         if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
@@ -257,7 +186,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                 if (!template.hasProperty(GP.uriTemplate))
                 {
                     if (log.isDebugEnabled()) log.debug("gp:templatesQuery does not return {} value for {}", GP.uriTemplate, template);
-                    throw new WebApplicationException(new ConfigurationException("gp:templatesQuery does not return " + GP.uriTemplate + " value for " + template));
+                    throw new ConfigurationException("gp:templatesQuery does not return " + GP.uriTemplate + " value for " + template);
                 }
                 
                 UriTemplate uriTemplate = new UriTemplate(template.getProperty(GP.uriTemplate).getString());
@@ -325,12 +254,11 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param ontology sitemap ontology model
      * @param path absolute path (relative URI)
      * @return matching ontology class or null, if none
-     * @throws javax.naming.ConfigurationException
-     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
+d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
-    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, CharSequence path) throws ConfigurationException
+    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, CharSequence path) // throws ConfigurationException
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
@@ -380,7 +308,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         return null;
     }
 
-    public Map<Property, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) throws ConfigurationException
+    public Map<Property, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) // throws ConfigurationException
     {
 	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
@@ -434,7 +362,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         }
     }
     
-    public Map<Property, List<OntClass>> matchOntClasses(ResultSet templates) throws ConfigurationException
+    public Map<Property, List<OntClass>> matchOntClasses(ResultSet templates) // throws ConfigurationException
     {
         if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
 

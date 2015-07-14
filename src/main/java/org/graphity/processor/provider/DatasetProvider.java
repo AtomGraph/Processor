@@ -23,14 +23,13 @@ import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.net.URI;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.apache.jena.riot.RDFDataMgr;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,8 +75,8 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
      */
     public Dataset getDataset()
     {
-        try
-        {
+        //try
+        //{
             String datasetLocation = getDatasetLocation(GP.datasetLocation);
             if (datasetLocation == null)
             {
@@ -86,11 +85,11 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
             }
             
             return getDataset(datasetLocation, getUriInfo().getBaseUri());
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
+        //}
+        //catch (ConfigurationException ex)
+        //{
+        //    throw new WebApplicationException(ex);
+        //}
     }
     
     public String getDatasetLocation(Property property)

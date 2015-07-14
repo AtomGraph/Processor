@@ -39,13 +39,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
@@ -58,6 +56,7 @@ import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
+import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.vocabulary.XHV;
@@ -163,19 +162,19 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
 	addProperty(RDF.type, getMatchedOntClass());
 
-        try
-        {
+        //try
+        //{
             if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
             {
                 updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
                 if (updateRequest == null)
                 {
                     if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
-                    throw new ConfigurationException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
+                    throw new SitemapException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
                 }
             }
 
-             if (getRequest().getMethod().equalsIgnoreCase("GET") ||
+            if (getRequest().getMethod().equalsIgnoreCase("GET") ||
                     (getRequest().getMethod().equalsIgnoreCase("POST") && getMode().equals(URI.create(GP.ConstructMode.getURI()))) |
                     getRequest().getMethod().equalsIgnoreCase("PUT") ||
                     getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
@@ -184,7 +183,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 if (query == null)
                 {
                     if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
-                    throw new ConfigurationException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+                    throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
                 }
                 queryBuilder = QueryBuilder.fromQuery(query, getModel());
             
@@ -193,7 +192,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     if (queryBuilder.getSubSelectBuilders().isEmpty())
                     {
                         if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
-                        throw new ConfigurationException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
+                        throw new SitemapException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
                     }
 
                     subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
@@ -258,11 +257,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
                 addProperty(SPIN.query, queryBuilder);
             }
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
-        }
+        //}
+        //catch (ConfigurationException ex)
+        //{
+        //    throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
+        //}
         
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);        
     }
@@ -303,20 +302,20 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (getMatchedOntClass().equals(GP.SPARQLEndpoint)) return getSPARQLEndpoint();
         if (getMatchedOntClass().getPropertyResourceValue(GP.loadClass) != null)
         {
-            try
-            {
+            //try
+            //{
                 Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);
                 if (!javaClass.isURIResource())
                 {
                     if (log.isErrorEnabled()) log.debug("gp:loadClass value of class '{}' is not a URI resource", getMatchedOntClass().getURI());
-                    throw new ConfigurationException("gp:loadClass value of class '" + getMatchedOntClass().getURI() + "' is not a URI resource");
+                    throw new SitemapException("gp:loadClass value of class '" + getMatchedOntClass().getURI() + "' is not a URI resource");
                 }
 
                 Class clazz = Loader.loadClass(javaClass.getURI());
                 if (clazz == null)
                 {
                     if (log.isErrorEnabled()) log.debug("Java class with URI '{}' could not be loaded", javaClass.getURI());
-                    throw new ConfigurationException("Java class with URI '" + javaClass.getURI() + "' not found");
+                    throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
                 }
 
                 if (!Resource.class.isAssignableFrom(clazz))
@@ -324,11 +323,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 
                 if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
                 return getResourceContext().getResource(clazz);
-            }
-            catch (ConfigurationException ex)
-            {
-                throw new WebApplicationException(ex);
-            }
+            //}
+            //catch (ConfigurationException ex)
+            //{
+            //    throw new WebApplicationException(ex);
+            //}
         }
 
         return this;
@@ -590,8 +589,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
-            try
-            {
+            //try
+            //{
                 Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
                 childrenClasses.putAll(new OntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), getMatchedOntClass()));
 
@@ -612,19 +611,19 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                                 addProperty(GP.constructorOf, this);
                     }
                 }
-            }
-            catch (ConfigurationException ex)
-            {
-                throw new WebApplicationException(ex);
-            }
-            finally
-            {
-                //it.close();
-            }
+            //}
+            //catch (ConfigurationException ex)
+            //{
+            //    throw new WebApplicationException(ex);
+            //}
+            //finally
+            //{
+            //    //it.close();
+            //}
             
             ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
-            try
-            {
+            //try
+            //{
                 while (resIt.hasNext())
                 {
                     Resource childContainer = resIt.next();
@@ -651,15 +650,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                         }
                     }
                 }
-            }
-            catch (ConfigurationException ex)
-            {
-                throw new WebApplicationException(ex);
-            }
-            finally
-            {
-                //resIt.close();
-            }
+            //}
+            //catch (ConfigurationException ex)
+            //{
+            //    throw new WebApplicationException(ex);
+            //}
+            //finally
+            //{
+            //    //resIt.close();
+            //}
 
             if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
             {
@@ -676,7 +675,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     if (templateQuery == null)
                     {
                         if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
-                        throw new ConfigurationException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
+                        throw new SitemapException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
                     }
                     
                     QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
@@ -685,10 +684,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
                     qex.close();
                 }
-                catch (ConfigurationException ex)
-                {
-                    throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-                }
+                //catch (ConfigurationException ex)
+                //{
+                //    throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
+                //}
                 catch (URISyntaxException ex)
                 {
                     if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but gp:forClass value is not a URI: '{}'", getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
@@ -862,7 +861,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return super.getResponseBuilder(model).header("Link", classLink.toString());
     }
 
-    public List<Locale> getLanguages(Property property) throws ConfigurationException
+    public List<Locale> getLanguages(Property property) // throws ConfigurationException
     {
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
@@ -877,7 +876,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 if (!stmt.getObject().isLiteral())
                 {
                     if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (gp:language is not literal)", getMatchedOntClass().getURI());
-                    throw new ConfigurationException("Illegal non-literal gp:language value for template '" + getMatchedOntClass().getURI() +"'");
+                    throw new SitemapException("Illegal non-literal gp:language value for template '" + getMatchedOntClass().getURI() +"'");
                 }
                 
                 languages.add(Locale.forLanguageTag(stmt.getString()));
@@ -894,14 +893,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public List<Locale> getLanguages()
     {
-        try
-        {
+        //try
+        //{
             return getLanguages(GP.lang);
-        }
-        catch (ConfigurationException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
+        //}
+        //catch (ConfigurationException ex)
+        //{
+        //    throw new WebApplicationException(ex);
+        //}
     }
     
     /**

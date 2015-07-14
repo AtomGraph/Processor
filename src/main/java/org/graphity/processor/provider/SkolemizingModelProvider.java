@@ -19,7 +19,6 @@ package org.graphity.processor.provider;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
-import javax.naming.ConfigurationException;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
@@ -27,6 +26,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.util.Skolemizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,9 +50,12 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
         {
+            /*
             try
             {
+            */
                 return skolemize(getServletConfig(), getUriInfo(), getOntology(), getOntClass(), new OntClassMatcher(), model);
+            /*
             }
             catch (IllegalArgumentException ex)
             {
@@ -64,6 +67,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
                 if (log.isErrorEnabled()) log.error("Configuration error: {}", ex);
                 throw new WebApplicationException(ex);                
             }
+            */
         }
         
         return model;
