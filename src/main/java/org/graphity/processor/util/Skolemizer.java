@@ -128,7 +128,7 @@ public class Skolemizer
         return newInstance().ontology(ontology);
     }
 
-    public Model build(Model model) throws ConfigurationException
+    public Model build(Model model) // throws ConfigurationException
     {
     	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
@@ -211,7 +211,7 @@ public class Skolemizer
                 if (docClass != null)
                 {
                     Map<Property, List<OntClass>> matchingClasses =
-                            getOntClassMatcher().matchOntClasses(getServletConfig(), getOntology(), docClass);
+                            getOntClassMatcher().lookupOntClassesByAllValuesFrom(getServletConfig(), getOntology(), docClass);
                     if (!matchingClasses.isEmpty())
                     {
                         OntClass topicClass = matchingClasses.values().iterator().next().get(0);

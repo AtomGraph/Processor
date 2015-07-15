@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 import javax.servlet.ServletConfig;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
@@ -308,7 +307,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
-    public Map<Property, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) // throws ConfigurationException
+    public Map<Property, List<OntClass>> lookupOntClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) // throws ConfigurationException
     {
 	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
@@ -335,7 +334,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                         {
                             Ontology importedOntology = importRes.asOntology();
                             // traverse imports recursively
-                            Map<Property, List<OntClass>> matchedImportClasses = matchOntClasses(servletConfig, importedOntology, ontClass);
+                            Map<Property, List<OntClass>> matchedImportClasses = lookupOntClassesByAllValuesFrom(servletConfig, importedOntology, ontClass);
                             Iterator<Entry<Property, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
                             while (entries.hasNext())
                             {
