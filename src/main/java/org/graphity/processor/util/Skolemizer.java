@@ -169,7 +169,7 @@ public class Skolemizer
         return ResourceFactory.createResource(getUriInfo().getAbsolutePath().toString());
     }
     
-    public URI build(Resource resource) throws ConfigurationException
+    public URI build(Resource resource) // throws ConfigurationException
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
@@ -211,7 +211,7 @@ public class Skolemizer
                 if (docClass != null)
                 {
                     Map<Property, List<OntClass>> matchingClasses =
-                            getOntClassMatcher().lookupOntClassesByAllValuesFrom(getServletConfig(), getOntology(), docClass);
+                            getOntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), FOAF.isPrimaryTopicOf, docClass);
                     if (!matchingClasses.isEmpty())
                     {
                         OntClass topicClass = matchingClasses.values().iterator().next().get(0);
@@ -224,7 +224,7 @@ public class Skolemizer
         return null;
     }
 
-    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass) throws ConfigurationException
+    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass) // throws ConfigurationException
     {
         // build URI relative to absolute path
         return build(resource, baseBuilder, getSkolemTemplate(ontClass, GP.skolemTemplate));
@@ -325,7 +325,7 @@ public class Skolemizer
 	return null;
     }
 
-    protected String getSkolemTemplate(OntClass ontClass, Property property) throws ConfigurationException
+    protected String getSkolemTemplate(OntClass ontClass, Property property) // throws ConfigurationException
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");

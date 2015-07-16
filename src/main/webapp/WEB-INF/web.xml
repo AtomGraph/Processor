@@ -54,25 +54,18 @@ PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 
 CONSTRUCT
 {
-    ?Template a owl:Class, gp:Template ;
-        # ?AnnotationProperty ?value ;
+    ?Template a gp:Template ;
         gp:uriTemplate ?uriTemplate ;
         gp:query ?query ;
         gp:template ?construct ;
-        gp:subClassOf ?subClassOf ; # for debug purposes
-        gp:subClassOf1 ?subClassOf1 ; # for debug purposes
-        # rdfs:subClassOf ?Restriction ;
+        gp:skolemTemplate ?skolem ;
         rdfs:isDefinedBy ?isDefinedBy .
-    #?Restriction a owl:Restriction ;
-    #    owl:onProperty ?onProperty .
+    ?Class a owl:Class ;
+        gp:skolemTemplate ?skolem .
 }
 {
-    # ?Template rdfs:subClassOf* foaf:Document
-    ?Template a owl:Class, gp:Template ;
+    ?Template a gp:Template ;
         rdfs:isDefinedBy ?isDefinedBy .
-    #?AnnotationProperty a owl:AnnotationProperty ;
-    #    rdfs:isDefinedBy gp: .
-    # three levels of annotation inheritance:
     {
         ?Template gp:uriTemplate ?uriTemplate .
     }
@@ -132,24 +125,45 @@ CONSTRUCT
         UNION
         {
            FILTER NOT EXISTS { ?Template gp:template ?TemplateConstruct . } 
-           ?Template rdfs:subClassOf ?subClassOf .
-           ?subClassOf gp:template ?construct .
+           ?Template rdfs:subClassOf ?subClassOfX .
+           ?subClassOfX gp:template ?construct .
         }
         UNION
         {
            FILTER NOT EXISTS { ?Template gp:template ?TemplateConstruct . } 
-           FILTER NOT EXISTS { ?subClassOf gp:template ?subClassOfConstruct . } 
-           ?Template rdfs:subClassOf ?subClassOf .
-           ?subClassOf rdfs:subClassOf ?subClassOf1 .
-           ?subClassOf1 gp:template ?construct .
+           FILTER NOT EXISTS { ?subClassOfX gp:template ?subClassOfXConstruct . } 
+           ?Template rdfs:subClassOf ?subClassOfX .
+           ?subClassOfX rdfs:subClassOf ?subClassOfY .
+           ?subClassOfY gp:template ?construct .
         }
     }
-    # FILTER (?AnnotationProperty IN (gp:uriTemplate, gp:query, gp:template))
-    FILTER (?Template != gp:SPARQLEndpoint)
+    OPTIONAL
+    {
+        {
+            ?Template gp:skolemTemplate ?skolem .
+        }
+        UNION
+        {
+           FILTER NOT EXISTS { ?Template gp:skolemTemplate ?TemplateSkolem . } 
+           ?Template rdfs:subClassOf ?subClassOfZ .
+           ?subClassOfZ gp:skolemTemplate ?skolem .
+        }
+        UNION
+        {
+           FILTER NOT EXISTS { ?Template gp:skolemTemplate ?TemplateSkolem . } 
+           FILTER NOT EXISTS { ?subClassOfZ gp:skolemTemplate ?subClassOfZSkolem . } 
+           ?Template rdfs:subClassOf ?subClassOfZ .
+           ?subClassOfZ rdfs:subClassOf ?subClassOfW .
+           ?subClassOfW gp:skolemTemplate ?skolem .
+        }
+    }
+    OPTIONAL {
+        ?Class a owl:Class ;
+            rdfs:subClassOf/owl:allValuesFrom ?Template ;
+            gp:skolemTemplate ?skolem .
+    }
+    FILTER (?Template != gp:SPARQLEndpoint) # wait but why?
     FILTER (?Template != gp:GraphStore)
-    # FILTER (isURI(?query) || isBlank(?query))
-    # FILTER (isURI(?construct) || isBlank(?construct))
-    # FILTER isLiteral(?uriTemplate)
 }
 ]]></param-value>
         </init-param>
@@ -165,14 +179,11 @@ PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 
 SELECT *
 {
-    # ?Template rdfs:subClassOf* foaf:Document
-    ?Template a owl:Class, gp:Template ;
+    ?Template a owl:Class ; # not necessarily a gp:Template
         rdfs:subClassOf ?Restriction .
     ?Restriction a owl:Restriction ;
         owl:onProperty ?onProperty .
     FILTER (?Template != gpl:GraphContainer)
-    FILTER (?onProperty IN (sioc:has_parent, sioc:has_container))
-    # ?onProperty a owl:ObjectProperty .
     {
         ?Restriction owl:allValuesFrom ?allValuesFrom
     }

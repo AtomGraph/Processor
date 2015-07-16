@@ -167,7 +167,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param path URI path
      * @return URI template/class mapping
      */    
-    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Model templates, Ontology ontology, CharSequence path) throws ConfigurationException
+    public Map<UriTemplate, List<OntClass>> matchOntClasses(ServletConfig servletConfig, Model templates, Ontology ontology, CharSequence path) // throws ConfigurationException
     {
         if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
@@ -307,20 +307,41 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
-    public Map<Property, List<OntClass>> lookupOntClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, OntClass ontClass) // throws ConfigurationException
+    public Map<Property, List<OntClass>> ontClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, Property onProperty, OntClass allValuesFrom) // throws ConfigurationException
     {
 	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
-        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        //if (onProperty == null) throw new IllegalArgumentException("ObjectProperty cannot be null");
+        if (allValuesFrom == null) throw new IllegalArgumentException("OntClass cannot be null");
 
         QuerySolutionMap qsm = new QuerySolutionMap();
         qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
-        qsm.add(OWL.allValuesFrom.getLocalName(), ontClass);
+        qsm.add(OWL.allValuesFrom.getLocalName(), allValuesFrom);
+        if (onProperty != null) qsm.add(OWL.onProperty.getLocalName(), onProperty);
 
         QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.restrictionsQuery), qsm), ontology.getOntModel());
         try
         {
-            Map<Property, List<OntClass>> matchedClasses = matchOntClasses(qex.execSelect());
+            //Map<Property, List<OntClass>> matchedClasses = ontClassesByAllValuesFrom(qex.execConstruct(), onProperty);
+            Map<Property, List<OntClass>> matchedClasses = new HashMap<>();
+            //Model templates = qex.execConstruct();
+            //ontology.getOntModel().add(templates); // hack?
+            ResultSet templates = qex.execSelect();
+
+            //ResIterator it = templates.listResourcesWithProperty(RDF.type, GP.Template);
+            while (templates.hasNext())
+            {
+                QuerySolution solution = templates.next();
+                if (solution.contains(GP.Template.getLocalName())) // solution.contains(OWL.onProperty.getLocalName()
+                {
+                    OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
+                    //Property onProperty = solution.getResource(OWL.onProperty.getLocalName()).as(Property.class);
+
+                    if (!matchedClasses.containsKey(onProperty))
+                        matchedClasses.put(onProperty, new ArrayList<OntClass>());
+                    matchedClasses.get(onProperty).add(template);
+                }
+            }
 
             if (matchedClasses.isEmpty())
             {
@@ -334,7 +355,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                         {
                             Ontology importedOntology = importRes.asOntology();
                             // traverse imports recursively
-                            Map<Property, List<OntClass>> matchedImportClasses = lookupOntClassesByAllValuesFrom(servletConfig, importedOntology, ontClass);
+                            Map<Property, List<OntClass>> matchedImportClasses = ontClassesByAllValuesFrom(servletConfig, importedOntology, onProperty, allValuesFrom);
                             Iterator<Entry<Property, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
                             while (entries.hasNext())
                             {
@@ -361,30 +382,6 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         }
     }
     
-    public Map<Property, List<OntClass>> matchOntClasses(ResultSet templates) // throws ConfigurationException
-    {
-        if (templates == null) throw new IllegalArgumentException("ResultSet cannot be null");
-
-        //if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, sitemap);
-        Map<Property, List<OntClass>> matchedClasses = new HashMap<>();
-
-        while (templates.hasNext())
-        {
-            QuerySolution solution = templates.next();
-            if (solution.contains(GP.Template.getLocalName()) && solution.contains(OWL.onProperty.getLocalName()))
-            {
-                OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
-                Property onProperty = solution.getResource(OWL.onProperty.getLocalName()).as(Property.class);
-
-                if (!matchedClasses.containsKey(onProperty))
-                    matchedClasses.put(onProperty, new ArrayList<OntClass>());
-                matchedClasses.get(onProperty).add(template);
-            }
-        }
-                
-        return matchedClasses;
-    }
-
     public Query getQuery(ServletConfig servletConfig, DatatypeProperty property)
     {
         if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");

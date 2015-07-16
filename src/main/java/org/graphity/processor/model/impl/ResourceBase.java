@@ -592,7 +592,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             //try
             //{
                 Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-                childrenClasses.putAll(new OntClassMatcher().lookupOntClassesByAllValuesFrom(getServletConfig(), getOntology(), getMatchedOntClass()));
+                childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, getMatchedOntClass()));
+                childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
 
                 Iterator<List<OntClass>> it = childrenClasses.values().iterator();
                 while (it.hasNext())
@@ -630,7 +631,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     URI childURI = URI.create(childContainer.getURI());
                     OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
                     Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                    grandChildrenClasses.putAll(new OntClassMatcher().lookupOntClassesByAllValuesFrom(getServletConfig(), getOntology(), childClass));
+                    grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, childClass));
+                    grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, childClass));
 
                     Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
                     while (gccIt.hasNext())
