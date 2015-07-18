@@ -88,7 +88,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;
     private final URI mode;    
-    // private final Hypermedia hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -141,7 +140,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-        //this.hypermedia = hypermedia;
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
@@ -162,106 +160,99 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
 	addProperty(RDF.type, getMatchedOntClass());
 
-        //try
-        //{
-            if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
+        if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
+        {
+            updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
+            if (updateRequest == null)
             {
-                updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
-                if (updateRequest == null)
+                if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
+                throw new SitemapException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
+            }
+        }
+
+        if (getRequest().getMethod().equalsIgnoreCase("GET") ||
+                (getRequest().getMethod().equalsIgnoreCase("POST") && getMode().equals(URI.create(GP.ConstructMode.getURI()))) |
+                getRequest().getMethod().equalsIgnoreCase("PUT") ||
+                getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
+        {
+            Query query = getQuery(getMatchedOntClass(), GP.query);
+            if (query == null)
+            {
+                if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
+                throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+            }
+            queryBuilder = QueryBuilder.fromQuery(query, getModel());
+
+            if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+            {
+                if (queryBuilder.getSubSelectBuilders().isEmpty())
                 {
-                    if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
-                    throw new SitemapException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
+                    if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
+                    throw new SitemapException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
+                }
+
+                subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
+                if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
+
+                try
+                {
+                    if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
+                        offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
+                    else
+                    {
+                        Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
+                        if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
+                        this.offset = defaultOffset;
+                    }
+
+                    if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
+                    subSelectBuilder.replaceOffset(offset);
+
+                    if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
+                        limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
+                    else
+                    {
+                        Long defaultLimit = getLongValue(getMatchedOntClass(), GP.defaultLimit);
+                        //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
+                        this.limit = defaultLimit;
+                    }
+
+                    if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
+                    subSelectBuilder.replaceLimit(limit);
+
+                    if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+                        this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
+                    else
+                        this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
+
+                    if (this.orderBy != null)
+                    {
+                        if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
+                            desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+                        else
+                            desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
+                        if (desc == null) desc = false; // ORDERY BY is ASC() by default
+
+                        if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                            orderBy(orderBy, desc);
+                    }
+
+                    if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+                    {
+                        if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
+                        subSelectBuilder.replaceLimit(Long.valueOf(0));
+                    }
+                }
+                catch (NumberFormatException ex)
+                {
+                    throw new WebApplicationException(ex);
                 }
             }
 
-            if (getRequest().getMethod().equalsIgnoreCase("GET") ||
-                    (getRequest().getMethod().equalsIgnoreCase("POST") && getMode().equals(URI.create(GP.ConstructMode.getURI()))) |
-                    getRequest().getMethod().equalsIgnoreCase("PUT") ||
-                    getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
-            {
-                Query query = getQuery(getMatchedOntClass(), GP.query);
-                if (query == null)
-                {
-                    if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
-                    throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
-                }
-                queryBuilder = QueryBuilder.fromQuery(query, getModel());
-            
-                if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
-                {
-                    if (queryBuilder.getSubSelectBuilders().isEmpty())
-                    {
-                        if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
-                        throw new SitemapException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
-                    }
-
-                    subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
-                    if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
-
-                    try
-                    {
-                        if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
-                            offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
-                        else
-                        {
-                            Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
-                            if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
-                            this.offset = defaultOffset;
-                        }
-
-                        if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-                        subSelectBuilder.replaceOffset(offset);
-
-                        if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
-                            limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
-                        else
-                        {
-                            Long defaultLimit = getLongValue(getMatchedOntClass(), GP.defaultLimit);
-                            //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
-                            this.limit = defaultLimit;
-                        }
-
-                        if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-                        subSelectBuilder.replaceLimit(limit);
-
-                        if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-                            this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
-                        else
-                            this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
-
-                        if (this.orderBy != null)
-                        {
-                            if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
-                                desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-                            else
-                                desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
-                            if (desc == null) desc = false; // ORDERY BY is ASC() by default
-
-                            if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                            subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                                orderBy(orderBy, desc);
-                        }
-
-                        if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
-                        {
-                            if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
-                            subSelectBuilder.replaceLimit(Long.valueOf(0));
-                        }
-                    }
-                    catch (NumberFormatException ex)
-                    {
-                        throw new WebApplicationException(ex);
-                    }
-                }
-
-                if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
-                addProperty(SPIN.query, queryBuilder);
-            }
-        //}
-        //catch (ConfigurationException ex)
-        //{
-        //    throw new WebApplicationException(ex, Status.INTERNAL_SERVER_ERROR);
-        //}
+            if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
+            addProperty(SPIN.query, queryBuilder);
+        }
         
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);        
     }
@@ -302,32 +293,25 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (getMatchedOntClass().equals(GP.SPARQLEndpoint)) return getSPARQLEndpoint();
         if (getMatchedOntClass().getPropertyResourceValue(GP.loadClass) != null)
         {
-            //try
-            //{
-                Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);
-                if (!javaClass.isURIResource())
-                {
-                    if (log.isErrorEnabled()) log.debug("gp:loadClass value of class '{}' is not a URI resource", getMatchedOntClass().getURI());
-                    throw new SitemapException("gp:loadClass value of class '" + getMatchedOntClass().getURI() + "' is not a URI resource");
-                }
+            Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);
+            if (!javaClass.isURIResource())
+            {
+                if (log.isErrorEnabled()) log.debug("gp:loadClass value of class '{}' is not a URI resource", getMatchedOntClass().getURI());
+                throw new SitemapException("gp:loadClass value of class '" + getMatchedOntClass().getURI() + "' is not a URI resource");
+            }
 
-                Class clazz = Loader.loadClass(javaClass.getURI());
-                if (clazz == null)
-                {
-                    if (log.isErrorEnabled()) log.debug("Java class with URI '{}' could not be loaded", javaClass.getURI());
-                    throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
-                }
+            Class clazz = Loader.loadClass(javaClass.getURI());
+            if (clazz == null)
+            {
+                if (log.isErrorEnabled()) log.debug("Java class with URI '{}' could not be loaded", javaClass.getURI());
+                throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
+            }
 
-                if (!Resource.class.isAssignableFrom(clazz))
-                    if (log.isWarnEnabled()) log.warn("Java class with URI: {} is not a subclass of Graphity Resource", javaClass.getURI());
-                
-                if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
-                return getResourceContext().getResource(clazz);
-            //}
-            //catch (ConfigurationException ex)
-            //{
-            //    throw new WebApplicationException(ex);
-            //}
+            if (!Resource.class.isAssignableFrom(clazz))
+                if (log.isWarnEnabled()) log.warn("Java class with URI: {} is not a subclass of Graphity Resource", javaClass.getURI());
+
+            if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
+            return getResourceContext().getResource(clazz);
         }
 
         return this;
@@ -589,78 +573,56 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
-            //try
-            //{
-                Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-                childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, getMatchedOntClass()));
-                childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
+            Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
+            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, getMatchedOntClass()));
+            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
 
-                Iterator<List<OntClass>> it = childrenClasses.values().iterator();
-                while (it.hasNext())
+            Iterator<List<OntClass>> it = childrenClasses.values().iterator();
+            while (it.hasNext())
+            {
+                List<OntClass> forClasses = it.next();
+                Iterator<OntClass> forIt = forClasses.iterator();
+                while (forIt.hasNext())
                 {
-                    List<OntClass> forClasses = it.next();
+                    OntClass forClass = forIt.next();
+                    String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                        Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Constructor).
+                            addProperty(GP.forClass, forClass).
+                            addProperty(GP.constructorOf, this);
+                }
+            }
+            
+            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
+            while (resIt.hasNext())
+            {
+                Resource childContainer = resIt.next();
+                URI childURI = URI.create(childContainer.getURI());
+                OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
+                Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
+                grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, childClass));
+                grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, childClass));
+
+                Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
+                while (gccIt.hasNext())
+                {
+                    List<OntClass> forClasses = gccIt.next();
                     Iterator<OntClass> forIt = forClasses.iterator();
                     while (forIt.hasNext())
                     {
                         OntClass forClass = forIt.next();
-                        String constructorURI = getStateUriBuilder(null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                                addProperty(RDF.type, FOAF.Document).
-                                addProperty(RDF.type, GP.Constructor).
-                                addProperty(GP.forClass, forClass).
-                                addProperty(GP.constructorOf, this);
+                        String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
+                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
+                        Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Constructor).
+                            addProperty(GP.forClass, forClass).                                    
+                            addProperty(GP.constructorOf, childContainer);
                     }
                 }
-            //}
-            //catch (ConfigurationException ex)
-            //{
-            //    throw new WebApplicationException(ex);
-            //}
-            //finally
-            //{
-            //    //it.close();
-            //}
-            
-            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, this);
-            //try
-            //{
-                while (resIt.hasNext())
-                {
-                    Resource childContainer = resIt.next();
-                    URI childURI = URI.create(childContainer.getURI());
-                    OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
-                    Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                    grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, childClass));
-                    grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, childClass));
-
-                    Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
-                    while (gccIt.hasNext())
-                    {
-                        List<OntClass> forClasses = gccIt.next();
-                        Iterator<OntClass> forIt = forClasses.iterator();
-                        while (forIt.hasNext())
-                        {
-                            OntClass forClass = forIt.next();
-                            String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                                queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                            Resource template = createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                                addProperty(RDF.type, FOAF.Document).
-                                addProperty(RDF.type, GP.Constructor).
-                                addProperty(GP.forClass, forClass).                                    
-                                addProperty(GP.constructorOf, childContainer);
-                        }
-                    }
-                }
-            //}
-            //catch (ConfigurationException ex)
-            //{
-            //    throw new WebApplicationException(ex);
-            //}
-            //finally
-            //{
-            //    //resIt.close();
-            //}
+            }
 
             if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
             {
@@ -686,10 +648,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
                     qex.close();
                 }
-                //catch (ConfigurationException ex)
-                //{
-                //    throw new WebApplicationException(ex, Response.Status.INTERNAL_SERVER_ERROR);
-                //}
                 catch (URISyntaxException ex)
                 {
                     if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but gp:forClass value is not a URI: '{}'", getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
@@ -796,8 +754,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-	//if (ontClass.getPropertyResourceValue(property) == null)
-	//    throw new IllegalArgumentException("Resource OntClass must have a SPIN query or template call resource (" + property + ")");
 
 	Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
         if (queryOrTemplateCall != null)
@@ -863,7 +819,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return super.getResponseBuilder(model).header("Link", classLink.toString());
     }
 
-    public List<Locale> getLanguages(Property property) // throws ConfigurationException
+    public List<Locale> getLanguages(Property property)
     {
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
@@ -895,14 +851,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public List<Locale> getLanguages()
     {
-        //try
-        //{
-            return getLanguages(GP.lang);
-        //}
-        //catch (ConfigurationException ex)
-        //{
-        //    throw new WebApplicationException(ex);
-        //}
+        return getLanguages(GP.lang);
     }
     
     /**
@@ -999,7 +948,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public URI getRealURI()
     {
-	return URI.create(getURI()); // getUriBuilder().build();
+	return URI.create(getURI());
     }
     
     /**
