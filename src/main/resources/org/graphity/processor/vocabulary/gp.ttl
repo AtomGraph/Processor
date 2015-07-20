@@ -245,7 +245,7 @@
 
       CONSTRUCT {
           _:this a foaf:Document, gp:Container, sioc:Container ;
-              gp:slug " "^^xsd:string ;
+              gp:slug " " ;
               dct:title " " .
       }
       WHERE {}""" .
@@ -280,7 +280,7 @@
 
       CONSTRUCT {
           _:this a foaf:Document, gp:Item, sioc:Item ;
-              gp:slug " "^^xsd:string .
+              gp:slug " " .
       }
       WHERE {}""" .
 
@@ -325,7 +325,7 @@
     rdfs:subClassOf dqc:MissingElementConstraints ;
     rdfs:label "Missing type" ;
     spin:body <#ConstructMissingType> ;
-    spin:labelTemplate "Instance does not have a mandatory RDF type {?arg1}"^^xsd:string ;
+    spin:labelTemplate "Instance does not have a mandatory RDF type {?arg1}" ;
     spin:constraint [ a spl:Argument ;
         spl:predicate sp:arg1 ;
         spl:valueType rdfs:Class
@@ -335,7 +335,7 @@
 # QUERIES
 
 <#Describe>    a       sp:Describe, sp:Query ;
-    sp:text """DESCRIBE ?this"""^^xsd:string .
+    sp:text """DESCRIBE ?this""" .
 
 # ====
 
@@ -343,7 +343,7 @@
       sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 DESCRIBE ?this ?topic WHERE {
     ?topic foaf:isPrimaryTopicOf ?this .
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -374,7 +374,7 @@ DESCRIBE ?this ?doc ?thing WHERE {
             } .
         } .
     } .
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -384,7 +384,7 @@ DESCRIBE ?this ?doc ?thing WHERE {
 }
 WHERE {
     ?this ?property ?object .
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -394,7 +394,7 @@ WHERE {
 }
 WHERE {
     ?subject ?property ?object .
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -402,7 +402,7 @@ WHERE {
       sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 DELETE WHERE {
     ?this ?p ?o .
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -421,7 +421,7 @@ WHERE {
         ?primaryTopic foaf:isPrimaryTopicOf ?this .
         ?primaryTopic ?p ?o .
     }
-}"""^^xsd:string .
+}""" .
 
 # ====
 
@@ -435,4 +435,4 @@ WHERE {
     NOT EXISTS {
         ?this a ?arg1 .
     } 
-}"""^^xsd:string .
+}""" .

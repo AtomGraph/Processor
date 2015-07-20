@@ -30,5 +30,5 @@
 
 <#Describe>    a       sp:Describe, sp:Query ;
     sp:resultNodes (spin:_this) ;
-    sp:text """DESCRIBE ?this"""^^xsd:string ;
+    sp:text """DESCRIBE ?this""" ;
     rdfs:isDefinedBy <#> .
