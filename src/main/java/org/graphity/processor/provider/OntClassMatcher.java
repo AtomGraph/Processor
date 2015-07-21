@@ -387,14 +387,11 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
-	Object ontologyQuery = servletConfig.getInitParameter(property.getURI());
-        if (ontologyQuery != null)
-        {
-            ParameterizedSparqlString queryString = new ParameterizedSparqlString(ontologyQuery.toString());
-            return queryString.asQuery();
-        }
+	Object query = servletConfig.getInitParameter(property.getURI());
+        if (query == null) throw new ConfigurationException("Property '" + property.getURI() + "' needs to be set in config");
         
-        return null;
+        ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
+        return queryString.asQuery();
     }
     
     public OntModel getOntModel()
