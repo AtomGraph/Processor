@@ -57,6 +57,7 @@ import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.model.HypermediaBase;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.vocabulary.XHV;
@@ -86,8 +87,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntClass matchedOntClass;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
-    private final HttpHeaders httpHeaders;
-    private final URI mode;    
+    private final HttpHeaders httpHeaders;  
+    private final URI mode;
+    private final HypermediaBase hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -114,10 +116,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param ontClass matched ontology class
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
+     * @param hypermedia hypermedia
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
+            @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext,
+            @Context HypermediaBase hypermedia)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
@@ -140,6 +144,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
+        this.hypermedia = hypermedia;
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
@@ -546,7 +551,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Model describe()
     {
-	return addHypermedia(super.describe());
+	//return addHypermedia(super.describe());
+        return getHypermedia().addStates(this, super.describe()); //UriBuilder.fromUri(getURI()), 
     }
 
     public boolean hasSuperClass(OntClass subClass, OntClass superClass)
@@ -981,7 +987,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         return ontology;
     }
-    
+
+    public HypermediaBase getHypermedia()
+    {
+        return hypermedia;
+    }
+
     /**
      * Returns the cache control of this resource, if specified.
      * The control value can be specified as a <code>gp:cacheControl</code> value restriction on an ontology class in
