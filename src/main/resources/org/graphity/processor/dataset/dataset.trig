@@ -30,17 +30,22 @@
     sioc:has_parent <> ;
     dct:title "Ontologies" .
 
-<templates> a gp:Container, sioc:Container, foaf:Document ;
+<classes> a gp:Container, sioc:Container, foaf:Document, gps:ClassContainer ;
+    gp:slug "classes"^^xsd:string ;
+    sioc:has_parent <> ;
+    dct:title "Classes" .
+
+<templates> a gp:Container, sioc:Container, foaf:Document, gps:TemplateContainer ;
     gp:slug "templates"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Templates" .
 
-<queries> a gp:Container, sioc:Container, foaf:Document ;
+<queries> a gp:Container, sioc:Container, foaf:Document, gps:QueryContainer ;
     gp:slug "queries"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Queries" .
 
-<resources/labelled> a gp:Container, sioc:Container, foaf:Document ;
+<resources/labelled> a gp:Container, sioc:Container, foaf:Document, gps:LabelResourcesContainer ;
     sioc:has_parent <resources> ;
     dct:title "Labelled resources" .
 
@@ -66,38 +71,41 @@
     dct:title "VoID ontology document" ;
     foaf:primaryTopic void: .
 
+# classes
+
+
 # templates
 
-<templates/template-container> a foaf:Document, sioc:Item, gp:Item ;
+<templates/template-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
     sioc:has_container <templates> ;
     foaf:primaryTopic gps:TemplateContainer .
 
-<templates/template-document> a foaf:Document, sioc:Item, gp:Item ;
+<templates/template-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
     sioc:has_container <templates> ;
     foaf:primaryTopic gps:TemplateItem .
 
-<templates/query-container> a foaf:Document, sioc:Item, gp:Item ;
+<templates/query-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
     sioc:has_container <templates> ;
     foaf:primaryTopic gps:QueryContainer .
 
-<templates/query-document> a foaf:Document, sioc:Item, gp:Item ;
+<templates/query-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
     sioc:has_container <templates> ;
     foaf:primaryTopic gps:QueryItem .
 
-<templates/label-resources-container> a foaf:Document, sioc:Item, gp:Item ;
+<templates/label-resources-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
     sioc:has_container <templates> ;
     foaf:primaryTopic gps:LabelResourcesContainer .
 
 # queries
 
+<queries/template-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    sioc:has_container <queries> ;
+    foaf:primaryTopic gps:TemplateItemConstructor .
+
+<queries/query-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    sioc:has_container <queries> ;
+    foaf:primaryTopic gps:QueryItemConstructor .
+
 <queries/describe-graph-label-resources> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
     sioc:has_container <queries> ;
     foaf:primaryTopic gps:DescribeLabelResources .
-
-<queries/temp> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
-    sioc:has_container <queries> ;
-    foaf:primaryTopic <queries/temp#this> .
-
-<queries/temp#this>    a       <http://spinrdf.org/sp#Describe>, <http://spinrdf.org/sp#Query>, gps:Query ; # redefined to avoid importing gs: vocab with {path: *}
-    foaf:isPrimaryTopicOf <queries/temp> ;
-    <http://spinrdf.org/sp#text> """DESCRIBE ?this"""^^xsd:string .
