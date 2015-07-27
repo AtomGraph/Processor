@@ -284,7 +284,8 @@
               gp:slug " " ;
               dct:title " " .
       }
-      WHERE {}""" .
+      WHERE {}""" ;
+    rdfs:isDefinedBy <#> .
 
 <#Topic> a rdfs:Class, owl:Class ;
     rdfs:subClassOf owl:Class,

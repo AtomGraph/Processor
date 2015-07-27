@@ -99,14 +99,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
     public OntClass getOntClass()
     {
-        //try
-        //{
-            return matchOntClass(getServletConfig(), getOntology(), getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
-        //}
-        //catch (ConfigurationException ex)
-        //{
-        //    throw new WebApplicationException(ex);
-        //}
+        return matchOntClass(getServletConfig(), getOntology(), getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
     }
     
     /**

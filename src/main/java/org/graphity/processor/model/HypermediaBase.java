@@ -29,6 +29,8 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -43,7 +45,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
-import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
@@ -52,6 +53,9 @@ import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.model.SPINFactory;
+import org.topbraid.spin.model.TemplateCall;
+import org.topbraid.spin.vocabulary.SP;
 
 /**
  * HATEOAS: hypermedia as the engine of application state.
@@ -69,6 +73,7 @@ public class HypermediaBase
     private final Modifiers modifiers;
     private final OntClass matchedOntClass;
     private final Ontology ontology;
+    private final URI mode;
     
     public HypermediaBase(ServletConfig servletConfig, UriInfo uriInfo, Modifiers modifiers, Ontology ontology, OntClass matchedOntClass)
     {
@@ -83,6 +88,9 @@ public class HypermediaBase
         this.modifiers = modifiers;
         this.ontology = ontology;
         this.matchedOntClass = matchedOntClass;
+        if (uriInfo.getQueryParameters().containsKey(GP.mode.getLocalName()))
+            this.mode = URI.create(uriInfo.getQueryParameters().getFirst(GP.mode.getLocalName()));
+        else mode = null;
     }
     
     protected UriInfo getUriInfo()
@@ -107,7 +115,7 @@ public class HypermediaBase
     
     protected URI getMode()
     {
-        return null; // !!!
+        return mode;
     }
 
     public Ontology getOntology()
@@ -310,11 +318,30 @@ public class HypermediaBase
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-	Literal construct = ontClass.getProperty(property).getLiteral();
-        if (construct == null) throw new ConfigurationException("Property '" + property.getURI() + "' needs to be set in config");
+	com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
+        if (queryOrTemplateCall != null)
+        {
+            // workaround SPIN API which does not parse query from resource if it has properties other than sp:text
+            // https://groups.google.com/forum/#!topic/topbraid-users/AVXXEJdbQzk
+            Model queryModel = ModelFactory.createDefaultModel();
+            Literal queryString = queryOrTemplateCall.getRequiredProperty(SP.text).getLiteral();
+            com.hp.hpl.jena.rdf.model.Resource temp = queryModel.createResource().addLiteral(SP.text, queryString);
+            StmtIterator it = queryOrTemplateCall.listProperties(RDF.type);
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                temp.addProperty(RDF.type, stmt.getObject());
+            }
+            queryOrTemplateCall = temp;
+
+            org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
+            if (spinQuery != null) return new ParameterizedSparqlString(spinQuery.toString()).asQuery();
+
+            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
+            if (templateCall != null) return new ParameterizedSparqlString(templateCall.getQueryString()).asQuery();
+        }
         
-        ParameterizedSparqlString queryString = new ParameterizedSparqlString(construct.getString());
-        return queryString.asQuery();
+        return null;
     }
     
     public Model getConstructedModel(Query query, Model model)

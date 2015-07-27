@@ -124,6 +124,9 @@ public class ModifiersProvider extends PerRequestTypeInjectableProvider<Context,
     
     public Long getLongValue(OntClass ontClass, AnnotationProperty property)
     {
+	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+	if (property == null) throw new IllegalArgumentException("AnnotationProperty cannot be null");
+
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
             return ontClass.getPropertyValue(property).asLiteral().getLong();
         
@@ -132,6 +135,9 @@ public class ModifiersProvider extends PerRequestTypeInjectableProvider<Context,
 
     public Boolean getBooleanValue(OntClass ontClass, AnnotationProperty property)
     {
+	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+	if (property == null) throw new IllegalArgumentException("AnnotationProperty cannot be null");
+
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
             return ontClass.getPropertyValue(property).asLiteral().getBoolean();
         
@@ -140,6 +146,9 @@ public class ModifiersProvider extends PerRequestTypeInjectableProvider<Context,
 
     public String getStringValue(OntClass ontClass, AnnotationProperty property)
     {
+	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+	if (property == null) throw new IllegalArgumentException("AnnotationProperty cannot be null");
+        
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
             return ontClass.getPropertyValue(property).asLiteral().getString();
         
