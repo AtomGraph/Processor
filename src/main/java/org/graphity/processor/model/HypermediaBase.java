@@ -281,16 +281,11 @@ public class HypermediaBase
      * @param desc
      * @param mode
      * @return URI builder
-     */
-    /*
-    public UriBuilder getStateUriBuilder(Long offset, Long limit, String orderBy, Boolean desc, URI mode)
-    {
-	return getStateUriBuilder(UriBuilder.fromUri(getURI()), offset, limit, orderBy, desc, mode);
-    }
-    */
-    
+     */    
     public UriBuilder getStateUriBuilder(UriBuilder uriBuilder, Long offset, Long limit, String orderBy, Boolean desc, URI mode)
     {        
+        if (uriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");        
+
         if (offset != null) uriBuilder.queryParam(GP.offset.getLocalName(), offset);
         if (limit != null) uriBuilder.queryParam(GP.limit.getLocalName(), limit);
 	if (orderBy != null) uriBuilder.queryParam(GP.orderBy.getLocalName(), orderBy);
@@ -302,14 +297,21 @@ public class HypermediaBase
  
     public boolean hasSuperClass(OntClass subClass, OntClass superClass)
     {
-        ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
+        ExtendedIterator<OntClass> it = subClass.listSuperClasses(false);
         
-        while (extIt.hasNext())
+        try
         {
-            OntClass nextClass = extIt.next();
-            if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
+            while (it.hasNext())
+            {
+                OntClass nextClass = it.next();
+                if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
+            }
         }
-
+        finally
+        {
+            it.close();
+        }
+        
         return false;
     }
     
