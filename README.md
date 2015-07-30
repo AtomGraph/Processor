@@ -52,7 +52,7 @@ For open-source, we recommend trying Jena's [TDB](http://jena.apache.org/documen
 Demonstration
 =============
 
-Here's the Linked Data output of the [root resource](../../wiki/Data-hierarchy) description when Graphity Processor is run as a standalone webapp (for
+Here's the Linked Data output of the [root resource](../../wiki/Document-hierarchy) description when Graphity Processor is run as a standalone webapp (for
 brevity, all URIs are relativized against the webapp's base URI):
 
 ```
