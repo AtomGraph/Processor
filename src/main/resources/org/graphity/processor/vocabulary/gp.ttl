@@ -220,8 +220,8 @@
             owl:onProperty sioc:has_parent ;
             owl:allValuesFrom <#Container>
         ] ;
-    <#uriTemplate> "/{path: [^/]*}" ; # ([^/]+?)
-    <#skolemTemplate> "/{slug}" ;
+    <#uriTemplate> "{path: .*}/" ; # "/{path: [^/]*}" ; # ([^/]+?)
+    <#skolemTemplate> "/{slug}/" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
     <#template> <#ContainerConstructor> ;
@@ -256,7 +256,7 @@
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#Container>
         ] ;
-    <#uriTemplate> "/{container: [^/]*}/{path: [^/]*}" ;
+    <#uriTemplate> "{path: .*}" ; # "/{container: [^/]*}/{path: [^/]*}" ;
     <#skolemTemplate> "/{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;

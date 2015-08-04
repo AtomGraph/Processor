@@ -16,14 +16,26 @@
  */
 package org.graphity.processor.provider;
 
+import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
+import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.Statement;
+import com.hp.hpl.jena.rdf.model.StmtIterator;
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
+import java.util.ArrayList;
+import java.util.List;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -95,20 +107,13 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
     public Ontology getOntology()
     {
-        //try
-        //{
-            Ontology ontology = getOntology(getServletConfig(), GP.sitemap);
-            if (ontology == null)
-            {
-                if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
-                throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
-            }
-            return ontology;
-        //}
-        //catch (ConfigurationException ex)
-        //{
-        //    throw new WebApplicationException(ex);
-        //}
+        Ontology ontology = getOntology(getServletConfig(), GP.sitemap);
+        if (ontology == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
+            throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
+        }
+        return ontology;
     }
     
     /**
@@ -127,7 +132,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return ontModel.getOntology(ontologyURI);
     }
             
-    public Ontology getOntology(ServletConfig servletConfig, ObjectProperty property) // throws ConfigurationException
+    public Ontology getOntology(ServletConfig servletConfig, ObjectProperty property)
     {
         String ontologyURI = getOntologyURI(servletConfig, property);
         if (ontologyURI == null)
@@ -159,9 +164,15 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     public OntModel getOntModel(String ontologyURI)
     {
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
+        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
+        
+        OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, OntModelSpec.OWL_MEM);
+        if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
 
-        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI {}", ontologyURI);
-        return OntDocumentManager.getInstance().getOntology(ontologyURI, OntModelSpec.OWL_MEM);
+        inheritAnnotations(ontModel);
+        if (log.isDebugEnabled()) log.debug("Sitemap model size after annotation inheritance: {}", ontModel.size());
+        
+        return ontModel;
     }
 
     public Providers getProviders()
@@ -169,4 +180,89 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return providers;
     }
 
+    /**
+     * Run annotation inheritance on <code>gp:Template</code> instances in a given ontology model.
+     * 
+     * @param ontModel ontology model
+     * @return ontology model with inferred annotations
+     */
+    public OntModel inheritAnnotations(OntModel ontModel)
+    {
+        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
+
+        ResIterator it = ontModel.listResourcesWithProperty(RDF.type, GP.Template);
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource resource = it.next();
+                if (resource.canAs(OntClass.class))
+                    inheritAnnotations(resource.as(OntClass.class), new ArrayList<OntClass>());
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return ontModel;
+    }
+
+    /**
+     * Inherits annotation statements from an ontology class to its immediate subclasses.
+     * 
+     * @param ontClass ontology class from which annotations are inherited
+     * @param visited list of already visited classes to avoid subclass cycles
+     * @return supplied ontology class
+     */    
+    public OntClass inheritAnnotations(OntClass ontClass, List<OntClass> visited)
+    {
+        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (visited == null) throw new IllegalArgumentException("List<OntClass> cannot be null");
+        
+        if (visited.contains(ontClass)) return ontClass;
+        visited.add(ontClass);
+
+        ExtendedIterator<OntClass> it = ontClass.listSubClasses();
+        try
+        {
+            while (it.hasNext())
+            {
+                OntClass subClass = it.next();
+                StmtIterator propIt = ontClass.listProperties();
+                try
+                {
+                    while (propIt.hasNext())
+                    {
+                        Statement stmt = propIt.next();
+                        Property property = stmt.getPredicate();
+                        if (property.canAs(AnnotationProperty.class) && !subClass.hasProperty(property))
+                        {
+                            AnnotationProperty annotation = property.as(AnnotationProperty.class);
+                            if (annotation.getIsDefinedBy() != null && annotation.getIsDefinedBy().equals(GP.NAMESPACE))
+                            {
+                                RDFNode value = ontClass.getPropertyValue(annotation);
+                                if (log.isDebugEnabled()) log.debug("Template '{}' inherits annotation '{}'", subClass, property);
+                                subClass.addProperty(annotation, value);
+                                if (log.isDebugEnabled()) log.debug("Annotation property: '{}' value: '{}'", property, value);
+                            }
+                        }
+                    }
+                }
+                finally
+                {
+                    propIt.close();
+                }
+                
+                inheritAnnotations(subClass, visited);
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return ontClass;
+    }
+    
 }
