@@ -122,7 +122,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 	StringBuilder path = new StringBuilder();
 	// instead of path, include query string by relativizing request URI against base URI
 	path.append("/").append(base.relativize(uri));
-	return matchTemplate(servletConfig, ontology, path).getOntClass();
+	return matchTemplate(ontology, path).getOntClass();
     }
     
     public Query getQuery(Query query, QuerySolutionMap qsm)
@@ -148,6 +148,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
         if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
+        if (log.isDebugEnabled()) log.debug("Ontology import level: {}", level);
         Map<UriTemplate, SortedSet<Template>> matchedClasses = new HashMap<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
@@ -156,28 +157,32 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
             while (it.hasNext())
             {
                 Resource templateRes = it.next();
-                if (!templateRes.hasProperty(GP.uriTemplate))
+                OntClass ontClass = ontology.getOntModel().getOntResource(templateRes).asClass();
+                // only match templates defined in this ontology - maybe reverse loops?
+                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology))
                 {
-                    if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.uriTemplate);
-                    throw new ConfigurationException("Template class '" + templateRes + "' does not have value for '" + GP.uriTemplate + "' annotation");
-                }
-                
-                UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.uriTemplate).getString());
-                HashMap<String, String> map = new HashMap<>();
+                    if (!templateRes.hasProperty(GP.uriTemplate))
+                    {
+                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.uriTemplate);
+                        throw new ConfigurationException("Template class '" + templateRes + "' does not have value for '" + GP.uriTemplate + "' annotation");
+                    }
 
-                if (uriTemplate.match(path, map))
-                {
-                    OntClass ontClass = ontology.getOntModel().getOntResource(templateRes).asClass();
-                    Template template = new Template(ontClass, new Double(level * -1));
-                    if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
-                    if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+                    UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.uriTemplate).getString());
+                    HashMap<String, String> map = new HashMap<>();
 
-                    if (!matchedClasses.containsKey(uriTemplate))
-                        matchedClasses.put(uriTemplate, new TreeSet<Template>());
-                    matchedClasses.get(uriTemplate).add(template);
+                    if (uriTemplate.match(path, map))
+                    {
+                        Template template = new Template(ontClass, new Double(level * -1));
+                        if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
+                        if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+
+                        if (!matchedClasses.containsKey(uriTemplate))
+                            matchedClasses.put(uriTemplate, new TreeSet<Template>());
+                        matchedClasses.get(uriTemplate).add(template);
+                    }
+                    else
+                        if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
                 }
-                else
-                    if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
             }
 
             ExtendedIterator<OntResource> imports = ontology.listImports();
@@ -221,7 +226,6 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * URIs are matched against the URI templates specified in resource templates (sitemap ontology classes).
      * Templates in the base ontology model have priority (are matched first) against templates in imported ontologies.
      * 
-     * @param servletConfig
      * @param ontology sitemap ontology model
      * @param path absolute path (relative URI)
      * @return matching ontology class or null, if none
@@ -229,22 +233,22 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
-    public Template matchTemplate(ServletConfig servletConfig, Ontology ontology, CharSequence path) // throws ConfigurationException
+    public Template matchTemplate(Ontology ontology, CharSequence path) // throws ConfigurationException
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
         TreeMap<UriTemplate, SortedSet<Template>> templateMap = new TreeMap<>(UriTemplate.COMPARATOR);
-
         templateMap.putAll(matchTemplates(ontology, path, 0));
         if (!templateMap.isEmpty())
         {
+            if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, templateMap);
             SortedSet<Template> matchedTemplates = templateMap.firstEntry().getValue();
             Template match = matchedTemplates.last();
-            if (log.isDebugEnabled()) log.debug("UriTemplate: {} matched OntClasses: {} (selecting the last one)", templateMap.firstKey(), matchedTemplates);
+            if (log.isDebugEnabled()) log.debug("UriTemplate: {} has Templates: {} (selecting the last Template)", templateMap.firstKey(), matchedTemplates);
             return match;
         }
         
-        if (log.isDebugEnabled()) log.debug("Path {} has no OntClass match in this OntModel", path);
+        if (log.isDebugEnabled()) log.debug("Path {} has no Template match in this OntModel", path);
         return null;
     }
 
@@ -301,7 +305,6 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                 if (solution.contains(GP.Template.getLocalName())) // solution.contains(OWL.onProperty.getLocalName()
                 {
                     OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
-                    //Property onProperty = solution.getResource(OWL.onProperty.getLocalName()).as(Property.class);
 
                     if (!matchedClasses.containsKey(onProperty))
                         matchedClasses.put(onProperty, new ArrayList<OntClass>());
