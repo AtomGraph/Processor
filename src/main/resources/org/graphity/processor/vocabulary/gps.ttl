@@ -102,7 +102,8 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               gp:cacheControl "no-cache" ;
               gp:loadClass _:javaClass ;
               gp:query gp:Describe ;
-              gc:supportedMode gc:ReadMode .
+              gc:supportedMode gc:ReadMode ;
+              rdfs:isDefinedBy _:ontology .
       }
       WHERE {}""" .
 
@@ -124,6 +125,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         [ a dqc:MissingProperties ;
 	    sp:arg1 <#Template> ;
 	    sp:arg2 rdfs:label
+	] ,
+        [ a dqc:MissingProperties ;
+	    sp:arg1 <#Template> ;
+	    sp:arg2 rdfs:isDefinedBy
 	] ;
     rdfs:label "Template" ;
     rdfs:isDefinedBy <#> .
@@ -197,6 +202,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         [ a dqc:MissingProperties ;
 	    sp:arg1 <#Query> ;
 	    sp:arg2 rdfs:label
+	] ,
+        [ a dqc:MissingProperties ;
+	    sp:arg1 <#Query> ;
+	    sp:arg2 rdfs:isDefinedBy
 	] ;
     rdfs:label "Query" ;
     rdfs:isDefinedBy <#> .
