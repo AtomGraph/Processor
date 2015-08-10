@@ -87,7 +87,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               foaf:primaryTopic _:template ;
               gp:slug " "^^xsd:string .
           _:template a owl:Class, gp:Template, gps:Template ;
-              rdfs:subClassOf foaf:Document, sioc:Item,
+              rdfs:subClassOf foaf:Document, sioc:Item, _:Template,
                   [ a owl:Restriction ;
                       owl:onProperty sioc:has_container ;
                       owl:hasValue _:container
@@ -96,14 +96,15 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               rdfs:label " " ;
               gp:uriTemplate " " ;
               gp:skolemTemplate " " ;
+              gp:template _:template ;
               gp:defaultLimit 20 ;
               gp:defaultOffset 0 ;
               gp:defaultOrderBy " "^^xsd:string ;
               gp:cacheControl "no-cache" ;
-              gp:loadClass _:javaClass ;
+              gp:loadClass _:loadClass ;
               gp:query gp:Describe ;
               gc:supportedMode gc:ReadMode ;
-              rdfs:isDefinedBy _:ontology .
+              rdfs:isDefinedBy _:isDefinedBy .
       }
       WHERE {}""" .
 
@@ -115,6 +116,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	] ;
     gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
     spin:constraint [ a dqc:MissingProperties ;
+	    sp:arg1 <#Template> ;
+	    sp:arg2 rdfs:subClassOf
+	] ,
+        [ a dqc:MissingProperties ;
 	    sp:arg1 <#Template> ;
 	    sp:arg2 gp:uriTemplate
 	] ,
@@ -181,10 +186,11 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
           _:this a foaf:Document, sioc:Item, gps:QueryItem ;
               foaf:primaryTopic _:query ;
               gp:slug " "^^xsd:string .
-          _:query a sp:Query, gps:Query ;
+          _:query a sp:Query, gps:Query, _:ConstructOrDescribe ;
               foaf:isPrimaryTopicOf _:this ;
               rdfs:label " " ;
               sp:text "DESCRIBE ?this"^^xsd:string .
+              # rdfs:isDefinedBy ?isDefinedBy .
       }
       WHERE {}""" .
 
