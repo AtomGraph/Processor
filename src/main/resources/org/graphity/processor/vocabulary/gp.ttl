@@ -222,7 +222,7 @@
             owl:allValuesFrom <#Container>
         ] ;
     <#uriTemplate> "{path: .*}/" ; # "/{path: [^/]*}" ; # ([^/]+?)
-    <#skolemTemplate> "/{slug}/" ;
+    <#skolemTemplate> "{slug}/" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
     <#template> <#ContainerConstructor> ;
@@ -258,7 +258,7 @@
             owl:allValuesFrom <#Container>
         ] ;
     <#uriTemplate> "{path: .*}" ; # "/{container: [^/]*}/{path: [^/]*}" ;
-    <#skolemTemplate> "/{slug}" ;
+    <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
     <#template> <#ItemConstructor> ;

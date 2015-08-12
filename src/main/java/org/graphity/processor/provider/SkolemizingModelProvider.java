@@ -24,7 +24,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
-import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.util.Skolemizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,31 +43,10 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     @Override
     public Model process(Model model)
     {
-        model = super.process(model);
-        
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
-        {
-            /*
-            try
-            {
-            */
-                return skolemize(getServletConfig(), getUriInfo(), getOntology(), getOntClass(), new OntClassMatcher(), model);
-            /*
-            }
-            catch (IllegalArgumentException ex)
-            {
-                if (log.isErrorEnabled()) log.error("Blank node skolemization failed for model: {}", model);
-                throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
-            }
-            catch (ConfigurationException ex)
-            {
-                if (log.isErrorEnabled()) log.error("Configuration error: {}", ex);
-                throw new WebApplicationException(ex);                
-            }
-            */
-        }
+            return skolemize(getServletConfig(), getUriInfo(), getOntology(), getOntClass(), new OntClassMatcher(), super.process(model));
         
-        return model;
+        return super.process(model);
     }
     
     public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model) // throws ConfigurationException
