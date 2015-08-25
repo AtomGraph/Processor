@@ -290,7 +290,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Path("{path: .+}")
     public Object getSubResource()
     {
-        if (getMatchedOntClass().equals(GP.SPARQLEndpoint)) return getSPARQLEndpoint();
+        //if (getMatchedOntClass().equals(GP.SPARQLEndpoint)) return getSPARQLEndpoint();
         if (getMatchedOntClass().getPropertyResourceValue(GP.loadClass) != null)
         {
             Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);
@@ -884,18 +884,34 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     }
     
     /**
-     * Returns query used to retrieve RDF description of this resource
+     * Returns query used to retrieve RDF description of this resource.
+     * Query solution bindings are applied by default.
      * 
-     * @return query object
+     * @return query object with applied solution bindings
+     * @see #getQuerySolutionMap()
      */
     @Override
     public Query getQuery()
     {
-        Query query = getQueryBuilder().build();            
-        query.setBaseURI(getUriInfo().getBaseUri().toString());  
-        return new ParameterizedSparqlString(query.toString(), getQuerySolutionMap()).asQuery();        
+        return getQuery(getQuerySolutionMap());
     }
-    
+
+    /**
+     * Returns query used to retrieve RDF description of this resource
+     * 
+     * @param qsm query solution map to be applied on the query string, or null if none
+     * @return query object
+     */    
+    public Query getQuery(QuerySolutionMap qsm)
+    {
+        Query query = getQueryBuilder().build();            
+        query.setBaseURI(getUriInfo().getBaseUri().toString());
+        
+        if (qsm != null) return new ParameterizedSparqlString(query.toString(), qsm).asQuery();
+
+        return query;
+    }
+
     /**
      * Returns Graph Store of this resource.
      * 

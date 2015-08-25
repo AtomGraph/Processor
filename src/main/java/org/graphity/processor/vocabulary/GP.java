@@ -112,7 +112,7 @@ public final class GP
 
     public static final DatatypeProperty cacheSitemap = m_model.createDatatypeProperty( NS + "cacheSitemap" );
 
-    public static final DatatypeProperty templatesQuery = m_model.createDatatypeProperty( NS + "templatesQuery" );
+    //public static final DatatypeProperty templatesQuery = m_model.createDatatypeProperty( NS + "templatesQuery" );
 
     public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
 

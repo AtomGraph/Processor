@@ -302,6 +302,7 @@
     rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "/sparql" ;
     <#query> <#Describe> ;
+    <#loadClass> <java:org.graphity.processor.model.SPARQLEndpointBase> ;
     rdfs:label "SPARQL endpoint" ;
     rdfs:isDefinedBy <#> .
 
