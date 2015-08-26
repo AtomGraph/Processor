@@ -32,7 +32,7 @@ import org.graphity.core.MediaTypes;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.SPARQLEndpoint;
-import org.graphity.processor.model.HypermediaBase;
+import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.model.impl.ResourceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,7 +50,7 @@ public class Container extends ResourceBase
     public Container(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
             @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
             @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext,
-            @Context HypermediaBase hypermedia)
+            @Context Hypermedia hypermedia)
     {
 	super(uriInfo, request, servletConfig, mediaTypes,
                 endpoint, graphStore,

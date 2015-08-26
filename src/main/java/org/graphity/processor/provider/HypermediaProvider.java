@@ -27,7 +27,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
-import org.graphity.processor.model.HypermediaBase;
+import org.graphity.processor.model.impl.HypermediaBase;
+import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.util.Modifiers;
 
 /**
@@ -35,7 +36,7 @@ import org.graphity.processor.util.Modifiers;
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
 @Provider
-public class HypermediaProvider extends PerRequestTypeInjectableProvider<Context, HypermediaBase> implements ContextResolver<HypermediaBase>
+public class HypermediaProvider extends PerRequestTypeInjectableProvider<Context, Hypermedia> implements ContextResolver<Hypermedia>
 {
 
     @Context private ServletConfig servletConfig;
@@ -44,16 +45,16 @@ public class HypermediaProvider extends PerRequestTypeInjectableProvider<Context
 
     public HypermediaProvider()
     {
-        super(HypermediaBase.class);
+        super(Hypermedia.class);
     }
 
     @Override
-    public Injectable<HypermediaBase> getInjectable(ComponentContext ic, Context a)
+    public Injectable<Hypermedia> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<HypermediaBase>()
+	return new Injectable<Hypermedia>()
 	{
 	    @Override
-	    public HypermediaBase getValue()
+	    public Hypermedia getValue()
 	    {
 		return getHypermedia();
 	    }
@@ -61,12 +62,12 @@ public class HypermediaProvider extends PerRequestTypeInjectableProvider<Context
     }
 
     @Override
-    public HypermediaBase getContext(Class<?> type)
+    public Hypermedia getContext(Class<?> type)
     {
         return getHypermedia();
     }
 
-    public HypermediaBase getHypermedia()
+    public Hypermedia getHypermedia()
     {
         return new HypermediaBase(getServletConfig(), getUriInfo(), getModifiers(), getOntology(), getMatchedOntClass());
     }

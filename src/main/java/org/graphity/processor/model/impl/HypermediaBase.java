@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.graphity.processor.model;
+package org.graphity.processor.model.impl;
 
 import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
@@ -46,6 +46,8 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.model.Hypermedia;
+import org.graphity.processor.model.Resource;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
 import org.graphity.processor.vocabulary.GP;
@@ -63,7 +65,7 @@ import org.topbraid.spin.vocabulary.SP;
  * @author Martynas Jusevičius <martynas@graphity.org>
  * @see <a href="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Representational State Transfer (REST): chapter 5</a>
  */
-public class HypermediaBase
+public class HypermediaBase implements Hypermedia
 {
 
     private static final Logger log = LoggerFactory.getLogger(HypermediaBase.class);
@@ -123,6 +125,7 @@ public class HypermediaBase
         return ontology;
     }
     
+    @Override
     public Model addStates(Resource resource, Model model)
     {
         // mixing sitemap and description traversal - a good idea??

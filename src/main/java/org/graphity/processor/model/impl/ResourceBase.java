@@ -54,7 +54,7 @@ import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.SitemapException;
-import org.graphity.processor.model.HypermediaBase;
+import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.query.SelectBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +84,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     private final URI mode;
-    private final HypermediaBase hypermedia;
+    private final Hypermedia hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -116,7 +116,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
             @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext,
-            @Context HypermediaBase hypermedia)
+            @Context Hypermedia hypermedia)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
@@ -158,7 +158,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public void init()
     {
 	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
-	addProperty(RDF.type, getMatchedOntClass());
+	//addProperty(RDF.type, getMatchedOntClass());
 
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
@@ -251,7 +251,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             }
 
             if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
-            addProperty(SPIN.query, queryBuilder);
+            //addProperty(SPIN.query, queryBuilder);
         }
         
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);        
@@ -497,7 +497,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 		return rb.build();
 	    }
 	    
-	    UpdateRequest request = getUpdateRequest(getQuerySolutionMap());
+	    UpdateRequest request = getUpdateRequest(getUpdateRequest().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
 	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
 	    Iterator<com.hp.hpl.jena.update.Update> it = request.getOperations().iterator();
 	    while (it.hasNext()) deleteInsertRequest.add(it.next());
@@ -528,7 +528,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (log.isDebugEnabled()) log.debug("DELETEing resource: {} matched OntClass: {}", this, getMatchedOntClass());
 	
-        UpdateRequest request = getUpdateRequest(getQuerySolutionMap());
+        UpdateRequest request = getUpdateRequest(getUpdateRequest().toString(), getQuerySolutionMap(),
+                getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
 	getSPARQLEndpoint().post(request, null, null);
 	
@@ -642,10 +643,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (queryOrTemplateCall != null)
         {
             org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
-            if (spinQuery != null) return new ParameterizedSparqlString(spinQuery.toString()).asQuery();
+            if (spinQuery != null) return getParameterizedSparqlString(spinQuery.toString(), null,
+                    getUriInfo().getBaseUri().toString()).asQuery();
 
             TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-            if (templateCall != null) return new ParameterizedSparqlString(templateCall.getQueryString()).asQuery();
+            if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                    getUriInfo().getBaseUri().toString()).asQuery();
         }
         
         return null;
@@ -670,23 +673,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (updateOrTemplateCall != null)
         {
             Update spinUpdate = SPINFactory.asUpdate(updateOrTemplateCall);
-            if (spinUpdate != null) return new ParameterizedSparqlString(spinUpdate.toString()).asUpdate();
+            if (spinUpdate != null) return getParameterizedSparqlString(spinUpdate.toString(), null,
+                    getUriInfo().getBaseUri().toString()).asUpdate();
 
             TemplateCall templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
-            if (templateCall != null) return new ParameterizedSparqlString(templateCall.getQueryString()).asUpdate();
+            if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                    getUriInfo().getBaseUri().toString()).asUpdate();
         }
         
         return null;
-    }
-
-    public UpdateRequest getUpdateRequest(String updateString, Resource resource)
-    {
-	if (updateString == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	
-	QuerySolutionMap qsm = new QuerySolutionMap();
-	qsm.add("this", resource);
-	return new ParameterizedSparqlString(updateString, qsm).asUpdate();
     }
 
     /**
@@ -865,7 +860,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return ontology;
     }
 
-    public HypermediaBase getHypermedia()
+    public Hypermedia getHypermedia()
     {
         return hypermedia;
     }
@@ -893,23 +888,25 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Query getQuery()
     {
-        return getQuery(getQuerySolutionMap());
+        Query query = getQueryBuilder().build();            
+        //query.setBaseURI(getUriInfo().getBaseUri().toString());
+        
+        return getQuery(query.toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
-    /**
+     /**
      * Returns query used to retrieve RDF description of this resource
      * 
-     * @param qsm query solution map to be applied on the query string, or null if none
+     * @param command query string
+     * @param qsm query solution map to be applied
+     * @param baseUri base URI of the query
      * @return query object
      */    
-    public Query getQuery(QuerySolutionMap qsm)
+    public Query getQuery(String command, QuerySolutionMap qsm, String baseUri)
     {
-        Query query = getQueryBuilder().build();            
-        query.setBaseURI(getUriInfo().getBaseUri().toString());
-        
-        if (qsm != null) return new ParameterizedSparqlString(query.toString(), qsm).asQuery();
-
-        return query;
+	if (command == null) throw new IllegalArgumentException("Command String cannot be null");
+     
+        return getParameterizedSparqlString(command, qsm, baseUri).asQuery();        
     }
 
     /**
@@ -944,20 +941,29 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         if (updateRequest == null) throw new IllegalStateException("UpdateRequest should not be null at this point. Check initialization in init()");
         
-        return updateRequest;
+        return getUpdateRequest(updateRequest.toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
+    public ParameterizedSparqlString getParameterizedSparqlString(String command, QuerySolutionMap qsm, String baseUri)
+    {
+	if (command == null) throw new IllegalArgumentException("Command String cannot be null");
+        
+        return new ParameterizedSparqlString(command, qsm, baseUri);
+    }
+    
     /**
      * Returns UpdateRequest with query bindings for the current request applied to the query string.
      * 
+     * @param command command string
      * @param qsm query solution map
+     * @param baseUri
      * @return update request
      */
-    public UpdateRequest getUpdateRequest(QuerySolutionMap qsm)
+    public UpdateRequest getUpdateRequest(String command, QuerySolutionMap qsm, String baseUri)
     {
-	if (qsm == null) throw new IllegalArgumentException("QuerySolutionMap cannot be null");
-        
-        return new ParameterizedSparqlString(getUpdateRequest().toString(), qsm).asUpdate();
+	if (command == null) throw new IllegalArgumentException("Command String cannot be null");
+
+        return getParameterizedSparqlString(command, qsm, baseUri).asUpdate();
     }
 
     /**
