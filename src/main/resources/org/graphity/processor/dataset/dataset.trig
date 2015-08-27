@@ -25,27 +25,27 @@
 
 # containers
 
-<ontologies> a gp:Container, sioc:Container, foaf:Document ;
+<ontologies/> a gp:Container, sioc:Container, foaf:Document ;
     gp:slug "ontologies"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Ontologies" .
 
-<classes> a gp:Container, sioc:Container, foaf:Document, gps:ClassContainer ;
+<classes/> a gp:Container, sioc:Container, foaf:Document, gps:ClassContainer ;
     gp:slug "classes"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Classes" .
 
-<templates> a gp:Container, sioc:Container, foaf:Document, gps:TemplateContainer ;
+<templates/> a gp:Container, sioc:Container, foaf:Document, gps:TemplateContainer ;
     gp:slug "templates"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Templates" .
 
-<queries> a gp:Container, sioc:Container, foaf:Document, gps:QueryContainer ;
+<queries/> a gp:Container, sioc:Container, foaf:Document, gps:QueryContainer ;
     gp:slug "queries"^^xsd:string ;
     sioc:has_parent <> ;
     dct:title "Queries" .
 
-<resources/labelled> a gp:Container, sioc:Container, foaf:Document, gps:LabelResourcesContainer ;
+<resources/labelled/> a gp:Container, sioc:Container, foaf:Document, gps:LabelResourcesContainer ;
     sioc:has_parent <resources> ;
     dct:title "Labelled resources" .
 
