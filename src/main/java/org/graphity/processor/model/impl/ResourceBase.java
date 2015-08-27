@@ -497,7 +497,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 		return rb.build();
 	    }
 	    
-	    UpdateRequest request = getUpdateRequest(getUpdateRequest().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+	    UpdateRequest request = getUpdateRequest();
 	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
 	    Iterator<com.hp.hpl.jena.update.Update> it = request.getOperations().iterator();
 	    while (it.hasNext()) deleteInsertRequest.add(it.next());
@@ -528,8 +528,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (log.isDebugEnabled()) log.debug("DELETEing resource: {} matched OntClass: {}", this, getMatchedOntClass());
 	
-        UpdateRequest request = getUpdateRequest(getUpdateRequest().toString(), getQuerySolutionMap(),
-                getUriInfo().getBaseUri().toString());
+        UpdateRequest request = getUpdateRequest();
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
 	getSPARQLEndpoint().post(request, null, null);
 	
