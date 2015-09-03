@@ -44,6 +44,12 @@
             <param-value>http://graphity.org/gps#</param-value>
         </init-param>
         <init-param>
+            <param-name>http://graphity.org/gp#sitemapRules</param-name>
+            <param-value><![CDATA[
+[inheritance: (?class ?p ?o), (?p rdf:type owl:AnnotationProperty), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?class), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
+]]></param-value>
+        </init-param>
+        <init-param>
             <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
             <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>

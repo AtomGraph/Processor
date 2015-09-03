@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.provider;
 
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.ObjectProperty;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
 import com.hp.hpl.jena.ontology.OntModel;
@@ -27,6 +28,7 @@ import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
+import java.util.List;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -55,17 +57,17 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     @Context ServletConfig servletConfig;
     @Context Providers providers;
 
-    public static final OntModelSpec MEM_ANNOTATION_INHERITANCE = new OntModelSpec(OntModelSpec.OWL_MEM);
-    
-    public OntologyProvider()
+    public static final OntModelSpec SITEMAP_RULES_MEM = new OntModelSpec(OntModelSpec.OWL_MEM);
+        
+    public OntologyProvider(@Context ServletConfig servletConfig)
     {
 	super(Ontology.class);
-        
-        String rules = "[inheritance: (?class ?p ?o), (?p rdf:type owl:AnnotationProperty), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?class), noValue(?subClass ?p) -> (?subClass ?p ?o) ]";
-        Reasoner reasoner = new GenericRuleReasoner(Rule.parseRules(rules));
+        this.servletConfig = servletConfig;
+
+        Reasoner reasoner = new GenericRuleReasoner(getRules(servletConfig, GP.sitemapRules));
         reasoner.setDerivationLogging(true);
         //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        MEM_ANNOTATION_INHERITANCE.setReasoner(reasoner);
+        SITEMAP_RULES_MEM.setReasoner(reasoner);
     }
 
     public ServletConfig getServletConfig()
@@ -140,7 +142,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
         }
 
-        return getOntology(getOntModel(ontologyURI, MEM_ANNOTATION_INHERITANCE), ontologyURI);
+        return getOntology(getOntModel(ontologyURI, SITEMAP_RULES_MEM), ontologyURI);
     }
     
     public String getOntologyURI(ServletConfig servletConfig, ObjectProperty property)
@@ -178,4 +180,23 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return providers;
     }
 
+    public final List<Rule> getRules(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        String rules = getRulesString(servletConfig, property);
+        if (rules == null) return null;
+        
+        return Rule.parseRules(rules);
+    }
+
+    public String getRulesString(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Object rules = servletConfig.getInitParameter(property.getURI());
+        if (rules != null) return rules.toString();
+
+        return null;
+    }
+    
 }

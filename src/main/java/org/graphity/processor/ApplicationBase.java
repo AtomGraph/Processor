@@ -79,7 +79,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         singletons.add(new HypermediaProvider());
         singletons.add(new DataManagerProvider());
         singletons.add(new DatasetProvider());
-        singletons.add(new OntologyProvider());
+        singletons.add(new OntologyProvider(servletConfig));
         singletons.add(new OntClassMatcher());
 	singletons.add(new SPARQLEndpointProvider());
 	singletons.add(new SPARQLEndpointOriginProvider());
