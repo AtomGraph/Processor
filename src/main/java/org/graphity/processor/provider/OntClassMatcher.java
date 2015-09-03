@@ -56,6 +56,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import org.graphity.core.exception.ConfigurationException;
+import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -111,7 +112,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param base base URI
      * @return matching ontology class or null, if none
      */
-    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, URI uri, URI base) // throws ConfigurationException
+    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, URI uri, URI base)
     {
 	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
 	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
@@ -163,7 +164,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                     if (!templateRes.hasProperty(GP.uriTemplate))
                     {
                         if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.uriTemplate);
-                        throw new ConfigurationException("Template class '" + templateRes + "' does not have value for '" + GP.uriTemplate + "' annotation");
+                        throw new SitemapException("Template class '" + templateRes + "' does not have value for '" + GP.uriTemplate + "' annotation");
                     }
 
                     UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.uriTemplate).getString());
@@ -232,7 +233,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
-    public Template matchTemplate(Ontology ontology, CharSequence path) // throws ConfigurationException
+    public Template matchTemplate(Ontology ontology, CharSequence path)
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
@@ -293,7 +294,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
-    public Map<Property, List<OntClass>> ontClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, Property onProperty, OntClass allValuesFrom) // throws ConfigurationException
+    public Map<Property, List<OntClass>> ontClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, Property onProperty, OntClass allValuesFrom)
     {
 	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
