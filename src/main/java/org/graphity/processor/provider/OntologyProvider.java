@@ -57,17 +57,21 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     @Context ServletConfig servletConfig;
     @Context Providers providers;
 
-    public static final OntModelSpec SITEMAP_RULES_MEM = new OntModelSpec(OntModelSpec.OWL_MEM);
+    private static final OntModelSpec SITEMAP_RULES_MEM = new OntModelSpec(OntModelSpec.OWL_MEM);
         
     public OntologyProvider(@Context ServletConfig servletConfig)
     {
 	super(Ontology.class);
         this.servletConfig = servletConfig;
 
-        Reasoner reasoner = new GenericRuleReasoner(getRules(servletConfig, GP.sitemapRules));
-        reasoner.setDerivationLogging(true);
-        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        SITEMAP_RULES_MEM.setReasoner(reasoner);
+        List<Rule> rules = getRules(servletConfig, GP.sitemapRules);
+        if (rules != null)
+        {
+            Reasoner reasoner = new GenericRuleReasoner(rules);
+            reasoner.setDerivationLogging(true);
+            //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
+            SITEMAP_RULES_MEM.setReasoner(reasoner);
+        }
     }
 
     public ServletConfig getServletConfig()
@@ -85,6 +89,11 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return request;
     }
 
+    public OntModelSpec getOntModelSpec()
+    {
+        return SITEMAP_RULES_MEM;
+    }
+    
     @Override
     public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
     {
@@ -142,7 +151,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
         }
 
-        return getOntology(getOntModel(ontologyURI, SITEMAP_RULES_MEM), ontologyURI);
+        return getOntology(getOntModel(ontologyURI, getOntModelSpec()), ontologyURI);
     }
     
     public String getOntologyURI(ServletConfig servletConfig, ObjectProperty property)
