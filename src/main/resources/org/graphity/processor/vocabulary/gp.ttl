@@ -232,7 +232,7 @@
 	    sp:arg2 foaf:Document
 	] ;
     rdfs:label "Container" ;
-    rdfs:comment "First-level container" ;
+    rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
 
 <#ContainerConstructor> a       sp:Construct ;
@@ -268,7 +268,7 @@
             sp:arg2 foaf:Document
 	] ;
     rdfs:label "Item" ;
-    rdfs:comment "Child item of a first-level container" ;
+    rdfs:comment "Child item of a container" ;
     rdfs:isDefinedBy <#> .
 
 <#ItemConstructor> a       sp:Construct ;
