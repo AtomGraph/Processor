@@ -25,6 +25,7 @@ import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
+import com.hp.hpl.jena.vocabulary.ReasonerVocabulary;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -68,7 +69,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (rules != null)
         {
             Reasoner reasoner = new GenericRuleReasoner(rules);
-            reasoner.setDerivationLogging(true);
+            //reasoner.setDerivationLogging(true);
             //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
             SITEMAP_RULES_MEM.setReasoner(reasoner);
         }

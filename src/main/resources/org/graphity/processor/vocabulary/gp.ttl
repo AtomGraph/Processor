@@ -10,14 +10,13 @@
 @prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
 @prefix spl:    <http://spinrdf.org/spl#> .
-@prefix dqc:	<http://semwebquality.org/ontologies/dq-constraints#> .
 @prefix dct:	<http://purl.org/dc/terms/> .
 @prefix vann:	<http://purl.org/vocab/vann/> .
 @prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
 <#> a owl:Ontology ;
-    owl:imports sp:, spin:, dqc:, sioc:, foaf: ;
+    owl:imports sp:, spin:, sioc:, foaf: ;
     owl:versionInfo "1.1.4" ;
     # dct:title "Graphity Processor ontology" ;
     rdfs:label "Graphity Processor ontology" ;
@@ -226,11 +225,11 @@
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
     <#template> <#ContainerConstructor> ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#Container> ;
-	    sp:arg2 <#slug>
-	] , [ a <#MissingType> ;
-	    sp:arg1 foaf:Document
+    spin:constraint [ a <#MissingPropertyValue> ;
+	    sp:arg1 <#slug>
+	] , [ a <#MissingPropertyValue> ;
+            sp:arg1 rdf:type ;
+	    sp:arg2 foaf:Document
 	] ;
     rdfs:label "Container" ;
     rdfs:comment "First-level container" ;
@@ -262,11 +261,11 @@
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
     <#template> <#ItemConstructor> ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#Item> ;
-	    sp:arg2 <#slug>
-	] , [ a <#MissingType> ;
-	    sp:arg1 foaf:Document
+    spin:constraint [ a <#MissingPropertyValue> ;
+	    sp:arg1 <#slug>
+	] , [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdf:type ;
+            sp:arg2 foaf:Document
 	] ;
     rdfs:label "Item" ;
     rdfs:comment "Child item of a first-level container" ;
@@ -326,14 +325,16 @@
 
 # SPIN TEMPLATES
 
-<#MissingType> a spin:Template ;
-    rdfs:subClassOf dqc:MissingElementConstraints ;
-    rdfs:label "Missing type" ;
-    spin:body <#ConstructMissingType> ;
-    spin:labelTemplate "Instance does not have a mandatory RDF type {?arg1}" ;
+<#MissingPropertyValue> a spin:Template ;
+    rdfs:label "Missing property value" ;
+    spin:body <#ConstructMissingPropertyValue> ;
+    spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
     spin:constraint [ a spl:Argument ;
         spl:predicate sp:arg1 ;
-        spl:valueType rdfs:Class
+        spl:valueType rdf:Property
+    ] , [ a spl:Argument ;
+        spl:predicate sp:arg2 ;
+        spl:optional true
     ] ;
     rdfs:isDefinedBy <#> .
 
@@ -430,14 +431,14 @@ WHERE {
 
 # ====
 
-<#ConstructMissingType> a sp:Construct, sp:Query ;
+<#ConstructMissingPropertyValue> a sp:Construct, sp:Query ;
       sp:text """CONSTRUCT {
     _:b0 a spin:ConstraintViolation .
     _:b0 spin:violationRoot ?this .
-    _:b0 spin:violationPath rdf:type .
+    _:b0 spin:violationPath ?arg1 .
 }
 WHERE {
     NOT EXISTS {
-        ?this a ?arg1 .
+        ?this ?arg1 ?arg2 .
     } 
 }""" .

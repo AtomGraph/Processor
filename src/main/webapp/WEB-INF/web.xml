@@ -46,7 +46,7 @@
         <init-param>
             <param-name>http://graphity.org/gp#sitemapRules</param-name>
             <param-value><![CDATA[
-[inheritance: (?class ?p ?o), (?p rdf:type owl:AnnotationProperty), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?class), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
+[inheritance: (?template rdf:type <http://graphity.org/gp#Template>), (?template ?p ?o), (?p rdf:type owl:AnnotationProperty), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?template), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
 ]]></param-value>
         </init-param>
         <init-param>

@@ -17,7 +17,6 @@
 package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.util.List;
@@ -64,9 +63,8 @@ public class Validator
     {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
         
-        OntModel tempModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+        OntModel tempModel = ModelFactory.createOntologyModel(getOntModel().getSpecification());
         tempModel.add(getOntModel()).add(model);
-	//SPINModuleRegistry.get().registerAll(tempModel, null);
 	List<ConstraintViolation> cvs = SPINConstraints.check(tempModel, null);
 	if (!cvs.isEmpty())
         {
