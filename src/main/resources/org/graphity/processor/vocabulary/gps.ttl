@@ -11,7 +11,6 @@
 @prefix dct:	<http://purl.org/dc/terms/> .
 @prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
-@prefix dqc:	<http://semwebquality.org/ontologies/dq-constraints#> .
 @prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
@@ -63,10 +62,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/templates/{item}" ;
     gp:template <#TemplateItemConstructor> ;
-#    spin:constraint [ a dqc:MissingProperties ;
-#	    sp:arg1 <#TemplateItem> ;
-#	    sp:arg2 gp:slug
-#	] ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
 
@@ -115,25 +110,20 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
             owl:allValuesFrom <#TemplateItem>
 	] ;
     gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#Template> ;
-	    sp:arg2 rdfs:subClassOf
+    spin:constraint [ a gp:MissingPropertyValue ;
+	    sp:arg1 rdfs:subClassOf
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Template> ;
-	    sp:arg2 gp:uriTemplate
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 gp:uriTemplate
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Template> ;
-	    sp:arg2 gp:query
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 gp:query
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Template> ;
-	    sp:arg2 rdfs:label
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 rdfs:label
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Template> ;
-	    sp:arg2 rdfs:isDefinedBy
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:label "Template" ;
     rdfs:isDefinedBy <#> .
@@ -162,10 +152,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{item}" ;
     gp:template <#QueryItemConstructor> ;
-#    spin:constraint [ a dqc:MissingProperties ;
-#	    sp:arg1 <#QueryItem> ;
-#	    sp:arg2 gp:slug
-#	] ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
@@ -201,17 +187,14 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
             owl:allValuesFrom <#QueryItem>
 	] ;
     gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
-    spin:constraint [ a dqc:MissingProperties ;
-	    sp:arg1 <#Query> ;
-	    sp:arg2 sp:text
+    spin:constraint [ a gp:MissingPropertyValue ;
+	    sp:arg1 sp:text
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Query> ;
-	    sp:arg2 rdfs:label
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 rdfs:label
 	] ,
-        [ a dqc:MissingProperties ;
-	    sp:arg1 <#Query> ;
-	    sp:arg2 rdfs:isDefinedBy
+        [ a gp:MissingPropertyValue ;
+	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:label "Query" ;
     rdfs:isDefinedBy <#> .
