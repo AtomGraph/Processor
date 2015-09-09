@@ -233,9 +233,16 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                             desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
                         if (desc == null) desc = false; // ORDERY BY is ASC() by default
 
-                        if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                            orderBy(orderBy, desc);
+                        try
+                        {
+                            if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                            subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                                orderBy(orderBy, desc);
+                        }
+                        catch (IllegalArgumentException ex)
+                        {
+                            if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
+                        }
                     }
 
                     if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
