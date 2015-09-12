@@ -60,7 +60,6 @@ public class Skolemizer
     private ServletConfig servletConfig;
     private Ontology ontology;
     private OntClass ontClass;
-    // private OntModel ontModel;
     private OntClassMatcher ontClassMatcher;
     
     protected Skolemizer()
@@ -86,15 +85,6 @@ public class Skolemizer
         return this;
     }
 
-    /*
-    public Skolemizer ontModel(OntModel ontModel)
-    {
-	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
-        this.ontModel = ontModel;
-        return this;
-    }
-    */
-    
     public Skolemizer ontClassMatcher(OntClassMatcher ontClassMatcher)
     {
 	if (ontClassMatcher == null) throw new IllegalArgumentException("OntClassMatcher cannot be null");
@@ -116,19 +106,12 @@ public class Skolemizer
         return this;
     }
 
-    /*
-    public static Skolemizer fromOntModel(OntModel ontModel)
-    {
-        return newInstance().ontModel(ontModel);
-    }
-    */
-
     public static Skolemizer fromOntology(Ontology ontology)
     {
         return newInstance().ontology(ontology);
     }
 
-    public Model build(Model model) // throws ConfigurationException
+    public Model build(Model model)
     {
     	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
@@ -169,7 +152,7 @@ public class Skolemizer
         return ResourceFactory.createResource(getUriInfo().getAbsolutePath().toString());
     }
     
-    public URI build(Resource resource) // throws ConfigurationException
+    public URI build(Resource resource)
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
@@ -224,7 +207,7 @@ public class Skolemizer
         return null;
     }
 
-    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass) // throws ConfigurationException
+    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass)
     {
         // build URI relative to absolute path
         return build(resource, baseBuilder, getSkolemTemplate(ontClass, GP.skolemTemplate));
@@ -325,7 +308,7 @@ public class Skolemizer
 	return null;
     }
 
-    protected String getSkolemTemplate(OntClass ontClass, Property property) // throws ConfigurationException
+    protected String getSkolemTemplate(OntClass ontClass, Property property)
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
@@ -346,13 +329,6 @@ public class Skolemizer
     {
         return ontClass;
     }
-    
-    /*
-    public OntModel getOntModel()
-    {
-        return ontModel;
-    }
-    */
     
     public OntClassMatcher getOntClassMatcher()
     {

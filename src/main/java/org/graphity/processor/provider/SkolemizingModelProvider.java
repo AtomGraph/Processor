@@ -49,7 +49,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         return super.process(model);
     }
     
-    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model) // throws ConfigurationException
+    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model)
     {
         return Skolemizer.fromOntology(ontology).
                 servletConfig(servletConfig).
