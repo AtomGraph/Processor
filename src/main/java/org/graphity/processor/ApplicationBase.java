@@ -25,6 +25,7 @@ import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
+import com.hp.hpl.jena.util.FileManager;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -125,10 +126,20 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         if (getServletConfig().getInitParameter(GP.cacheSitemap.getURI()) != null)
             cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(GP.cacheSitemap.getURI()));
         
+        FileManager fileManager = getFileManager();
+        FileManager.setGlobalFileManager(fileManager);
+	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
+        
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
+        OntDocumentManager.getInstance().setFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         
         singletons.add(new OntologyProvider(getOntology()));
+    }
+
+    public FileManager getFileManager()
+    {
+        return FileManager.get();
     }
     
     /**
