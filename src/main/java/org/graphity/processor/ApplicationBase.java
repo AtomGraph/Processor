@@ -40,6 +40,7 @@ import org.graphity.processor.provider.DatasetProvider;
 import org.graphity.core.provider.QueryParamProvider;
 import org.graphity.core.provider.ResultSetWriter;
 import org.graphity.core.provider.UpdateRequestReader;
+import org.graphity.processor.mapper.ConfigurationExceptionMapper;
 import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.provider.ConstraintViolationExceptionProvider;
@@ -99,6 +100,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         singletons.add(new ConstraintViolationExceptionProvider());
 	singletons.add(new ConstraintViolationExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
+        singletons.add(new ConfigurationExceptionMapper());        
 	singletons.add(new org.graphity.processor.mapper.jena.QueryExceptionHTTPMapper());
 	singletons.add(new org.graphity.processor.mapper.jena.QueryParseExceptionMapper());
 	singletons.add(new org.graphity.processor.mapper.jena.HttpExceptionMapper());
