@@ -649,7 +649,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
 	Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
-        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
+        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
         Model queryModel = ModelFactory.createDefaultModel();
         StmtIterator stmtIt = queryOrTemplateCall.listProperties(RDF.type);
         try
