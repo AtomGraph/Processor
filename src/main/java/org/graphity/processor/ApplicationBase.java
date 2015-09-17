@@ -196,6 +196,11 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         
         return ontModelSpec;
     }
+
+    public OntModelSpec getOntModelSpec(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        return getOntModelSpec(getRules(servletConfig, property));
+    }
     
     /**
      * Returns configured sitemap ontology.
@@ -222,7 +227,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
             throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
         }
 
-        return getOntology(getOntModel(ontologyURI, getOntModelSpec(getRules(servletConfig, sitemapRulesProperty))), ontologyURI);
+        return getOntology(getOntModel(ontologyURI, getOntModelSpec(servletConfig, sitemapRulesProperty)), ontologyURI);
     }
     
     public String getOntologyURI(ServletConfig servletConfig, ObjectProperty property)

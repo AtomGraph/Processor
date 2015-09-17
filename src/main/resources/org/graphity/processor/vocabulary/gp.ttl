@@ -341,20 +341,22 @@
 # QUERIES
 
 <#Describe>    a       sp:Describe, sp:Query ;
-    sp:text """DESCRIBE ?this""" .
+    sp:text """DESCRIBE ?this""" ;
+    rdfs:isDefinedBy <#> .
 
 # ====
 
 <#DescribeWithTopic>    a       sp:Describe, sp:Query ;
-      sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 DESCRIBE ?this ?topic WHERE {
     ?topic foaf:isPrimaryTopicOf ?this .
-}""" .
+}""" ;
+    rdfs:isDefinedBy <#> .
 
 # ====
 
 <#DescribeWithChildren>    a       sp:Describe, sp:Query ;
-      sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
+    sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX sioc: <http://rdfs.org/sioc/ns#>
 DESCRIBE ?this ?doc ?thing WHERE {
     OPTIONAL {
@@ -380,7 +382,8 @@ DESCRIBE ?this ?doc ?thing WHERE {
             } .
         } .
     } .
-}""" .
+}""" ;
+    rdfs:isDefinedBy <#> .
 
 # ====
 
@@ -390,7 +393,8 @@ DESCRIBE ?this ?doc ?thing WHERE {
 }
 WHERE {
     ?this ?property ?object .
-}""" .
+}""" ;
+    rdfs:isDefinedBy <#> .
 
 # ====
 
@@ -400,7 +404,8 @@ WHERE {
 }
 WHERE {
     ?subject ?property ?object .
-}""" .
+}""" ;
+    rdfs:isDefinedBy <#> .
 
 # ====
 

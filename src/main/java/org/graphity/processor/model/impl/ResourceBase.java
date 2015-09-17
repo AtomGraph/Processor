@@ -21,6 +21,8 @@ import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
+import com.hp.hpl.jena.reasoner.Reasoner;
+import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.sparql.util.Loader;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.update.UpdateFactory;
@@ -61,6 +63,7 @@ import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.model.TemplateCall;
 import org.topbraid.spin.model.update.Update;
+import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
 
 /**
@@ -646,6 +649,30 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
 	Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
+        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
+        Model queryModel = ModelFactory.createDefaultModel();
+        StmtIterator stmtIt = queryOrTemplateCall.listProperties(RDF.type);
+        try
+        {
+            queryModel.add(stmtIt);
+            stmtIt = queryOrTemplateCall.listProperties(SP.text);
+            queryModel.add(stmtIt);
+            ResIterator resIt = queryModel.listResourcesWithProperty(SP.text);
+            try
+            {
+                if (resIt.hasNext()) queryOrTemplateCall = resIt.next();
+            }
+            finally
+            {
+                resIt.close();
+            }
+        }
+        finally
+        {
+            stmtIt.close();
+        }
+        // end of workaround
+        
         if (queryOrTemplateCall != null)
         {
             org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
@@ -700,7 +727,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public ResponseBuilder getResponseBuilder(Model model)
     {
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
-        return super.getResponseBuilder(model).header("Link", classLink.toString());
+        ResponseBuilder rb = super.getResponseBuilder(model).header("Link", classLink.toString());
+        Reasoner reasoner = getMatchedOntClass().getOntModel().getSpecification().getReasoner();
+        if (reasoner instanceof GenericRuleReasoner)
+        {
+            GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
+            rb.header("Rules", grr.getRules().toString());
+        }
+        return rb;
     }
 
     public List<Locale> getLanguages(Property property)
