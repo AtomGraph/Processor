@@ -23,6 +23,7 @@ import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
+import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.sparql.util.Loader;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.update.UpdateFactory;
@@ -58,6 +59,7 @@ import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.query.SelectBuilder;
+import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.SPINFactory;
@@ -732,11 +734,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (reasoner instanceof GenericRuleReasoner)
         {
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
-            rb.header("Rules", grr.getRules().toString());
+            rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
         }
         return rb;
     }
-
+    
     public List<Locale> getLanguages(Property property)
     {
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
