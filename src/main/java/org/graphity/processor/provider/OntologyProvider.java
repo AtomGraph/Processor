@@ -55,7 +55,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         {
             if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
             throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
-        }        
+        }
     }
     
     public class ImportCycleChecker

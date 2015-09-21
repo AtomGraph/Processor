@@ -48,7 +48,7 @@ public final class GP
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
-    public static final OntClass Sitemap = m_model.createClass( NS + "Sitemap" );
+    // public static final OntClass Sitemap = m_model.createClass( NS + "Sitemap" );
 
     public static final OntClass Template = m_model.createClass( NS + "Template" );
     
@@ -98,7 +98,7 @@ public final class GP
 
     public static final ObjectProperty datasetLocation = m_model.createObjectProperty( NS + "datasetLocation" );
 
-    public static final ObjectProperty sitemap = m_model.createObjectProperty( NS + "sitemap" );
+    public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
     
     public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
     

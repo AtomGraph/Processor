@@ -31,10 +31,10 @@
 
 # SYSTEM PROPERTIES
 
-<#sitemap> a owl:ObjectProperty ;
+<#ontology> a owl:ObjectProperty ;
     rdfs:label "Application sitemap" ;
     rdfs:domain <#Application> ;
-    rdfs:range <#Sitemap> ;
+    rdfs:range owl:Ontology ; # <#Sitemap> ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
     rdfs:isDefinedBy <#> .
 
@@ -191,15 +191,31 @@
     rdfs:comment "Declarative Linked Data application" ;
     rdfs:isDefinedBy <#> .
 
-<#Sitemap> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf owl:Ontology ;
-    rdfs:label "Sitemap ontology" ;
-    rdfs:comment "A class of sitemap ontologies" ;
-    rdfs:isDefinedBy <#> .
+#<#Sitemap> a rdfs:Class, owl:Class ;
+#    rdfs:subClassOf owl:Ontology ;
+#    rdfs:label "Sitemap ontology" ;
+#    rdfs:comment "A class of sitemap ontologies" ;
+#    rdfs:isDefinedBy <#> .
 
 <#Template> a rdfs:Class, owl:Class ;
     rdfs:label "Resource template" ;
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
+    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    spin:constraint [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:subClassOf
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 <#uriTemplate>
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 <#query>
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:label
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:isDefinedBy
+	] ;
     rdfs:isDefinedBy <#> .
 
 <#Page> a rdfs:Class, owl:Class ;
@@ -220,7 +236,7 @@
             owl:onProperty sioc:has_parent ;
             owl:allValuesFrom <#Container>
         ] ;
-    <#uriTemplate> "{path: .*}/" ; # "/{path: [^/]*}" ; # ([^/]+?)
+    <#uriTemplate> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;

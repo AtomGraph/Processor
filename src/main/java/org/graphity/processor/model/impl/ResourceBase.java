@@ -23,7 +23,6 @@ import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
-import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.sparql.util.Loader;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.update.UpdateFactory;
@@ -728,8 +727,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public ResponseBuilder getResponseBuilder(Model model)
     {
+        ResponseBuilder rb = super.getResponseBuilder(model);
+        
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
-        ResponseBuilder rb = super.getResponseBuilder(model).header("Link", classLink.toString());
+        rb.header("Link", classLink.toString());
+        
+        Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
+        rb.header("Link", ontologyLink.toString());
+        
         Reasoner reasoner = getMatchedOntClass().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {

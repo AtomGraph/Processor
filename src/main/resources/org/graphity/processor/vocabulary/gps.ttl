@@ -14,7 +14,7 @@
 @prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
-<#> a owl:Ontology, gp:Sitemap ;
+<#> a owl:Ontology ;
     owl:imports gp:, sp:, spin:, foaf:, sioc: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Graphity Processor sitemap" ;
@@ -28,10 +28,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 
 <#ClassContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
-        #[ a owl:Restriction ;
-        #    owl:onProperty sioc:has_parent ;
-        #    owl:allValuesFrom gp:Container
-        #] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
     gp:uriTemplate "/classes" ;
@@ -57,7 +53,11 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#TemplateContainer>
-        ] ;
+        ] ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:primaryTopic ;
+            owl:allValuesFrom gp:Template
+	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/templates/{item}" ;
@@ -82,7 +82,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               foaf:primaryTopic _:template ;
               gp:slug " "^^xsd:string .
           _:template a owl:Class, gp:Template, gps:Template ;
-              rdfs:subClassOf foaf:Document, sioc:Item, _:Template,
+              rdfs:subClassOf foaf:Document, _:Template,
                   [ a owl:Restriction ;
                       owl:onProperty sioc:has_container ;
                       owl:hasValue _:container
@@ -101,41 +101,39 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               gc:supportedMode gc:ReadMode ;
               rdfs:isDefinedBy _:isDefinedBy .
       }
-      WHERE {}""" .
-
-<#Template> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:Template,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom <#TemplateItem>
-	] ;
-    gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
-    spin:constraint [ a gp:MissingPropertyValue ;
-	    sp:arg1 rdfs:subClassOf
-	] ,
-        [ a gp:MissingPropertyValue ;
-	    sp:arg1 gp:uriTemplate
-	] ,
-        [ a gp:MissingPropertyValue ;
-	    sp:arg1 gp:query
-	] ,
-        [ a gp:MissingPropertyValue ;
-	    sp:arg1 rdfs:label
-	] ,
-        [ a gp:MissingPropertyValue ;
-	    sp:arg1 rdfs:isDefinedBy
-	] ;
-    rdfs:label "Template" ;
+      WHERE {}""" ;
+    rdfs:label "Template item constructor" ;
     rdfs:isDefinedBy <#> .
+
+#<#Template> a rdfs:Class, owl:Class ;
+#    rdfs:subClassOf gp:Template,
+#        [ a owl:Restriction ;
+#            owl:onProperty foaf:isPrimaryTopicOf ;
+#            owl:allValuesFrom <#TemplateItem>
+#	] ;
+#    gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
+#    spin:constraint [ a gp:MissingPropertyValue ;
+#	    sp:arg1 rdfs:subClassOf
+#	] ,
+#        [ a gp:MissingPropertyValue ;
+#	    sp:arg1 gp:uriTemplate
+#	] ,
+#        [ a gp:MissingPropertyValue ;
+#	    sp:arg1 gp:query
+#	] ,
+#        [ a gp:MissingPropertyValue ;
+#	    sp:arg1 rdfs:label
+#	] ,
+#        [ a gp:MissingPropertyValue ;
+#	    sp:arg1 rdfs:isDefinedBy
+#	] ;
+#    rdfs:label "Template" ;
+#    rdfs:isDefinedBy <#> .
 
 # queries
 
 <#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
-        #[ a owl:Restriction ;
-        #    owl:onProperty sioc:has_parent ;
-        #    owl:allValuesFrom gp:Space
-        #] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
     gp:uriTemplate "/queries/" ;
@@ -147,7 +145,11 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#QueryContainer>
-        ] ;
+        ] ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:primaryTopic ;
+            owl:allValuesFrom <#Query>
+	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{item}" ;
@@ -178,14 +180,16 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
               sp:text "DESCRIBE ?this"^^xsd:string .
               # rdfs:isDefinedBy ?isDefinedBy .
       }
-      WHERE {}""" .
+      WHERE {}""" ;
+    rdfs:label "Query item constructor" ;
+    rdfs:isDefinedBy <#> .
 
 <#Query> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf sp:Query,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom <#QueryItem>
-	] ;
+    rdfs:subClassOf sp:Query ;
+        #[ a owl:Restriction ;
+        #    owl:onProperty foaf:isPrimaryTopicOf ;
+        #    owl:allValuesFrom <#QueryItem>
+	#] ;
     gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
     spin:constraint [ a gp:MissingPropertyValue ;
 	    sp:arg1 sp:text
@@ -235,4 +239,6 @@ DESCRIBE ?this ?resource ?thing ?doc WHERE {
             }
         }
     } .
-}"""^^xsd:string .
+}"""^^xsd:string ;
+    rdfs:label "Describe labelled resources" ;
+    rdfs:isDefinedBy <#> .

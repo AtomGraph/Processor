@@ -17,6 +17,7 @@
 package org.graphity.processor.mapper;
 
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -30,6 +31,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.graphity.core.model.QueriedResource;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.core.util.Link;
+import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,10 +70,12 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         */
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
-
+        Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
+        
         return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
                 entity(cve).
                 header("Link", classLink.toString()).
+                header("Link", ontologyLink.toString()).                
                 build();
     }
         
@@ -86,6 +90,12 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
 	return cr.getContext(OntClass.class);
     }
 
+    public Ontology getOntology()
+    {
+	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+	return cr.getContext(Ontology.class);
+    }
+    
     public QueriedResource getQueriedResource()
     {
 	ContextResolver<QueriedResource> cr = getProviders().getContextResolver(QueriedResource.class, null);

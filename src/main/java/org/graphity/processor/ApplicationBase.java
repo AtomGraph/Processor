@@ -123,18 +123,18 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 
 	SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
-
-        boolean cacheSitemap = true;
-        if (getServletConfig().getInitParameter(GP.cacheSitemap.getURI()) != null)
-            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(GP.cacheSitemap.getURI()));
         
         FileManager fileManager = getFileManager();
         FileManager.setGlobalFileManager(fileManager);
 	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
         
-        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         OntDocumentManager.getInstance().setFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
+
+        boolean cacheSitemap = true;
+        if (getServletConfig().getInitParameter(GP.cacheSitemap.getURI()) != null)
+            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(GP.cacheSitemap.getURI()));
+        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         
         singletons.add(new OntologyProvider(getOntology()));
     }
@@ -171,7 +171,7 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
 
     public Ontology getOntology()
     {
-        Ontology ontology = getOntology(getServletConfig(), GP.sitemap, GP.sitemapRules);
+        Ontology ontology = getOntology(getServletConfig(), GP.ontology, GP.sitemapRules);
         
         if (ontology == null)
         {

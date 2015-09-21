@@ -16,6 +16,7 @@
 
 package org.graphity.processor.util;
 
+import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -28,6 +29,7 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.ResourceUtils;
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.api.uri.UriTemplateParser;
@@ -193,6 +195,29 @@ public class Skolemizer
                 OntClass docClass = getOntClassMatcher().matchOntClass(doc, getOntClass());
                 if (docClass != null)
                 {
+                    ExtendedIterator<OntClass> superClassIt = docClass.listSuperClasses();
+                    try
+                    {
+                        while (superClassIt.hasNext())
+                        {
+                            OntClass superClass = superClassIt.next();
+                            if (superClass.canAs(AllValuesFromRestriction.class))
+                            {
+                                AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
+                                if (avfr.getOnProperty().equals(FOAF.primaryTopic) && avfr.getAllValuesFrom().canAs(OntClass.class))
+                                {
+                                    OntClass topicClass = avfr.getAllValuesFrom().as(OntClass.class);
+                                    return build(resource, UriBuilder.fromUri(getBaseResource(doc).getURI()), topicClass);
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        superClassIt.close();
+                    }
+                    
+                    /*
                     Map<Property, List<OntClass>> matchingClasses =
                             getOntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), FOAF.isPrimaryTopicOf, docClass);
                     if (!matchingClasses.isEmpty())
@@ -200,6 +225,7 @@ public class Skolemizer
                         OntClass topicClass = matchingClasses.values().iterator().next().get(0);
                         return build(resource, UriBuilder.fromUri(getBaseResource(doc).getURI()), topicClass);
                     }
+                    */
                 }
             }
         }
