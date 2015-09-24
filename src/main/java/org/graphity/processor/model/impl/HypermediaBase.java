@@ -16,6 +16,7 @@
 
 package org.graphity.processor.model.impl;
 
+import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
@@ -36,10 +37,13 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
@@ -55,9 +59,13 @@ import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.inference.SPINConstructors;
 import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.model.TemplateCall;
+import org.topbraid.spin.util.CommandWrapper;
+import org.topbraid.spin.util.SPINQueryFinder;
 import org.topbraid.spin.vocabulary.SP;
+import org.topbraid.spin.vocabulary.SPIN;
 
 /**
  * HATEOAS: hypermedia as the engine of application state.
@@ -128,7 +136,8 @@ public class HypermediaBase implements Hypermedia
     @Override
     public Model addStates(Resource resource, Model model)
     {
-        // mixing sitemap and description traversal - a good idea??
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");        
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");        
         
 	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
@@ -194,18 +203,29 @@ public class HypermediaBase implements Hypermedia
                     OntClass forClass = getOntology().getOntModel().createClass(forClassURI.toString());
                     if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
 
-                    Query templateQuery = getQuery(forClass, GP.template);
-                    if (templateQuery == null)
-                    {
-                        if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
-                        throw new SitemapException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
-                    }
+                    construct(forClass, model);
                     
-                    QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
-                    Model templateModel = qex.execConstruct();
-                    model.add(templateModel);
-                    if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
-                    qex.close();
+                    ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
+                    try
+                    {
+                        while (superClassIt.hasNext())
+                        {
+                            OntClass superClass = superClassIt.next();
+                            if (superClass.canAs(AllValuesFromRestriction.class))
+                            {
+                                AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
+                                if (avfr.getOnProperty().equals(FOAF.primaryTopic) && avfr.getAllValuesFrom().canAs(OntClass.class))
+                                {
+                                    OntClass topicClass = avfr.getAllValuesFrom().as(OntClass.class);
+                                    construct(topicClass, model);
+                                }
+                            }
+                        }
+                    }
+                    finally
+                    {
+                        superClassIt.close();
+                    }                    
                 }
                 catch (URISyntaxException ex)
                 {
@@ -248,6 +268,63 @@ public class HypermediaBase implements Hypermedia
         }
         
         return model;
+    }
+    
+    /*
+    public void construct(OntClass forClass, Model targetModel)
+    {
+        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");        
+        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");        
+
+        Query templateQuery = getQuery(forClass, GP.template);
+        if (templateQuery == null)
+        {
+            if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
+            throw new SitemapException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
+        }
+
+        QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
+        Model templateModel = qex.execConstruct();
+        targetModel.add(templateModel);
+        if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
+        qex.close();        
+    }
+    */
+    
+    public void construct(OntClass forClass, Model targetModel)
+    {
+        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");        
+        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");        
+
+        if (!SPINConstructors.hasConstructor(forClass))
+        {
+            if (log.isErrorEnabled()) log.error("SPIN constructor not defined for class '{}' (spin:constructor missing)", forClass.getURI());
+            throw new SitemapException("SPIN constructor not defined for class '" + forClass.getURI() +"'");            
+        }
+        
+        Statement stmt = forClass.getProperty(SPIN.constructor);
+        com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = stmt.getResource();
+        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
+        Model queryModel = ModelFactory.createDefaultModel();
+        queryModel.add(stmt);
+        StmtIterator stmtIt = queryOrTemplateCall.listProperties(RDF.type);
+        try
+        {
+            queryModel.add(stmtIt);
+            stmtIt = queryOrTemplateCall.listProperties(SP.text);
+            queryModel.add(stmtIt);
+        }
+        finally
+        {
+            stmtIt.close();
+        }
+        // end of workaround
+
+        if (log.isDebugEnabled()) log.debug("Class {} has SPIN constructor", forClass);
+        List<com.hp.hpl.jena.rdf.model.Resource> newResources = new ArrayList<>();
+        Set<com.hp.hpl.jena.rdf.model.Resource> reachedTypes = new HashSet<>();
+        Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(queryModel, queryModel, SPIN.constructor, false, false);
+        SPINConstructors.constructInstance(queryModel, targetModel.createResource(), forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
     }
     
     /**
