@@ -43,9 +43,7 @@
 <#query> a owl:AnnotationProperty ;
     rdfs:subPropertyOf spin:query ;
     rdfs:domain <#Template> ;
-    rdfs:range [ a owl:Class ;
-        owl:unionOf (sp:Describe sp:Construct)
-    ] ;
+    rdfs:range <#Query> ;
     rdfs:label "Query" ;
     rdfs:comment "SPIN query to retrieve resource description (DESCRIBE or CONSTRUCT)" ;
     rdfs:isDefinedBy <#> .
@@ -252,6 +250,40 @@
     rdfs:label "Template constructor" ;
     rdfs:isDefinedBy <#> .
 
+<#Query> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf [ a owl:Class ;
+        owl:unionOf (sp:Describe sp:Construct)
+    ] ;
+    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    spin:constructor <#QueryConstructor> ;
+    spin:constraint [ a <#MissingPropertyValue> ;
+	    sp:arg1 sp:text
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:label
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:isDefinedBy
+	] ;
+    rdfs:label "Query" ;
+    rdfs:isDefinedBy <#> .
+
+<#QueryConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX sp:      <http://spinrdf.org/sp#>
+
+      CONSTRUCT {
+          ?this a sp:Query, _:ConstructOrDescribe ;
+              rdfs:label " " ;
+              sp:text "DESCRIBE ?this"^^xsd:string ;
+              rdfs:isDefinedBy _:isDefinedBy .
+      }
+      WHERE {}""" ;
+    rdfs:label "Query constructor" ;
+    rdfs:isDefinedBy <#> .
+
 <#Page> a rdfs:Class, owl:Class ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
@@ -296,8 +328,8 @@
 
       CONSTRUCT {
           ?this a foaf:Document, sioc:Container ;
-              gp:slug " " ;
-              dct:title " " .
+              gp:slug " " .
+              # dct:title " " .
       }
       WHERE {}""" .
 
@@ -333,8 +365,8 @@
 
       CONSTRUCT {
           ?this a foaf:Document, sioc:Item ;
-              gp:slug " " ;
-              dct:title " " .
+              gp:slug " " .
+              # dct:title " " .
       }
       WHERE {}""" ;
     rdfs:isDefinedBy <#> .
