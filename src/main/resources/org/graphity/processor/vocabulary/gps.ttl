@@ -30,7 +30,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/classes" ;
+    gp:uriTemplate "/classes/" ;
     rdfs:label "Class container" ;
     rdfs:isDefinedBy <#> .
 

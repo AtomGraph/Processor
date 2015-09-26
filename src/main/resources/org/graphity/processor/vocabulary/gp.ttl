@@ -51,18 +51,18 @@
 <#update> a owl:AnnotationProperty ;
     rdfs:subPropertyOf spin:update ;
     rdfs:domain <#Template> ;
-    rdfs:range sp:Update ;
+    rdfs:range <#Update> ;
     rdfs:label "Update" ;
     rdfs:comment "SPIN update to remove resource description" ;
     rdfs:isDefinedBy <#> .
 
-<#template> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range sp:Construct ;
-    rdfs:label "Template" ;
-    rdfs:comment "SPIN query to construct instance template (CONSTRUCT)" ;
-    rdfs:seeAlso <#Constructor>, spin:constructor ;
-    rdfs:isDefinedBy <#> .
+#<#template> a owl:AnnotationProperty ;
+#    rdfs:domain <#Template> ;
+#    rdfs:range sp:Construct ;
+#    rdfs:label "Template" ;
+#    rdfs:comment "SPIN query to construct instance template (CONSTRUCT)" ;
+#    rdfs:seeAlso <#Constructor>, spin:constructor ;
+#    rdfs:isDefinedBy <#> .
 
 <#uriTemplate> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
@@ -284,6 +284,43 @@
     rdfs:label "Query constructor" ;
     rdfs:isDefinedBy <#> .
 
+<#Update> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf sp:Update ;
+    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    spin:constructor <#UpdateConstructor> ;
+    spin:constraint [ a <#MissingPropertyValue> ;
+	    sp:arg1 sp:text
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:label
+	] ,
+        [ a <#MissingPropertyValue> ;
+	    sp:arg1 rdfs:isDefinedBy
+	] ;
+    rdfs:label "Update" ;
+    rdfs:isDefinedBy <#> .
+
+<#UpdateConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX gps:     <http://graphity.org/gps#>
+      PREFIX sp:      <http://spinrdf.org/sp#>
+
+      CONSTRUCT {
+          ?this a sp:Update ;
+              rdfs:label " " ;
+              rdfs:comment " " ;
+              sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" ;
+              rdfs:isDefinedBy _:isDefinedBy .
+      }
+      WHERE {}""" .
+
 <#Page> a rdfs:Class, owl:Class ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
@@ -320,16 +357,13 @@
 
 <#ContainerConstructor> a       sp:Construct ;
   sp:text """
-      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
       PREFIX sioc:    <http://rdfs.org/sioc/ns#>
       PREFIX gp:      <http://graphity.org/gp#>
-      PREFIX dct:     <http://purl.org/dc/terms/>
 
       CONSTRUCT {
           ?this a foaf:Document, sioc:Container ;
               gp:slug " " .
-              # dct:title " " .
       }
       WHERE {}""" .
 
@@ -357,16 +391,13 @@
 
 <#ItemConstructor> a       sp:Construct ;
   sp:text """
-      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
       PREFIX sioc:    <http://rdfs.org/sioc/ns#>
       PREFIX gp:      <http://graphity.org/gp#>
-      PREFIX dct:     <http://purl.org/dc/terms/>
 
       CONSTRUCT {
           ?this a foaf:Document, sioc:Item ;
               gp:slug " " .
-              # dct:title " " .
       }
       WHERE {}""" ;
     rdfs:isDefinedBy <#> .
