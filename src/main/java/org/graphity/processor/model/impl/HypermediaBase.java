@@ -30,6 +30,7 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
@@ -51,7 +52,6 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.model.Hypermedia;
-import org.graphity.processor.model.Resource;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
 import org.graphity.processor.vocabulary.GP;
@@ -63,6 +63,7 @@ import org.topbraid.spin.inference.SPINConstructors;
 import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.model.TemplateCall;
 import org.topbraid.spin.util.CommandWrapper;
+import org.topbraid.spin.util.JenaUtil;
 import org.topbraid.spin.util.SPINQueryFinder;
 import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
@@ -134,7 +135,7 @@ public class HypermediaBase implements Hypermedia
     }
     
     @Override
-    public Model addStates(Resource resource, Model model)
+    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");        
         if (model == null) throw new IllegalArgumentException("Model cannot be null");        
@@ -203,8 +204,10 @@ public class HypermediaBase implements Hypermedia
                     OntClass forClass = getOntology().getOntModel().createClass(forClassURI.toString());
                     if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
 
-                    construct(forClass, model);
-                    
+                    com.hp.hpl.jena.rdf.model.Resource doc = model.createResource().
+                            addProperty(RDF.type, forClass);
+                    construct(forClass, doc, model);
+
                     ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
                     try
                     {
@@ -217,7 +220,11 @@ public class HypermediaBase implements Hypermedia
                                 if (avfr.getOnProperty().equals(FOAF.primaryTopic) && avfr.getAllValuesFrom().canAs(OntClass.class))
                                 {
                                     OntClass topicClass = avfr.getAllValuesFrom().as(OntClass.class);
-                                    construct(topicClass, model);
+                                    com.hp.hpl.jena.rdf.model.Resource topic = model.createResource();
+                                    topic.addProperty(RDF.type, topicClass).
+                                            addProperty(FOAF.isPrimaryTopicOf,
+                                                doc.addProperty(FOAF.primaryTopic, topic));
+                                    construct(topicClass, topic, model);
                                 }
                             }
                         }
@@ -291,18 +298,19 @@ public class HypermediaBase implements Hypermedia
     }
     */
     
-    public void construct(OntClass forClass, Model targetModel)
+    public void construct(OntClass forClass, com.hp.hpl.jena.rdf.model.Resource instance, Model targetModel)
     {
-        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");        
-        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");        
-
-        if (!SPINConstructors.hasConstructor(forClass))
+        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (instance == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
+        
+        Statement stmt = getConstructorStmt(forClass, SPIN.constructor);
+        if (stmt == null || !stmt.getObject().isResource())
         {
-            if (log.isErrorEnabled()) log.error("SPIN constructor not defined for class '{}' (spin:constructor missing)", forClass.getURI());
-            throw new SitemapException("SPIN constructor not defined for class '" + forClass.getURI() +"'");            
+            if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but spin:constructor not defined for class '{}' (gp:template missing)", forClass.getURI());
+            throw new SitemapException("gp:ConstructMode spin:constructor not defined for class '" + forClass.getURI() +"'");
         }
         
-        Statement stmt = forClass.getProperty(SPIN.constructor);
         com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = stmt.getResource();
         // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
         Model queryModel = ModelFactory.createDefaultModel();
@@ -324,9 +332,26 @@ public class HypermediaBase implements Hypermedia
         List<com.hp.hpl.jena.rdf.model.Resource> newResources = new ArrayList<>();
         Set<com.hp.hpl.jena.rdf.model.Resource> reachedTypes = new HashSet<>();
         Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(queryModel, queryModel, SPIN.constructor, false, false);
-        SPINConstructors.constructInstance(queryModel, targetModel.createResource(), forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
+        SPINConstructors.constructInstance(queryModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
     }
     
+    public Statement getConstructorStmt(Resource cls, Property property)
+    {
+        if (cls == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Statement stmt = cls.getProperty(property);        
+        if (stmt != null) return stmt;
+        
+        for(Resource superCls : JenaUtil.getAllSuperClasses(cls))
+        {
+            Statement superClassStmt = getConstructorStmt(superCls, property);
+            if (superClassStmt != null) return superClassStmt;
+        }
+        
+        return null;
+    }
+
     /**
      * Creates a page resource for the current container. Includes HATEOS previous/next links.
      * 

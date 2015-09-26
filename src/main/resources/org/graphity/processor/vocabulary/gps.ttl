@@ -61,74 +61,10 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/templates/{item}" ;
-    gp:template <#TemplateItemConstructor> ;
+    # gp:template <#TemplateItemConstructor> ;
+    # spin:constructor <#TemplateItemConstructor> ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
-
-<#TemplateItemConstructor> a       sp:Construct ;
-  sp:text """
-      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
-      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-      PREFIX gp:      <http://graphity.org/gp#>
-      PREFIX gc:      <http://graphity.org/gc#>
-      PREFIX gps:     <http://graphity.org/gps#>
-      PREFIX spin:    <http://spinrdf.org/spin#>
-
-      CONSTRUCT {
-          _:this a foaf:Document, sioc:Item, gps:TemplateItem ;
-              foaf:primaryTopic _:template ;
-              gp:slug " "^^xsd:string .
-          _:template a owl:Class, gp:Template, gps:Template ;
-              rdfs:subClassOf foaf:Document, _:Template,
-                  [ a owl:Restriction ;
-                      owl:onProperty sioc:has_container ;
-                      owl:hasValue _:container
-                  ] ;
-              foaf:isPrimaryTopicOf _:this ;
-              rdfs:label " " ;
-              gp:uriTemplate " " ;
-              gp:skolemTemplate " " ;
-              gp:template _:template ;
-              gp:defaultLimit 20 ;
-              gp:defaultOffset 0 ;
-              gp:defaultOrderBy " "^^xsd:string ;
-              gp:cacheControl "no-cache" ;
-              gp:loadClass _:loadClass ;
-              gp:query gp:Describe ;
-              gc:supportedMode gc:ReadMode ;
-              rdfs:isDefinedBy _:isDefinedBy .
-      }
-      WHERE {}""" ;
-    rdfs:label "Template item constructor" ;
-    rdfs:isDefinedBy <#> .
-
-#<#Template> a rdfs:Class, owl:Class ;
-#    rdfs:subClassOf gp:Template,
-#        [ a owl:Restriction ;
-#            owl:onProperty foaf:isPrimaryTopicOf ;
-#            owl:allValuesFrom <#TemplateItem>
-#	] ;
-#    gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
-#    spin:constraint [ a gp:MissingPropertyValue ;
-#	    sp:arg1 rdfs:subClassOf
-#	] ,
-#        [ a gp:MissingPropertyValue ;
-#	    sp:arg1 gp:uriTemplate
-#	] ,
-#        [ a gp:MissingPropertyValue ;
-#	    sp:arg1 gp:query
-#	] ,
-#        [ a gp:MissingPropertyValue ;
-#	    sp:arg1 rdfs:label
-#	] ,
-#        [ a gp:MissingPropertyValue ;
-#	    sp:arg1 rdfs:isDefinedBy
-#	] ;
-#    rdfs:label "Template" ;
-#    rdfs:isDefinedBy <#> .
 
 # queries
 
@@ -153,7 +89,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{item}" ;
-    gp:template <#QueryItemConstructor> ;
+    # gp:template <#QueryItemConstructor> ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
@@ -191,6 +127,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         #    owl:allValuesFrom <#QueryItem>
 	#] ;
     gp:skolemTemplate "/{isPrimaryTopicOf.slug}" ;
+    spin:constructor <#QueryConstructor> ;
     spin:constraint [ a gp:MissingPropertyValue ;
 	    sp:arg1 sp:text
 	] ,
@@ -201,6 +138,22 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:label "Query" ;
+    rdfs:isDefinedBy <#> .
+
+<#QueryConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX sp:      <http://spinrdf.org/sp#>
+
+      CONSTRUCT {
+          ?this a sp:Query, _:ConstructOrDescribe ;
+              rdfs:label " " ;
+              sp:text "DESCRIBE ?this"^^xsd:string ;
+              rdfs:isDefinedBy ?isDefinedBy .
+      }
+      WHERE {}""" ;
+    rdfs:label "Query constructor" ;
     rdfs:isDefinedBy <#> .
 
 # lookup

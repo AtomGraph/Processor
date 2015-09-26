@@ -191,16 +191,11 @@
     rdfs:comment "Declarative Linked Data application" ;
     rdfs:isDefinedBy <#> .
 
-#<#Sitemap> a rdfs:Class, owl:Class ;
-#    rdfs:subClassOf owl:Ontology ;
-#    rdfs:label "Sitemap ontology" ;
-#    rdfs:comment "A class of sitemap ontologies" ;
-#    rdfs:isDefinedBy <#> .
-
 <#Template> a rdfs:Class, owl:Class ;
     rdfs:label "Resource template" ;
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
     <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    spin:constructor <#TemplateConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 rdfs:subClassOf
 	] ,
@@ -216,6 +211,45 @@
         [ a <#MissingPropertyValue> ;
 	    sp:arg1 rdfs:isDefinedBy
 	] ;
+    rdfs:isDefinedBy <#> .
+
+<#TemplateConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
+      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
+      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
+      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
+      PREFIX spin:    <http://spinrdf.org/spin#>
+      PREFIX gp:      <http://graphity.org/gp#>
+      PREFIX gc:      <http://graphity.org/gc#>
+      PREFIX gps:     <http://graphity.org/gps#>
+
+      CONSTRUCT {
+          ?this a owl:Class, rdfs:Class ; # gp:Template ;
+              rdfs:subClassOf foaf:Document , # _:Template,
+                  [ a owl:Restriction ;
+                      owl:onProperty sioc:has_container ;
+                      owl:hasValue _:container
+                  ] ;
+              rdfs:label " " ;
+              gp:uriTemplate " " ;
+              gp:skolemTemplate " " ;
+              # gp:template _:template ;
+              gp:defaultLimit 20 ;
+              gp:defaultOffset 0 ;
+              gp:defaultOrderBy " "^^xsd:string ;
+              gp:cacheControl "no-cache" ;
+              gp:loadClass _:loadClass ;
+              gp:query gp:Describe ;
+              gc:supportedMode gc:ReadMode ;
+              spin:constraint _:constraint ;
+              spin:constructor _:constructor ;
+              rdfs:isDefinedBy _:isDefinedBy .
+      }
+      WHERE {}""" ;
+    rdfs:label "Template constructor" ;
     rdfs:isDefinedBy <#> .
 
 <#Page> a rdfs:Class, owl:Class ;
@@ -240,7 +274,8 @@
     <#skolemTemplate> "{slug}/" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
-    <#template> <#ContainerConstructor> ;
+    # <#template> <#ContainerConstructor> ;
+    spin:constructor <#ContainerConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 <#slug>
 	] , [ a <#MissingPropertyValue> ;
@@ -260,7 +295,7 @@
       PREFIX dct:     <http://purl.org/dc/terms/>
 
       CONSTRUCT {
-          _:this a foaf:Document, gp:Container, sioc:Container ;
+          ?this a foaf:Document, sioc:Container ;
               gp:slug " " ;
               dct:title " " .
       }
@@ -276,7 +311,8 @@
     <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
-    <#template> <#ItemConstructor> ;
+    # <#template> <#ItemConstructor> ;
+    spin:constructor <#ItemConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 <#slug>
 	] , [ a <#MissingPropertyValue> ;
@@ -296,7 +332,7 @@
       PREFIX dct:     <http://purl.org/dc/terms/>
 
       CONSTRUCT {
-          _:this a foaf:Document, gp:Item, sioc:Item ;
+          ?this a foaf:Document, sioc:Item ;
               gp:slug " " ;
               dct:title " " .
       }

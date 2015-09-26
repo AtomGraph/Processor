@@ -25,6 +25,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 public interface Hypermedia
 {
 
-    Model addStates(Resource resource, Model model);
+    Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model);
         
 }
