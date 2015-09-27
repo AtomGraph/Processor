@@ -226,7 +226,6 @@
               rdfs:label " " ;
               gp:uriTemplate " " ;
               gp:skolemTemplate " " ;
-              # gp:template _:template ;
               gp:defaultLimit 20 ;
               gp:defaultOffset 0 ;
               gp:defaultOrderBy " "^^xsd:string ;

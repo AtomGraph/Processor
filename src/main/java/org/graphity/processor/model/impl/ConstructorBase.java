@@ -18,9 +18,11 @@ package org.graphity.processor.model.impl;
 
 import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
@@ -48,27 +50,6 @@ import org.topbraid.spin.vocabulary.SP;
 public class ConstructorBase
 {
     private static final Logger log = LoggerFactory.getLogger(ConstructorBase.class);
-
-    /*
-    public void construct(OntClass forClass, Model targetModel)
-    {
-        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");        
-        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");        
-
-        Query templateQuery = getQuery(forClass, GP.template);
-        if (templateQuery == null)
-        {
-            if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but template not defined for class '{}' (gp:template missing)", forClass.getURI());
-            throw new SitemapException("gp:ConstructMode template not defined for class '" + forClass.getURI() +"'");
-        }
-
-        QueryExecution qex = QueryExecutionFactory.create(templateQuery, ModelFactory.createDefaultModel());
-        Model templateModel = qex.execConstruct();
-        targetModel.add(templateModel);
-        if (log.isDebugEnabled()) log.debug("gp:template CONSTRUCT query '{}' created {} triples", templateQuery, templateModel.size());
-        qex.close();        
-    }
-    */
 
     public void construct(OntClass forClass, Property property, Model targetModel)
     {
@@ -106,6 +87,48 @@ public class ConstructorBase
             superClassIt.close();
         }
     }
+
+    // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J     
+    public OntModel fixOntModel(OntModel ontModel)
+    {
+        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
+
+        OntModel fixedModel = ModelFactory.createOntologyModel(ontModel.getSpecification());
+        fixedModel.add(ontModel);
+        
+        List<Statement> toDelete = new ArrayList<>();
+        StmtIterator it = fixedModel.listStatements(null, SP.text, (RDFNode)null);
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = stmt.getSubject();
+                StmtIterator propIt = queryOrTemplateCall.listProperties();
+                try
+                {
+                    while (propIt.hasNext())
+                    {
+                        Statement propStmt = propIt.next();
+                        if (!propStmt.getPredicate().equals(RDF.type) && !propStmt.getPredicate().equals(SP.text))
+                            toDelete.add(propStmt);
+                    }
+                }
+                finally
+                {
+                    propIt.close();
+                }
+            }            
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        fixedModel.remove(toDelete);
+        
+        return fixedModel;
+    }
     
     public void construct(OntClass forClass, Property property, com.hp.hpl.jena.rdf.model.Resource instance, Model targetModel)
     {
@@ -120,28 +143,12 @@ public class ConstructorBase
             if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but {} is not defined for class '{}'", property, forClass.getURI());
             throw new SitemapException("gp:ConstructMode is active but constructor not defined for class '" + forClass.getURI() +"'");
         }
-        
-        com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = stmt.getResource();
-        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
-        Model queryModel = ModelFactory.createDefaultModel();
-        queryModel.add(stmt);
-        StmtIterator stmtIt = queryOrTemplateCall.listProperties(RDF.type);
-        try
-        {
-            queryModel.add(stmtIt);
-            stmtIt = queryOrTemplateCall.listProperties(SP.text);
-            queryModel.add(stmtIt);
-        }
-        finally
-        {
-            stmtIt.close();
-        }
-        // end of workaround
 
         List<com.hp.hpl.jena.rdf.model.Resource> newResources = new ArrayList<>();
         Set<com.hp.hpl.jena.rdf.model.Resource> reachedTypes = new HashSet<>();
-        Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(queryModel, queryModel, property, false, false);
-        SPINConstructors.constructInstance(queryModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
+        OntModel fixedModel = fixOntModel(forClass.getOntModel());
+        Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
+        SPINConstructors.constructInstance(fixedModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
     }
     
     public Statement getConstructorStmt(Resource cls, Property property)
