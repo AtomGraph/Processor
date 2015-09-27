@@ -56,14 +56,6 @@
     rdfs:comment "SPIN update to remove resource description" ;
     rdfs:isDefinedBy <#> .
 
-#<#template> a owl:AnnotationProperty ;
-#    rdfs:domain <#Template> ;
-#    rdfs:range sp:Construct ;
-#    rdfs:label "Template" ;
-#    rdfs:comment "SPIN query to construct instance template (CONSTRUCT)" ;
-#    rdfs:seeAlso <#Constructor>, spin:constructor ;
-#    rdfs:isDefinedBy <#> .
-
 <#uriTemplate> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range rdfs:Literal ;
@@ -344,7 +336,6 @@
     <#skolemTemplate> "{slug}/" ;
     <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
-    # <#template> <#ContainerConstructor> ;
     spin:constructor <#ContainerConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 <#slug>
@@ -378,7 +369,6 @@
     <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
-    # <#template> <#ItemConstructor> ;
     spin:constructor <#ItemConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 <#slug>
