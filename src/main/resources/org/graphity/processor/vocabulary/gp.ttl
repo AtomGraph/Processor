@@ -327,6 +327,7 @@
     rdfs:isDefinedBy <#> .
 
 <#Constructor> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf foaf:Document ;
     rdfs:label "Constructor template" ;
     rdfs:comment "A class of RDF resources that are container/item constructors" ;
     rdfs:isDefinedBy <#> .
