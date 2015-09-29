@@ -214,11 +214,10 @@
       PREFIX spin:    <http://spinrdf.org/spin#>
       PREFIX gp:      <http://graphity.org/gp#>
       PREFIX gc:      <http://graphity.org/gc#>
-      PREFIX gps:     <http://graphity.org/gps#>
 
       CONSTRUCT {
-          ?this a owl:Class, rdfs:Class ; # gp:Template ;
-              rdfs:subClassOf foaf:Document , # _:Template,
+          ?this a owl:Class, rdfs:Class ;
+              rdfs:subClassOf foaf:Document, gp:Container, gp:Item,
                   [ a owl:Restriction ;
                       owl:onProperty sioc:has_container ;
                       owl:hasValue _:container
@@ -232,7 +231,8 @@
               gp:cacheControl "no-cache" ;
               gp:loadClass _:loadClass ;
               gp:query gp:Describe ;
-              gc:supportedMode gc:ReadMode ;
+              gc:supportedMode _:supportedMode ;
+              gc:defaultMode gc:ReadMode ;
               spin:constraint _:constraint ;
               spin:constructor _:constructor ;
               rdfs:isDefinedBy _:isDefinedBy .
@@ -295,12 +295,6 @@
   sp:text """
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
-      PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
-      PREFIX owl:     <http://www.w3.org/2002/07/owl#>
-      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-      PREFIX gp:      <http://graphity.org/gp#>
-      PREFIX gps:     <http://graphity.org/gps#>
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
@@ -364,7 +358,7 @@
             owl:onProperty sioc:has_container ;
             owl:allValuesFrom <#Container>
         ] ;
-    <#uriTemplate> "{path: .*}" ; # "/{container: [^/]*}/{path: [^/]*}" ;
+    <#uriTemplate> "{path: .*}" ;
     <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;

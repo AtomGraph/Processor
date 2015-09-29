@@ -1,0 +1,62 @@
+@base           <http://graphity.org/g> .
+
+# @prefix :	<#> .
+@prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
+@prefix owl:	<http://www.w3.org/2002/07/owl#> .
+@prefix http:   <http://www.w3.org/2011/http#> .
+@prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
+@prefix sioc:	<http://rdfs.org/sioc/ns#> .
+@prefix foaf:	<http://xmlns.com/foaf/0.1/> .
+
+<#> a owl:Ontology ;
+    owl:imports sd:, http: ;
+    rdfs:label "Graphity Core ontology" ;
+    owl:versionInfo "1.1.4" .
+
+<#graphStore> a owl:ObjectProperty, owl:InverseFunctionalProperty ;
+    rdfs:domain sd:Service ;
+    rdfs:label "Graph Store" ;
+    rdfs:seeAlso sd:service ;
+    rdfs:isDefinedBy <#> .
+
+<#preemptiveAuth> a owl:DatatypeProperty ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "Preemptive authentication" ;
+    rdfs:seeAlso <http://tools.ietf.org/html/rfc2617#section-2> ;
+    rdfs:isDefinedBy <#> .
+
+<#cacheControl> a owl:DatatypeProperty ;
+    rdfs:subPropertyOf http:fieldValue ;
+    rdfs:range xsd:string ;
+    rdfs:label "Cache control" ;
+    rdfs:seeAlso <http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.1.3> ;
+    rdfs:isDefinedBy <#> .
+
+<#resultLimit> a owl:DatatypeProperty ;
+    rdfs:range xsd:long ;
+    rdfs:label "LIMIT modifier" ;
+    rdfs:description "Value of this property is set on all executed SELECT queries" ;
+    rdfs:seeAlso <http://www.w3.org/TR/sparql11-query/#modResultLimit> ;
+    rdfs:isDefinedBy <#> .
+
+<#baseUri> a owl:ObjectProperty ;
+    rdfs:label "Application base URI" ;
+    rdfs:domain <#Application> ;
+    rdfs:comment "Base URI of the application" ;
+    rdfs:isDefinedBy <#> .
+
+<#absolutePath> a owl:ObjectProperty ;
+    rdfs:label "Absolute path URI" ;
+    rdfs:domain http:Request ;
+    rdfs:comment "Absolute path of the request" ;
+    rdfs:seeAlso http:absoluteURI ;
+    rdfs:isDefinedBy <#> .
+
+<#requestUri> a owl:ObjectProperty ;
+    rdfs:label "Request URI" ;
+    rdfs:domain http:Request ;
+    rdfs:comment "Absolute path of the request" ;
+    rdfs:seeAlso http:requestURI ;
+    rdfs:isDefinedBy <#> .
