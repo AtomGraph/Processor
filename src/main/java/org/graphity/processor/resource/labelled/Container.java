@@ -18,15 +18,12 @@ package org.graphity.processor.resource.labelled;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.core.ResourceContext;
-import java.net.URI;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.core.MediaTypes;
 import org.graphity.processor.vocabulary.GP;
@@ -78,6 +75,7 @@ public class Container extends ResourceBase
 	return searchString;
     }
 
+    /*
     @Override
     public Resource createState(Resource state, Long offset, Long limit, String orderBy, Boolean desc, Resource mode)
     {
@@ -95,5 +93,5 @@ public class Container extends ResourceBase
 	
 	return super.getStateUriBuilder(offset, limit, orderBy, desc, mode);
     }
-
+    */
 }

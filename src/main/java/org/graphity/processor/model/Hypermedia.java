@@ -17,6 +17,9 @@
 package org.graphity.processor.model;
 
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.Resource;
+import java.net.URI;
+import javax.ws.rs.core.UriBuilder;
 
 /**
  *
@@ -25,6 +28,10 @@ import com.hp.hpl.jena.rdf.model.Model;
 public interface Hypermedia
 {
 
-    Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model);
-        
+    Model addStates(Resource resource, Model model);
+
+    Resource createState(Resource state, Long offset, Long limit, String orderBy, Boolean desc, Resource mode);
+    
+    UriBuilder getStateUriBuilder(UriBuilder uriBuilder, Long offset, Long limit, String orderBy, Boolean desc, URI mode);
+    
 }

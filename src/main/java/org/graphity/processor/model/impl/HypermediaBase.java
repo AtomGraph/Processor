@@ -16,24 +16,15 @@
 
 package org.graphity.processor.model.impl;
 
-import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -53,9 +44,6 @@ import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.TemplateCall;
-import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
 
 /**
@@ -127,8 +115,11 @@ public class HypermediaBase implements Hypermedia
     @Override
     public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model)
     {
-        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");        
-        if (model == null) throw new IllegalArgumentException("Model cannot be null");        
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
+
+	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
+	resource.addProperty(RDF.type, getMatchedOntClass());
         
 	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
@@ -236,6 +227,9 @@ public class HypermediaBase implements Hypermedia
                     }
                 }
             }
+            
+            String searchString = getUriInfo().getQueryParameters().getFirst(RDFS.label.getLocalName());
+            
         }
         
         return model;
@@ -252,6 +246,7 @@ public class HypermediaBase implements Hypermedia
      * @param mode
      * @return page resource
      */
+    @Override
     public com.hp.hpl.jena.rdf.model.Resource createState(com.hp.hpl.jena.rdf.model.Resource state, Long offset, Long limit, String orderBy, Boolean desc, com.hp.hpl.jena.rdf.model.Resource mode)
     {
         if (state == null) throw new IllegalArgumentException("Resource subject cannot be null");        
@@ -276,6 +271,7 @@ public class HypermediaBase implements Hypermedia
      * @param mode
      * @return URI builder
      */    
+    @Override
     public UriBuilder getStateUriBuilder(UriBuilder uriBuilder, Long offset, Long limit, String orderBy, Boolean desc, URI mode)
     {        
         if (uriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");        
@@ -309,6 +305,7 @@ public class HypermediaBase implements Hypermedia
         return false;
     }
     
+    /*
     public Query getQuery(OntClass ontClass, AnnotationProperty property)
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
@@ -362,5 +359,6 @@ public class HypermediaBase implements Hypermedia
     {
         return getConstructedModel(QueryFactory.create(queryString));
     }
-
+    */
+    
 }

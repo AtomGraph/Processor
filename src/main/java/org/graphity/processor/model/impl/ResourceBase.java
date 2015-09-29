@@ -161,9 +161,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public void init()
     {
-	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
-	//addProperty(RDF.type, getMatchedOntClass());
-
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
             updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
@@ -260,12 +257,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     throw new WebApplicationException(ex);
                 }
             }
-
-            if (log.isDebugEnabled()) log.debug("OntResource {} gets explicit spin:query value {}", this, queryBuilder);
-            //addProperty(SPIN.query, queryBuilder);
         }
         
-        cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);        
+        cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);
+        if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
     }
 
     public Long getLongValue(OntClass ontClass, AnnotationProperty property)
@@ -342,7 +337,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
-	    return Response.seeOther(getStateUriBuilder(getOffset(), getLimit(), getOrderBy(), getDesc(), getMode()).build()).build();
+	    return Response.seeOther(getHypermedia().getStateUriBuilder(UriBuilder.fromUri(getURI()), getOffset(), getLimit(), getOrderBy(), getDesc(), getMode()).build()).build();
 	}
 
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
@@ -596,6 +591,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param mode
      * @return page resource
      */
+    /*
     public Resource createState(Resource state, Long offset, Long limit, String orderBy, Boolean desc, Resource mode)
     {
         if (state == null) throw new IllegalArgumentException("Resource subject cannot be null");        
@@ -608,6 +604,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
         return state;
     }
+    */
     
     /**
      * Returns the layout mode query parameter value.
@@ -850,6 +847,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param mode
      * @return URI builder
      */
+    /*
     public UriBuilder getStateUriBuilder(Long offset, Long limit, String orderBy, Boolean desc, URI mode)
     {
 	return getStateUriBuilder(UriBuilder.fromUri(getURI()), offset, limit, orderBy, desc, mode);
@@ -865,6 +863,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
 	return uriBuilder;
     }
+    */
 
     /**
      * Returns URI of this resource. Uses Java's URI class instead of string as the {@link #getURI()} does.
