@@ -17,6 +17,7 @@
 package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.util.List;
@@ -62,8 +63,11 @@ public class Validator
     public Model validate(Model model)
     {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-        
-        OntModel tempModel = ModelFactory.createOntologyModel(getOntModel().getSpecification());
+
+        // It looks like we don't need annotation inheritance Rules reasoner during validation.
+        // Existing data should be valid; only the incoming RDF Model should be able to violate the constraints.
+        OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM; // getOntModel().getSpecification()
+        OntModel tempModel = ModelFactory.createOntologyModel(ontModelSpec);
         tempModel.add(getOntModel()).add(model);
 	List<ConstraintViolation> cvs = SPINConstraints.check(tempModel, null);
 	if (!cvs.isEmpty())
