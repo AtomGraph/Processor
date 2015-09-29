@@ -16,15 +16,16 @@
 
 package org.graphity.processor.model.impl;
 
+import org.graphity.processor.util.StateBuilder;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
@@ -34,7 +35,6 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.provider.OntClassMatcher;
@@ -135,13 +135,13 @@ public class HypermediaBase implements Hypermedia
                 while (forIt.hasNext())
                 {
                     OntClass forClass = forIt.next();
-                    String constructorURI = getStateUriBuilder(UriBuilder.fromUri(resource.getURI()), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                        queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                    createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                        addProperty(RDF.type, FOAF.Document).
-                        addProperty(RDF.type, GP.Constructor).
-                        addProperty(GP.forClass, forClass).
-                        addProperty(GP.constructorOf, resource);
+                    StateBuilder.fromUri(resource.getURI(), resource.getModel()).
+                            property(GP.forClass, forClass).
+                            property(GP.mode, GP.ConstructMode).
+                            build().
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Constructor).
+                            addProperty(GP.constructorOf, resource);                            
                 }
             }
             
@@ -163,13 +163,13 @@ public class HypermediaBase implements Hypermedia
                     while (forIt.hasNext())
                     {
                         OntClass forClass = forIt.next();
-                        String constructorURI = getStateUriBuilder(UriBuilder.fromUri(childURI), null, null, null, null, URI.create(GP.ConstructMode.getURI())).
-                            queryParam(GP.forClass.getLocalName(), forClass.getURI()).build().toString();
-                        createState(model.createResource(constructorURI), null, null, null, null, GP.ConstructMode).
-                            addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.forClass, forClass).                                    
-                            addProperty(GP.constructorOf, childContainer);
+                        StateBuilder.fromUri(childContainer.getURI(), childContainer.getModel()).
+                                property(GP.forClass, forClass).
+                                property(GP.mode, GP.ConstructMode).
+                                build().
+                                addProperty(RDF.type, FOAF.Document).
+                                addProperty(RDF.type, GP.Constructor).
+                                addProperty(GP.constructorOf, childContainer);
                     }
                 }
             }
@@ -199,20 +199,31 @@ public class HypermediaBase implements Hypermedia
             {
                 if (getModifiers().getLimit() != null)
                 {
-                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: gp:pageOf {}", resource);
-                    String pageURI = getStateUriBuilder(UriBuilder.fromUri(resource.getURI()), getModifiers().getOffset(), getModifiers().getLimit(), getModifiers().getOrderBy(), getModifiers().getDesc(), null).build().toString();
-                    com.hp.hpl.jena.rdf.model.Resource page = createState(model.createResource(pageURI), getModifiers().getOffset(), getModifiers().getLimit(), getModifiers().getOrderBy(), getModifiers().getDesc(), null).
+                    StateBuilder sb = StateBuilder.fromUri(resource.getURI(), resource.getModel()).
+                            literal(GP.limit, getModifiers().getLimit());
+                    if (getModifiers().getOffset() != null) sb.literal(GP.offset, getModifiers().getOffset());
+                    if (getModifiers().getOrderBy() != null) sb.literal(GP.orderBy, getModifiers().getOrderBy());
+                    if (getModifiers().getDesc() != null) sb.literal(GP.desc, getModifiers().getDesc());
+                    if (getMode() != null) sb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                    com.hp.hpl.jena.rdf.model.Resource page = sb.property(GP.pageOf, resource).
+                            build().
                             addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Page).
-                            addProperty(GP.pageOf, resource);
-
+                            addProperty(RDF.type, GP.Page);
+                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
+                    
                     if (getModifiers().getOffset() != null && getModifiers().getLimit() != null)
                     {
                         if (getModifiers().getOffset() >= getModifiers().getLimit())
                         {
-                            String prevURI = getStateUriBuilder(UriBuilder.fromUri(resource.getURI()), getModifiers().getOffset() - getModifiers().getLimit(), getModifiers().getLimit(), getModifiers().getOrderBy(), getModifiers().getDesc(), getMode()).build().toString();
-                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", resource.getURI(), prevURI);
-                            page.addProperty(XHV.prev, model.createResource(prevURI));
+                            StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), resource.getModel()).
+                                    literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit()).
+                                    literal(GP.limit, getModifiers().getLimit());
+                            if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
+                            if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
+                            if (getMode() != null) prevSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                            com.hp.hpl.jena.rdf.model.Resource prev = prevSb.build();
+                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", page, prev);
+                            page.addProperty(XHV.prev, prev);
                         }
 
                         // no way to know if there's a next page without counting results (either total or in current page)
@@ -220,71 +231,25 @@ public class HypermediaBase implements Hypermedia
                         //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
                         //if (subjectCount >= getModifiers().getLimit())
                         {
-                            String nextURI = getStateUriBuilder(UriBuilder.fromUri(resource.getURI()), getModifiers().getOffset() + getModifiers().getLimit(), getModifiers().getLimit(), getModifiers().getOrderBy(), getModifiers().getDesc(), getMode()).build().toString();
-                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", resource.getURI(), nextURI);
-                            page.addProperty(XHV.next, model.createResource(nextURI));
+                            StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), resource.getModel()).
+                                    literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit()).
+                                    literal(GP.limit, getModifiers().getLimit());
+                            if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
+                            if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
+                            if (getMode() != null) nextSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                            com.hp.hpl.jena.rdf.model.Resource next = nextSb.build();
+
+                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", page, next);
+                            page.addProperty(XHV.next, next);
                         }
                     }
                 }
             }
-            
-            String searchString = getUriInfo().getQueryParameters().getFirst(RDFS.label.getLocalName());
-            
         }
         
         return model;
     }
-    
-    /**
-     * Creates a page resource for the current container. Includes HATEOS previous/next links.
-     * 
-     * @param state
-     * @param offset
-     * @param limit
-     * @param orderBy
-     * @param desc
-     * @param mode
-     * @return page resource
-     */
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource createState(com.hp.hpl.jena.rdf.model.Resource state, Long offset, Long limit, String orderBy, Boolean desc, com.hp.hpl.jena.rdf.model.Resource mode)
-    {
-        if (state == null) throw new IllegalArgumentException("Resource subject cannot be null");        
-
-        if (offset != null) state.addLiteral(GP.offset, offset);
-        if (limit != null) state.addLiteral(GP.limit, limit);
-        if (orderBy != null) state.addLiteral(GP.orderBy, orderBy);
-        if (desc != null) state.addLiteral(GP.desc, desc);
-        if (mode != null) state.addProperty(GP.mode, mode);
-        
-        return state;
-    }
-
-    /**
-     * Returns URI builder instantiated with pagination parameters for the current page.
-     * 
-     * @param uriBuilder
-     * @param offset
-     * @param limit
-     * @param orderBy
-     * @param desc
-     * @param mode
-     * @return URI builder
-     */    
-    @Override
-    public UriBuilder getStateUriBuilder(UriBuilder uriBuilder, Long offset, Long limit, String orderBy, Boolean desc, URI mode)
-    {        
-        if (uriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");        
-
-        if (offset != null) uriBuilder.queryParam(GP.offset.getLocalName(), offset);
-        if (limit != null) uriBuilder.queryParam(GP.limit.getLocalName(), limit);
-	if (orderBy != null) uriBuilder.queryParam(GP.orderBy.getLocalName(), orderBy);
-	if (desc != null) uriBuilder.queryParam(GP.desc.getLocalName(), desc);
-        if (mode != null) uriBuilder.queryParam(GP.mode.getLocalName(), mode);
-        
-	return uriBuilder;
-    }
- 
+     
     public boolean hasSuperClass(OntClass subClass, OntClass superClass)
     {
         ExtendedIterator<OntClass> it = subClass.listSuperClasses(false);
@@ -304,61 +269,5 @@ public class HypermediaBase implements Hypermedia
         
         return false;
     }
-    
-    /*
-    public Query getQuery(OntClass ontClass, AnnotationProperty property)
-    {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-	com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
-        if (queryOrTemplateCall != null)
-        {
-            // workaround SPIN API which does not parse query from resource if it has properties other than sp:text
-            // https://groups.google.com/forum/#!topic/topbraid-users/AVXXEJdbQzk
-            Model queryModel = ModelFactory.createDefaultModel();
-            Literal queryString = queryOrTemplateCall.getRequiredProperty(SP.text).getLiteral();
-            com.hp.hpl.jena.rdf.model.Resource temp = queryModel.createResource().addLiteral(SP.text, queryString);
-            StmtIterator it = queryOrTemplateCall.listProperties(RDF.type);
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                temp.addProperty(RDF.type, stmt.getObject());
-            }
-            queryOrTemplateCall = temp;
-
-            org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
-            if (spinQuery != null) return new ParameterizedSparqlString(spinQuery.toString()).asQuery();
-
-            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-            if (templateCall != null) return new ParameterizedSparqlString(templateCall.getQueryString()).asQuery();
-        }
-        
-        return null;
-    }
-    
-    public Model getConstructedModel(Query query, Model model)
-    {
-	if (query == null) throw new IllegalArgumentException("Query cannot be null");
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-        if (!query.isConstructType()) throw new IllegalArgumentException("Query is not CONSTRUCT");
-        
-        QueryExecution qex = QueryExecutionFactory.create(query, model);
-        Model result = qex.execConstruct();
-        qex.close();
-        
-        return result;
-    }
-    
-    public Model getConstructedModel(Query query)
-    {
-        return getConstructedModel(query, ModelFactory.createDefaultModel());
-    }
-
-    public Model getConstructedModel(String queryString)
-    {
-        return getConstructedModel(QueryFactory.create(queryString));
-    }
-    */
     
 }

@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.model.impl;
 
+import org.graphity.processor.util.StateBuilder;
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.*;
@@ -337,8 +338,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
-	    return Response.seeOther(getHypermedia().getStateUriBuilder(UriBuilder.fromUri(getURI()), getOffset(), getLimit(), getOrderBy(), getDesc(), getMode()).build()).build();
-	}
+            StateBuilder sb = StateBuilder.fromUri(getURI(), getModel());
+            if (getLimit() != null) sb.literal(GP.limit, getLimit());
+            if (getOffset() != null) sb.literal(GP.offset, getOffset());
+            if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
+            if (getDesc() != null) sb.literal(GP.desc, getDesc());
+            if (getMode() != null) sb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+            return Response.seeOther(URI.create(sb.build().getURI())).build();
+        }
 
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
 	return super.get();
