@@ -31,11 +31,6 @@ public class ModifiersBase implements Modifiers
     
     public ModifiersBase(Long limit, Long offset, String orderBy, Boolean desc)
     {
-	//if (limit == null) throw new IllegalArgumentException("LIMIT cannot be null");
-	//if (offset == null) throw new IllegalArgumentException("OFFSET cannot be null");
-	//if (orderBy == null) throw new IllegalArgumentException("ORDER BY cannot be null");
-	//if (desc == null) throw new IllegalArgumentException("DESC cannot be null");
-        
         this.limit = limit;
         this.offset = offset;
         this.orderBy = orderBy;

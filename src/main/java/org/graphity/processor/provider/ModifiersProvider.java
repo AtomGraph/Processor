@@ -116,10 +116,15 @@ public class ModifiersProvider extends PerRequestTypeInjectableProvider<Context,
 
     public Boolean getDesc()
     {
-        if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
-            return Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-        else
-            return getBooleanValue(getOntClass(), GP.defaultDesc) != null; // ORDERY BY is ASC() by default
+        if (getOrderBy() != null)
+        {
+            if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
+                return Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+            else
+                return getBooleanValue(getOntClass(), GP.defaultDesc) != null; // ORDERY BY is ASC() by default
+        }
+        
+        return null;
     }
     
     public Long getLongValue(OntClass ontClass, AnnotationProperty property)

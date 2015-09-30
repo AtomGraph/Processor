@@ -584,35 +584,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public Model addHypermedia(Model model)
     {
-        return getHypermedia().addStates(this, model);
+        return getHypermedia().addStates(this, model, getQuery());
     }
-    
-    /**
-     * Creates a page resource for the current container. Includes HATEOS previous/next links.
-     * 
-     * @param state
-     * @param offset
-     * @param limit
-     * @param orderBy
-     * @param desc
-     * @param mode
-     * @return page resource
-     */
-    /*
-    public Resource createState(Resource state, Long offset, Long limit, String orderBy, Boolean desc, Resource mode)
-    {
-        if (state == null) throw new IllegalArgumentException("Resource subject cannot be null");        
-
-        if (offset != null) state.addLiteral(GP.offset, offset);
-        if (limit != null) state.addLiteral(GP.limit, limit);
-        if (orderBy != null) state.addLiteral(GP.orderBy, orderBy);
-        if (desc != null) state.addLiteral(GP.desc, desc);
-        if (mode != null) state.addProperty(GP.mode, mode);
         
-        return state;
-    }
-    */
-    
     /**
      * Returns the layout mode query parameter value.
      * 
