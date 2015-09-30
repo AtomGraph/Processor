@@ -16,7 +16,6 @@
 
 package org.graphity.processor.model;
 
-import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Resource;
 
@@ -27,6 +26,6 @@ import com.hp.hpl.jena.rdf.model.Resource;
 public interface Hypermedia
 {
 
-    Model addStates(Resource resource, Model model, Query query);
+    Model addStates(Resource resource, Model model);
     
 }

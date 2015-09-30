@@ -584,7 +584,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     public Model addHypermedia(Model model)
     {
-        return getHypermedia().addStates(this, model, getQuery());
+        return getHypermedia().addStates(this, model);
     }
         
     /**
@@ -706,6 +706,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public ResponseBuilder getResponseBuilder(Model model)
     {
         ResponseBuilder rb = super.getResponseBuilder(model);
+        
+        rb.header("Query", getQuery().toString());
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
         rb.header("Link", classLink.toString());

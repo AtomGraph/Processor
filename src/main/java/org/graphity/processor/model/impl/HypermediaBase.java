@@ -115,17 +115,13 @@ public class HypermediaBase implements Hypermedia
     }
     
     @Override
-    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model, Query query)
+    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, Model model)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
 	if (log.isDebugEnabled()) log.debug("OntResource {} gets type of OntClass: {}", this, getMatchedOntClass());
 	resource.addProperty(RDF.type, getMatchedOntClass());
-        if (query != null) StateBuilder.fromUri(resource.getURI(), model).
-                build().
-                addProperty(SPIN.query, model.createResource().
-                        addLiteral(SP.text, query.toString()));
         
 	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
 	{
