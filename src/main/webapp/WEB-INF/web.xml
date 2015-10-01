@@ -13,6 +13,10 @@
             <param-name>javax.ws.rs.Application</param-name>
             <param-value>org.graphity.processor.ApplicationBase</param-value>
         </init-param>
+        <init-param>
+	    <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+            <param-value>org.graphity.processor.HypermediaFilter</param-value>
+	</init-param>        
         <!--
         <init-param>
             <param-name>http://www.w3.org/ns/sparql-service-description#endpoint</param-name>
