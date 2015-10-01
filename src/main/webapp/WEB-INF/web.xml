@@ -15,7 +15,7 @@
         </init-param>
         <init-param>
 	    <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
-            <param-value>org.graphity.processor.HypermediaFilter</param-value>
+            <param-value>org.graphity.processor.filter.response.HypermediaFilter</param-value>
 	</init-param>        
         <!--
         <init-param>

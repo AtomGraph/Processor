@@ -57,7 +57,6 @@ import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.SitemapException;
-import org.graphity.processor.model.Hypermedia;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
@@ -88,8 +87,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
+    //private final Modifiers modifiers;
     private final URI mode;
-    private final Hypermedia hypermedia;
+    //private final Hypermedia hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -116,12 +116,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param ontClass matched ontology class
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
-     * @param hypermedia hypermedia
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context OntClass ontClass, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext,
-            @Context Hypermedia hypermedia)
+            @Context Ontology ontology, @Context OntClass ontClass,
+            @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
@@ -133,6 +132,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
+        //if (modifiers == null) throw new IllegalArgumentException("HttpHeaders cannot be null");        
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
@@ -144,7 +144,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-        this.hypermedia = hypermedia;
+        //this.modifiers = modifiers;
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
@@ -547,21 +547,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	
 	return Response.noContent().build();
     }
-
-    /**
-     * Returns RDF description of this resource.
-     * The description is the result of a query executed on the SPARQL endpoint of this resource.
-     * By default, the query is <code>DESCRIBE</code> with URI of this resource.
-     * 
-     * @return RDF description
-     * @see getQuery()
-     */
-    @Override
-    public Model describe()
-    {
-	return addHypermedia(super.describe());
-    }
-
+    
     public boolean hasSuperClass(OntClass subClass, OntClass superClass)
     {
         ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
@@ -574,24 +560,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         return false;
     }
-    
-    /**
-     * Adds run-time metadata to RDF description.
-     * In case a container is requested, page resource with HATEOS previous/next links is added to the model.
-     * 
-     * @param model target RDF model
-     * @return description model with metadata
-     */
-    public Model addHypermedia(Model model)
-    {
-        return getHypermedia().addStates(this, model);
-    }
-        
+            
     /**
      * Returns the layout mode query parameter value.
      * 
      * @return mode URI
      */
+    @Override
     public URI getMode()
     {
 	return mode;
@@ -874,6 +849,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * 
      * @return ontology class
      */
+    @Override
     public OntClass getMatchedOntClass()
     {
 	return matchedOntClass;
@@ -884,14 +860,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * 
      * @return ontology
      */
+    @Override
     public Ontology getOntology()
     {
         return ontology;
-    }
-
-    public Hypermedia getHypermedia()
-    {
-        return hypermedia;
     }
 
     /**
@@ -1009,13 +981,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         return resourceContext;
     }
-
-    /*
-    public Hypermedia getHypermedia()
-    {
-        return hypermedia;
-    }
-    */
     
     @Override
     public Model getModel()
