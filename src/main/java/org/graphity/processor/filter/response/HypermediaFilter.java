@@ -39,6 +39,7 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
@@ -71,7 +72,8 @@ public class HypermediaFilter implements ContainerResponseFilter
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
     {
-        if (response.getEntity() != null && response.getEntity() instanceof Model)
+        if (response.getStatusType().getFamily().equals(Family.SUCCESSFUL) &&
+                response.getEntity() != null && response.getEntity() instanceof Model)
         {
             Model model = (Model)response.getEntity();
             long oldCount = model.size();
@@ -268,8 +270,11 @@ public class HypermediaFilter implements ContainerResponseFilter
     
     public org.graphity.processor.model.Resource getResource()
     {
-        Object resource = getUriInfo().getMatchedResources().get(0);
-        if (resource instanceof org.graphity.processor.model.Resource) return (org.graphity.processor.model.Resource)resource;
+        if (!getUriInfo().getMatchedResources().isEmpty())
+        {
+            Object resource = getUriInfo().getMatchedResources().get(0);
+            if (resource instanceof org.graphity.processor.model.Resource) return (org.graphity.processor.model.Resource)resource;
+        }
         
         return null;
     }
