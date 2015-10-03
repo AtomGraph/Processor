@@ -16,7 +16,7 @@
  */
 package org.graphity.processor.model.impl;
 
-import org.graphity.processor.util.StateBuilder;
+import org.graphity.core.util.StateBuilder;
 import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.*;

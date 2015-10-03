@@ -46,7 +46,7 @@ import javax.ws.rs.ext.Providers;
 import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
-import org.graphity.processor.util.StateBuilder;
+import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
@@ -72,6 +72,9 @@ public class HypermediaFilter implements ContainerResponseFilter
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
     {
+        if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
+        if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
+        
         if (response.getStatusType().getFamily().equals(Family.SUCCESSFUL) &&
                 response.getEntity() != null && response.getEntity() instanceof Model)
         {

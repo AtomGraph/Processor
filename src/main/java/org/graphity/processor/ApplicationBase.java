@@ -123,10 +123,9 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
         FileManager fileManager = getFileManager();
-        FileManager.setGlobalFileManager(fileManager);
 	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
-        
-        OntDocumentManager.getInstance().setFileManager(fileManager);
+        initOntDocumentManager(fileManager);
+        //OntDocumentManager.getInstance().setFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
 
         boolean cacheSitemap = true;
@@ -137,6 +136,12 @@ public class ApplicationBase extends org.graphity.core.ApplicationBase
         singletons.add(new OntologyProvider(getOntology()));
     }
 
+    public void initOntDocumentManager(FileManager fileManager)
+    {
+        //FileManager.setGlobalFileManager(fileManager);
+        OntDocumentManager.getInstance().setFileManager(fileManager);
+    }
+    
     public FileManager getFileManager()
     {
         return FileManager.get();
