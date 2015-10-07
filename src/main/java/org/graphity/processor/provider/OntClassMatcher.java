@@ -49,7 +49,10 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
@@ -122,7 +125,10 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 	StringBuilder path = new StringBuilder();
 	// instead of path, include query string by relativizing request URI against base URI
 	path.append("/").append(base.relativize(uri));
-	return matchTemplate(ontology, path).getOntClass();
+	Template template = matchTemplate(ontology, path);
+        if (template != null) return template.getOntClass();
+        
+        return null;
     }
     
     public Query getQuery(Query query, QuerySolutionMap qsm)
@@ -264,6 +270,60 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
+    public SortedSet<Template> matchOntClasses(Ontology ontology, Resource resource, Property property, int level)
+    {
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        SortedSet<Template> matchedClasses = new TreeSet<>();
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, OWL.Class); // some classes are not templates!
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource ontClassRes = it.next();
+                OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
+                // only match templates defined in this ontology - maybe reverse loops?
+                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology))
+                {
+                   if (ontClass.hasProperty(GP.skolemTemplate) && resource.hasProperty(property, ontClass))
+                    {
+                        Template template = new Template(ontClass, new Double(level * -1));
+                        if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
+                        matchedClasses.add(template);
+                    }
+ 
+                }
+            }
+            ExtendedIterator<OntResource> imports = ontology.listImports();
+            try
+            {
+                while (imports.hasNext())
+                {
+                    OntResource importRes = imports.next();
+                    if (importRes.canAs(Ontology.class))
+                    {
+                        Ontology importedOntology = importRes.asOntology();
+                        // traverse imports recursively
+                        Set<Template> matchedImportClasses = matchOntClasses(importedOntology, resource, property, level + 1);
+                        matchedClasses.addAll(matchedImportClasses);
+                    }
+                }
+            }
+            finally
+            {
+                imports.close();
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+            
+        return matchedClasses;
+    }
+    
     // does this belong to Skolemizer instead?
     public OntClass matchOntClass(Resource resource, OntClass parentClass)
     {

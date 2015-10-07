@@ -75,13 +75,14 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        if (response.getStatusType().getFamily().equals(Family.SUCCESSFUL) &&
+        if (getResource() != null && response.getStatusType().getFamily().equals(Family.SUCCESSFUL) &&
                 response.getEntity() != null && response.getEntity() instanceof Model)
         {
             Model model = (Model)response.getEntity();
             long oldCount = model.size();
             Resource resource = model.createResource(request.getAbsolutePath().toString());
-            model = addStates(resource);
+            OntClass matchedOntClass = getResource().getMatchedOntClass();
+            model = addStates(resource, matchedOntClass);
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
             response.setEntity(model);
             return response;
@@ -90,19 +91,21 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
 
-    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource)
+    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, OntClass matchedOntClass)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        
         Model model = resource.getModel();
         
-	if (log.isDebugEnabled()) log.debug("Resource {} gets type of OntClass: {}", resource, getMatchedOntClass());
-	resource.addProperty(RDF.type, getMatchedOntClass());
+	if (log.isDebugEnabled()) log.debug("Resource {} gets type of OntClass: {}", resource, matchedOntClass);
+	resource.addProperty(RDF.type, matchedOntClass);
         
-	if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
             Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, getMatchedOntClass()));
-            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, getMatchedOntClass()));
+            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, matchedOntClass));
+            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, matchedOntClass));
 
             Iterator<List<OntClass>> it = childrenClasses.values().iterator();
             while (it.hasNext())
@@ -193,8 +196,8 @@ public class HypermediaFilter implements ContainerResponseFilter
                         if (getModifiers().getOffset() >= getModifiers().getLimit())
                         {
                             StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
-                                    literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit()).
-                                    literal(GP.limit, getModifiers().getLimit());
+                                    literal(GP.limit, getModifiers().getLimit()).
+                                    literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
                             if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
                             if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
                             if (getMode() != null) prevSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
@@ -214,8 +217,8 @@ public class HypermediaFilter implements ContainerResponseFilter
                         //if (subjectCount >= getModifiers().getLimit())
                         {
                             StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
-                                    literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit()).
-                                    literal(GP.limit, getModifiers().getLimit());
+                                    literal(GP.limit, getModifiers().getLimit()).
+                                    literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
                             if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
                             if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
                             if (getMode() != null) nextSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));

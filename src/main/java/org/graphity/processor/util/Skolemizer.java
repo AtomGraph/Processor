@@ -16,7 +16,6 @@
 
 package org.graphity.processor.util;
 
-import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
@@ -29,7 +28,6 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.ResourceUtils;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.api.uri.UriTemplateParser;
@@ -38,11 +36,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.SortedSet;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.provider.OntClassMatcher;
+import org.graphity.processor.provider.Template;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
@@ -158,6 +158,15 @@ public class Skolemizer
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
+        SortedSet<Template> matched = getOntClassMatcher().matchOntClasses(getOntology(), resource, RDF.type, 0);
+        if (!matched.isEmpty())
+        {
+            OntClass matchingClass = matched.first().getOntClass();
+            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, matchingClass);
+            return build(resource, UriBuilder.fromUri(getBaseResource(resource).getURI()), matchingClass);
+        }        
+        
+        /*
         // first try skolemizing the resource as document
         if (resource.hasProperty(RDF.type, FOAF.Document))
         {
@@ -216,20 +225,11 @@ public class Skolemizer
                     {
                         superClassIt.close();
                     }
-                    
-                    /*
-                    Map<Property, List<OntClass>> matchingClasses =
-                            getOntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), FOAF.isPrimaryTopicOf, docClass);
-                    if (!matchingClasses.isEmpty())
-                    {
-                        OntClass topicClass = matchingClasses.values().iterator().next().get(0);
-                        return build(resource, UriBuilder.fromUri(getBaseResource(doc).getURI()), topicClass);
-                    }
-                    */
                 }
             }
         }
-
+        */
+        
         return null;
     }
 
