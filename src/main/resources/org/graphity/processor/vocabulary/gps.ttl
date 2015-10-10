@@ -29,6 +29,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 <#ClassContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
+    gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
     gp:uriTemplate "/classes/" ;
     rdfs:label "Class container" ;
@@ -39,6 +40,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
+    gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
     gp:uriTemplate "/templates/" ;
     rdfs:label "Template container" ;
@@ -65,6 +67,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 <#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
+    gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
     gp:uriTemplate "/queries/" ;
     rdfs:label "Query container" ;
@@ -84,6 +87,33 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{item}" ;
     rdfs:label "Query item" ;
+    rdfs:isDefinedBy <#> .
+
+# query templates
+
+<#QueryTemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
+    gp:defaultLimit 20 ;
+    gc:defaultMode gc:ListMode ;
+    gp:uriTemplate "/query-templates/" ;
+    rdfs:label "QueryTemplate container" ;
+    rdfs:isDefinedBy <#> .
+
+<#QueryTemplateItem> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf foaf:Document, gp:Item, 
+        [ a owl:Restriction ;
+            owl:onProperty sioc:has_container ;
+            owl:allValuesFrom <#QueryTemplateContainer>
+        ] ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:primaryTopic ;
+            owl:allValuesFrom gp:QueryTemplate
+	] ;
+    gc:supportedMode gc:ReadMode, gc:EditMode ;
+    gc:defaultMode gc:ReadMode ;
+    gp:uriTemplate "/query-templates/{item}" ;
+    rdfs:label "Query template item" ;
     rdfs:isDefinedBy <#> .
 
 # lookup

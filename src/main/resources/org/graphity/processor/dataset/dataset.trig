@@ -26,47 +26,69 @@
 # containers
 
 <ontologies/> a gp:Container, sioc:Container, foaf:Document ;
-    gp:slug "ontologies"^^xsd:string ;
+    gp:slug "ontologies" ;
     sioc:has_parent <> ;
     dct:title "Ontologies" .
 
 <classes/> a gp:Container, sioc:Container, foaf:Document, gps:ClassContainer ;
-    gp:slug "classes"^^xsd:string ;
+    gp:slug "classes" ;
     sioc:has_parent <> ;
     dct:title "Classes" .
 
 <templates/> a gp:Container, sioc:Container, foaf:Document, gps:TemplateContainer ;
-    gp:slug "templates"^^xsd:string ;
+    gp:slug "templates" ;
     sioc:has_parent <> ;
     dct:title "Templates" .
 
 <queries/> a gp:Container, sioc:Container, foaf:Document, gps:QueryContainer ;
-    gp:slug "queries"^^xsd:string ;
+    gp:slug "queries" ;
     sioc:has_parent <> ;
     dct:title "Queries" .
 
+<query-templates/> a gp:Container, sioc:Container, foaf:Document, gps:QueryTemplateContainer ;
+    gp:slug "query-templates" ;
+    sioc:has_parent <> ;
+    dct:title "Query templates" .
+
 <resources/labelled/> a gp:Container, sioc:Container, foaf:Document, gps:LabelResourcesContainer ;
+    gp:slug "labelled" ;
     sioc:has_parent <resources/> ;
     dct:title "Labelled resources" .
 
 # ontologies 
 
 <ontologies/graphity-processor> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "graphity-processor" ;
     sioc:has_container <ontologies/> ;
     dct:title "Graphity Processor ontology document" ;
     foaf:primaryTopic gp: .
 
-<ontologies/graphity-processor> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/sp> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "sp" ;
     sioc:has_container <ontologies/> ;
-    dct:title "Graphity Processor ontology document" ;
-    foaf:primaryTopic gp: .
+    dct:title "SP ontology document" ;
+    foaf:primaryTopic <http://spinrdf.org/sp#> .
+
+<ontologies/spin> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "spin" ;
+    sioc:has_container <ontologies/> ;
+    dct:title "SPIN ontology document" ;
+    foaf:primaryTopic <http://spinrdf.org/spin#> .
+
+<ontologies/sioc> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "sioc" ;
+    sioc:has_container <ontologies/> ;
+    dct:title "SIOC ontology document" ;
+    foaf:primaryTopic sioc: .
 
 <ontologies/foaf> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "foaf" ;
     sioc:has_container <ontologies/> ;
     dct:title "FOAF ontology document" ;
     foaf:primaryTopic foaf: .
 
 <ontologies/void> a foaf:Document, sioc:Item, gp:Item ;
+    gp:slug "void" ;
     sioc:has_container <ontologies/> ;
     dct:title "VoID ontology document" ;
     foaf:primaryTopic void: .
@@ -77,35 +99,50 @@
 # templates
 
 <templates/template-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+    gp:slug "template-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:TemplateContainer .
 
 <templates/template-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+    gp:slug "template-item" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:TemplateItem .
 
 <templates/query-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+    gp:slug "query-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:QueryContainer .
 
 <templates/query-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+    gp:slug "query-item" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:QueryItem .
 
 <templates/label-resources-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+    gp:slug "label-resources-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:LabelResourcesContainer .
 
 # queries
 
 <queries/template-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    gp:slug "template-item-constructor" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:TemplateItemConstructor .
 
 <queries/query-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    gp:slug "query-item-constructor" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:QueryItemConstructor .
 
 <queries/describe-graph-label-resources> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    gp:slug "describe-graph-label-resources" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:DescribeLabelResources .
+
+# query templates
+
+<query-templates/missing-property-value> a foaf:Document, sioc:Item, gp:Item, gps:QueryTemplateItem ;
+    gp:slug "missing-property-value" ;
+    sioc:has_container <query-templates/> ;
+    foaf:primaryTopic gp:MissingPropertyValue .

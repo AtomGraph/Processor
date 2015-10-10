@@ -327,7 +327,6 @@
         ] ;
     <#uriTemplate> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
-    <#defaultLimit> 20 ;
     <#query> <#DescribeWithChildren> ;
     spin:constructor <#ContainerConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
@@ -386,14 +385,26 @@
       WHERE {}""" ;
     rdfs:isDefinedBy <#> .
 
-<#Topic> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf owl:Class,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom <#Item>
-	] ;
+<#QueryTemplate> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf spin:Template ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
-    rdfs:label "Topic" ;
+    spin:constructor <#QueryTemplateConstructor> ;
+    rdfs:label "Query template" ;
+    rdfs:isDefinedBy <#> .
+
+<#QueryTemplateConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX spin:    <http://spinrdf.org/spin#>
+
+      CONSTRUCT {
+          ?this a spin:Template ;
+            rdfs:label " " ;
+            spin:body _:body ;
+            spin:labelTemplate " " ;
+            spin:constraint _:constraint .
+      }
+      WHERE {}""" ;
     rdfs:isDefinedBy <#> .
 
 <#SPARQLEndpoint> a owl:Class, <#Template> ;
@@ -424,7 +435,7 @@
 
 # SPIN TEMPLATES
 
-<#MissingPropertyValue> a spin:Template ;
+<#MissingPropertyValue> a rdfs:Class, spin:Template, <#QueryTemplate> ;
     rdfs:label "Missing property value" ;
     spin:body <#ConstructMissingPropertyValue> ;
     spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
