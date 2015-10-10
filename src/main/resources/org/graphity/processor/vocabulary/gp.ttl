@@ -184,7 +184,7 @@
 <#Template> a rdfs:Class, owl:Class ;
     rdfs:label "Resource template" ;
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
-    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#TemplateConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 rdfs:subClassOf
@@ -245,7 +245,7 @@
     rdfs:subClassOf [ a owl:Class ;
         owl:unionOf (sp:Describe sp:Construct)
     ] ;
-    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#QueryConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 sp:text
@@ -277,7 +277,7 @@
 
 <#Update> a rdfs:Class, owl:Class ;
     rdfs:subClassOf sp:Update ;
-    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#UpdateConstructor> ;
     spin:constraint [ a <#MissingPropertyValue> ;
 	    sp:arg1 sp:text
@@ -392,7 +392,7 @@
             owl:onProperty foaf:isPrimaryTopicOf ;
             owl:allValuesFrom <#Item>
 	] ;
-    <#skolemTemplate> "/{isPrimaryTopicOf.slug}" ;
+    <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     rdfs:label "Topic" ;
     rdfs:isDefinedBy <#> .
 
