@@ -140,6 +140,18 @@
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:DescribeLabelResources .
 
+# constraints
+
+<constraints/missing-rdfs-label> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    gp:slug "missing-rdfs-label" ;
+    sioc:has_container <constraints/> ;
+    foaf:primaryTopic gps:MissingRDFSLabel .
+
+<constraints/missing-rdfs-is-defined-by> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+    gp:slug "missing-rdfs-is-defined-by" ;
+    sioc:has_container <constraints/> ;
+    foaf:primaryTopic gps:MissingRDFSisDefinedBy .
+
 # query templates
 
 <query-templates/missing-property-value> a foaf:Document, sioc:Item, gp:Item, gps:QueryTemplateItem ;

@@ -18,9 +18,7 @@
 <#> a owl:Ontology ;
     owl:imports sp:, spin:, sioc:, foaf: ;
     owl:versionInfo "1.1.4" ;
-    # dct:title "Graphity Processor ontology" ;
     rdfs:label "Graphity Processor ontology" ;
-    # dct:description "Should be imported and reused by all extending applications" ;
     rdfs:label "Should be imported and reused by all extending applications" ;
     dct:created "2012-10-26T01:04:00+03:00"^^xsd:dateTime ;
     dct:modified "2012-12-19T02:29:00+03:00"^^xsd:dateTime, "2013-03-09T12:33:00+03:00"^^xsd:dateTime, "2014-08-24T02:04:00+02:00"^^xsd:dateTime ;
@@ -186,7 +184,8 @@
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#TemplateConstructor> ;
-    spin:constraint [ a <#MissingPropertyValue> ;
+    spin:constraint <#MissingLabel> , <#MissingRDFSisDefinedBy> ,
+        [ a <#MissingPropertyValue> ;
 	    sp:arg1 rdfs:subClassOf
 	] ,
         [ a <#MissingPropertyValue> ;
@@ -194,12 +193,6 @@
 	] ,
         [ a <#MissingPropertyValue> ;
 	    sp:arg1 <#query>
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:label
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:isDefinedBy <#> .
 
@@ -247,14 +240,9 @@
     ] ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#QueryConstructor> ;
-    spin:constraint [ a <#MissingPropertyValue> ;
+    spin:constraint <#MissingRDFSLabel>,
+        [ a <#MissingPropertyValue> ;
 	    sp:arg1 sp:text
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:label
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:label "Query" ;
     rdfs:isDefinedBy <#> .
@@ -268,8 +256,7 @@
       CONSTRUCT {
           ?this a sp:Query, _:ConstructOrDescribe ;
               rdfs:label " " ;
-              sp:text "DESCRIBE ?this"^^xsd:string ;
-              rdfs:isDefinedBy _:isDefinedBy .
+              sp:text "DESCRIBE ?this"^^xsd:string .
       }
       WHERE {}""" ;
     rdfs:label "Query constructor" ;
@@ -279,14 +266,9 @@
     rdfs:subClassOf sp:Update ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#UpdateConstructor> ;
-    spin:constraint [ a <#MissingPropertyValue> ;
+    spin:constraint <#MissingRDFSLabel> ,
+        [ a <#MissingPropertyValue> ;
 	    sp:arg1 sp:text
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:label
-	] ,
-        [ a <#MissingPropertyValue> ;
-	    sp:arg1 rdfs:isDefinedBy
 	] ;
     rdfs:label "Update" ;
     rdfs:isDefinedBy <#> .
@@ -301,8 +283,7 @@
           ?this a sp:Update ;
               rdfs:label " " ;
               rdfs:comment " " ;
-              sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" ;
-              rdfs:isDefinedBy _:isDefinedBy .
+              sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" .
       }
       WHERE {}""" .
 
@@ -315,6 +296,28 @@
     rdfs:subClassOf foaf:Document ;
     rdfs:label "Constructor template" ;
     rdfs:comment "A class of RDF resources that are container/item constructors" ;
+    rdfs:isDefinedBy <#> .
+
+<#Constraint> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf spin:Template ;
+    <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    spin:constructor <#ConstraintConstructor> ;
+    spin:constraint <#MissingRDFSLabel> ;
+    rdfs:label "Query template" ;
+    rdfs:isDefinedBy <#> .
+
+<#ConstraintConstructor> a       sp:Construct ;
+  sp:text """
+      PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX sp:      <http://spinrdf.org/sp#>
+
+      CONSTRUCT {
+          ?this a _:Type ;
+            rdfs:label " " ;
+            sp:arg1 _:arg1 ;
+            sp:arg2 _:arg2 .
+      }
+      WHERE {}""" ;
     rdfs:isDefinedBy <#> .
 
 # RESOURCE TEMPLATES
@@ -389,6 +392,7 @@
     rdfs:subClassOf spin:Template ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#QueryTemplateConstructor> ;
+    spin:constraint <#MissingRDFSLabel> , <#MissingRDFSisDefinedBy> ;
     rdfs:label "Query template" ;
     rdfs:isDefinedBy <#> .
 
@@ -436,6 +440,7 @@
 # SPIN TEMPLATES
 
 <#MissingPropertyValue> a rdfs:Class, spin:Template, <#QueryTemplate> ;
+    rdfs:subClassOf <#Constraint> ;
     rdfs:label "Missing property value" ;
     spin:body <#ConstructMissingPropertyValue> ;
     spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
@@ -446,6 +451,18 @@
         spl:predicate sp:arg2 ;
         spl:optional true
     ] ;
+    rdfs:isDefinedBy <#> .
+
+# CONSTRAINTS
+
+<#MissingRDFSLabel> a <#Constraint>, <#MissingPropertyValue> ;
+    rdfs:label "Missing rdfs:label" ;
+    sp:arg1 rdfs:label ;
+    rdfs:isDefinedBy <#> .
+
+<#MissingRDFSisDefinedBy> a <#Constraint>, <#MissingPropertyValue> ;
+    rdfs:label "Missing rdfs:isDefinedBy" ;
+    sp:arg1 rdfs:isDefinedBy ;
     rdfs:isDefinedBy <#> .
 
 # QUERIES

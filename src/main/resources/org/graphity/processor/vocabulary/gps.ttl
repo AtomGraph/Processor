@@ -89,6 +89,33 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
+# constraints
+
+<#ConstraintContainer> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
+    gp:defaultLimit 20 ;
+    gc:defaultMode gc:ListMode ;
+    gp:uriTemplate "/constraints/" ;
+    rdfs:label "Constraint container" ;
+    rdfs:isDefinedBy <#> .
+
+<#ConstraintItem> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf foaf:Document, gp:Item, 
+        [ a owl:Restriction ;
+            owl:onProperty sioc:has_container ;
+            owl:allValuesFrom <#ConstraintContainer>
+        ] ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:primaryTopic ;
+            owl:allValuesFrom gp:Constraint
+	] ;
+    gc:supportedMode gc:ReadMode, gc:EditMode ;
+    gc:defaultMode gc:ReadMode ;
+    gp:uriTemplate "/constraints/{item}" ;
+    rdfs:label "Constraint item" ;
+    rdfs:isDefinedBy <#> .
+
 # query templates
 
 <#QueryTemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
