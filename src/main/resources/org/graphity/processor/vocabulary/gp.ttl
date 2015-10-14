@@ -260,7 +260,8 @@
       CONSTRUCT {
           ?this a sp:Query, _:ConstructOrDescribe ;
               rdfs:label " " ;
-              sp:text "DESCRIBE ?this"^^xsd:string .
+              sp:text "DESCRIBE ?this"^^xsd:string ;
+              rdfs:isDefinedBy _:isDefinedBy .
       }
       WHERE {}""" ;
     rdfs:label "Query constructor" ;
@@ -285,10 +286,11 @@
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
-          ?this a sp:Update ;
+          ?this a sp:Modify ;
               rdfs:label " " ;
               rdfs:comment " " ;
-              sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" .
+              sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" ;
+              rdfs:isDefinedBy _:isDefinedBy .
       }
       WHERE {}""" .
 
