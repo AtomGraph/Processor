@@ -338,8 +338,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
-            StateBuilder sb = StateBuilder.fromUri(getURI(), getModel());
-            if (getLimit() != null) sb.literal(GP.limit, getLimit());
+            StateBuilder sb = StateBuilder.fromUri(getURI(), getModel()).
+                literal(GP.limit, getLimit());
             if (getOffset() != null) sb.literal(GP.offset, getOffset());
             if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
             if (getDesc() != null) sb.literal(GP.desc, getDesc());
@@ -682,7 +682,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         ResponseBuilder rb = super.getResponseBuilder(model);
         
-        rb.header("Query", getQuery().toString());
+        //rb.header("Query", getQuery().toString());
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
         rb.header("Link", classLink.toString());

@@ -260,7 +260,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
             {
                 Template template = it.next();
                 if (!template.equals(match) && Template.COMPARATOR.compare(template, match) == 0)
-                    if (log.isDebugEnabled()) log.debug("UriTemplate: {} has conflicting Templates: {} (they are equal to the mathed one)", templateMap.firstKey(), template);
+                    if (log.isDebugEnabled()) log.debug("UriTemplate: {} has conflicting Templates: {} (they are equal to the matched one)", templateMap.firstKey(), template);
             }
             
             return match;
