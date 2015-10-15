@@ -184,7 +184,7 @@
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#TemplateConstructor> ;
-    spin:constraint <#MissingLabel> , <#MissingRDFSisDefinedBy> ,
+    spin:constraint <#MissingRDFSLabel> , <#MissingRDFSisDefinedBy> ,
         [ a <#MissingPropertyValue> ;
             rdfs:label "Missing rdfs:subClassOf" ;
 	    sp:arg1 rdfs:subClassOf
