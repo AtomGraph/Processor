@@ -17,8 +17,6 @@
 package org.graphity.processor.model.impl;
 
 import org.graphity.core.util.StateBuilder;
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
@@ -89,7 +87,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final HttpHeaders httpHeaders;  
     //private final Modifiers modifiers;
     private final URI mode;
-    //private final Hypermedia hypermedia;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -135,7 +132,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         //if (modifiers == null) throw new IllegalArgumentException("HttpHeaders cannot be null");        
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
-        OntModel model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+        OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
         model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
         this.ontResource = model.createOntResource(getURI());
         this.ontology = ontology;
@@ -164,12 +161,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
-            updateRequest = getUpdateRequest(getMatchedOntClass(), GP.update);
-            if (updateRequest == null)
+            Resource updateOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.update);            
+            if (updateOrTemplateCall == null)
             {
                 if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
                 throw new SitemapException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
             }
+            updateRequest = getUpdateRequest(updateOrTemplateCall);
         }
 
         if (getRequest().getMethod().equalsIgnoreCase("GET") ||
@@ -177,13 +175,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 getRequest().getMethod().equalsIgnoreCase("PUT") ||
                 getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
         {
-            Query query = getQuery(getMatchedOntClass(), GP.query);
-            if (query == null)
+            Resource queryOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.query);        
+            if (queryOrTemplateCall == null)
             {
                 if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
                 throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
             }
-            queryBuilder = QueryBuilder.fromQuery(query, getModel());
+            Query query = getQuery(queryOrTemplateCall);
+            queryBuilder = QueryBuilder.fromQuery(query, getOntResource().getModel());
 
             if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
             {
@@ -338,7 +337,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
-            StateBuilder sb = StateBuilder.fromUri(getURI(), getModel()).
+            StateBuilder sb = StateBuilder.fromUri(getURI(), getOntResource().getOntModel()).
                 literal(GP.limit, getLimit());
             if (getOffset() != null) sb.literal(GP.offset, getOffset());
             if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
@@ -448,7 +447,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     memberProperty = SIOC.HAS_PARENT;
 
                 if (!res.hasProperty(memberProperty))
-                    res.addProperty(memberProperty, this);
+                    res.addProperty(memberProperty, getOntResource());
                 
                 if (!res.hasProperty(DCTerms.created))
                     res.addLiteral(DCTerms.created, model.createTypedLiteral(GregorianCalendar.getInstance()));
@@ -491,7 +490,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 	if (log.isDebugEnabled()) log.debug("PUT Model: {} GRAPH URI: {}", model, graphURI);
 
-	if (!model.containsResource(this))
+	if (!model.containsResource(getOntResource()))
 	{
 	    if (log.isDebugEnabled()) log.debug("PUT Model does not contain statements with request URI '{}' as subject", getURI());
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
@@ -587,60 +586,25 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return null;
     }
 
-    /**
-     * Given an RDF resource and an ontology class that it belongs to, returns a SPARQL query that can be used
-     * to retrieve its description.
-     * The ontology class must have a SPIN template call attached (using <code>spin:query</code>).
-     * 
-     * @param ontClass ontology class of the resource
-     * @param property property for the query object
-     * @return query object
-     * @see org.topbraid.spin.model.TemplateCall
-     */
-    public Query getQuery(OntClass ontClass, AnnotationProperty property)
+    public Query getQuery(Resource queryOrTemplateCall)
     {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 
-	Resource queryOrTemplateCall = ontClass.getPropertyResourceValue(property);
         // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
-        Model queryModel = ModelFactory.createDefaultModel();
-        StmtIterator stmtIt = queryOrTemplateCall.listProperties(RDF.type);
-        try
-        {
-            queryModel.add(stmtIt);
-            stmtIt = queryOrTemplateCall.listProperties(SP.text);
-            queryModel.add(stmtIt);
-            ResIterator resIt = queryModel.listResourcesWithProperty(SP.text);
-            try
-            {
-                if (resIt.hasNext()) queryOrTemplateCall = resIt.next();
-            }
-            finally
-            {
-                resIt.close();
-            }
-        }
-        finally
-        {
-            stmtIt.close();
-        }
+        queryOrTemplateCall = removeNonSPINRDFProperties(queryOrTemplateCall);
         // end of workaround
-        
-        if (queryOrTemplateCall != null)
-        {
-            org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
-            if (spinQuery != null) return getParameterizedSparqlString(spinQuery.toString(), null,
-                    getUriInfo().getBaseUri().toString()).asQuery();
 
-            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-            if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
-                    getUriInfo().getBaseUri().toString()).asQuery();
-        }
+        org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
+        if (spinQuery != null) return getParameterizedSparqlString(spinQuery.toString(), null,
+                getUriInfo().getBaseUri().toString()).asQuery();
+
+        TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
+        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                getUriInfo().getBaseUri().toString()).asQuery();
         
         return null;
     }
-
+    
     /**
      * Returns variable bindings for description query.
      * 
@@ -651,26 +615,54 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return querySolutionMap;
     }
     
-    public UpdateRequest getUpdateRequest(OntClass ontClass, AnnotationProperty property)
+    public UpdateRequest getUpdateRequest(Resource updateOrTemplateCall)
     {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 
-	Resource updateOrTemplateCall = ontClass.getPropertyResourceValue(property);
-	if (updateOrTemplateCall != null)
-        {
-            Update spinUpdate = SPINFactory.asUpdate(updateOrTemplateCall);
-            if (spinUpdate != null) return getParameterizedSparqlString(spinUpdate.toString(), null,
-                    getUriInfo().getBaseUri().toString()).asUpdate();
+        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
+        updateOrTemplateCall = removeNonSPINRDFProperties(updateOrTemplateCall);
+        // end of workaround
 
-            TemplateCall templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
-            if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
-                    getUriInfo().getBaseUri().toString()).asUpdate();
-        }
+        Update spinUpdate = SPINFactory.asUpdate(updateOrTemplateCall);
+        if (spinUpdate != null) return getParameterizedSparqlString(spinUpdate.toString(), null,
+                getUriInfo().getBaseUri().toString()).asUpdate();
+
+        TemplateCall templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
+        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                getUriInfo().getBaseUri().toString()).asUpdate();
         
         return null;
     }
+    
+    public Resource removeNonSPINRDFProperties(Resource command)
+    {
+	if (command == null) throw new IllegalArgumentException("Resource cannot be null");
 
+        Model queryModel = ModelFactory.createDefaultModel();
+        StmtIterator stmtIt = command.listProperties(RDF.type);
+        try
+        {
+            queryModel.add(stmtIt);
+            stmtIt = command.listProperties(SP.text);
+            queryModel.add(stmtIt);
+            ResIterator resIt = queryModel.listResourcesWithProperty(SP.text);
+            try
+            {
+                if (resIt.hasNext()) return resIt.next();
+            }
+            finally
+            {
+                resIt.close();
+            }
+        }
+        finally
+        {
+            stmtIt.close();
+        }
+        
+        return null; // command?
+    }
+    
     /**
      * Adds matched sitemap class as affordance metadata in <pre>Link</pre> header.
      * 
@@ -794,34 +786,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	return desc;
     }
-    
-    /**
-     * Returns URI builder instantiated with pagination parameters for the current page.
-     * 
-     * @param offset
-     * @param limit
-     * @param orderBy
-     * @param desc
-     * @param mode
-     * @return URI builder
-     */
-    /*
-    public UriBuilder getStateUriBuilder(Long offset, Long limit, String orderBy, Boolean desc, URI mode)
-    {
-	return getStateUriBuilder(UriBuilder.fromUri(getURI()), offset, limit, orderBy, desc, mode);
-    }
-
-    public UriBuilder getStateUriBuilder(UriBuilder uriBuilder, Long offset, Long limit, String orderBy, Boolean desc, URI mode)
-    {        
-        if (offset != null) uriBuilder.queryParam(GP.offset.getLocalName(), offset);
-        if (limit != null) uriBuilder.queryParam(GP.limit.getLocalName(), limit);
-	if (orderBy != null) uriBuilder.queryParam(GP.orderBy.getLocalName(), orderBy);
-	if (desc != null) uriBuilder.queryParam(GP.desc.getLocalName(), desc);
-        if (mode != null) uriBuilder.queryParam(GP.mode.getLocalName(), mode);
-        
-	return uriBuilder;
-    }
-    */
 
     /**
      * Returns URI of this resource. Uses Java's URI class instead of string as the {@link #getURI()} does.
@@ -982,796 +946,4 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return resourceContext;
     }
     
-    @Override
-    public Model getModel()
-    {
-        return getOntResource().getModel();
-    }
-    
-    @Override
-    public OntModel getOntModel()
-    {
-	return getOntResource().getOntModel();
-    }
-    
-    @Override
-    public Profile getProfile()
-    {
-	return getOntResource().getProfile();
-    }
-
-    @Override
-    public boolean isOntLanguageTerm()
-    {
-	return getOntResource().isOntLanguageTerm();
-    }
-
-    @Override
-    public void setSameAs(Resource rsrc)
-    {
-	getOntResource().setSameAs(rsrc);
-    }
-
-    @Override
-    public void addSameAs(Resource rsrc)
-    {
-	getOntResource().addSameAs(rsrc);
-    }
-
-    @Override
-    public OntResource getSameAs()
-    {
-	return getOntResource().getSameAs();
-    }
-
-    @Override
-    public ExtendedIterator<? extends Resource> listSameAs()
-    {
-	return getOntResource().listSameAs();
-    }
-
-    @Override
-    public boolean isSameAs(Resource rsrc)
-    {
-	return getOntResource().isSameAs(rsrc);
-    }
-
-    @Override
-    public void removeSameAs(Resource rsrc)
-    {
-	getOntResource().removeSameAs(rsrc);
-    }
-
-    @Override
-    public void setDifferentFrom(Resource rsrc)
-    {
-	getOntResource().setDifferentFrom(rsrc);
-    }
-
-    @Override
-    public void addDifferentFrom(Resource rsrc)
-    {
-	getOntResource().addDifferentFrom(rsrc);
-    }
-
-    @Override
-    public OntResource getDifferentFrom()
-    {
-	return getOntResource().getDifferentFrom();
-    }
-
-    @Override
-    public ExtendedIterator<? extends Resource> listDifferentFrom()
-    {
-	return getOntResource().listDifferentFrom();
-    }
-
-    @Override
-    public boolean isDifferentFrom(Resource rsrc)
-    {
-	return getOntResource().isDifferentFrom(rsrc);
-    }
-
-    @Override
-    public void removeDifferentFrom(Resource rsrc)
-    {
-	getOntResource().removeDifferentFrom(rsrc);
-    }
-
-    @Override
-    public void setSeeAlso(Resource rsrc)
-    {
-	getOntResource().setSeeAlso(rsrc);
-    }
-
-    @Override
-    public void addSeeAlso(Resource rsrc)
-    {
-	getOntResource().addSeeAlso(rsrc);
-    }
-
-    @Override
-    public Resource getSeeAlso()
-    {
-	return getOntResource().getSeeAlso();
-    }
-
-    @Override
-    public ExtendedIterator<RDFNode> listSeeAlso()
-    {
-	return getOntResource().listSeeAlso();
-    }
-
-    @Override
-    public boolean hasSeeAlso(Resource rsrc)
-    {
-	return getOntResource().hasSeeAlso(rsrc);
-    }
-
-    @Override
-    public void removeSeeAlso(Resource rsrc)
-    {
-	getOntResource().removeSeeAlso(rsrc);
-    }
-
-    @Override
-    public void setIsDefinedBy(Resource rsrc)
-    {
-	getOntResource().setIsDefinedBy(rsrc);
-    }
-
-    @Override
-    public void addIsDefinedBy(Resource rsrc)
-    {
-	getOntResource().addIsDefinedBy(rsrc);
-    }
-
-    @Override
-    public Resource getIsDefinedBy()
-    {
-	return getOntResource().getIsDefinedBy();
-    }
-
-    @Override
-    public ExtendedIterator<RDFNode> listIsDefinedBy()
-    {
-	return getOntResource().listIsDefinedBy();
-    }
-
-    @Override
-    public boolean isDefinedBy(Resource rsrc)
-    {
-	return getOntResource().isDefinedBy(rsrc);
-    }
-
-    @Override
-    public void removeDefinedBy(Resource rsrc)
-    {
-	getOntResource().removeDefinedBy(rsrc);
-    }
-
-    @Override
-    public void setVersionInfo(String string)
-    {
-	getOntResource().setVersionInfo(string);
-    }
-
-    @Override
-    public void addVersionInfo(String string)
-    {
-	getOntResource().addVersionInfo(string);
-    }
-
-    @Override
-    public String getVersionInfo()
-    {
-	return getOntResource().getVersionInfo();
-    }
-
-    @Override
-    public ExtendedIterator<String> listVersionInfo()
-    {
-	return getOntResource().listVersionInfo();
-    }
-
-    @Override
-    public boolean hasVersionInfo(String string)
-    {
-	return getOntResource().hasVersionInfo(string);
-    }
-
-    @Override
-    public void removeVersionInfo(String string)
-    {
-	getOntResource().removeVersionInfo(string);
-    }
-
-    @Override
-    public void setLabel(String string, String string1)
-    {
-	getOntResource().setLabel(string, string1);
-    }
-
-    @Override
-    public void addLabel(String string, String string1)
-    {
-	getOntResource().addLabel(string, string1);
-    }
-
-    @Override
-    public void addLabel(Literal ltrl)
-    {
-	getOntResource().addLabel(ltrl);
-    }
-
-    @Override
-    public String getLabel(String string)
-    {
-	return getOntResource().getLabel(string);
-    }
-
-    @Override
-    public ExtendedIterator<RDFNode> listLabels(String string)
-    {
-	return getOntResource().listLabels(string);
-    }
-
-    @Override
-    public boolean hasLabel(String string, String string1)
-    {
-	return getOntResource().hasLabel(string, string1);
-    }
-
-    @Override
-    public boolean hasLabel(Literal ltrl)
-    {
-	return getOntResource().hasLabel(ltrl);
-    }
-
-    @Override
-    public void removeLabel(String string, String string1)
-    {
-	getOntResource().removeLabel(string, string1);
-    }
-
-    @Override
-    public void removeLabel(Literal ltrl)
-    {
-	getOntResource().removeLabel(ltrl);
-    }
-
-    @Override
-    public void setComment(String string, String string1)
-    {
-	getOntResource().setComment(string, string1);
-    }
-
-    @Override
-    public void addComment(String string, String string1)
-    {
-	getOntResource().addComment(string, string1);
-    }
-
-    @Override
-    public void addComment(Literal ltrl)
-    {
-	getOntResource().addComment(ltrl);
-    }
-
-    @Override
-    public String getComment(String string)
-    {
-	return getOntResource().getComment(string);
-    }
-
-    @Override
-    public ExtendedIterator<RDFNode> listComments(String string)
-    {
-	return getOntResource().listComments(string);
-    }
-
-    @Override
-    public boolean hasComment(String string, String string1)
-    {
-	return getOntResource().hasComment(string, string1);
-    }
-
-    @Override
-    public boolean hasComment(Literal ltrl)
-    {
-	return getOntResource().hasComment(ltrl);
-    }
-
-    @Override
-    public void removeComment(String string, String string1)
-    {
-	getOntResource().removeComment(string, string1);
-    }
-
-    @Override
-    public void removeComment(Literal ltrl)
-    {
-	getOntResource().removeComment(ltrl);
-    }
-
-    @Override
-    public void setRDFType(Resource rsrc)
-    {
-	getOntResource().setRDFType(rsrc);
-    }
-
-    @Override
-    public void addRDFType(Resource rsrc)
-    {
-	getOntResource().addRDFType(rsrc);
-    }
-
-    @Override
-    public Resource getRDFType()
-    {
-	return getOntResource().getRDFType();
-    }
-
-    @Override
-    public Resource getRDFType(boolean bln)
-    {
-	return getOntResource().getRDFType(bln);
-    }
-
-    @Override
-    public ExtendedIterator<Resource> listRDFTypes(boolean bln)
-    {
-	return getOntResource().listRDFTypes(bln);
-    }
-
-    @Override
-    public boolean hasRDFType(Resource rsrc, boolean bln)
-    {
-	return getOntResource().hasRDFType(rsrc, bln);
-    }
-
-    @Override
-    public boolean hasRDFType(Resource rsrc)
-    {
-	return getOntResource().hasRDFType(rsrc);
-    }
-
-    @Override
-    public void removeRDFType(Resource rsrc)
-    {
-	getOntResource().removeRDFType(rsrc);
-    }
-
-    @Override
-    public boolean hasRDFType(String string)
-    {
-	return getOntResource().hasRDFType(string);
-    }
-
-    @Override
-    public int getCardinality(Property prprt)
-    {
-	return getOntResource().getCardinality(prprt);
-    }
-
-    @Override
-    public void setPropertyValue(Property prprt, RDFNode rdfn)
-    {
-	getOntResource().setPropertyValue(prprt, rdfn);
-    }
-
-    @Override
-    public RDFNode getPropertyValue(Property prprt)
-    {
-	return getOntResource().getPropertyValue(prprt);
-    }
-
-    @Override
-    public NodeIterator listPropertyValues(Property prprt)
-    {
-	return getOntResource().listPropertyValues(prprt);
-    }
-
-    @Override
-    public void removeProperty(Property prprt, RDFNode rdfn)
-    {
-	getOntResource().removeProperty(prprt, rdfn);
-    }
-
-    @Override
-    public void remove()
-    {
-	getOntResource().remove();
-    }
-
-    @Override
-    public OntProperty asProperty()
-    {
-	return getOntResource().asProperty();
-    }
-
-    @Override
-    public AnnotationProperty asAnnotationProperty()
-    {
-	return getOntResource().asAnnotationProperty();
-    }
-
-    @Override
-    public ObjectProperty asObjectProperty()
-    {
-	return getOntResource().asObjectProperty();
-    }
-
-    @Override
-    public DatatypeProperty asDatatypeProperty()
-    {
-	return getOntResource().asDatatypeProperty();
-    }
-
-    @Override
-    public Individual asIndividual()
-    {
-	return getOntResource().asIndividual();
-    }
-
-    @Override
-    public OntClass asClass()
-    {
-	return getOntResource().asClass();
-    }
-
-    @Override
-    public Ontology asOntology()
-    {
-	return getOntResource().asOntology();
-    }
-
-    @Override
-    public DataRange asDataRange()
-    {
-	return getOntResource().asDataRange();
-    }
-
-    @Override
-    public AllDifferent asAllDifferent()
-    {
-	return getOntResource().asAllDifferent();
-    }
-
-    @Override
-    public boolean isProperty()
-    {
-	return getOntResource().isProperty();
-    }
-
-    @Override
-    public boolean isAnnotationProperty()
-    {
-	return getOntResource().isAnnotationProperty();
-    }
-
-    @Override
-    public boolean isObjectProperty()
-    {
-	return getOntResource().isObjectProperty();
-    }
-
-    @Override
-    public boolean isDatatypeProperty()
-    {
-	return getOntResource().isDatatypeProperty();
-    }
-
-    @Override
-    public boolean isIndividual()
-    {
-	return getOntResource().isIndividual();
-    }
-
-    @Override
-    public boolean isClass()
-    {
-	return getOntResource().isClass();
-    }
-
-    @Override
-    public boolean isOntology()
-    {
-	return getOntResource().isOntology();
-    }
-
-    @Override
-    public boolean isDataRange()
-    {
-	return getOntResource().isDataRange();
-    }
-
-    @Override
-    public boolean isAllDifferent()
-    {
-	return getOntResource().isAllDifferent();
-    }
-
-    @Override
-    public AnonId getId()
-    {
-	return getOntResource().getId();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource inModel(Model model)
-    {
-	return getOntResource().inModel(model);
-    }
-
-    @Override
-    public boolean hasURI(String string)
-    {
-	return getOntResource().hasURI(string);
-    }
-
-    @Override
-    public String getNameSpace()
-    {
-	return getOntResource().getNameSpace();
-    }
-
-    @Override
-    public String getLocalName()
-    {
-	return getOntResource().getLocalName();
-    }
-
-    @Override
-    public Statement getRequiredProperty(Property prprt)
-    {
-	return getOntResource().getRequiredProperty(prprt);
-    }
-
-    @Override
-    public Statement getProperty(Property prprt)
-    {
-	return getOntResource().getProperty(prprt);
-    }
-
-    @Override
-    public StmtIterator listProperties(Property prprt)
-    {
-	return getOntResource().listProperties(prprt);
-    }
-
-    @Override
-    public StmtIterator listProperties()
-    {
-	return getOntResource().listProperties();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, boolean bln)
-    {
-	return getOntResource().addLiteral(prprt, bln);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, long l)
-    {
-	return getOntResource().addLiteral(prprt, l);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, char c)
-    {
-	return getOntResource().addLiteral(prprt, c);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, double d)
-    {
-	return getOntResource().addLiteral(prprt, d);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, float f)
-    {
-	return getOntResource().addLiteral(prprt, f);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, Object o)
-    {
-	return getOntResource().addLiteral(prprt, o);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addLiteral(Property prprt, Literal ltrl)
-    {
-	return getOntResource().addLiteral(prprt, ltrl);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addProperty(Property prprt, String string)
-    {
-	return getOntResource().addLiteral(prprt, string);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addProperty(Property prprt, String string, String string1)
-    {
-	return getOntResource().addProperty(prprt, string, string1);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addProperty(Property prprt, String string, RDFDatatype rdfd)
-    {
-	return getOntResource().addProperty(prprt, prprt);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource addProperty(Property prprt, RDFNode rdfn)
-    {
-	return getOntResource().addProperty(prprt, rdfn);
-    }
-
-    @Override
-    public boolean hasProperty(Property prprt)
-    {
-	return getOntResource().hasProperty(prprt);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, boolean bln)
-    {
-	return getOntResource().hasLiteral(prprt, bln);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, long l)
-    {
-	return getOntResource().hasLiteral(prprt, l);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, char c)
-    {
-	return getOntResource().hasLiteral(prprt, c);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, double d)
-    {
-	return getOntResource().hasLiteral(prprt, d);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, float f)
-    {
-	return getOntResource().hasLiteral(prprt, f);
-    }
-
-    @Override
-    public boolean hasLiteral(Property prprt, Object o)
-    {
-	return getOntResource().hasLiteral(prprt, o);
-    }
-
-    @Override
-    public boolean hasProperty(Property prprt, String string)
-    {
-	return getOntResource().hasProperty(prprt, string);
-    }
-
-    @Override
-    public boolean hasProperty(Property prprt, String string, String string1)
-    {
-	return getOntResource().hasProperty(prprt, string, string1);
-    }
-
-    @Override
-    public boolean hasProperty(Property prprt, RDFNode rdfn)
-    {
-	return getOntResource().hasProperty(prprt, rdfn);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource removeProperties()
-    {
-	return getOntResource().removeProperties();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource removeAll(Property prprt)
-    {
-	return getOntResource().removeAll(prprt);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource begin()
-    {
-	return getOntResource().begin();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource abort()
-    {
-	return getOntResource().abort();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource commit()
-    {
-	return getOntResource().commit();
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource getPropertyResourceValue(Property prprt)
-    {
-	return getOntResource().getPropertyResourceValue(prprt);
-    }
-
-    @Override
-    public boolean isAnon()
-    {
-	return getOntResource().isAnon();
-    }
-
-    @Override
-    public boolean isLiteral()
-    {
-	return getOntResource().isLiteral();
-    }
-
-    @Override
-    public boolean isURIResource()
-    {
-	return getOntResource().isURIResource();
-    }
-
-    @Override
-    public boolean isResource()
-    {
-	return getOntResource().isResource();
-    }
-
-    @Override
-    public <T extends RDFNode> T as(Class<T> type)
-    {
-	return getOntResource().as(type);
-    }
-
-    @Override
-    public <T extends RDFNode> boolean canAs(Class<T> type)
-    {
-	return getOntResource().canAs(type);
-    }
-
-    @Override
-    public Object visitWith(RDFVisitor rdfv)
-    {
-	return getOntResource().visitWith(rdfv);
-    }
-
-    @Override
-    public com.hp.hpl.jena.rdf.model.Resource asResource()
-    {
-	return getOntResource().asResource();
-    }
-
-    @Override
-    public Literal asLiteral()
-    {
-	return getOntResource().asLiteral();
-    }
-
-    @Override
-    public Node asNode()
-    {
-	return getOntResource().asNode();
-    }
-
-    @Override
-    public String toString()
-    {
-	return getOntResource().toString();
-    }
- 
 }

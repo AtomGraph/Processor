@@ -17,16 +17,14 @@
 package org.graphity.processor.model;
 
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
 import java.net.URI;
-import org.graphity.processor.util.Modifiers;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public interface Resource extends org.graphity.core.model.Resource, QueriedResource, OntResource
+public interface Resource extends org.graphity.core.model.Resource, QueriedResource //, OntResource
 {
     
     public Ontology getOntology();

@@ -16,18 +16,29 @@
  */
 package org.graphity.processor.provider;
 
+import com.hp.hpl.jena.ontology.DatatypeProperty;
+import com.hp.hpl.jena.ontology.ObjectProperty;
+import com.hp.hpl.jena.ontology.OntDocumentManager;
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.reasoner.Reasoner;
+import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
+import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import org.graphity.processor.exception.SitemapException;
+import org.graphity.core.exception.ConfigurationException;
+import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -42,13 +53,14 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 {
     private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
 
-    private final Ontology ontology;
+    private final ServletConfig servletConfig;
     
-    public OntologyProvider(Ontology ontology)
+    public OntologyProvider(@Context ServletConfig servletConfig)
     {
         super(Ontology.class);
-        this.ontology = ontology;
+        this.servletConfig = servletConfig;
         
+        /*
         ImportCycleChecker checker = new ImportCycleChecker();
         checker.check(ontology);
         if (checker.getCycleOntology() != null)
@@ -56,6 +68,12 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
             throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
         }
+        */
+    }
+    
+    public ServletConfig getServletConfig()
+    {
+	return servletConfig;
     }
     
     public class ImportCycleChecker
@@ -123,9 +141,120 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return getOntology();
     }
 
+    public String getOntologyURI() throws ConfigurationException
+    {
+        String ontologyURI = getOntologyURI(getServletConfig(), GP.ontology);
+        
+        if (ontologyURI == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (gp:sitemap) not configured");
+            throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
+        }
+
+        return ontologyURI;
+    }
+    
     public Ontology getOntology()
     {
+        //String ontologyURI = getOntologyURI(getServletConfig(), GP.ontology);
+        return getOntology(getOntologyURI());
+    }
+    
+    public Ontology getOntology(String ontologyURI)
+    {
+        Ontology ontology = getOntology(getOntModel(ontologyURI, getOntModelSpec(getServletConfig(), GP.sitemapRules)), ontologyURI);
+        if (ontology == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
+            throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
+        }
+
         return ontology;
+    }
+    
+    public OntModelSpec getOntModelSpec(List<Rule> rules)
+    {
+        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
+        
+        if (rules != null)
+        {
+            Reasoner reasoner = new GenericRuleReasoner(rules);
+            //reasoner.setDerivationLogging(true);
+            //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
+            ontModelSpec.setReasoner(reasoner);
+        }
+        
+        return ontModelSpec;
+    }
+
+    public OntModelSpec getOntModelSpec(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        return getOntModelSpec(getRules(servletConfig, property));
+    }
+    
+    /**
+     * Returns configured sitemap ontology.
+     * Uses <code>gp:ontology</code> context parameter value from web.xml as dataset location.
+     * 
+     * @param ontModel
+     * @param ontologyURI
+     * @return ontology model
+     */
+    public Ontology getOntology(OntModel ontModel, String ontologyURI)
+    {
+        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
+        if (ontologyURI == null) throw new IllegalArgumentException("Ontology URI String cannot be null");
+        
+        return ontModel.getOntology(ontologyURI);
+    }
+    
+    public String getOntologyURI(ServletConfig servletConfig, ObjectProperty property)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Object ontologyURI = servletConfig.getInitParameter(property.getURI());
+        if (ontologyURI != null) return ontologyURI.toString();
+
+        return null;
+    }
+    
+    /**
+     * Reads ontology model from a file.
+     * 
+     * @param ontologyURI ontology location
+     * @param ontModelSpec ontology model specification
+     * @return ontology model
+     */
+    public OntModel getOntModel(String ontologyURI, OntModelSpec ontModelSpec)
+    {
+        if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
+        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
+        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
+        
+        OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
+        if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
+        
+        return ontModel;
+    }
+
+    public final List<Rule> getRules(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        String rules = getRulesString(servletConfig, property);
+        if (rules == null) return null;
+        
+        return Rule.parseRules(rules);
+    }
+
+    public String getRulesString(ServletConfig servletConfig, DatatypeProperty property)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Object rules = servletConfig.getInitParameter(property.getURI());
+        if (rules != null) return rules.toString();
+
+        return null;
     }
 
 }
