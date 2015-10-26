@@ -36,7 +36,7 @@ can choose `graphity-processor`. Dependencies to other Graphity artifacts will b
         <dependency>
             <groupId>org.graphity</groupId>
             <artifactId>processor</artifactId>
-            <version>1.1.2</version>
+            <version>1.1.3</version>
         </dependency>        
 
 See more about [installation](../../wiki/Installation).
@@ -58,7 +58,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 ```
 @prefix sioc:  <http://rdfs.org/sioc/ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix gcs:   <http://graphity.org/gcs#> .
+@prefix gps:   <http://graphity.org/gps#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
@@ -70,11 +70,10 @@ brevity, all URIs are relativized against the webapp's base URI):
 # root container
 
 <>
-        a                gp:Space , sioc:Container , sioc:Space , gp:Container , foaf:Document ;
-        rdfs:seeAlso     <sparql> , gcs: , <http://semantic-web.dk> , <http://graphityhq.com> ;
-        dct:description  "Generic Linked Data browser and end-user-oriented platform" ;
-        dct:title        "Graphity Client" ;
-        foaf:logo        <static/img/graphity-logo.svg> ;
+        a                sioc:Container , sioc:Space , gp:Container , foaf:Document ;
+        rdfs:seeAlso     <sparql> , gps: , <http://graphityhq.com> ;
+        dct:description  "Generic Linked Data processor" ;
+        dct:title        "Graphity Processor" ;
         foaf:maker       <http://graphityhq.com/#company> .
 
 # constructor
@@ -111,7 +110,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 
 <ontologies>
         a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "ontologies"^^xsd:string ;
+        gp:slug          "ontologies" ;
         dct:title        "Ontologies" ;
         sioc:has_parent  <> .
 
@@ -127,7 +126,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 
 <queries>
         a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "queries"^^xsd:string ;
+        gp:slug          "queries" ;
         dct:title        "Queries" ;
         sioc:has_parent  <> .
 
@@ -143,7 +142,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 
 <templates>
         a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "templates"^^xsd:string ;
+        gp:slug          "templates" ;
         dct:title        "Templates" ;
         sioc:has_parent  <> .
 
