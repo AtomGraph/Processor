@@ -17,8 +17,10 @@
 package org.graphity.processor.provider;
 
 import com.hp.hpl.jena.ontology.OntClass;
+import com.sun.jersey.api.uri.UriTemplate;
 import java.util.Comparator;
 import java.util.Objects;
+import org.graphity.processor.vocabulary.GP;
 
 /**
  *
@@ -28,7 +30,8 @@ public class Template implements Comparable
 {
 
     final private OntClass ontClass;
-    final private Double priority;
+    final private UriTemplate uriTemplate;
+    final private Double precedence;
 
     static public final Comparator<Template> COMPARATOR = new Comparator<Template>()
     {
@@ -36,19 +39,20 @@ public class Template implements Comparable
         @Override
         public int compare(Template template1, Template template2)
         {
-            Double diff = template1.getPriority() - template2.getPriority();
+            Double diff = template1.getPrecedence() - template2.getPrecedence();
             return diff.intValue();
         }
 
     };
 
-    public Template(OntClass ontClass, Double priority)
+    public Template(OntClass ontClass, Double precedence)
     {
         if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-        if (priority == null) throw new IllegalArgumentException("Double cannot be null");
+        if (precedence == null) throw new IllegalArgumentException("Double cannot be null");
         
         this.ontClass = ontClass;
-        this.priority = priority;
+        this.uriTemplate = new UriTemplate(ontClass.getPropertyValue(GP.uriTemplate).asLiteral().getString());
+        this.precedence = precedence;
     }
 
     public final OntClass getOntClass()
@@ -56,19 +60,26 @@ public class Template implements Comparable
         return ontClass;
     }
 
-    public final Double getPriority()
+    public final Double getPrecedence()
     {
-        return priority;
+        return precedence;
     }
 
+    public final UriTemplate getUriTemplate()
+    {
+        return uriTemplate;
+    }
+    
     @Override
     public String toString()
     {
         return new StringBuilder().
-        append("[<").
+        append("[").
+        append(getUriTemplate()).
+        append(", <").
         append(getOntClass().getURI()).
         append(">, ").
-        append(Double.toString(getPriority())).
+        append(Double.toString(getPrecedence())).
         append("]").
         toString();
     }
@@ -78,7 +89,7 @@ public class Template implements Comparable
     {
         int hash = 3;
         hash = 61 * hash + Objects.hashCode(getOntClass());
-        hash = 61 * hash + Objects.hashCode(getPriority());
+        hash = 61 * hash + Objects.hashCode(getPrecedence());
         return hash;
     }
 
@@ -90,7 +101,7 @@ public class Template implements Comparable
         final Template other = (Template) obj;
         if (!Objects.equals(getOntClass(), other.getOntClass())) return false;
 
-        return Objects.equals(getPriority(), other.getPriority());
+        return Objects.equals(getPrecedence(), other.getPrecedence());
     }
 
     @Override

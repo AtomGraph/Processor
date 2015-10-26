@@ -148,14 +148,14 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param level
      * @return URI template/class mapping
      */    
-    public Map<UriTemplate, List<Template>> matchTemplates(Ontology ontology, CharSequence path, int level)
+    public List<Template> matchTemplates(Ontology ontology, CharSequence path, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
         if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         if (log.isDebugEnabled()) log.debug("Ontology import level: {}", level);
-        Map<UriTemplate, List<Template>> matchedClasses = new HashMap<>();
+        List<Template> matchedClasses = new ArrayList<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
         try
@@ -181,10 +181,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                         Template template = new Template(ontClass, new Double(level * -1));
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
                         if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, ontClass);
-
-                        if (!matchedClasses.containsKey(uriTemplate))
-                            matchedClasses.put(uriTemplate, new ArrayList<Template>());
-                        matchedClasses.get(uriTemplate).add(template);
+                        matchedClasses.add(template);
                     }
                     else
                         if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
@@ -201,16 +198,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        Map<UriTemplate, List<Template>> matchedImportClasses = matchTemplates(importedOntology, path, level + 1);
-                        Iterator<Entry<UriTemplate, List<Template>>> entries = matchedImportClasses.entrySet().iterator();
-                        while (entries.hasNext())
-                        {
-                            Entry<UriTemplate, List<Template>> entry = entries.next();
-                            if (matchedClasses.containsKey(entry.getKey()))
-                                matchedClasses.get(entry.getKey()).addAll(entry.getValue());
-                            else
-                                matchedClasses.put(entry.getKey(), entry.getValue());
-                        }
+                        matchedClasses.addAll(matchTemplates(importedOntology, path, level + 1));
                     }
                 }
             }
@@ -243,26 +231,32 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        TreeMap<UriTemplate, List<Template>> templateMap = new TreeMap<>(UriTemplate.COMPARATOR);
-        templateMap.putAll(matchTemplates(ontology, path, 0));
-        if (!templateMap.isEmpty())
+        List<Template> matchedTemplates = matchTemplates(ontology, path, 0);
+        if (!matchedTemplates.isEmpty())
         {
-            if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, templateMap);
-            List<Template> matchedTemplates = templateMap.firstEntry().getValue();
+            if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
             Collections.sort(matchedTemplates, Template.COMPARATOR);
             Collections.reverse(matchedTemplates);
             
-            Template match = matchedTemplates.get(0);
-            if (log.isDebugEnabled()) log.debug("UriTemplate: {} matched Template: {}", templateMap.firstKey(), match);
-
+            double highestPrecedence = matchedTemplates.get(0).getPrecedence();
+            TreeMap<UriTemplate, Template> highestPrecedenceTemplates = new TreeMap<>(UriTemplate.COMPARATOR);
+            for (Template matchedTemplate : matchedTemplates)
+            {
+                if (matchedTemplate.getPrecedence() == highestPrecedence)
+                    highestPrecedenceTemplates.put(matchedTemplate.getUriTemplate(), matchedTemplate);
+            }
+            
+            /*
             Iterator<Template> it = matchedTemplates.iterator();
             while (it.hasNext())
             {
                 Template template = it.next();
                 if (!template.equals(match) && Template.COMPARATOR.compare(template, match) == 0)
-                    if (log.isDebugEnabled()) log.debug("UriTemplate: {} has conflicting Templates: {} (they are equal to the matched one)", templateMap.firstKey(), template);
+                    if (log.isDebugEnabled()) log.debug("UriTemplate: {} has conflicting Templates: {} (they are equal to the matched one)", matchedTemplates.firstKey(), template);
             }
-            
+            */
+            // What about conflicts? E.g. Templates with identical UriTemplate and precedence
+            Template match = highestPrecedenceTemplates.firstEntry().getValue();
             return match;
         }
         
