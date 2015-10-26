@@ -24,13 +24,13 @@ import java.net.URI;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public interface Resource extends org.graphity.core.model.Resource, QueriedResource //, OntResource
+public interface Resource extends QueriedResource
 {
     
     public Ontology getOntology();
     
     public OntClass getMatchedOntClass();
-    
+        
     // public Modifiers getModifiers();
     
     public URI getMode();

@@ -179,8 +179,8 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                     if (uriTemplate.match(path, map))
                     {
                         Template template = new Template(ontClass, new Double(level * -1));
-                        if (log.isDebugEnabled()) log.debug("Path {} matched UriTemplate {}", path, uriTemplate);
-                        if (log.isDebugEnabled()) log.debug("Path {} matched OntClass {}", path, ontClass);
+                        if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
+                        if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, ontClass);
 
                         if (!matchedClasses.containsKey(uriTemplate))
                             matchedClasses.put(uriTemplate, new ArrayList<Template>());
