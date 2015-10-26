@@ -51,7 +51,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
@@ -153,8 +152,8 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
-        if (log.isDebugEnabled()) log.debug("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
-        if (log.isDebugEnabled()) log.debug("Ontology import level: {}", level);
+        if (log.isTraceEnabled()) log.trace("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
+        if (log.isTraceEnabled()) log.trace("Ontology import level: {}", level);
         List<Template> matchedClasses = new ArrayList<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
@@ -236,27 +235,15 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         {
             if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
             Collections.sort(matchedTemplates, Template.COMPARATOR);
-            Collections.reverse(matchedTemplates);
+
+            Template match = matchedTemplates.get(0);            
+            if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match);
             
-            double highestPrecedence = matchedTemplates.get(0).getPrecedence();
-            TreeMap<UriTemplate, Template> highestPrecedenceTemplates = new TreeMap<>(UriTemplate.COMPARATOR);
-            for (Template matchedTemplate : matchedTemplates)
-            {
-                if (matchedTemplate.getPrecedence() == highestPrecedence)
-                    highestPrecedenceTemplates.put(matchedTemplate.getUriTemplate(), matchedTemplate);
-            }
-            
-            /*
-            Iterator<Template> it = matchedTemplates.iterator();
-            while (it.hasNext())
-            {
-                Template template = it.next();
-                if (!template.equals(match) && Template.COMPARATOR.compare(template, match) == 0)
-                    if (log.isDebugEnabled()) log.debug("UriTemplate: {} has conflicting Templates: {} (they are equal to the matched one)", matchedTemplates.firstKey(), template);
-            }
-            */
-            // What about conflicts? E.g. Templates with identical UriTemplate and precedence
-            Template match = highestPrecedenceTemplates.firstEntry().getValue();
+            // Check for conflicts: Templates with identical UriTemplate and precedence
+            for (Template template : matchedTemplates)
+                if (!template.getOntClass().equals(match.getOntClass()) && template.equals(match))
+                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, template);
+
             return match;
         }
         
