@@ -16,6 +16,7 @@
 
 package org.graphity.processor.provider;
 
+import org.graphity.processor.template.ClassTemplate;
 import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
@@ -59,6 +60,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.template.UriClassTemplate;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -124,7 +126,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 	StringBuilder path = new StringBuilder();
 	// instead of path, include query string by relativizing request URI against base URI
 	path.append("/").append(base.relativize(uri));
-	Template template = matchTemplate(ontology, path);
+	ClassTemplate template = matchTemplate(ontology, path);
         if (template != null) return template.getOntClass();
         
         return null;
@@ -147,14 +149,14 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param level
      * @return URI template/class mapping
      */    
-    public List<Template> matchTemplates(Ontology ontology, CharSequence path, int level)
+    public List<UriClassTemplate> matchTemplates(Ontology ontology, CharSequence path, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
         if (log.isTraceEnabled()) log.trace("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         if (log.isTraceEnabled()) log.trace("Ontology import level: {}", level);
-        List<Template> matchedClasses = new ArrayList<>();
+        List<UriClassTemplate> matchedClasses = new ArrayList<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
         try
@@ -177,7 +179,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 
                     if (uriTemplate.match(path, map))
                     {
-                        Template template = new Template(ontClass, new Double(level * -1));
+                        UriClassTemplate template = new UriClassTemplate(ontClass, new Double(level * -1), uriTemplate);
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
                         if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, ontClass);
                         matchedClasses.add(template);
@@ -226,21 +228,21 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
-    public Template matchTemplate(Ontology ontology, CharSequence path)
+    public UriClassTemplate matchTemplate(Ontology ontology, CharSequence path)
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        List<Template> matchedTemplates = matchTemplates(ontology, path, 0);
+        List<UriClassTemplate> matchedTemplates = matchTemplates(ontology, path, 0);
         if (!matchedTemplates.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
-            Collections.sort(matchedTemplates, Template.COMPARATOR);
+            Collections.sort(matchedTemplates, UriClassTemplate.COMPARATOR);
 
-            Template match = matchedTemplates.get(0);            
+            UriClassTemplate match = matchedTemplates.get(0);            
             if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match);
             
             // Check for conflicts: Templates with identical UriTemplate and precedence
-            for (Template template : matchedTemplates)
+            for (UriClassTemplate template : matchedTemplates)
                 if (!template.getOntClass().equals(match.getOntClass()) && template.equals(match))
                     if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, template);
 
@@ -251,13 +253,13 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
-    public SortedSet<Template> matchOntClasses(Ontology ontology, Resource resource, Property property, int level)
+    public SortedSet<ClassTemplate> matchOntClasses(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-        SortedSet<Template> matchedClasses = new TreeSet<>();
+        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, OWL.Class); // some classes are not templates!
         try
         {
@@ -270,7 +272,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                 {
                    if (ontClass.hasProperty(GP.skolemTemplate) && resource.hasProperty(property, ontClass))
                     {
-                        Template template = new Template(ontClass, new Double(level * -1));
+                        ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
                         if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
                         matchedClasses.add(template);
                     }
@@ -287,7 +289,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        Set<Template> matchedImportClasses = matchOntClasses(importedOntology, resource, property, level + 1);
+                        Set<ClassTemplate> matchedImportClasses = matchOntClasses(importedOntology, resource, property, level + 1);
                         matchedClasses.addAll(matchedImportClasses);
                     }
                 }

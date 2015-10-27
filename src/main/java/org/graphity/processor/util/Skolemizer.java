@@ -42,7 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.provider.OntClassMatcher;
-import org.graphity.processor.provider.Template;
+import org.graphity.processor.template.ClassTemplate;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
@@ -158,7 +158,7 @@ public class Skolemizer
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        SortedSet<Template> matched = getOntClassMatcher().matchOntClasses(getOntology(), resource, RDF.type, 0);
+        SortedSet<ClassTemplate> matched = getOntClassMatcher().matchOntClasses(getOntology(), resource, RDF.type, 0);
         if (!matched.isEmpty())
         {
             OntClass matchingClass = matched.first().getOntClass();
