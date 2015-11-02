@@ -18,6 +18,10 @@ package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
+import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.util.List;
@@ -68,7 +72,7 @@ public class Validator
         // Existing data should be valid; only the incoming RDF Model should be able to violate the constraints.
         OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM; // getOntModel().getSpecification()
         OntModel tempModel = ModelFactory.createOntologyModel(ontModelSpec);
-        tempModel.add(getOntModel()).add(model);
+        tempModel.add(fixOntModel(getOntModel())).add(model);
 	List<ConstraintViolation> cvs = SPINConstraints.check(tempModel, null);
 	if (!cvs.isEmpty())
         {
@@ -79,6 +83,29 @@ public class Validator
         return model;
     }
 
+    // remove additional types from constraints, otherwise SPIN API will not find their queries :/
+    // TO-DO: convert constraints from URI resources to bnodes. Otherwise SPINLabels.getLabel() returns corrupt label
+    public OntModel fixOntModel(OntModel ontModel)
+    {
+	if (ontModel == null) throw new IllegalArgumentException("Model cannot be null");
+        
+        OntModel fixedModel = ModelFactory.createOntologyModel(ontModel.getSpecification());
+        Query fix = QueryFactory.create("CONSTRUCT\n" +
+"{\n" +
+"  ?s ?p ?o\n" +
+"}\n" +
+"WHERE\n" +
+"{\n" +
+"  ?s ?p ?o\n" +
+"  FILTER (!(?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> && ?o = <http://graphity.org/gp#Constraint>))\n" +
+"}");
+        
+        QueryExecution qex = QueryExecutionFactory.create(fix, ontModel);
+        fixedModel.add(qex.execConstruct());
+        
+        return fixedModel;
+    }
+    
     public OntModel getOntModel()
     {
         return ontModel;
