@@ -296,7 +296,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Path("{path: .+}")
     public Object getSubResource()
     {
-        //if (getMatchedOntClass().equals(GP.SPARQLEndpoint)) return getSPARQLEndpoint();
         if (getMatchedOntClass().getPropertyResourceValue(GP.loadClass) != null)
         {
             Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);

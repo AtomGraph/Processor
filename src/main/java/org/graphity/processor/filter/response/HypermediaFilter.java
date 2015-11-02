@@ -98,8 +98,8 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         Model model = resource.getModel();
         
-	if (log.isDebugEnabled()) log.debug("Resource {} gets type of OntClass: {}", resource, matchedOntClass);
-	resource.addProperty(RDF.type, matchedOntClass);
+	//if (log.isDebugEnabled()) log.debug("Resource {} gets type of OntClass: {}", resource, matchedOntClass);
+	//resource.addProperty(RDF.type, matchedOntClass);
         
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
