@@ -686,7 +686,7 @@ public class SIOC {
    * A User account in an online community site.
    * </p>
    */
-  public static final OntClass USER = m_model.createClass("http://rdfs.org/sioc/ns#User");
+  public static final OntClass USER_ACCOUNT = m_model.createClass("http://rdfs.org/sioc/ns#UserAccount");
 
   /**
    * <p>
