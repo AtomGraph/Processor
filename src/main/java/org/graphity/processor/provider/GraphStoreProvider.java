@@ -58,7 +58,7 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
         return super.getGraphStore();
    }
 
-    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.DataManager dataManager)
+    public GraphStore getGraphStore(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.jena.DataManager dataManager)
     {
         return GraphStoreFactory.create(request, servletConfig, mediaTypes, dataset, dataManager);        
     }

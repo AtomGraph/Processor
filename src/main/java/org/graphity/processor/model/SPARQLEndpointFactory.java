@@ -21,7 +21,7 @@ import com.hp.hpl.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import org.graphity.core.MediaTypes;
-import org.graphity.core.util.DataManager;
+import org.graphity.core.util.jena.DataManager;
 import org.graphity.core.model.SPARQLEndpoint;
 
 /**

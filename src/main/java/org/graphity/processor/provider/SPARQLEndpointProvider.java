@@ -58,7 +58,7 @@ public class SPARQLEndpointProvider extends org.graphity.core.provider.SPARQLEnd
         return super.getSPARQLEndpoint();
     }
     
-    public SPARQLEndpoint getSPARQLEndpoint(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.DataManager dataManager)
+    public SPARQLEndpoint getSPARQLEndpoint(Request request, ServletConfig servletConfig, MediaTypes mediaTypes, Dataset dataset, org.graphity.core.util.jena.DataManager dataManager)
     {
         return SPARQLEndpointFactory.create(request, servletConfig, mediaTypes, dataset, dataManager);
     }
