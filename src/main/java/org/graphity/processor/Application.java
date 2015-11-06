@@ -28,7 +28,7 @@ import org.graphity.core.provider.MediaTypesProvider;
 import org.graphity.processor.model.impl.ResourceBase;
 import org.graphity.processor.provider.DatasetProvider;
 import org.graphity.core.provider.QueryParamProvider;
-import org.graphity.core.provider.ResultSetWriter;
+import org.graphity.core.provider.ResultSetProvider;
 import org.graphity.core.provider.UpdateRequestReader;
 import org.graphity.processor.mapper.ConfigurationExceptionMapper;
 import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
@@ -71,7 +71,7 @@ public class Application extends org.graphity.core.Application
 	classes.add(ResourceBase.class); // handles /
 
 	singletons.add(new SkolemizingModelProvider());
-	singletons.add(new ResultSetWriter());
+	singletons.add(new ResultSetProvider());
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider());
