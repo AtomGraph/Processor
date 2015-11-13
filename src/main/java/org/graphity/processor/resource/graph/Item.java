@@ -63,21 +63,21 @@ public class Item extends ResourceBase
     @Override
     public Response get()
     {
-	if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getRealURI(), getGraphStore());        
-        return getResponse(getGraphStore().getModel(getRealURI().toString()));
+	if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());        
+        return getResponse(getGraphStore().getModel(getURI().toString()));
     }
 
     @Override
     public Response post(Model model)
     {
-	if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getRealURI(), getGraphStore());
-        return getGraphStore().post(model, Boolean.FALSE, getRealURI());
+	if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getGraphStore());
+        return getGraphStore().post(model, Boolean.FALSE, getURI());
     }
 
     @Override
     public Response put(Model model)
     {
-	Model existing = getGraphStore().getModel(getRealURI().toString());
+	Model existing = getGraphStore().getModel(getURI().toString());
 
 	if (!existing.isEmpty()) // remove existing representation
 	{
@@ -90,18 +90,18 @@ public class Item extends ResourceBase
 	    }
         }
         
-        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getRealURI(), getGraphStore());
-        getGraphStore().put(model, Boolean.FALSE, getRealURI());
+        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getURI(), getGraphStore());
+        getGraphStore().put(model, Boolean.FALSE, getURI());
         
-	if (existing.isEmpty()) return Response.created(getRealURI()).build();        
+	if (existing.isEmpty()) return Response.created(getURI()).build();        
         else return Response.ok(model).build();
     }
 
     @Override
     public Response delete()
     {
-	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getRealURI(), getGraphStore());
-        return getGraphStore().delete(Boolean.FALSE, getRealURI());
+	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
+        return getGraphStore().delete(Boolean.FALSE, getURI());
     }
     
 }

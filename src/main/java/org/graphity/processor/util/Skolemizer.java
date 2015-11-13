@@ -23,7 +23,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
@@ -39,12 +38,10 @@ import java.util.Map;
 import java.util.SortedSet;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.template.ClassTemplate;
 import org.graphity.processor.vocabulary.GP;
-import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,11 +55,11 @@ public class Skolemizer
 {
     private static final Logger log = LoggerFactory.getLogger(Skolemizer.class);
 
-    private UriInfo uriInfo;
     private ServletConfig servletConfig;
     private Ontology ontology;
     private OntClass ontClass;
     private OntClassMatcher ontClassMatcher;
+    private URI container;
     
     protected Skolemizer()
     {
@@ -73,10 +70,10 @@ public class Skolemizer
 	return new Skolemizer();
     }
 
-    public Skolemizer uriInfo(UriInfo uriInfo)
+    public Skolemizer container(URI container)
     {
-	if (uriInfo == null) throw new IllegalArgumentException("UriInfo cannot be null");
-        this.uriInfo = uriInfo;
+	if (container == null) throw new IllegalArgumentException("Container Resource cannot be null");
+        this.container = container;
         return this;
     }
 
@@ -146,12 +143,9 @@ public class Skolemizer
 	return model;
     }
 
-    public Resource getBaseResource(Resource resource)
+    public URI getContainer()
     {
-        if (resource.hasProperty(SIOC.HAS_CONTAINER)) return resource.getPropertyResourceValue(SIOC.HAS_CONTAINER);
-        if (resource.hasProperty(SIOC.HAS_PARENT)) return resource.getPropertyResourceValue(SIOC.HAS_PARENT);
-        
-        return ResourceFactory.createResource(getUriInfo().getAbsolutePath().toString());
+        return container;
     }
     
     public URI build(Resource resource)
@@ -163,7 +157,7 @@ public class Skolemizer
         {
             OntClass matchingClass = matched.first().getOntClass();
             if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, matchingClass);
-            return build(resource, UriBuilder.fromUri(getBaseResource(resource).getURI()), matchingClass);
+            return build(resource, UriBuilder.fromUri(getContainer()), matchingClass);
         }        
         
         return null;
@@ -280,11 +274,6 @@ public class Skolemizer
         
         if (log.isErrorEnabled()) log.error("Property '{}' not defined for template '{}'", property, ontClass);
         throw new ConfigurationException("gp:skolemTemplate not defined for '" + ontClass.getURI() +"'");
-    }
-
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
     }
     
     public OntClass getOntClass()

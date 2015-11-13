@@ -134,7 +134,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
         model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
-        this.ontResource = model.createOntResource(getURI());
+        this.ontResource = model.createOntResource(getURI().toString());
         this.ontology = ontology;
         this.matchedOntClass = ontClass;
         this.querySolutionMap = new QuerySolutionMap();
@@ -301,14 +301,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             Resource javaClass = getMatchedOntClass().getPropertyResourceValue(GP.loadClass);
             if (!javaClass.isURIResource())
             {
-                if (log.isErrorEnabled()) log.debug("gp:loadClass value of class '{}' is not a URI resource", getMatchedOntClass().getURI());
+                if (log.isErrorEnabled()) log.error("gp:loadClass value of class '{}' is not a URI resource", getMatchedOntClass().getURI());
                 throw new SitemapException("gp:loadClass value of class '" + getMatchedOntClass().getURI() + "' is not a URI resource");
             }
 
             Class clazz = Loader.loadClass(javaClass.getURI());
             if (clazz == null)
             {
-                if (log.isErrorEnabled()) log.debug("Java class with URI '{}' could not be loaded", javaClass.getURI());
+                if (log.isErrorEnabled()) log.error("Java class with URI '{}' could not be loaded", javaClass.getURI());
                 throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
             }
 
@@ -333,7 +333,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         // gp:Container always redirect to first gp:Page
 	if ((getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
-            && getRealURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
+            && getURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
 	{
 	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
             StateBuilder sb = StateBuilder.fromUri(getURI(), getOntResource().getOntModel()).
@@ -524,7 +524,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (log.isDebugEnabled()) log.debug("Combined DELETE/INSERT DATA request: {}", deleteInsertRequest);
 	getSPARQLEndpoint().post(deleteInsertRequest, null, null);
 	
-	if (description.isEmpty()) return Response.created(getRealURI()).build();
+	if (description.isEmpty()) return Response.created(getURI()).build();
 	else return getResponse(model);
     }
 
@@ -784,16 +784,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Boolean getDesc()
     {
 	return desc;
-    }
-
-    /**
-     * Returns URI of this resource. Uses Java's URI class instead of string as the {@link #getURI()} does.
-     * 
-     * @return URI object
-     */
-    public URI getRealURI()
-    {
-	return URI.create(getURI());
     }
     
     /**

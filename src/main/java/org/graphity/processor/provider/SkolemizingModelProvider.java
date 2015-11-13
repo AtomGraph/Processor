@@ -19,6 +19,7 @@ package org.graphity.processor.provider;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
+import java.net.URI;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -44,16 +45,16 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     public Model process(Model model)
     {
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
-            return skolemize(getServletConfig(), getUriInfo(), getOntology(), getOntClass(), new OntClassMatcher(), super.process(model));
+            return skolemize(getServletConfig(), getUriInfo().getAbsolutePath(), getOntology(), getOntClass(), new OntClassMatcher(), super.process(model));
         
         return super.process(model);
     }
     
-    public Model skolemize(ServletConfig servletConfig, UriInfo uriInfo, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model)
+    public Model skolemize(ServletConfig servletConfig, URI container, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model)
     {
         return Skolemizer.fromOntology(ontology).
                 servletConfig(servletConfig).
-                uriInfo(uriInfo).
+                container(container).
                 ontClass(ontClass).
                 ontClassMatcher(ontClassMatcher).
                 build(model);
