@@ -223,7 +223,7 @@
               gp:skolemTemplate " " ;
               gp:defaultLimit 20 ;
               gp:defaultOffset 0 ;
-              gp:defaultOrderBy " "^^xsd:string ;
+              gp:defaultOrderBy " " ;
               gp:cacheControl "no-cache" ;
               gp:loadClass _:loadClass ;
               gp:query gp:Describe ;
@@ -260,7 +260,7 @@
       CONSTRUCT {
           ?this a sp:Query, _:ConstructOrDescribe ;
               rdfs:label " " ;
-              sp:text "DESCRIBE ?this"^^xsd:string ;
+              sp:text "DESCRIBE ?this" ;
               rdfs:isDefinedBy _:isDefinedBy .
       }
       WHERE {}""" ;

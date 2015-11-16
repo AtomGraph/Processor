@@ -150,7 +150,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;
     gp:defaultLimit 20 ;
-    gp:defaultOrderBy "label"^^xsd:string ;
+    gp:defaultOrderBy "label" ;
     gp:loadClass <java:org.graphity.processor.resource.labelled.Container> ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     rdfs:label "Labelled resource container" ;
@@ -179,6 +179,6 @@ DESCRIBE ?this ?resource ?thing ?doc WHERE {
             }
         }
     } .
-}"""^^xsd:string ;
+}""" ;
     rdfs:label "Describe labelled resources" ;
     rdfs:isDefinedBy <#> .
