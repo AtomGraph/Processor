@@ -22,7 +22,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -154,7 +153,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }
             }
 
-            if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+            if (getResource().getMode() != null && getResource().getMode().equals(GP.ConstructMode))
             {
                 try
                 {
@@ -184,7 +183,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                     if (getModifiers().getOffset() != null) sb.literal(GP.offset, getModifiers().getOffset());
                     if (getModifiers().getOrderBy() != null) sb.literal(GP.orderBy, getModifiers().getOrderBy());
                     if (getModifiers().getDesc() != null) sb.literal(GP.desc, getModifiers().getDesc());
-                    if (getMode() != null) sb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                    if (getResource().getMode() != null) sb.property(GP.mode, getResource().getMode());
                     com.hp.hpl.jena.rdf.model.Resource page = sb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
@@ -200,7 +199,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                                     literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
                             if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
                             if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
-                            if (getMode() != null) prevSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                            if (getResource().getMode() != null) prevSb.property(GP.mode, getResource().getMode());
                             com.hp.hpl.jena.rdf.model.Resource prev = prevSb.build().
                                 addProperty(GP.pageOf, resource).
                                 addProperty(RDF.type, FOAF.Document).
@@ -221,7 +220,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                                     literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
                             if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
                             if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
-                            if (getMode() != null) nextSb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+                            if (getResource().getMode() != null) nextSb.property(GP.mode, getResource().getMode());
                             com.hp.hpl.jena.rdf.model.Resource next = nextSb.build().
                                 addProperty(GP.pageOf, resource).
                                 addProperty(RDF.type, FOAF.Document).
@@ -301,17 +300,6 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
 	return getProviders().getContextResolver(Modifiers.class, null).getContext(Ontology.class);
         //return getResource().getModifiers();
-    }
-
-    public URI getMode()
-    {
-        /*
-        if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
-            return URI.create(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
-        
-        return null;
-        */
-        return getResource().getMode();
     }
 
 }

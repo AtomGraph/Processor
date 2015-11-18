@@ -86,7 +86,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     //private final Modifiers modifiers;
-    private final URI mode;
+    private Resource mode;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -146,10 +146,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
 
-        if (uriInfo.getQueryParameters().containsKey(GP.mode.getLocalName()))
-            this.mode = URI.create(uriInfo.getQueryParameters().getFirst(GP.mode.getLocalName()));
-        else mode = null;
-
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
 
@@ -171,7 +167,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
 
         if (getRequest().getMethod().equalsIgnoreCase("GET") ||
-                (getRequest().getMethod().equalsIgnoreCase("POST") && getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI()))) ||
+                (getRequest().getMethod().equalsIgnoreCase("POST") && getMode() != null && getMode().equals(GP.ConstructMode)) ||
                 getRequest().getMethod().equalsIgnoreCase("PUT") ||
                 getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
         {
@@ -197,6 +193,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
                 try
                 {
+                    if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
+                        mode = ResourceFactory.createResource(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
+                    else mode = getMatchedOntClass().getPropertyResourceValue(GP.defaultMode);
+
                     if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
                         offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
                     else
@@ -246,7 +246,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                         }
                     }
 
-                    if (getMode() != null && getMode().equals(URI.create(GP.ConstructMode.getURI())))
+                    if (getMode() != null && getMode().equals(GP.ConstructMode))
                     {
                         if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
                         subSelectBuilder.replaceLimit(Long.valueOf(0));
@@ -258,7 +258,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 }
             }
         }
-        
+
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);
         if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
     }
@@ -341,7 +341,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             if (getOffset() != null) sb.literal(GP.offset, getOffset());
             if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
             if (getDesc() != null) sb.literal(GP.desc, getDesc());
-            if (getMode() != null) sb.property(GP.mode, ResourceFactory.createResource(getMode().toString()));
+            if (getMode() != null) sb.property(GP.mode, getMode());
             return Response.seeOther(URI.create(sb.build().getURI())).build();
         }
 
@@ -565,7 +565,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @return mode URI
      */
     @Override
-    public URI getMode()
+    public Resource getMode()
     {
 	return mode;
     }

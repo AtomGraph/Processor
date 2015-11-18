@@ -18,7 +18,6 @@ package org.graphity.processor.model;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
-import java.net.URI;
 
 /**
  *
@@ -33,6 +32,6 @@ public interface Resource extends QueriedResource
         
     // public Modifiers getModifiers();
     
-    public URI getMode();
+    public com.hp.hpl.jena.rdf.model.Resource getMode();
     
 }

@@ -74,6 +74,8 @@ public final class GP
 
     public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
 
+    public static final AnnotationProperty defaultMode = m_model.createAnnotationProperty( NS + "defaultMode" );
+    
     public static final AnnotationProperty defaultOffset = m_model.createAnnotationProperty( NS + "defaultOffset" );
     
     public static final AnnotationProperty defaultLimit = m_model.createAnnotationProperty( NS + "defaultLimit" );

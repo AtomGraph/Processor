@@ -57,17 +57,6 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         Resource exception = toResource(cve, Response.Status.BAD_REQUEST,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         cve.getModel().add(exception.getModel());
-
-        /*
-        if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
-        {
-            URI mode = URI.create(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
-            if (mode.equals(URI.create(GP.ConstructMode.getURI())))
-            {
-                cve.getModel().add(getQueriedResource().describe()); // describe() now returns the full representation!
-            }
-        }
-        */
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
