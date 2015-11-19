@@ -332,28 +332,35 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response get()
     {
-        // build a transition to a URI of another application state (HATEOAS)
-	if (//(getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
-            getURI().equals(getUriInfo().getRequestUri())
-                //&& (getLimit() != null || getMode() != null)
-                )
+        // transition to a URI of another application state (HATEOAS)
+	if (getURI().equals(getUriInfo().getRequestUri()))
 	{
-            StateBuilder sb = StateBuilder.fromUri(getURI(), getOntResource().getOntModel());
-            if (getLimit() != null) sb.literal(GP.limit, getLimit());
-            if (getOffset() != null) sb.literal(GP.offset, getOffset());
-            if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
-            if (getDesc() != null) sb.literal(GP.desc, getDesc());
-            if (getMode() != null) sb.property(GP.mode, getMode());
-            Resource state = sb.build();
+            Resource state = getState(getURI(), getOntResource().getOntModel(), getLimit(), getOffset(), getOrderBy(), getDesc(), getMode());
             if (!state.getURI().equals(getURI().toString()))
             {
-                if (log.isDebugEnabled()) log.debug("Redirecting a state transition URI: {}", state.getURI());
-                return Response.seeOther(URI.create(sb.build().getURI())).build();
-            }
+                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
+                return Response.seeOther(URI.create(state.getURI())).build();
+            }                    
         }
 
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
 	return super.get();
+    }
+    
+    // TO-DO: refactor with Modifiers?
+    public Resource getState(URI uri, Model model, Long limit, Long offset, String orderBy, Boolean desc, Resource mode)
+    {
+	if (uri == null) throw new IllegalArgumentException("URI cannot be null");        
+	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+        
+        StateBuilder sb = StateBuilder.fromUri(uri, model);
+        if (limit != null) sb.literal(GP.limit, limit);
+        if (offset != null) sb.literal(GP.offset, offset);
+        if (orderBy != null) sb.literal(GP.orderBy, orderBy);
+        if (desc != null) sb.literal(GP.desc, desc);
+        if (mode != null) sb.property(GP.mode, mode);
+        
+        return sb.build();
     }
     
     /**
