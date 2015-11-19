@@ -191,10 +191,10 @@
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#TemplateConstructor> ;
     spin:constraint <#MissingRDFSLabel> , <#MissingRDFSisDefinedBy> ,
-        [ a <#MissingPropertyValue> ;
-            rdfs:label "Missing rdfs:subClassOf" ;
-	    sp:arg1 rdfs:subClassOf
-	] ,
+        #[ a <#MissingPropertyValue> ;
+        #    rdfs:label "Missing rdfs:subClassOf" ;
+	#    sp:arg1 rdfs:subClassOf
+	#] ,
         [ a <#MissingPropertyValue> ;
             rdfs:label "Missing gp:uriTemplate" ;
 	    sp:arg1 <#uriTemplate>

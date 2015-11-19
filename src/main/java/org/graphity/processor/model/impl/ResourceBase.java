@@ -333,15 +333,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS)
-	if (getURI().equals(getUriInfo().getRequestUri()))
-	{
-            Resource state = getState(getURI(), getOntResource().getOntModel(), getLimit(), getOffset(), getOrderBy(), getDesc(), getMode());
-            if (!state.getURI().equals(getURI().toString()))
-            {
-                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
-                return Response.seeOther(URI.create(state.getURI())).build();
-            }                    
-        }
+        Resource state = getState(getUriInfo().getRequestUri(), getOntResource().getOntModel(), getLimit(), getOffset(), getOrderBy(), getDesc(), getMode());
+        if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
+        {
+            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
+            return Response.seeOther(URI.create(state.getURI())).build();
+        }                    
 
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
 	return super.get();
@@ -354,11 +351,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
         
         StateBuilder sb = StateBuilder.fromUri(uri, model);
-        if (limit != null) sb.literal(GP.limit, limit);
-        if (offset != null) sb.literal(GP.offset, offset);
-        if (orderBy != null) sb.literal(GP.orderBy, orderBy);
-        if (desc != null) sb.literal(GP.desc, desc);
-        if (mode != null) sb.property(GP.mode, mode);
+        if (limit != null) sb.replaceLiteral(GP.limit, limit);
+        if (offset != null) sb.replaceLiteral(GP.offset, offset);
+        if (orderBy != null) sb.replaceLiteral(GP.orderBy, orderBy);
+        if (desc != null) sb.replaceLiteral(GP.desc, desc);
+        if (mode != null) sb.replaceProperty(GP.mode, mode);
         
         return sb.build();
     }
