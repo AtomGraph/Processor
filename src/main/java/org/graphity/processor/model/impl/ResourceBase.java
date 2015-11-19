@@ -86,7 +86,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     //private final Modifiers modifiers;
-    private Resource mode;
+    private final Resource mode;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -143,8 +143,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.resourceContext = resourceContext;
         //this.modifiers = modifiers;
         
+        if (uriInfo.getQueryParameters().containsKey(GP.mode.getLocalName()))
+            mode = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.mode.getLocalName()));
+        else mode = matchedOntClass.getPropertyResourceValue(GP.defaultMode);
+
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
+	//querySolutionMap.add(GP.Mode.getLocalName(), mode); // ?Mode
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
@@ -193,10 +198,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
                 try
                 {
-                    if (getUriInfo().getQueryParameters().containsKey(GP.mode.getLocalName()))
-                        mode = ResourceFactory.createResource(getUriInfo().getQueryParameters().getFirst(GP.mode.getLocalName()));
-                    else mode = getMatchedOntClass().getPropertyResourceValue(GP.defaultMode);
-
                     if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
                         offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
                     else
@@ -331,18 +332,24 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response get()
     {
-        // gp:Container always redirect to first gp:Page
-	if ((getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
-            && getURI().equals(getUriInfo().getRequestUri()) && getLimit() != null)
+        // build a transition to a URI of another application state (HATEOAS)
+	if (//(getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+            getURI().equals(getUriInfo().getRequestUri())
+                //&& (getLimit() != null || getMode() != null)
+                )
 	{
-	    if (log.isDebugEnabled()) log.debug("OntResource is gp:Container, redirecting to the first gp:Page");
-            StateBuilder sb = StateBuilder.fromUri(getURI(), getOntResource().getOntModel()).
-                literal(GP.limit, getLimit());
+            StateBuilder sb = StateBuilder.fromUri(getURI(), getOntResource().getOntModel());
+            if (getLimit() != null) sb.literal(GP.limit, getLimit());
             if (getOffset() != null) sb.literal(GP.offset, getOffset());
             if (getOrderBy() != null) sb.literal(GP.orderBy, getOrderBy());
             if (getDesc() != null) sb.literal(GP.desc, getDesc());
             if (getMode() != null) sb.property(GP.mode, getMode());
-            return Response.seeOther(URI.create(sb.build().getURI())).build();
+            Resource state = sb.build();
+            if (!state.getURI().equals(getURI().toString()))
+            {
+                if (log.isDebugEnabled()) log.debug("Redirecting a state transition URI: {}", state.getURI());
+                return Response.seeOther(URI.create(sb.build().getURI())).build();
+            }
         }
 
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());

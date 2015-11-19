@@ -176,60 +176,57 @@ public class HypermediaFilter implements ContainerResponseFilter
             }
             else
             {
-                if (getModifiers().getLimit() != null)
+                StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
+                if (getModifiers().getLimit() != null) sb.literal(GP.limit, getModifiers().getLimit());
+                if (getModifiers().getOffset() != null) sb.literal(GP.offset, getModifiers().getOffset());
+                if (getModifiers().getOrderBy() != null) sb.literal(GP.orderBy, getModifiers().getOrderBy());
+                if (getModifiers().getDesc() != null) sb.literal(GP.desc, getModifiers().getDesc());
+                if (getResource().getMode() != null) sb.property(GP.mode, getResource().getMode());
+                com.hp.hpl.jena.rdf.model.Resource page = sb.build().
+                        addProperty(GP.pageOf, resource).
+                        addProperty(RDF.type, FOAF.Document).
+                        addProperty(RDF.type, GP.Page);
+                if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
+
+                if (getModifiers().getOffset() != null && getModifiers().getLimit() != null)
                 {
-                    StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model).
-                            literal(GP.limit, getModifiers().getLimit());
-                    if (getModifiers().getOffset() != null) sb.literal(GP.offset, getModifiers().getOffset());
-                    if (getModifiers().getOrderBy() != null) sb.literal(GP.orderBy, getModifiers().getOrderBy());
-                    if (getModifiers().getDesc() != null) sb.literal(GP.desc, getModifiers().getDesc());
-                    if (getResource().getMode() != null) sb.property(GP.mode, getResource().getMode());
-                    com.hp.hpl.jena.rdf.model.Resource page = sb.build().
+                    if (getModifiers().getOffset() >= getModifiers().getLimit())
+                    {
+                        StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
+                                literal(GP.limit, getModifiers().getLimit()).
+                                literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
+                        if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
+                        if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
+                        if (getResource().getMode() != null) prevSb.property(GP.mode, getResource().getMode());
+                        com.hp.hpl.jena.rdf.model.Resource prev = prevSb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Page);
-                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
-                    
-                    if (getModifiers().getOffset() != null && getModifiers().getLimit() != null)
+                            addProperty(RDF.type, GP.Page).
+                            addProperty(XHV.next, page);
+
+                        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", page, prev);
+                        page.addProperty(XHV.prev, prev);
+                    }
+
+                    // no way to know if there's a next page without counting results (either total or in current page)
+                    //int subjectCount = describe().listSubjects().toList().size();
+                    //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
+                    //if (subjectCount >= getModifiers().getLimit())
                     {
-                        if (getModifiers().getOffset() >= getModifiers().getLimit())
-                        {
-                            StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
-                                    literal(GP.limit, getModifiers().getLimit()).
-                                    literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
-                            if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
-                            if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
-                            if (getResource().getMode() != null) prevSb.property(GP.mode, getResource().getMode());
-                            com.hp.hpl.jena.rdf.model.Resource prev = prevSb.build().
-                                addProperty(GP.pageOf, resource).
-                                addProperty(RDF.type, FOAF.Document).
-                                addProperty(RDF.type, GP.Page).
-                                addProperty(XHV.next, page);
+                        StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
+                                literal(GP.limit, getModifiers().getLimit()).
+                                literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
+                        if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
+                        if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
+                        if (getResource().getMode() != null) nextSb.property(GP.mode, getResource().getMode());
+                        com.hp.hpl.jena.rdf.model.Resource next = nextSb.build().
+                            addProperty(GP.pageOf, resource).
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Page).
+                            addProperty(XHV.prev, page);
 
-                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", page, prev);
-                            page.addProperty(XHV.prev, prev);
-                        }
-
-                        // no way to know if there's a next page without counting results (either total or in current page)
-                        //int subjectCount = describe().listSubjects().toList().size();
-                        //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
-                        //if (subjectCount >= getModifiers().getLimit())
-                        {
-                            StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
-                                    literal(GP.limit, getModifiers().getLimit()).
-                                    literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
-                            if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
-                            if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
-                            if (getResource().getMode() != null) nextSb.property(GP.mode, getResource().getMode());
-                            com.hp.hpl.jena.rdf.model.Resource next = nextSb.build().
-                                addProperty(GP.pageOf, resource).
-                                addProperty(RDF.type, FOAF.Document).
-                                addProperty(RDF.type, GP.Page).
-                                addProperty(XHV.prev, page);
-
-                            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", page, next);
-                            page.addProperty(XHV.next, next);
-                        }
+                        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", page, next);
+                        page.addProperty(XHV.next, next);
                     }
                 }
             }
