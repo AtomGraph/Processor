@@ -30,7 +30,6 @@ import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
-import com.sun.jersey.server.impl.application.WebApplicationContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
@@ -171,92 +170,86 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             updateRequest = getUpdateRequest(updateOrTemplateCall);
         }
 
-        if (getRequest().getMethod().equalsIgnoreCase("GET") ||
-                (getRequest().getMethod().equalsIgnoreCase("POST") && getMode() != null && getMode().equals(GP.ConstructMode)) ||
-                getRequest().getMethod().equalsIgnoreCase("PUT") ||
-                getRequest().getMethod().equalsIgnoreCase(WebApplicationContext.HTTP_METHOD_MATCH_RESOURCE)) // hack for ResourceContext.matchResource() calls
+        Resource queryOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.query);        
+        if (queryOrTemplateCall == null)
         {
-            Resource queryOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.query);        
-            if (queryOrTemplateCall == null)
+            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
+            throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+        }
+        Query query = getQuery(queryOrTemplateCall);
+        queryBuilder = QueryBuilder.fromQuery(query, getOntResource().getModel());
+
+        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+        {
+            if (queryBuilder.getSubSelectBuilders().isEmpty())
             {
-                if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getMatchedOntClass().getURI());
-                throw new SitemapException("Query not defined for template '" + getMatchedOntClass().getURI() +"'");
+                if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
+                throw new SitemapException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
             }
-            Query query = getQuery(queryOrTemplateCall);
-            queryBuilder = QueryBuilder.fromQuery(query, getOntResource().getModel());
 
-            if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+            subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
+            if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
+
+            try
             {
-                if (queryBuilder.getSubSelectBuilders().isEmpty())
+                if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
+                    offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
+                else
                 {
-                    if (log.isErrorEnabled()) log.error("Container query for template '{}' does not contain a sub-SELECT", getMatchedOntClass().getURI());
-                    throw new SitemapException("Sub-SELECT missing in the query of container template '" + getMatchedOntClass().getURI() +"'");
+                    Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
+                    if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
+                    this.offset = defaultOffset;
                 }
 
-                subSelectBuilder = queryBuilder.getSubSelectBuilders().get(0);
-                if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
+                if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
+                subSelectBuilder.replaceOffset(offset);
 
-                try
+                if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
+                    limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
+                else
                 {
-                    if (getUriInfo().getQueryParameters().containsKey(GP.offset.getLocalName()))
-                        offset = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.offset.getLocalName()));
+                    Long defaultLimit = getLongValue(getMatchedOntClass(), GP.defaultLimit);
+                    //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
+                    this.limit = defaultLimit;
+                }
+
+                if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
+                subSelectBuilder.replaceLimit(limit);
+
+                if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+                    this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
+                else
+                    this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
+
+                if (this.orderBy != null)
+                {
+                    if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
+                        desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
                     else
+                        desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
+                    if (desc == null) desc = false; // ORDERY BY is ASC() by default
+
+                    try
                     {
-                        Long defaultOffset = getLongValue(getMatchedOntClass(), GP.defaultOffset);
-                        if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
-                        this.offset = defaultOffset;
+                        if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                            orderBy(orderBy, desc);
                     }
-
-                    if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-                    subSelectBuilder.replaceOffset(offset);
-
-                    if (getUriInfo().getQueryParameters().containsKey(GP.limit.getLocalName()))
-                        limit = Long.parseLong(getUriInfo().getQueryParameters().getFirst(GP.limit.getLocalName()));
-                    else
+                    catch (IllegalArgumentException ex)
                     {
-                        Long defaultLimit = getLongValue(getMatchedOntClass(), GP.defaultLimit);
-                        //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
-                        this.limit = defaultLimit;
-                    }
-
-                    if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-                    subSelectBuilder.replaceLimit(limit);
-
-                    if (getUriInfo().getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-                        this.orderBy = getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName());
-                    else
-                        this.orderBy = getStringValue(getMatchedOntClass(), GP.defaultOrderBy);
-
-                    if (this.orderBy != null)
-                    {
-                        if (getUriInfo().getQueryParameters().containsKey(GP.desc.getLocalName()))
-                            desc = Boolean.parseBoolean(getUriInfo().getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-                        else
-                            desc = getBooleanValue(getMatchedOntClass(), GP.defaultDesc);
-                        if (desc == null) desc = false; // ORDERY BY is ASC() by default
-
-                        try
-                        {
-                            if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                            subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                                orderBy(orderBy, desc);
-                        }
-                        catch (IllegalArgumentException ex)
-                        {
-                            if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
-                        }
-                    }
-
-                    if (getMode() != null && getMode().equals(GP.ConstructMode))
-                    {
-                        if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
-                        subSelectBuilder.replaceLimit(Long.valueOf(0));
+                        if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
                     }
                 }
-                catch (NumberFormatException ex)
+
+                if (getMode() != null && getMode().equals(GP.ConstructMode))
                 {
-                    throw new WebApplicationException(ex);
+                    if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
+                    subSelectBuilder.replaceLimit(Long.valueOf(0));
                 }
+            }
+            catch (NumberFormatException ex)
+            {
+                throw new WebApplicationException(ex);
             }
         }
 

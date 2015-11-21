@@ -1,7 +1,0 @@
-gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:MapMode .
-
-gp:TemplateContainer gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gc:defaultMode gc:ListMode .
-
-gp:TemplateItem gc:supportedMode gc:ReadMode, gc:EditMode ;
-    gc:defaultMode gc:ReadMode .
