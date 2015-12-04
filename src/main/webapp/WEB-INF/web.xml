@@ -41,7 +41,7 @@
         -->
         <init-param>
             <param-name>http://graphity.org/gp#datasetLocation</param-name>
-            <param-value>/org/graphity/processor/dataset/dataset.trig</param-value>
+            <param-value>/org/graphity/processor/dataset.trig</param-value>
         </init-param>
         <init-param>
             <param-name>http://graphity.org/gp#ontology</param-name>
