@@ -18,6 +18,10 @@ package org.graphity.processor.model.impl;
 
 import com.hp.hpl.jena.query.Dataset;
 import com.hp.hpl.jena.query.Query;
+import com.hp.hpl.jena.query.QueryExecException;
+import com.hp.hpl.jena.query.QueryExecution;
+import com.hp.hpl.jena.query.QueryExecutionFactory;
+import com.hp.hpl.jena.query.ResultSetFactory;
 import com.hp.hpl.jena.query.ResultSetRewindable;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.update.UpdateRequest;
@@ -72,9 +76,44 @@ public class SPARQLEndpointBase extends org.graphity.core.model.impl.SPARQLEndpo
     public Model loadModel(Query query)
     {
         if (log.isDebugEnabled()) log.debug("Loading Model from Dataset using Query: {}", query);
-        return getDataManager().loadModel(getDataset(), query);
+        return loadModel(getDataset(), query);
     }
 
+    /**
+     * Loads RDF model from an RDF dataset using a SPARQL query.
+     * Only <code>DESCRIBE</code> and <code>CONSTRUCT</code> queries can be used with this method.
+     * 
+     * @param dataset the RDF dataset to be queried
+     * @param query query object
+     * @return result RDF model
+     * @see <a href="http://www.w3.org/TR/2013/REC-sparql11-query-20130321/#describe">DESCRIBE</a>
+     * @see <a href="http://www.w3.org/TR/2013/REC-sparql11-query-20130321/#construct">CONSTRUCT</a>
+     */
+    public Model loadModel(Dataset dataset, Query query)
+    {
+	if (log.isDebugEnabled()) log.debug("Local Dataset Query: {}", query);
+	if (dataset == null) throw new IllegalArgumentException("Dataset must be not null");
+        if (query == null) throw new IllegalArgumentException("Query must be not null");
+	
+	QueryExecution qex = QueryExecutionFactory.create(query, dataset);
+	try
+	{	
+	    if (query.isConstructType()) return qex.execConstruct();
+	    if (query.isDescribeType()) return qex.execDescribe();
+	
+	    throw new QueryExecException("Query to load Model must be CONSTRUCT or DESCRIBE"); // return null;
+	}
+	catch (QueryExecException ex)
+	{
+	    if (log.isDebugEnabled()) log.debug("Local query execution exception: {}", ex);
+	    throw ex;
+	}
+	finally
+	{
+	    qex.close();
+	}
+    }
+    
     /**
      * Loads RDF model by querying dataset..
      * 
@@ -85,9 +124,42 @@ public class SPARQLEndpointBase extends org.graphity.core.model.impl.SPARQLEndpo
     public ResultSetRewindable select(Query query)
     {
         if (log.isDebugEnabled()) log.debug("Loading ResultSet from Dataset using Query: {}", query);
-        return getDataManager().loadResultSet(getDataset(), query);
+        return loadResultSet(getDataset(), query);
     }
 
+    /**
+     * Loads result set from an RDF dataset using a SPARQL query.
+     * Only <code>SELECT</code> queries can be used with this method.
+     * 
+     * @param dataset the RDF dataset to be queried
+     * @param query query object
+     * @return result set
+     * @see <a href="http://www.w3.org/TR/2013/REC-sparql11-query-20130321/#select">SELECT</a>
+     */
+    public ResultSetRewindable loadResultSet(Dataset dataset, Query query)
+    {
+	if (log.isDebugEnabled()) log.debug("Local Dataset Query: {}", query);
+	if (dataset == null) throw new IllegalArgumentException("Dataset must be not null");
+        if (query == null) throw new IllegalArgumentException("Query must be not null");
+	
+	QueryExecution qex = QueryExecutionFactory.create(query, dataset);
+	try
+	{
+	    if (query.isSelectType()) return ResultSetFactory.copyResults(qex.execSelect());
+	    
+	    throw new QueryExecException("Query to load ResultSet must be SELECT");
+	}
+	catch (QueryExecException ex)
+	{
+	    if (log.isDebugEnabled()) log.debug("Local query execution exception: {}", ex);
+	    throw ex;
+	}
+	finally
+	{
+	    qex.close();
+	}
+    }
+    
     /**
      * Asks for boolean result by querying dataset.
      * 
@@ -98,9 +170,42 @@ public class SPARQLEndpointBase extends org.graphity.core.model.impl.SPARQLEndpo
     public boolean ask(Query query)
     {
         if (log.isDebugEnabled()) log.debug("Loading Model from Dataset using Query: {}", query);
-        return getDataManager().ask(getDataset(), query);
+        return ask(getDataset(), query);
     }
 
+    /**
+     * Returns boolean result from an RDF dataset using a SPARQL query.
+     * Only <code>ASK</code> queries can be used with this method.
+     *
+     * @param dataset the RDF dataset to be queried
+     * @param query query object
+     * @return boolean result
+     * @see <a href="http://www.w3.org/TR/2013/REC-sparql11-query-20130321/#ask">ASK</a>
+     */
+    public boolean ask(Dataset dataset, Query query)
+    {
+	if (log.isDebugEnabled()) log.debug("Local Dataset Query: {}", query);
+	if (dataset == null) throw new IllegalArgumentException("Dataset must be not null");
+        if (query == null) throw new IllegalArgumentException("Query must be not null");
+
+	QueryExecution qex = QueryExecutionFactory.create(query, dataset);
+	try
+	{
+	    if (query.isAskType()) return qex.execAsk();
+
+	    throw new QueryExecException("Query to load ResultSet must be SELECT");
+	}
+	catch (QueryExecException ex)
+	{
+	    if (log.isDebugEnabled()) log.debug("Local query execution exception: {}", ex);
+	    throw ex;
+	}
+	finally
+	{
+	    qex.close();
+	}
+    }
+    
     /**
      * Executes update on dataset.
      * 
