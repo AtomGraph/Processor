@@ -23,6 +23,7 @@ import javax.ws.rs.ext.ContextResolver;
 import org.graphity.core.MediaTypes;
 import org.graphity.processor.model.GraphStoreFactory;
 import org.graphity.core.model.GraphStore;
+import org.graphity.core.util.jena.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,12 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
 	return cr.getContext(Dataset.class);
     }
 
+    public DataManager getDataManager()
+    {
+	ContextResolver<DataManager> cr = getProviders().getContextResolver(DataManager.class, null);
+	return cr.getContext(DataManager.class);
+    }
+    
     /**
      * Provides a proxy if graph store origin is configured, and a local dataset-backed graphs store if it is not.
      * 
@@ -53,7 +60,7 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
     public GraphStore getGraphStore()
     {
         if (getGraphStoreOrigin() == null) // use local graph store
-            return GraphStoreFactory.create(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
+            return getGraphStore(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
         
         return super.getGraphStore();
    }

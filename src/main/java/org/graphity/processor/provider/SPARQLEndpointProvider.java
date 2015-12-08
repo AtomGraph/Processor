@@ -23,6 +23,7 @@ import javax.ws.rs.ext.ContextResolver;
 import org.graphity.core.MediaTypes;
 import org.graphity.processor.model.SPARQLEndpointFactory;
 import org.graphity.core.model.SPARQLEndpoint;
+import org.graphity.core.util.jena.DataManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,6 +45,12 @@ public class SPARQLEndpointProvider extends org.graphity.core.provider.SPARQLEnd
 	return cr.getContext(Dataset.class);
     }
 
+    public DataManager getDataManager()
+    {
+	ContextResolver<DataManager> cr = getProviders().getContextResolver(DataManager.class, null);
+	return cr.getContext(DataManager.class);
+    }
+    
     /**
      * This subclass provides a proxy if endpoint origin is configured, and a local dataset-backed endpoint if it is not.
      * 

@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.provider;
 
+import javax.ws.rs.ext.Provider;
 import org.graphity.core.model.SPARQLEndpointOrigin;
 import org.graphity.core.vocabulary.SD;
 import org.slf4j.Logger;
@@ -28,6 +29,7 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius <martynas@graphity.org>
  * @see org.graphity.core.model.SPARQLEndpointOrigin
  */
+@Provider
 public class SPARQLEndpointOriginProvider extends org.graphity.core.provider.SPARQLEndpointOriginProvider
 {
 
@@ -42,7 +44,7 @@ public class SPARQLEndpointOriginProvider extends org.graphity.core.provider.SPA
     @Override
     public SPARQLEndpointOrigin getSPARQLEndpointOrigin()
     {
-        return getSPARQLEndpointOrigin(SD.endpoint, getDataManager()); // do not throw WebApplicationException is origin is not configured
+        return getSPARQLEndpointOrigin(SD.endpoint); // do not throw WebApplicationException is origin is not configured
     }
 
 }

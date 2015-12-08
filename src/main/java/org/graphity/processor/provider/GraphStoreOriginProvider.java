@@ -44,7 +44,7 @@ public class GraphStoreOriginProvider extends org.graphity.core.provider.GraphSt
     @Override
     public GraphStoreOrigin getGraphStoreOrigin()
     {
-        return getGraphStoreOrigin(G.graphStore, getDataManager()); // do not throw WebApplicationException is origin is not configured
+        return getGraphStoreOrigin(G.graphStore); // do not throw WebApplicationException is origin is not configured
     }
 
 }
