@@ -59,7 +59,7 @@ public class SPARQLEndpointProvider extends org.graphity.core.provider.SPARQLEnd
     @Override
     public SPARQLEndpoint getSPARQLEndpoint()
     {
-        if (getSPARQLEndpointOrigin() == null) // use local endpoint
+        if (getOrigin() == null) // use local endpoint
             return getSPARQLEndpoint(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
 
         return super.getSPARQLEndpoint();

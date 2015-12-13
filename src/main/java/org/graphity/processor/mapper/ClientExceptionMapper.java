@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Martynas Jusevičius <martynas@graphity.org>.
+ * Copyright 2015 Martynas Jusevičius <martynas@graphity.org>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,24 @@ package org.graphity.processor.mapper;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.graphity.core.exception.NotFoundException;
+import org.graphity.core.exception.ClientException;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class NotFoundExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<NotFoundException>
+public class ClientExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ClientException>
 {
-    
+
     @Override
-    public Response toResponse(NotFoundException ex)
+    public Response toResponse(ClientException ex)
     {
         return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.NOT_FOUND,
-                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#NotFound")).
+                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
                     getModel(), getVariants()).
-                status(Response.Status.NOT_FOUND).
-                build();
+                status(Response.Status.INTERNAL_SERVER_ERROR).
+                build();    
     }
     
 }

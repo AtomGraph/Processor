@@ -26,6 +26,7 @@ public class ConfigurationExceptionMapper extends ExceptionMapperBase implements
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
                     getModel(), getVariants()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
-                build();    }
+                build();    
+    }
     
 }

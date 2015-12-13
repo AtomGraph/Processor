@@ -59,7 +59,7 @@ public class GraphStoreProvider extends org.graphity.core.provider.GraphStorePro
     @Override
     public GraphStore getGraphStore()
     {
-        if (getGraphStoreOrigin() == null) // use local graph store
+        if (getOrigin() == null) // use local graph store
             return getGraphStore(getRequest(), getServletConfig(), getMediaTypes(), getDataset(), getDataManager());
         
         return super.getGraphStore();
