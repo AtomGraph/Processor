@@ -29,6 +29,7 @@ import org.graphity.processor.mapper.ExceptionMapperBase;
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
 @Provider
+@Deprecated
 public class QueryExceptionHTTPMapper extends ExceptionMapperBase implements ExceptionMapper<QueryExceptionHTTP>
 {
 

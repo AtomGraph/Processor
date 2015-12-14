@@ -26,6 +26,7 @@ import org.graphity.processor.mapper.ExceptionMapperBase;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
+@Deprecated
 public class HttpExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<HttpException>
 {
     
@@ -38,14 +39,6 @@ public class HttpExceptionMapper extends ExceptionMapperBase implements Exceptio
                     getModel(), getVariants()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
-
-        /*
-	return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
-                entity(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel()).
-		build();
-        */
     }
 
 }
