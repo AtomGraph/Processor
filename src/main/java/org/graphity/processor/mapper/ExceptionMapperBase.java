@@ -99,7 +99,7 @@ abstract public class ExceptionMapperBase
     
     public List<MediaType> getModelMediaTypes()
     {
-        return getMediaTypes().forClass(Model.class);
+        return getMediaTypes().getWritable(Model.class);
     }
     
     public List<Locale> getLanguages()
