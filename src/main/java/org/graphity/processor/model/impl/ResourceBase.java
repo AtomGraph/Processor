@@ -326,15 +326,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS), except when constructing
-        if (!getMode().equals(GP.ConstructMode))
-        {
+        //if (getMode() != null && !getMode().equals(GP.ConstructMode))
+        //{
             Resource state = getState(getUriInfo().getRequestUri(), getOntResource().getOntModel(), getLimit(), getOffset(), getOrderBy(), getDesc(), getMode());
             if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
             {
                 if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
                 return Response.seeOther(URI.create(state.getURI())).build();
             }                    
-        }
+        //}
         
         //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
 	return super.get();

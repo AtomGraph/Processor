@@ -37,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
@@ -47,7 +48,6 @@ import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.processor.util.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
 import org.graphity.core.util.StateBuilder;
-import org.graphity.processor.Application;
 import org.graphity.processor.util.RestrictionMatcher;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
@@ -104,10 +104,10 @@ public class HypermediaFilter implements ContainerResponseFilter
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
             Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-            Query restrictionQuery = getApplication().getQuery(GP.restrictionsQuery);
+            Query restrictionQuery = ((org.graphity.processor.Application)getApplication()).getQuery(GP.restrictionsQuery);
             RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
             childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
-            childrenClasses.putAll(restrictionMatcher.match(getOntology(), SIOC.HAS_CONTAINER, matchedOntClass));
+            childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, matchedOntClass));
 
             Iterator<List<OntClass>> it = childrenClasses.values().iterator();
             while (it.hasNext())
