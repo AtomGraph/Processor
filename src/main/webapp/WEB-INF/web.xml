@@ -6,6 +6,37 @@
     id="graphity-processor" version="3.0">
     <display-name>Graphity Processor</display-name>
     <description>Generic Linked Data processor</description>
+    <context-param>
+            <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
+            <param-value><![CDATA[
+PREFIX gp:	<http://graphity.org/gp#>
+PREFIX gpl:	<http://graphity.org/gpl#>
+PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX owl:	<http://www.w3.org/2002/07/owl#>
+PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
+PREFIX sioc:	<http://rdfs.org/sioc/ns#>
+
+SELECT *
+{
+    ?Template a owl:Class ; # not necessarily a gp:Template
+        rdfs:subClassOf ?Restriction .
+    ?Restriction a owl:Restriction ;
+        owl:onProperty ?onProperty .
+    FILTER (?Template != gpl:GraphContainer)
+    {
+        ?Restriction owl:allValuesFrom ?allValuesFrom
+    }
+    UNION
+    {
+        ?Restriction owl:allValuesFrom [ a owl:Class ;
+            owl:unionOf [
+                rdf:rest*/rdf:first ?allValuesFrom
+            ]
+        ]
+    }
+}
+]]></param-value>
+    </context-param>
     <servlet>
         <servlet-name>index</servlet-name>
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
@@ -51,37 +82,6 @@
             <param-name>http://graphity.org/gp#sitemapRules</param-name>
             <param-value><![CDATA[
 [inheritance: (?template rdf:type <http://graphity.org/gp#Template>), (?template ?p ?o), (?p rdf:type owl:AnnotationProperty), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?template), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
-]]></param-value>
-        </init-param>
-        <init-param>
-            <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
-            <param-value><![CDATA[
-PREFIX gp:	<http://graphity.org/gp#>
-PREFIX gpl:	<http://graphity.org/gpl#>
-PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
-PREFIX owl:	<http://www.w3.org/2002/07/owl#>
-PREFIX rdfs:	<http://www.w3.org/2000/01/rdf-schema#>
-PREFIX sioc:	<http://rdfs.org/sioc/ns#>
-
-SELECT *
-{
-    ?Template a owl:Class ; # not necessarily a gp:Template
-        rdfs:subClassOf ?Restriction .
-    ?Restriction a owl:Restriction ;
-        owl:onProperty ?onProperty .
-    FILTER (?Template != gpl:GraphContainer)
-    {
-        ?Restriction owl:allValuesFrom ?allValuesFrom
-    }
-    UNION
-    {
-        ?Restriction owl:allValuesFrom [ a owl:Class ;
-            owl:unionOf [
-                rdf:rest*/rdf:first ?allValuesFrom
-            ]
-        ]
-    }
-}
 ]]></param-value>
         </init-param>
         <!--

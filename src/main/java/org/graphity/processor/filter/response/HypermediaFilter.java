@@ -18,6 +18,7 @@ package org.graphity.processor.filter.response;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
@@ -43,9 +44,11 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import org.graphity.processor.model.impl.ConstructorBase;
-import org.graphity.processor.provider.OntClassMatcher;
+import org.graphity.processor.util.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
 import org.graphity.core.util.StateBuilder;
+import org.graphity.processor.Application;
+import org.graphity.processor.util.RestrictionMatcher;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
@@ -64,6 +67,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
     
+    @Context Application application;
     @Context Providers providers;
     @Context UriInfo uriInfo;
     @Context ServletConfig servletConfig;
@@ -100,8 +104,10 @@ public class HypermediaFilter implements ContainerResponseFilter
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
             Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, matchedOntClass));
-            childrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, matchedOntClass));
+            Query restrictionQuery = getApplication().getQuery(GP.restrictionsQuery);
+            RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
+            childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
+            childrenClasses.putAll(restrictionMatcher.match(getOntology(), SIOC.HAS_CONTAINER, matchedOntClass));
 
             Iterator<List<OntClass>> it = childrenClasses.values().iterator();
             while (it.hasNext())
@@ -126,10 +132,10 @@ public class HypermediaFilter implements ContainerResponseFilter
             {
                 com.hp.hpl.jena.rdf.model.Resource childContainer = resIt.next();
                 URI childURI = URI.create(childContainer.getURI());
-                OntClass childClass = new OntClassMatcher().matchOntClass(getServletConfig(), getOntology(), childURI, getUriInfo().getBaseUri());
+                OntClass childClass = new OntClassMatcher(getOntology()).match(childURI, getUriInfo().getBaseUri());
                 Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_PARENT, childClass));
-                grandChildrenClasses.putAll(new OntClassMatcher().ontClassesByAllValuesFrom(getServletConfig(), getOntology(), SIOC.HAS_CONTAINER, childClass));
+                grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, childClass));
+                grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, childClass));
 
                 Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
                 while (gccIt.hasNext())
@@ -296,4 +302,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         //return getResource().getModifiers();
     }
 
+    public Application getApplication()
+    {
+        return application;
+    }
+    
 }

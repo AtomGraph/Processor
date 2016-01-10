@@ -14,51 +14,28 @@
  * limitations under the License.
  */
 
-package org.graphity.processor.provider;
+package org.graphity.processor.util;
 
 import org.graphity.processor.template.ClassTemplate;
-import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryExecution;
-import com.hp.hpl.jena.query.QueryExecutionFactory;
-import com.hp.hpl.jena.query.QuerySolution;
-import com.hp.hpl.jena.query.QuerySolutionMap;
-import com.hp.hpl.jena.query.ResultSet;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.uri.UriTemplate;
-import com.sun.jersey.core.spi.component.ComponentContext;
-import com.sun.jersey.spi.inject.Injectable;
-import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import javax.servlet.ServletConfig;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Providers;
-import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.template.UriClassTemplate;
 import org.graphity.processor.vocabulary.GP;
@@ -70,53 +47,25 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, OntClass> implements ContextResolver<OntClass>
+public class OntClassMatcher
 {
     private static final Logger log = LoggerFactory.getLogger(OntClassMatcher.class);
 
-    @Context UriInfo uriInfo;
-    @Context Providers providers;
-    @Context ServletConfig servletConfig;
+    private final Ontology ontology;
     
-    public OntClassMatcher()
+    public OntClassMatcher(Ontology ontology)
     {
-	super(OntClass.class);
-    }
-
-    @Override
-    public Injectable<OntClass> getInjectable(ComponentContext cc, Context a)
-    {
-	return new Injectable<OntClass>()
-	{
-	    @Override
-	    public OntClass getValue()
-	    {
-                return getOntClass();
-	    }
-	};
-    }
-
-    @Override
-    public OntClass getContext(Class<?> type)
-    {
-        return getOntClass();
-    }
-
-    public OntClass getOntClass()
-    {
-        return matchOntClass(getServletConfig(), getOntology(), getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
+        this.ontology = ontology;
     }
     
     /**
      * Given an absolute URI and a base URI, returns ontology class with a matching URI template, if any.
      * 
-     * @param servletConfig
-     * @param ontology sitemap ontology model
      * @param uri absolute URI being matched
      * @param base base URI
      * @return matching ontology class or null, if none
      */
-    public OntClass matchOntClass(ServletConfig servletConfig, Ontology ontology, URI uri, URI base)
+    public OntClass match(URI uri, URI base)
     {
 	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
 	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
@@ -126,20 +75,12 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
 	StringBuilder path = new StringBuilder();
 	// instead of path, include query string by relativizing request URI against base URI
 	path.append("/").append(base.relativize(uri));
-	ClassTemplate template = matchTemplate(ontology, path);
+	ClassTemplate template = match(getOntology(), path);
         if (template != null) return template.getOntClass();
         
         return null;
     }
-    
-    public Query getQuery(Query query, QuerySolutionMap qsm)
-    {
-        if (query == null) throw new IllegalArgumentException("Query cannot be null");
-        if (qsm == null) throw new IllegalArgumentException("QuerySolution cannot be null");
-        
-        return new ParameterizedSparqlString(query.toString(), qsm).asQuery();
-    }
-        
+            
     /**
      * Matches path (relative URI) against URI templates in sitemap ontology.
      * This method uses Jersey implementation of the JAX-RS URI matching algorithm.
@@ -149,7 +90,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
      * @param level
      * @return URI template/class mapping
      */    
-    public List<UriClassTemplate> matchTemplates(Ontology ontology, CharSequence path, int level)
+    public List<UriClassTemplate> match(Ontology ontology, CharSequence path, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
@@ -199,7 +140,7 @@ public class OntClassMatcher extends PerRequestTypeInjectableProvider<Context, O
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        matchedClasses.addAll(matchTemplates(importedOntology, path, level + 1));
+                        matchedClasses.addAll(match(importedOntology, path, level + 1));
                     }
                 }
             }
@@ -228,11 +169,11 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
-    public UriClassTemplate matchTemplate(Ontology ontology, CharSequence path)
+    public UriClassTemplate match(Ontology ontology, CharSequence path)
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        List<UriClassTemplate> matchedTemplates = matchTemplates(ontology, path, 0);
+        List<UriClassTemplate> matchedTemplates = match(ontology, path, 0);
         if (!matchedTemplates.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
@@ -253,7 +194,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
-    public SortedSet<ClassTemplate> matchOntClasses(Ontology ontology, Resource resource, Property property, int level)
+    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -289,7 +230,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        Set<ClassTemplate> matchedImportClasses = matchOntClasses(importedOntology, resource, property, level + 1);
+                        Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
                         matchedClasses.addAll(matchedImportClasses);
                     }
                 }
@@ -307,117 +248,6 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return matchedClasses;
     }
     
-    // does this belong to Skolemizer instead?
-    public OntClass matchOntClass(Resource resource, OntClass parentClass)
-    {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (parentClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-
-        StmtIterator it = resource.listProperties(RDF.type);
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                if (stmt.getObject().isURIResource())
-                {
-                    OntClass typeClass = parentClass.getOntModel().getOntClass(stmt.getObject().asResource().getURI());
-                    // return resource type which is defined by the sitemap ontology
-                    if (typeClass != null && typeClass.getIsDefinedBy() != null &&
-                            typeClass.getIsDefinedBy().equals(parentClass.getIsDefinedBy()))
-                        return typeClass;
-                }
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-
-        return null;
-    }
-
-    public Map<Property, List<OntClass>> ontClassesByAllValuesFrom(ServletConfig servletConfig, Ontology ontology, Property onProperty, OntClass allValuesFrom)
-    {
-	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");        
-	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
-        if (allValuesFrom == null) throw new IllegalArgumentException("OntClass cannot be null");
-
-        QuerySolutionMap qsm = new QuerySolutionMap();
-        qsm.add(RDFS.isDefinedBy.getLocalName(), ontology);
-        qsm.add(OWL.allValuesFrom.getLocalName(), allValuesFrom);
-        if (onProperty != null) qsm.add(OWL.onProperty.getLocalName(), onProperty);
-
-        QueryExecution qex = QueryExecutionFactory.create(getQuery(getQuery(servletConfig, GP.restrictionsQuery), qsm), ontology.getOntModel());
-        try
-        {
-            Map<Property, List<OntClass>> matchedClasses = new HashMap<>();
-            ResultSet templates = qex.execSelect();
-
-            while (templates.hasNext())
-            {
-                QuerySolution solution = templates.next();
-                if (solution.contains(GP.Template.getLocalName())) // solution.contains(OWL.onProperty.getLocalName()
-                {
-                    OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
-
-                    if (!matchedClasses.containsKey(onProperty))
-                        matchedClasses.put(onProperty, new ArrayList<OntClass>());
-                    matchedClasses.get(onProperty).add(template);
-                }
-            }
-
-            if (matchedClasses.isEmpty())
-            {
-                ExtendedIterator<OntResource> imports = ontology.listImports();
-                try
-                {
-                    while (imports.hasNext())
-                    {
-                        OntResource importRes = imports.next();
-                        if (importRes.canAs(Ontology.class))
-                        {
-                            Ontology importedOntology = importRes.asOntology();
-                            // traverse imports recursively
-                            Map<Property, List<OntClass>> matchedImportClasses = ontClassesByAllValuesFrom(servletConfig, importedOntology, onProperty, allValuesFrom);
-                            Iterator<Entry<Property, List<OntClass>>> entries = matchedImportClasses.entrySet().iterator();
-                            while (entries.hasNext())
-                            {
-                                Entry<Property, List<OntClass>> entry = entries.next();
-                                if (matchedClasses.containsKey(entry.getKey()))
-                                    matchedClasses.get(entry.getKey()).addAll(entry.getValue());
-                                else
-                                    matchedClasses.put(entry.getKey(), entry.getValue());
-                            }
-                        }
-                    }
-                }
-                finally
-                {
-                    imports.close();
-                }
-            }
-
-            return matchedClasses;
-        }
-        finally
-        {
-            qex.close();
-        }
-    }
-    
-    public Query getQuery(ServletConfig servletConfig, DatatypeProperty property)
-    {
-        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-        
-	Object query = servletConfig.getInitParameter(property.getURI());
-        if (query == null) throw new ConfigurationException("Property '" + property.getURI() + "' needs to be set in config");
-        
-        ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
-        return queryString.asQuery();
-    }
-    
     public OntModel getOntModel()
     {
         return getOntology().getOntModel();
@@ -425,23 +255,7 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
 
     public Ontology getOntology()
     {
-	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-	return cr.getContext(Ontology.class);
-    }
-
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
-    }
-
-    public Providers getProviders()
-    {
-        return providers;
-    }
-
-    public ServletConfig getServletConfig()
-    {
-        return servletConfig;
+        return ontology;
     }
     
 }

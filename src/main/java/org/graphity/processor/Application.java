@@ -16,13 +16,18 @@
 
 package org.graphity.processor;
 
+import com.hp.hpl.jena.ontology.DatatypeProperty;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
+import com.hp.hpl.jena.query.ParameterizedSparqlString;
+import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.util.FileManager;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
+import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
+import org.graphity.core.exception.ConfigurationException;
 import org.graphity.core.provider.ClientProvider;
 import org.graphity.core.provider.DataManagerProvider;
 import org.graphity.core.provider.MediaTypesProvider;
@@ -38,9 +43,9 @@ import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.provider.ConstraintViolationExceptionProvider;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
-import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.ModifiersProvider;
+import org.graphity.processor.provider.OntClassProvider;
 import org.graphity.processor.provider.QueriedResourceProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
@@ -83,7 +88,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
         singletons.add(new OntologyProvider(getServletConfig()));
-        singletons.add(new OntClassMatcher());
+        singletons.add(new OntClassProvider());
 	singletons.add(new SPARQLEndpointProvider());
 	singletons.add(new SPARQLEndpointOriginProvider());
         singletons.add(new GraphStoreProvider());
@@ -119,7 +124,6 @@ public class Application extends org.graphity.core.Application
         FileManager fileManager = getFileManager();
 	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
         initOntDocumentManager(fileManager);
-        //OntDocumentManager.getInstance().setFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
 
         boolean cacheSitemap = true;
@@ -130,7 +134,6 @@ public class Application extends org.graphity.core.Application
 
     public void initOntDocumentManager(FileManager fileManager)
     {
-        //FileManager.setGlobalFileManager(fileManager);
         OntDocumentManager.getInstance().setFileManager(fileManager);
     }
     
@@ -162,6 +165,27 @@ public class Application extends org.graphity.core.Application
     public Set<Object> getSingletons()
     {
 	return singletons;
+    }
+    
+    public Query getQuery(DatatypeProperty property)
+    {
+        return getQuery(getServletConfig().getServletContext(), property);
+    }
+        
+    public static Query getQuery(ServletContext servletContext, DatatypeProperty property)
+    {
+        if (servletContext == null) throw new IllegalArgumentException("ServletContext cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        Object query = servletContext.getInitParameter(property.getURI());
+        if (query == null)
+        {
+            if (log.isErrorEnabled()) log.error("Query property '{}' not configured", property);
+            throw new ConfigurationException("Sitemap query '" + property + "' not configured");
+        }
+        
+        ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
+        return queryString.asQuery();
     }
     
 }

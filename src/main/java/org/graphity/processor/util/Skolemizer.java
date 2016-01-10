@@ -39,7 +39,6 @@ import java.util.SortedSet;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
 import org.graphity.core.exception.ConfigurationException;
-import org.graphity.processor.provider.OntClassMatcher;
 import org.graphity.processor.template.ClassTemplate;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
@@ -152,7 +151,7 @@ public class Skolemizer
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        SortedSet<ClassTemplate> matched = getOntClassMatcher().matchOntClasses(getOntology(), resource, RDF.type, 0);
+        SortedSet<ClassTemplate> matched = getOntClassMatcher().match(getOntology(), resource, RDF.type, 0);
         if (!matched.isEmpty())
         {
             OntClass matchingClass = matched.first().getOntClass();
