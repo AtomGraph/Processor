@@ -85,7 +85,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     //private final Modifiers modifiers;
-    private final Resource mode;
+    private final Resource forClass;
     private String orderBy;
     private Boolean desc;
     private Long limit, offset;
@@ -142,13 +142,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.resourceContext = resourceContext;
         //this.modifiers = modifiers;
         
-        if (uriInfo.getQueryParameters().containsKey(GP.mode.getLocalName()))
-            mode = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.mode.getLocalName()));
-        else mode = matchedOntClass.getPropertyResourceValue(GP.defaultMode);
+        if (uriInfo.getQueryParameters().containsKey(GP.forClass.getLocalName()))
+            forClass = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.forClass.getLocalName()));
+        else forClass = null;
 
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
 	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
-	//querySolutionMap.add(GP.Mode.getLocalName(), mode); // ?Mode
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
@@ -241,9 +240,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     }
                 }
 
-                if (getMode() != null && getMode().equals(GP.ConstructMode))
+                if (getForClass() != null)
                 {
-                    if (log.isDebugEnabled()) log.debug("Mode is {}, setting sub-SELECT LIMIT to zero", getMode());
+                    if (log.isDebugEnabled()) log.debug("gp:forClass is {}, setting sub-SELECT LIMIT to zero", getForClass());
                     subSelectBuilder.replaceLimit(Long.valueOf(0));
                 }
             }
@@ -326,34 +325,28 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS), except when constructing
-        //if (getMode() != null && !getMode().equals(GP.ConstructMode))
-        //{
-            Resource state = getState(getUriInfo().getRequestUri(), getOntResource().getOntModel(), getLimit(), getOffset(), getOrderBy(), getDesc(), getMode());
-            if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
-            {
-                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
-                return Response.seeOther(URI.create(state.getURI())).build();
-            }                    
-        //}
-        
-        //if (log.isDebugEnabled()) log.debug("Returning @GET Response with {} statements in Model", description.size());
-	return super.get();
+        Resource state = getStateBuilder().build();
+        if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
+        {
+            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
+            return Response.seeOther(URI.create(state.getURI())).build();
+        }                    
+
+        return super.get();
     }
     
-    // TO-DO: refactor with Modifiers?
-    public Resource getState(URI uri, Model model, Long limit, Long offset, String orderBy, Boolean desc, Resource mode)
+    public StateBuilder getStateBuilder()
     {
-	if (uri == null) throw new IllegalArgumentException("URI cannot be null");        
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+        // TO-DO: refactor with Modifiers?
+        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
         
-        StateBuilder sb = StateBuilder.fromUri(uri, model);
-        if (limit != null) sb.replaceLiteral(GP.limit, limit);
-        if (offset != null) sb.replaceLiteral(GP.offset, offset);
-        if (orderBy != null) sb.replaceLiteral(GP.orderBy, orderBy);
-        if (desc != null) sb.replaceLiteral(GP.desc, desc);
-        if (mode != null) sb.replaceProperty(GP.mode, mode);
+        if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
+        if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
+        if (getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getOrderBy());
+        if (getDesc() != null) sb.replaceLiteral(GP.desc, getDesc());
+        if (getForClass() != null) sb.replaceProperty(GP.forClass, getForClass());
         
-        return sb.build();
+        return sb;
     }
     
     /**
@@ -565,18 +558,18 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         return false;
     }
-            
+
     /**
-     * Returns the layout mode query parameter value.
+     * Returns the forClass query parameter value.
      * 
-     * @return mode URI
+     * @return class URI
      */
     @Override
-    public Resource getMode()
+    public Resource getForClass()
     {
-	return mode;
+	return forClass;
     }
-
+    
     /**
      * Returns <code>Cache-Control</code> HTTP header value, specified on an ontology class with given property.
      * 

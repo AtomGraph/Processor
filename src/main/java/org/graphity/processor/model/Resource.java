@@ -32,6 +32,6 @@ public interface Resource extends QueriedResource
         
     // public Modifiers getModifiers();
     
-    public com.hp.hpl.jena.rdf.model.Resource getMode();
+    public com.hp.hpl.jena.rdf.model.Resource getForClass();
     
 }

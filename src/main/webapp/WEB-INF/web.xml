@@ -7,8 +7,8 @@
     <display-name>Graphity Processor</display-name>
     <description>Generic Linked Data processor</description>
     <context-param>
-            <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
-            <param-value><![CDATA[
+        <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
+        <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>
 PREFIX gpl:	<http://graphity.org/gpl#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>

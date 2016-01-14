@@ -30,16 +30,13 @@ import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletConfig;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
@@ -85,6 +82,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             long oldCount = model.size();
             Resource resource = model.createResource(request.getAbsolutePath().toString());
             OntClass matchedOntClass = getResource().getMatchedOntClass();
+            // TO-DO: remove dependency on matched class. The filter should operate solely on the in-band RDF response
             model = addStates(resource, matchedOntClass);
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
             response.setEntity(model);
@@ -94,7 +92,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
 
-    public Model addStates(com.hp.hpl.jena.rdf.model.Resource resource, OntClass matchedOntClass)
+    public Model addStates(Resource resource, OntClass matchedOntClass)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
@@ -103,92 +101,88 @@ public class HypermediaFilter implements ContainerResponseFilter
         
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
-            Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-            Query restrictionQuery = ((org.graphity.processor.Application)getApplication()).getQuery(GP.restrictionsQuery);
-            RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
-            childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
-            childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, matchedOntClass));
-
-            Iterator<List<OntClass>> it = childrenClasses.values().iterator();
-            while (it.hasNext())
+            if (getResource().getForClass() != null)
             {
-                List<OntClass> forClasses = it.next();
-                Iterator<OntClass> forIt = forClasses.iterator();
-                while (forIt.hasNext())
-                {
-                    OntClass forClass = forIt.next();
-                    StateBuilder.fromUri(resource.getURI(), model).
-                            property(GP.forClass, forClass).
-                            property(GP.mode, GP.ConstructMode).
-                            build().
-                            addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.constructorOf, resource);                            
-                }
+                OntClass forClass = getOntology().getOntModel().createClass(getResource().getForClass().getURI());
+                if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
+
+                Property property = SPIN.constructor;
+                if (log.isDebugEnabled()) log.debug("Invoking constructor on class {} using property {}", forClass, property);
+                new ConstructorBase().construct(forClass, property, model);
+
+                StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
+                if (getModifiers().getLimit() != null) sb.replaceLiteral(GP.limit, getModifiers().getLimit());
+                if (getModifiers().getOffset() != null) sb.replaceLiteral(GP.offset, getModifiers().getOffset());
+                if (getModifiers().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
+                if (getModifiers().getDesc() != null) sb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                sb.replaceProperty(GP.forClass, forClass).
+                    build().
+                    addProperty(RDF.type, FOAF.Document).
+                    addProperty(RDF.type, GP.Constructor).
+                    addProperty(GP.constructorOf, resource);
             }
-            
-            ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, resource);
-            while (resIt.hasNext())
+            else
             {
-                com.hp.hpl.jena.rdf.model.Resource childContainer = resIt.next();
-                URI childURI = URI.create(childContainer.getURI());
-                OntClass childClass = new OntClassMatcher(getOntology()).match(childURI, getUriInfo().getBaseUri());
-                Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, childClass));
-                grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, childClass));
+                Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
+                Query restrictionQuery = ((org.graphity.processor.Application)getApplication()).getQuery(GP.restrictionsQuery);
+                RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
+                childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
+                childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, matchedOntClass));
 
-                Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
-                while (gccIt.hasNext())
+                Iterator<List<OntClass>> it = childrenClasses.values().iterator();
+                while (it.hasNext())
                 {
-                    List<OntClass> forClasses = gccIt.next();
+                    List<OntClass> forClasses = it.next();
                     Iterator<OntClass> forIt = forClasses.iterator();
                     while (forIt.hasNext())
                     {
                         OntClass forClass = forIt.next();
-                        StateBuilder.fromUri(childContainer.getURI(), model).
-                                property(GP.forClass, forClass).
-                                property(GP.mode, GP.ConstructMode).
+                        StateBuilder.fromUri(resource.getURI(), model).
+                            replaceProperty(GP.forClass, forClass).
+                            build().
+                            addProperty(RDF.type, FOAF.Document).
+                            addProperty(RDF.type, GP.Constructor).
+                            addProperty(GP.constructorOf, resource);                            
+                    }
+                }
+
+                ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, resource);
+                while (resIt.hasNext())
+                {
+                    Resource childContainer = resIt.next();
+                    URI childURI = URI.create(childContainer.getURI());
+                    OntClass childClass = new OntClassMatcher(getOntology()).match(childURI, getUriInfo().getBaseUri());
+                    Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
+                    grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, childClass));
+                    grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, childClass));
+
+                    Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
+                    while (gccIt.hasNext())
+                    {
+                        List<OntClass> forClasses = gccIt.next();
+                        Iterator<OntClass> forIt = forClasses.iterator();
+                        while (forIt.hasNext())
+                        {
+                            OntClass forClass = forIt.next();
+                            StateBuilder.fromUri(childContainer.getURI(), model).
+                                replaceProperty(GP.forClass, forClass).
                                 build().
                                 addProperty(RDF.type, FOAF.Document).
                                 addProperty(RDF.type, GP.Constructor).
                                 addProperty(GP.constructorOf, childContainer);
+                        }
                     }
                 }
-            }
-
-            if (getResource().getMode() != null && getResource().getMode().equals(GP.ConstructMode))
-            {
-                try
-                {
-                    if (!getUriInfo().getQueryParameters().containsKey(GP.forClass.getLocalName()))
-                        throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value not supplied");
-
-                    URI forClassURI = new URI(getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
-                    OntClass forClass = getOntology().getOntModel().createClass(forClassURI.toString());
-                    if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
-
-                    Property property = SPIN.constructor;
-                    if (log.isDebugEnabled()) log.debug("Invoking constructor on class {} using property {}", forClass, property);
-                    new ConstructorBase().construct(forClass, property, model);
-                }
-                catch (URISyntaxException ex)
-                {
-                    if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but gp:forClass value is not a URI: '{}'", getUriInfo().getQueryParameters().getFirst(GP.forClass.getLocalName()));
-                    throw new WebApplicationException(ex, Response.Status.BAD_REQUEST);
-                }
-            }
-            else
-            {
+                
                 StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
-                if (getModifiers().getLimit() != null) sb.literal(GP.limit, getModifiers().getLimit());
-                if (getModifiers().getOffset() != null) sb.literal(GP.offset, getModifiers().getOffset());
-                if (getModifiers().getOrderBy() != null) sb.literal(GP.orderBy, getModifiers().getOrderBy());
-                if (getModifiers().getDesc() != null) sb.literal(GP.desc, getModifiers().getDesc());
-                if (getResource().getMode() != null) sb.property(GP.mode, getResource().getMode());
-                com.hp.hpl.jena.rdf.model.Resource page = sb.build().
-                        addProperty(GP.pageOf, resource).
-                        addProperty(RDF.type, FOAF.Document).
-                        addProperty(RDF.type, GP.Page);
+                if (getModifiers().getLimit() != null) sb.replaceLiteral(GP.limit, getModifiers().getLimit());
+                if (getModifiers().getOffset() != null) sb.replaceLiteral(GP.offset, getModifiers().getOffset());
+                if (getModifiers().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
+                if (getModifiers().getDesc() != null) sb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                Resource page = sb.build().
+                    addProperty(GP.pageOf, resource).
+                    addProperty(RDF.type, FOAF.Document).
+                    addProperty(RDF.type, GP.Page);
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
 
                 if (getModifiers().getOffset() != null && getModifiers().getLimit() != null)
@@ -196,12 +190,11 @@ public class HypermediaFilter implements ContainerResponseFilter
                     if (getModifiers().getOffset() >= getModifiers().getLimit())
                     {
                         StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
-                                literal(GP.limit, getModifiers().getLimit()).
-                                literal(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
-                        if (getModifiers().getOrderBy() != null) prevSb.literal(GP.orderBy, getModifiers().getOrderBy());
-                        if (getModifiers().getDesc() != null) prevSb.literal(GP.desc, getModifiers().getDesc());
-                        if (getResource().getMode() != null) prevSb.property(GP.mode, getResource().getMode());
-                        com.hp.hpl.jena.rdf.model.Resource prev = prevSb.build().
+                                replaceLiteral(GP.limit, getModifiers().getLimit()).
+                                replaceLiteral(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
+                        if (getModifiers().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
+                        if (getModifiers().getDesc() != null) prevSb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                        Resource prev = prevSb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
@@ -217,12 +210,11 @@ public class HypermediaFilter implements ContainerResponseFilter
                     //if (subjectCount >= getModifiers().getLimit())
                     {
                         StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
-                                literal(GP.limit, getModifiers().getLimit()).
-                                literal(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
-                        if (getModifiers().getOrderBy() != null) nextSb.literal(GP.orderBy, getModifiers().getOrderBy());
-                        if (getModifiers().getDesc() != null) nextSb.literal(GP.desc, getModifiers().getDesc());
-                        if (getResource().getMode() != null) nextSb.property(GP.mode, getResource().getMode());
-                        com.hp.hpl.jena.rdf.model.Resource next = nextSb.build().
+                                replaceLiteral(GP.limit, getModifiers().getLimit()).
+                                replaceLiteral(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
+                        if (getModifiers().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
+                        if (getModifiers().getDesc() != null) nextSb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                        Resource next = nextSb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
