@@ -37,7 +37,6 @@ import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response.Status.Family;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
@@ -45,6 +44,7 @@ import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.processor.util.OntClassMatcher;
 import org.graphity.processor.util.Modifiers;
 import org.graphity.core.util.StateBuilder;
+import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.util.RestrictionMatcher;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
@@ -75,15 +75,26 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        if (getResource() != null && response.getStatusType().getFamily().equals(Family.SUCCESSFUL) &&
-                response.getEntity() != null && response.getEntity() instanceof Model)
+        if (getResource() != null && response.getEntity() != null &&
+                (response.getEntity() instanceof Model) || response.getEntity() instanceof ConstraintViolationException)
         {
-            Model model = (Model)response.getEntity();
+            Model model;
+            if (response.getEntity() instanceof ConstraintViolationException)
+                model = ((ConstraintViolationException)response.getEntity()).getModel();
+            else
+                model = (Model)response.getEntity();
             long oldCount = model.size();
+            
             Resource resource = model.createResource(request.getAbsolutePath().toString());
-            OntClass matchedOntClass = getResource().getMatchedOntClass();
             // TO-DO: remove dependency on matched class. The filter should operate solely on the in-band RDF response
-            model = addStates(resource, matchedOntClass);
+            model = addStates(resource, getResource().getMatchedOntClass());
+            
+            if (getResource().getForClass() != null && !(response.getEntity() instanceof ConstraintViolationException))
+            {
+                OntClass forClass = getOntology().getOntModel().createClass(getResource().getForClass().getURI());
+                model = addInstance(model, forClass);
+            }
+            
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
             response.setEntity(model);
             return response;
@@ -92,6 +103,17 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
 
+    public Model addInstance(Model model, OntClass forClass)
+    {
+        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+
+        Property property = SPIN.constructor;
+        if (log.isDebugEnabled()) log.debug("Invoking constructor on class {} using property {}", forClass, property);
+        new ConstructorBase().construct(forClass, property, model);
+        
+        return model;
+    }
+    
     public Model addStates(Resource resource, OntClass matchedOntClass)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -103,19 +125,12 @@ public class HypermediaFilter implements ContainerResponseFilter
 	{
             if (getResource().getForClass() != null)
             {
-                OntClass forClass = getOntology().getOntModel().createClass(getResource().getForClass().getURI());
-                if (forClass == null) throw new IllegalStateException("gp:ConstructMode is active, but gp:forClass value is not a known owl:Class");
-
-                Property property = SPIN.constructor;
-                if (log.isDebugEnabled()) log.debug("Invoking constructor on class {} using property {}", forClass, property);
-                new ConstructorBase().construct(forClass, property, model);
-
                 StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
                 if (getModifiers().getLimit() != null) sb.replaceLiteral(GP.limit, getModifiers().getLimit());
                 if (getModifiers().getOffset() != null) sb.replaceLiteral(GP.offset, getModifiers().getOffset());
                 if (getModifiers().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
                 if (getModifiers().getDesc() != null) sb.replaceLiteral(GP.desc, getModifiers().getDesc());
-                sb.replaceProperty(GP.forClass, forClass).
+                sb.replaceProperty(GP.forClass, getResource().getForClass()).
                     build().
                     addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Constructor).
