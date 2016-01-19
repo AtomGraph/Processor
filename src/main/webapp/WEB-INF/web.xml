@@ -71,7 +71,7 @@ SELECT *
         </init-param>
         -->
         <init-param>
-            <param-name>http://graphity.org/gp#datasetLocation</param-name>
+            <param-name>http://graphity.org/gp#dataset</param-name>
             <param-value>/org/graphity/processor/dataset.trig</param-value>
         </init-param>
         <init-param>

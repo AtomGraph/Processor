@@ -69,17 +69,17 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
     
     /**
      * Returns configured dataset instance.
-     * Uses <code>gp:datasetLocation</code> context parameter value from web.xml as dataset location.
+     * Uses <code>gp:dataset</code> context parameter value from web.xml as dataset location.
      * 
      * @return dataset instance
      */
     public Dataset getDataset()
     {
-        String datasetLocation = getDatasetLocation(GP.datasetLocation);
+        String datasetLocation = getDatasetLocation(GP.dataset);
         if (datasetLocation == null)
         {
-            if (log.isErrorEnabled()) log.error("Application dataset (gp:datasetLocation) is not configured in web.xml");
-            throw new ConfigurationException("Application dataset (gp:datasetLocation) is not configured in web.xml");
+            if (log.isErrorEnabled()) log.error("Application dataset (gp:dataset) is not configured in web.xml");
+            throw new ConfigurationException("Application dataset (gp:dataset) is not configured in web.xml");
         }
 
         return getDataset(datasetLocation, getUriInfo().getBaseUri());
