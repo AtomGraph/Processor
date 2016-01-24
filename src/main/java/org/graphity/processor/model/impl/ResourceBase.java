@@ -128,7 +128,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
-        //if (modifiers == null) throw new IllegalArgumentException("HttpHeaders cannot be null");        
+        //if (modifiers == null) throw new IllegalArgumentException("Modifiers cannot be null");        
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
@@ -325,7 +325,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS), except when constructing
-        Resource state = getStateBuilder().build();
+        Resource state;
+        if (getForClass() != null)
+            state = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel()).
+                    replaceProperty(GP.forClass, getForClass()).build();
+        else state = getStateBuilder().build();
+
         if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
         {
             if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
@@ -344,7 +349,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
         if (getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getOrderBy());
         if (getDesc() != null) sb.replaceLiteral(GP.desc, getDesc());
-        if (getForClass() != null) sb.replaceProperty(GP.forClass, getForClass());
         
         return sb;
     }

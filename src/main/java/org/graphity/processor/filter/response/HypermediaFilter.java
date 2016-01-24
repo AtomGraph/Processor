@@ -125,12 +125,8 @@ public class HypermediaFilter implements ContainerResponseFilter
 	{
             if (getResource().getForClass() != null)
             {
-                StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
-                if (getModifiers().getLimit() != null) sb.replaceLiteral(GP.limit, getModifiers().getLimit());
-                if (getModifiers().getOffset() != null) sb.replaceLiteral(GP.offset, getModifiers().getOffset());
-                if (getModifiers().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
-                if (getModifiers().getDesc() != null) sb.replaceLiteral(GP.desc, getModifiers().getDesc());
-                sb.replaceProperty(GP.forClass, getResource().getForClass()).
+                StateBuilder.fromUri(resource.getURI(), model).
+                    replaceProperty(GP.forClass, getResource().getForClass()).
                     build().
                     addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Constructor).
