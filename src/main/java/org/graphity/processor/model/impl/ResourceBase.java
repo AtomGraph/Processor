@@ -324,19 +324,23 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response get()
     {
-        // transition to a URI of another application state (HATEOAS), except when constructing
-        Resource state;
-        if (getForClass() != null)
-            state = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel()).
-                    replaceProperty(GP.forClass, getForClass()).build();
-        else state = getStateBuilder().build();
-
-        if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
+        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container) ||
+                getMatchedOntClass().equals(GP.Item) || hasSuperClass(getMatchedOntClass(), GP.Item))
         {
-            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
-            return Response.seeOther(URI.create(state.getURI())).build();
-        }                    
+            // transition to a URI of another application state (HATEOAS), except when constructing
+            Resource state;
+            if (getForClass() != null)
+                state = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel()).
+                        replaceProperty(GP.forClass, getForClass()).build();
+            else state = getStateBuilder().build();
 
+            if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
+            {
+                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
+                return Response.seeOther(URI.create(state.getURI())).build();
+            }                    
+        }
+        
         return super.get();
     }
     
