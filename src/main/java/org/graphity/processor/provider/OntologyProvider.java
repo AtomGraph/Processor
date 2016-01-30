@@ -38,6 +38,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.graphity.core.exception.ConfigurationException;
+import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,16 +60,6 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         super(Ontology.class);
         this.servletConfig = servletConfig;
-        
-        /*
-        ImportCycleChecker checker = new ImportCycleChecker();
-        checker.check(ontology);
-        if (checker.getCycleOntology() != null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
-            throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
-        }
-        */
     }
     
     public ServletConfig getServletConfig()
@@ -156,7 +147,6 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {
-        //String ontologyURI = getOntologyURI(getServletConfig(), GP.ontology);
         return getOntology(getOntologyURI());
     }
     
@@ -169,6 +159,14 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
         }
 
+        ImportCycleChecker checker = new ImportCycleChecker();
+        checker.check(ontology);
+        if (checker.getCycleOntology() != null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
+            throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
+        }
+        
         return ontology;
     }
     
