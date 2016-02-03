@@ -17,7 +17,6 @@
 package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -36,9 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedSet;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.UriBuilder;
-import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.template.ClassTemplate;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
@@ -54,11 +51,8 @@ public class Skolemizer
 {
     private static final Logger log = LoggerFactory.getLogger(Skolemizer.class);
 
-    private ServletConfig servletConfig;
-    private Ontology ontology;
-    private OntClass ontClass;
     private OntClassMatcher ontClassMatcher;
-    private URI container;
+    private UriBuilder baseUriBuilder, absolutePathBuilder;
     
     protected Skolemizer()
     {
@@ -69,44 +63,30 @@ public class Skolemizer
 	return new Skolemizer();
     }
 
-    public Skolemizer container(URI container)
+    public Skolemizer baseUriBuilder(UriBuilder baseUriBuilder)
     {
-	if (container == null) throw new IllegalArgumentException("Container Resource cannot be null");
-        this.container = container;
+	if (baseUriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
+        this.baseUriBuilder = baseUriBuilder;
         return this;
     }
 
-    public Skolemizer ontClass(OntClass ontClass)
+    public Skolemizer absolutePathBuilder(UriBuilder absolutePathBuilder)
     {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-        this.ontClass = ontClass;
+	if (absolutePathBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
+        this.absolutePathBuilder = absolutePathBuilder;
         return this;
     }
-
+    
     public Skolemizer ontClassMatcher(OntClassMatcher ontClassMatcher)
     {
 	if (ontClassMatcher == null) throw new IllegalArgumentException("OntClassMatcher cannot be null");
         this.ontClassMatcher = ontClassMatcher;
         return this;
     }
-
-    public Skolemizer servletConfig(ServletConfig servletConfig)
+    
+    public static Skolemizer fromOntClassMatcher(OntClassMatcher ontClassMatcher)
     {
-	if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
-        this.servletConfig = servletConfig;
-        return this;
-    }
-
-    public Skolemizer ontology(Ontology ontology)
-    {
-	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
-        this.ontology = ontology;
-        return this;
-    }
-
-    public static Skolemizer fromOntology(Ontology ontology)
-    {
-        return newInstance().ontology(ontology);
+        return newInstance().ontClassMatcher(ontClassMatcher);
     }
 
     public Model build(Model model)
@@ -141,51 +121,47 @@ public class Skolemizer
 
 	return model;
     }
-
-    public URI getContainer()
-    {
-        return container;
-    }
     
     public URI build(Resource resource)
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        SortedSet<ClassTemplate> matched = getOntClassMatcher().match(getOntology(), resource, RDF.type, 0);
-        if (!matched.isEmpty())
+        UriBuilder builder;
+        Map<String, String> nameValueMap;
+        
+        SortedSet<ClassTemplate> matchedTypes = getOntClassMatcher().match(resource, RDF.type, 0);
+        if (!matchedTypes.isEmpty())
         {
-            OntClass matchingClass = matched.first().getOntClass();
-            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, matchingClass);
-            return build(resource, UriBuilder.fromUri(getContainer()), matchingClass);
-        }        
+            OntClass typeClass = matchedTypes.first().getOntClass();
+            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
+
+            // optionally, skolemization template builds with absolute path builder (e.g. "{slug}")
+            String skolemTemplate = getStringValue(typeClass, GP.skolemTemplate);
+            if (skolemTemplate != null)
+            {
+                builder = getAbsolutePathBuilder().path(skolemTemplate);
+                nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
+            }
+            else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
+            {
+                String uriTemplate = getStringValue(typeClass, GP.uriTemplate);
+                builder = getBaseUriBuilder().path(uriTemplate);
+                nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
+            }
+
+            // add fragment identifier for non-information resources
+            if (!resource.hasProperty(RDF.type, FOAF.Document)) builder.fragment("this");
+            
+            if (nameValueMap != null) return builder.buildFromMap(nameValueMap);
+        }
         
         return null;
     }
 
-    public URI build(Resource resource, UriBuilder baseBuilder, OntClass ontClass)
-    {
-        // build URI relative to absolute path
-        return build(resource, baseBuilder, getSkolemTemplate(ontClass, GP.skolemTemplate));
-    }
-    
-    public URI build(Resource resource, UriBuilder baseBuilder, String itemTemplate)
+    protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (baseBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
-        if (itemTemplate == null) throw new IllegalArgumentException("URI template cannot be null");
-        
-        if (log.isDebugEnabled()) log.debug("Building URI for resource {} with template: {}", resource, itemTemplate);
-        UriBuilder builder = baseBuilder.path(itemTemplate);
-        // add fragment identifier for non-information resources
-        if (!resource.hasProperty(RDF.type, FOAF.Document)) builder.fragment("this"); // FOAF.isPrimaryTopicOf?
-
-        return build(resource, new UriTemplateParser(itemTemplate), builder);
-    }
-    
-    protected URI build(Resource resource, UriTemplateParser parser, UriBuilder builder)
-    {
-	if (parser == null) throw new IllegalArgumentException("UriTemplateParser cannot be null");
-	if (builder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
+        if (parser == null) throw new IllegalArgumentException("UriTemplateParser cannot be null");
 
 	Map<String, String> nameValueMap = new HashMap<>();
 	List<String> names = parser.getNames();
@@ -202,7 +178,7 @@ public class Skolemizer
 	    }
 	}
 
-	return builder.buildFromMap(nameValueMap);
+        return nameValueMap;
     }
 
     protected Literal getLiteral(Resource resource, String namePath)
@@ -263,7 +239,7 @@ public class Skolemizer
 	return null;
     }
 
-    protected String getSkolemTemplate(OntClass ontClass, Property property)
+    protected String getStringValue(OntClass ontClass, Property property)
     {
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
@@ -271,13 +247,7 @@ public class Skolemizer
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
             return ontClass.getPropertyValue(property).asLiteral().getString();
         
-        if (log.isErrorEnabled()) log.error("Property '{}' not defined for template '{}'", property, ontClass);
-        throw new ConfigurationException("gp:skolemTemplate not defined for '" + ontClass.getURI() +"'");
-    }
-    
-    public OntClass getOntClass()
-    {
-        return ontClass;
+        return null;
     }
     
     public OntClassMatcher getOntClassMatcher()
@@ -285,14 +255,14 @@ public class Skolemizer
         return ontClassMatcher;
     }
 
-    public ServletConfig getServletConfig()
+    public UriBuilder getBaseUriBuilder()
     {
-        return servletConfig;
+        return baseUriBuilder;
     }
 
-    public Ontology getOntology()
+    public UriBuilder getAbsolutePathBuilder()
     {
-        return ontology;
+        return absolutePathBuilder;
     }
-
+    
 }

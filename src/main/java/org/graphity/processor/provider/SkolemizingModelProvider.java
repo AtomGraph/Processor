@@ -18,12 +18,10 @@ package org.graphity.processor.provider;
 
 import org.graphity.processor.util.OntClassMatcher;
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
-import java.net.URI;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
+import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import org.graphity.processor.util.Skolemizer;
@@ -40,25 +38,23 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     
     @Context private Request request;
     @Context private UriInfo uriInfo;
-    @Context private ServletConfig servletConfig;
     
     @Override
     public Model process(Model model)
     {
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
-            return skolemize(getServletConfig(), getUriInfo().getAbsolutePath(), getOntology(), getOntClass(),
-                    new OntClassMatcher(getOntology()), super.process(model));
+            return skolemize(new OntClassMatcher(getOntology()),
+                    getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(),
+                    super.process(model));
         
         return super.process(model);
     }
     
-    public Model skolemize(ServletConfig servletConfig, URI container, Ontology ontology, OntClass ontClass, OntClassMatcher ontClassMatcher, Model model)
+    public Model skolemize(OntClassMatcher ontClassMatcher, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder, Model model)
     {
-        return Skolemizer.fromOntology(ontology).
-                servletConfig(servletConfig).
-                container(container).
-                ontClass(ontClass).
-                ontClassMatcher(ontClassMatcher).
+        return Skolemizer.fromOntClassMatcher(ontClassMatcher).
+                baseUriBuilder(baseUriBuilder).
+                absolutePathBuilder(absolutePathBuilder).
                 build(model);
     }
 
@@ -76,11 +72,6 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     public Request getRequest()
     {
         return request;
-    }
-
-    public ServletConfig getServletConfig()
-    {
-        return servletConfig;
     }
 
 }

@@ -165,9 +165,8 @@ public class OntClassMatcher
      * @param ontology sitemap ontology model
      * @param path absolute path (relative URI)
      * @return matching ontology class or null, if none
-d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
+     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/HasValueRestriction.html">Jena HasValueRestriction</a>
      */
     public UriClassTemplate match(Ontology ontology, CharSequence path)
     {
@@ -194,6 +193,11 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
         return null;
     }
 
+    public SortedSet<ClassTemplate> match(Resource resource, Property property, int level)
+    {
+        return match(getOntology(), resource, property, level);
+    }
+    
     public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
@@ -209,17 +213,16 @@ d     * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html
                 Resource ontClassRes = it.next();
                 OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
                 // only match templates defined in this ontology - maybe reverse loops?
-                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology))
+                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
+                        (ontClass.hasProperty(GP.uriTemplate) || ontClass.hasProperty(GP.skolemTemplate)) &&
+                        resource.hasProperty(property, ontClass))
                 {
-                   if (ontClass.hasProperty(GP.skolemTemplate) && resource.hasProperty(property, ontClass))
-                    {
-                        ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
-                        if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
-                        matchedClasses.add(template);
-                    }
- 
-                }
+                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
+                    if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
+                    matchedClasses.add(template);
+                } 
             }
+            
             ExtendedIterator<OntResource> imports = ontology.listImports();
             try
             {
