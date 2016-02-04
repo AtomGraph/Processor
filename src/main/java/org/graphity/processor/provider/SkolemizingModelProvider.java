@@ -16,8 +16,8 @@
 
 package org.graphity.processor.provider;
 
-import org.graphity.processor.util.OntClassMatcher;
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
@@ -43,19 +43,15 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     public Model process(Model model)
     {
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
-            return skolemize(new OntClassMatcher(getOntology()),
-                    getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(),
+            return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(),
                     super.process(model));
         
         return super.process(model);
     }
     
-    public Model skolemize(OntClassMatcher ontClassMatcher, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder, Model model)
+    public Model skolemize(Ontology ontology, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder, Model model)
     {
-        return Skolemizer.fromOntClassMatcher(ontClassMatcher).
-                baseUriBuilder(baseUriBuilder).
-                absolutePathBuilder(absolutePathBuilder).
-                build(model);
+        return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder).build(model);
     }
 
     public OntClass getOntClass()

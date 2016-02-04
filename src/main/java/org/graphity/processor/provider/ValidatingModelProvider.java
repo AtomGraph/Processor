@@ -56,7 +56,7 @@ public class ValidatingModelProvider extends ModelProvider
     
     public Model validate(Model model)
     {
-        return Validator.fromOntModel(getOntology().getOntModel()).validate(model);
+        return new Validator(getOntology().getOntModel()).validate(model);
     }
         
     public Ontology getOntology()

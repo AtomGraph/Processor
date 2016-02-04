@@ -58,7 +58,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/templates/{item}" ;
+    gp:uriTemplate "/templates/{slug}" ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
 
@@ -85,7 +85,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/queries/{item}" ;
+    gp:uriTemplate "/queries/{slug}" ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
@@ -112,7 +112,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/constraints/{item}" ;
+    gp:uriTemplate "/constraints/{slug}" ;
     rdfs:label "Constraint item" ;
     rdfs:isDefinedBy <#> .
 
@@ -139,7 +139,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 	] ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/query-templates/{item}" ;
+    gp:uriTemplate "/query-templates/{slug}" ;
     rdfs:label "Query template item" ;
     rdfs:isDefinedBy <#> .
 

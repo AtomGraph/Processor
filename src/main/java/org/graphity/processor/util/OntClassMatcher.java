@@ -21,11 +21,9 @@ import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
@@ -33,9 +31,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.template.UriClassTemplate;
 import org.graphity.processor.vocabulary.GP;
@@ -191,64 +186,6 @@ public class OntClassMatcher
         
         if (log.isDebugEnabled()) log.debug("Path {} has no Template match in this OntModel", path);
         return null;
-    }
-
-    public SortedSet<ClassTemplate> match(Resource resource, Property property, int level)
-    {
-        return match(getOntology(), resource, property, level);
-    }
-    
-    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
-    {
-        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, OWL.Class); // some classes are not templates!
-        try
-        {
-            while (it.hasNext())
-            {
-                Resource ontClassRes = it.next();
-                OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
-                // only match templates defined in this ontology - maybe reverse loops?
-                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
-                        (ontClass.hasProperty(GP.uriTemplate) || ontClass.hasProperty(GP.skolemTemplate)) &&
-                        resource.hasProperty(property, ontClass))
-                {
-                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
-                    if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
-                    matchedClasses.add(template);
-                } 
-            }
-            
-            ExtendedIterator<OntResource> imports = ontology.listImports();
-            try
-            {
-                while (imports.hasNext())
-                {
-                    OntResource importRes = imports.next();
-                    if (importRes.canAs(Ontology.class))
-                    {
-                        Ontology importedOntology = importRes.asOntology();
-                        // traverse imports recursively
-                        Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
-                        matchedClasses.addAll(matchedImportClasses);
-                    }
-                }
-            }
-            finally
-            {
-                imports.close();
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-            
-        return matchedClasses;
     }
     
     public OntModel getOntModel()

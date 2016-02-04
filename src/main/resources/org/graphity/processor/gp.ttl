@@ -326,7 +326,7 @@
             owl:allValuesFrom <#Container>
         ] ;
     <#uriTemplate> "{path: .*}/" ;
-    # <#skolemTemplate> "{slug}/" ;
+    <#skolemTemplate> "{slug}/" ;
     <#query> <#DescribeWithChildren> ;
     spin:constructor <#ContainerConstructor> ;
     spin:constraint <#MissingSlug> , <#MissingDocumentType> ;
@@ -353,7 +353,7 @@
             owl:allValuesFrom <#Container>
         ] ;
     <#uriTemplate> "{path: .*}" ;
-    # <#skolemTemplate> "{slug}" ;
+    <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
     spin:constructor <#ItemConstructor> ;

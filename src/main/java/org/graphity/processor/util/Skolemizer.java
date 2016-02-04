@@ -17,6 +17,8 @@
 package org.graphity.processor.util;
 
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntResource;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Literal;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -26,6 +28,8 @@ import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.ResourceUtils;
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.api.uri.UriTemplateParser;
@@ -34,10 +38,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedSet;
+import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import org.graphity.processor.template.ClassTemplate;
 import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,42 +58,17 @@ public class Skolemizer
 {
     private static final Logger log = LoggerFactory.getLogger(Skolemizer.class);
 
-    private OntClassMatcher ontClassMatcher;
-    private UriBuilder baseUriBuilder, absolutePathBuilder;
+    private final Ontology ontology;
+    private final UriBuilder baseUriBuilder, absolutePathBuilder;
     
-    protected Skolemizer()
+    public Skolemizer(Ontology ontology, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder)
     {
-    }
-    
-    protected static Skolemizer newInstance()
-    {
-	return new Skolemizer();
-    }
-
-    public Skolemizer baseUriBuilder(UriBuilder baseUriBuilder)
-    {
+	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (baseUriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
-        this.baseUriBuilder = baseUriBuilder;
-        return this;
-    }
-
-    public Skolemizer absolutePathBuilder(UriBuilder absolutePathBuilder)
-    {
 	if (absolutePathBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
-        this.absolutePathBuilder = absolutePathBuilder;
-        return this;
-    }
-    
-    public Skolemizer ontClassMatcher(OntClassMatcher ontClassMatcher)
-    {
-	if (ontClassMatcher == null) throw new IllegalArgumentException("OntClassMatcher cannot be null");
-        this.ontClassMatcher = ontClassMatcher;
-        return this;
-    }
-    
-    public static Skolemizer fromOntClassMatcher(OntClassMatcher ontClassMatcher)
-    {
-        return newInstance().ontClassMatcher(ontClassMatcher);
+        this.ontology = ontology;        
+        this.baseUriBuilder = baseUriBuilder;
+        this.absolutePathBuilder = absolutePathBuilder;    
     }
 
     public Model build(Model model)
@@ -129,7 +111,7 @@ public class Skolemizer
         UriBuilder builder;
         Map<String, String> nameValueMap;
         
-        SortedSet<ClassTemplate> matchedTypes = getOntClassMatcher().match(resource, RDF.type, 0);
+        SortedSet<ClassTemplate> matchedTypes = match(getOntology(), resource, RDF.type, 0);
         if (!matchedTypes.isEmpty())
         {
             OntClass typeClass = matchedTypes.first().getOntClass();
@@ -139,8 +121,12 @@ public class Skolemizer
             String skolemTemplate = getStringValue(typeClass, GP.skolemTemplate);
             if (skolemTemplate != null)
             {
-                builder = getAbsolutePathBuilder().path(skolemTemplate);
+                builder = getAbsolutePathBuilder();
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
+                // container specified in resource description can override the default one (absolute path)
+                if (resource.hasProperty(SIOC.HAS_PARENT)) builder = UriBuilder.fromUri(resource.getPropertyResourceValue(SIOC.HAS_PARENT).getURI());
+                if (resource.hasProperty(SIOC.HAS_CONTAINER)) builder = UriBuilder.fromUri(resource.getPropertyResourceValue(SIOC.HAS_CONTAINER).getURI());
+                builder.path(skolemTemplate);
             }
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
             {
@@ -152,7 +138,7 @@ public class Skolemizer
             // add fragment identifier for non-information resources
             if (!resource.hasProperty(RDF.type, FOAF.Document)) builder.fragment("this");
             
-            if (nameValueMap != null) return builder.buildFromMap(nameValueMap);
+            return builder.buildFromMap(nameValueMap); // if (!nameValueMap.isEmpty())
         }
         
         return null;
@@ -164,7 +150,8 @@ public class Skolemizer
         if (parser == null) throw new IllegalArgumentException("UriTemplateParser cannot be null");
 
 	Map<String, String> nameValueMap = new HashMap<>();
-	List<String> names = parser.getNames();
+	
+        List<String> names = parser.getNames();
 	for (String name : names)
 	{
 	    Literal literal = getLiteral(resource, name);
@@ -249,10 +236,63 @@ public class Skolemizer
         
         return null;
     }
-    
-    public OntClassMatcher getOntClassMatcher()
+        
+    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
     {
-        return ontClassMatcher;
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, OWL.Class); // some classes are not templates!
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource ontClassRes = it.next();
+                OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
+                // only match templates defined in this ontology - maybe reverse loops?
+                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
+                        (ontClass.hasProperty(GP.uriTemplate) || ontClass.hasProperty(GP.skolemTemplate)) &&
+                        resource.hasProperty(property, ontClass))
+                {
+                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
+                    if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
+                    matchedClasses.add(template);
+                } 
+            }
+            
+            ExtendedIterator<OntResource> imports = ontology.listImports();
+            try
+            {
+                while (imports.hasNext())
+                {
+                    OntResource importRes = imports.next();
+                    if (importRes.canAs(Ontology.class))
+                    {
+                        Ontology importedOntology = importRes.asOntology();
+                        // traverse imports recursively
+                        Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
+                        matchedClasses.addAll(matchedImportClasses);
+                    }
+                }
+            }
+            finally
+            {
+                imports.close();
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+            
+        return matchedClasses;
+    }
+    
+    public Ontology getOntology()
+    {
+        return ontology;
     }
 
     public UriBuilder getBaseUriBuilder()

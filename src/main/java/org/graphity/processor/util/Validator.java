@@ -40,28 +40,13 @@ public class Validator
 {
     private static final Logger log = LoggerFactory.getLogger(Validator.class);
     
-    private OntModel ontModel;
-    
-    protected Validator()
-    {
-    }
-    
-    protected static Validator newInstance()
-    {
-	return new Validator();
-    }
-    
-    public Validator ontModel(OntModel ontModel)
+    private final OntModel ontModel;
+        
+    public Validator(OntModel ontModel)
     {
 	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
         this.ontModel = ontModel;
         SPINModuleRegistry.get().registerAll(ontModel, null);
-        return this;
-    }
-    
-    public static Validator fromOntModel(OntModel ontModel)
-    {
-        return newInstance().ontModel(ontModel);
     }
 
     public Model validate(Model model)
