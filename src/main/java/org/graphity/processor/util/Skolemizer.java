@@ -121,7 +121,7 @@ public class Skolemizer
             String skolemTemplate = getStringValue(typeClass, GP.skolemTemplate);
             if (skolemTemplate != null)
             {
-                builder = getAbsolutePathBuilder();
+                builder = getAbsolutePathBuilder().clone();
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
                 // container specified in resource description can override the default one (absolute path)
                 if (resource.hasProperty(SIOC.HAS_PARENT)) builder = UriBuilder.fromUri(resource.getPropertyResourceValue(SIOC.HAS_PARENT).getURI());
@@ -131,7 +131,7 @@ public class Skolemizer
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
             {
                 String uriTemplate = getStringValue(typeClass, GP.uriTemplate);
-                builder = getBaseUriBuilder().path(uriTemplate);
+                builder = getBaseUriBuilder().clone().path(uriTemplate);
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
             }
 
