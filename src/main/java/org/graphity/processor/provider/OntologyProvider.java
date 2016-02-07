@@ -132,7 +132,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return getOntology();
     }
 
-    public String getOntologyURI() throws ConfigurationException
+    public String getOntologyURI()
     {
         String ontologyURI = getOntologyURI(getServletConfig(), GP.ontology);
         

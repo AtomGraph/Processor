@@ -29,6 +29,7 @@ import org.graphity.core.MediaTypes;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.SPARQLEndpoint;
+import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.model.impl.ResourceBase;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,9 +63,9 @@ public class Container extends ResourceBase
 
 	if (!(getSearchString() == null || getSearchString().isEmpty()) &&
                 hasSuperClass(getMatchedOntClass(), GP.Container) &&
-                getSubSelectBuilder() != null)
+                !getQueryBuilder().getSubSelectBuilders().isEmpty())
 	{
-            getSubSelectBuilder().filter(RDFS.label.getLocalName(), getQueryBuilder().quoteRegexMeta(getSearchString())); // escape special regex() characters!
+            getQueryBuilder().getSubSelectBuilders().get(0).filter(RDFS.label.getLocalName(), getQueryBuilder().quoteRegexMeta(getSearchString())); // escape special regex() characters!
             if (log.isDebugEnabled()) log.debug("Search query: {} QueryBuilder: {}", getSearchString(), getQueryBuilder());
 	}
     }
@@ -74,23 +75,13 @@ public class Container extends ResourceBase
 	return searchString;
     }
 
-    /*
     @Override
-    public Resource createState(Resource state, Long offset, Long limit, String orderBy, Boolean desc, Resource mode)
+    public StateBuilder getStateBuilder()
     {
-	if (getSearchString() != null) return super.createState(state, offset, limit, orderBy, desc, mode).
-                addLiteral(RDFS.label, getSearchString());
+	if (getSearchString() != null)
+            return super.getStateBuilder().replaceLiteral(RDFS.label, getSearchString());
         
-        return super.createState(state, offset, limit, orderBy, desc, mode);
+        return super.getStateBuilder();
     }
     
-    @Override
-    public UriBuilder getStateUriBuilder(Long offset, Long limit, String orderBy, Boolean desc, URI mode)
-    {
-	if (getSearchString() != null) return super.getStateUriBuilder(offset, limit, orderBy, desc, mode).
-                queryParam(RDFS.label.getLocalName(), getSearchString());
-	
-	return super.getStateUriBuilder(offset, limit, orderBy, desc, mode);
-    }
-    */
 }
