@@ -257,7 +257,7 @@ public class Skolemizer
                         resource.hasProperty(property, ontClass))
                 {
                     ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
-                    if (log.isDebugEnabled()) log.debug("Resource {} matched OntClass {}", resource, ontClass);
+                    if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
                     matchedClasses.add(template);
                 } 
             }

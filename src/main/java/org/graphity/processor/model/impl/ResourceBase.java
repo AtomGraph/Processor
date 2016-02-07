@@ -152,31 +152,19 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
         if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
             offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
-        else
-        {
-            Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
-            if (defaultOffset == null) defaultOffset = Long.valueOf(0); // OFFSET is 0 by default
-            offset = defaultOffset;
-        }
+        else offset = getLongValue(matchedOntClass, GP.defaultOffset);
 
         if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
             limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-        else
-        {
-            Long defaultLimit = getLongValue(matchedOntClass, GP.defaultLimit);
-            //if (defaultLimit == null) throw new IllegalArgumentException("Template class '" + getMatchedOntClass().getURI() + "' must have gp:defaultLimit annotation if it is used as container");
-            limit = defaultLimit;
-        }
+        else limit = getLongValue(matchedOntClass, GP.defaultLimit);
 
         if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
             orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-        else
-            orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
+        else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
 
         if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
             desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-        else
-            desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
+        else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
         
         if (uriInfo.getQueryParameters().containsKey(GP.forClass.getLocalName()))
             forClass = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.forClass.getLocalName()));
