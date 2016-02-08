@@ -30,7 +30,54 @@ public interface Resource extends QueriedResource
     
     public OntClass getMatchedOntClass();
         
-    // public Modifiers getModifiers();
+    /**
+     * Returns value of <samp>limit</samp> query string parameter, which indicates the number of resources per page.
+     * This value is set as <code>LIMIT</code> query modifier when this resource is a page (therefore
+     * pagination is used).
+     * 
+     * @return limit value
+     * @see <a href="http://www.w3.org/TR/sparql11-query/#modResultLimit">15.5 LIMIT</a>
+     */
+    //@Override
+    public Long getLimit();
+
+    /**
+     * Returns value of <samp>offset</samp> query string parameter, which indicates the number of resources the page
+     * has skipped from the start of the container.
+     * This value is set as <code>OFFSET</code> query modifier when this resource is a page (therefore
+     * pagination is used).
+     * 
+     * @return offset value
+     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOffset">15.4 OFFSET</a>
+     */
+    //@Override
+    public Long getOffset();
+
+    /**
+     * Returns value of <samp>orderBy</samp> query string parameter, which indicates the name of the variable after
+     * which the container (and the page) is sorted.
+     * This value is set as <code>ORDER BY</code> query modifier when this resource is a page (therefore
+     * pagination is used).
+     * Note that ordering might be undefined, in which case the same page might not contain identical resources
+     * during different requests.
+     * 
+     * @return name of ordering variable or null, if not specified
+     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
+     */
+    //@Override
+    public String getOrderBy();
+
+    /**
+     * Returns value of <samp>desc</samp> query string parameter, which indicates the direction of resource ordering
+     * in the container (and the page).
+     * If this method returns true, <code>DESC</code> order modifier is set if this resource is a page
+     * (therefore pagination is used).
+     * 
+     * @return true if the order is descending, false otherwise
+     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
+     */
+    //@Override
+    public Boolean getDesc();
     
     public com.hp.hpl.jena.rdf.model.Resource getForClass();
     

@@ -84,14 +84,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    //private final Modifiers modifiers;
     private final Resource queryOrTemplateCall;
     private final Resource forClass;
     private final String orderBy;
     private final Boolean desc;
     private final Long limit, offset;
     private QueryBuilder queryBuilder;
-    //private SelectBuilder subSelectBuilder;
     private UpdateRequest updateRequest;
     private final QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
@@ -129,7 +127,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
-        //if (modifiers == null) throw new IllegalArgumentException("Modifiers cannot be null");        
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
@@ -141,7 +138,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-        //this.modifiers = modifiers;
 
         queryOrTemplateCall = matchedOntClass.getPropertyResourceValue(GP.query);        
         if (queryOrTemplateCall == null)
@@ -291,7 +287,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     
     public StateBuilder getStateBuilder()
     {
-        // TO-DO: refactor with Modifiers?
         StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
         
         if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
@@ -886,13 +881,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
 	return queryBuilder;
     }
-
-    /*
-    public SelectBuilder getSubSelectBuilder()
-    {
-	return subSelectBuilder;
-    }
-    */
     
     public UpdateRequest getUpdateRequest()
     {

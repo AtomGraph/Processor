@@ -42,7 +42,6 @@ import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.processor.util.OntClassMatcher;
-import org.graphity.processor.util.Modifiers;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.util.RestrictionMatcher;
@@ -186,25 +185,25 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }
                 
                 StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
-                if (getModifiers().getLimit() != null) sb.replaceLiteral(GP.limit, getModifiers().getLimit());
-                if (getModifiers().getOffset() != null) sb.replaceLiteral(GP.offset, getModifiers().getOffset());
-                if (getModifiers().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
-                if (getModifiers().getDesc() != null) sb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                if (getResource().getLimit() != null) sb.replaceLiteral(GP.limit, getResource().getLimit());
+                if (getResource().getOffset() != null) sb.replaceLiteral(GP.offset, getResource().getOffset());
+                if (getResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
+                if (getResource().getDesc() != null) sb.replaceLiteral(GP.desc, getResource().getDesc());
                 Resource page = sb.build().
                     addProperty(GP.pageOf, resource).
                     addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Page);
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
 
-                if (getModifiers().getOffset() != null && getModifiers().getLimit() != null)
+                if (getResource().getOffset() != null && getResource().getLimit() != null)
                 {
-                    if (getModifiers().getOffset() >= getModifiers().getLimit())
+                    if (getResource().getOffset() >= getResource().getLimit())
                     {
                         StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
-                                replaceLiteral(GP.limit, getModifiers().getLimit()).
-                                replaceLiteral(GP.offset, getModifiers().getOffset() - getModifiers().getLimit());
-                        if (getModifiers().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
-                        if (getModifiers().getDesc() != null) prevSb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                                replaceLiteral(GP.limit, getResource().getLimit()).
+                                replaceLiteral(GP.offset, getResource().getOffset() - getResource().getLimit());
+                        if (getResource().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
+                        if (getResource().getDesc() != null) prevSb.replaceLiteral(GP.desc, getResource().getDesc());
                         Resource prev = prevSb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
@@ -218,13 +217,13 @@ public class HypermediaFilter implements ContainerResponseFilter
                     // no way to know if there's a next page without counting results (either total or in current page)
                     //int subjectCount = describe().listSubjects().toList().size();
                     //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
-                    //if (subjectCount >= getModifiers().getLimit())
+                    //if (subjectCount >= getResource().getLimit())
                     {
                         StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
-                                replaceLiteral(GP.limit, getModifiers().getLimit()).
-                                replaceLiteral(GP.offset, getModifiers().getOffset() + getModifiers().getLimit());
-                        if (getModifiers().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getModifiers().getOrderBy());
-                        if (getModifiers().getDesc() != null) nextSb.replaceLiteral(GP.desc, getModifiers().getDesc());
+                                replaceLiteral(GP.limit, getResource().getLimit()).
+                                replaceLiteral(GP.offset, getResource().getOffset() + getResource().getLimit());
+                        if (getResource().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
+                        if (getResource().getDesc() != null) nextSb.replaceLiteral(GP.desc, getResource().getDesc());
                         Resource next = nextSb.build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
@@ -289,20 +288,12 @@ public class HypermediaFilter implements ContainerResponseFilter
     
     public OntClass getMatchedOntClass()
     {
-	//return getProviders().getContextResolver(OntClass.class, null).getContext(OntClass.class);
         return getResource().getMatchedOntClass();
     }
 
     public Ontology getOntology()
     {
-	//return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
         return getResource().getOntology();
-    }
-
-    public Modifiers getModifiers()
-    {
-	return getProviders().getContextResolver(Modifiers.class, null).getContext(Ontology.class);
-        //return getResource().getModifiers();
     }
 
     public Application getApplication()
