@@ -195,13 +195,16 @@ public class HypermediaFilter implements ContainerResponseFilter
                     addProperty(RDF.type, GP.Page);
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
 
-                if (getResource().getOffset() != null && getResource().getLimit() != null)
+                if (getResource().getLimit() != null)
                 {
-                    if (getResource().getOffset() >= getResource().getLimit())
+                    Long offset = getResource().getOffset();
+                    if (offset == null) offset = Long.valueOf(0);
+                    
+                    if (offset >= getResource().getLimit())
                     {
                         StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
                                 replaceLiteral(GP.limit, getResource().getLimit()).
-                                replaceLiteral(GP.offset, getResource().getOffset() - getResource().getLimit());
+                                replaceLiteral(GP.offset, offset - getResource().getLimit());
                         if (getResource().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
                         if (getResource().getDesc() != null) prevSb.replaceLiteral(GP.desc, getResource().getDesc());
                         Resource prev = prevSb.build().
@@ -221,7 +224,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                     {
                         StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
                                 replaceLiteral(GP.limit, getResource().getLimit()).
-                                replaceLiteral(GP.offset, getResource().getOffset() + getResource().getLimit());
+                                replaceLiteral(GP.offset, offset + getResource().getLimit());
                         if (getResource().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
                         if (getResource().getDesc() != null) nextSb.replaceLiteral(GP.desc, getResource().getDesc());
                         Resource next = nextSb.build().
