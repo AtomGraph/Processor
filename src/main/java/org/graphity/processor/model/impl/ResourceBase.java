@@ -681,7 +681,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @return limit value
      * @see <a href="http://www.w3.org/TR/sparql11-query/#modResultLimit">15.5 LIMIT</a>
      */
-    //@Override
+    @Override
     public Long getLimit()
     {
 	return limit;
@@ -696,7 +696,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @return offset value
      * @see <a href="http://www.w3.org/TR/sparql11-query/#modOffset">15.4 OFFSET</a>
      */
-    //@Override
+    @Override
     public Long getOffset()
     {
 	return offset;
@@ -713,7 +713,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @return name of ordering variable or null, if not specified
      * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
      */
-    //@Override
+    @Override
     public String getOrderBy()
     {
 	return orderBy;
@@ -728,7 +728,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @return true if the order is descending, false otherwise
      * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
      */
-    //@Override
+    @Override
     public Boolean getDesc()
     {
 	return desc;
