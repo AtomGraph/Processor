@@ -25,7 +25,6 @@ import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.graphity.core.model.QueriedResource;
@@ -43,13 +42,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
 {
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
     
-    @Context private UriInfo uriInfo;
     @Context private ResourceContext resourceContext;
-    
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
-    }
     
     @Override
     public Response toResponse(ConstraintViolationException cve)

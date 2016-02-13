@@ -26,7 +26,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.MessageBodyWriter;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
@@ -43,13 +42,7 @@ public class ConstraintViolationExceptionProvider implements MessageBodyWriter<C
 {
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionProvider.class);
 
-    @Context UriInfo uriInfo;
     @Context Providers providers;
-
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
-    }
 
     public Providers getProviders()
     {

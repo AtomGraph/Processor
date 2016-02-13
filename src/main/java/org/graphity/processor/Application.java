@@ -45,7 +45,6 @@ import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.provider.OntClassProvider;
-import org.graphity.processor.provider.QueriedResourceProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
 import org.graphity.processor.provider.SkolemizingModelProvider;
@@ -81,7 +80,6 @@ public class Application extends org.graphity.core.Application
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider());
-        singletons.add(new QueriedResourceProvider());
         singletons.add(new DataManagerProvider());
         singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
