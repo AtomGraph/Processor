@@ -119,12 +119,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
-	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (ontClass == null)
         {
             if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template OntClass, returning 404 Not Found", getURI());
             throw new NotFoundException("Resource has not matched any template");
         }
+	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
 	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");

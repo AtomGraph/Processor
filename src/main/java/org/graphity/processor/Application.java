@@ -168,7 +168,7 @@ public class Application extends org.graphity.core.Application
         return getQuery(getServletConfig().getServletContext(), property);
     }
         
-    public static Query getQuery(ServletContext servletContext, DatatypeProperty property)
+    public Query getQuery(ServletContext servletContext, DatatypeProperty property)
     {
         if (servletContext == null) throw new IllegalArgumentException("ServletContext cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");

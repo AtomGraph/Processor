@@ -170,7 +170,7 @@ public class OntClassMatcher
         List<UriClassTemplate> matchedTemplates = match(ontology, path, 0);
         if (!matchedTemplates.isEmpty())
         {
-            if (log.isDebugEnabled()) log.debug("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
+            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
             Collections.sort(matchedTemplates, UriClassTemplate.COMPARATOR);
 
             UriClassTemplate match = matchedTemplates.get(0);            
