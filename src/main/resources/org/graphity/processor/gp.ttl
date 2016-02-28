@@ -15,7 +15,7 @@
 @prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
-<#> a owl:Ontology ;
+<#> a owl:Ontology, <#Ontology> ;
     owl:imports sp:, spin:, sioc:, foaf: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Graphity Processor ontology" ;
@@ -32,7 +32,7 @@
 <#ontology> a owl:ObjectProperty ;
     rdfs:label "Application sitemap" ;
     rdfs:domain <#Application> ;
-    rdfs:range owl:Ontology ; # <#Sitemap> ;
+    rdfs:range <#Ontology> ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
     rdfs:isDefinedBy <#> .
 
@@ -122,6 +122,12 @@
 
 # RESOURCE PROPERTIES
 
+<#forClass> a owl:ObjectProperty ;
+    rdfs:label "Instance class" ;
+    rdfs:range rdfs:Class ;
+    rdfs:comment "Indicates class for which SPIN constructor will be invoked" ;
+    rdfs:isDefinedBy <#> .
+
 <#pageOf> a owl:ObjectProperty ;
     rdfs:label "Page of container" ;
     rdfs:domain <#Page> ;
@@ -171,6 +177,12 @@
 <#Application> a rdfs:Class, owl:Class ;
     rdfs:label "Graphity Processor application" ;
     rdfs:comment "Declarative Linked Data application" ;
+    rdfs:isDefinedBy <#> .
+
+<#Ontology> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf owl:Ontology ;
+    rdfs:label "Graphity Processor ontology" ;
+    rdfs:comment "Ontology annotated with Linked Data templates" ;
     rdfs:isDefinedBy <#> .
 
 <#Template> a rdfs:Class, owl:Class ;
