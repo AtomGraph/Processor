@@ -48,7 +48,7 @@ public final class GP
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
-    // public static final OntClass Sitemap = m_model.createClass( NS + "Sitemap" );
+    public static final OntClass Application = m_model.createClass( NS + "Application" );
 
     public static final OntClass Template = m_model.createClass( NS + "Template" );
     

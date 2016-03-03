@@ -140,8 +140,8 @@ public class ConstructorBase
         Statement stmt = getConstructorStmt(forClass, property);
         if (stmt == null || !stmt.getObject().isResource())
         {
-            if (log.isErrorEnabled()) log.error("gp:ConstructMode is active but {} is not defined for class '{}'", property, forClass.getURI());
-            throw new SitemapException("gp:ConstructMode is active but constructor not defined for class '" + forClass.getURI() +"'");
+            if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
+            throw new SitemapException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
         }
 
         List<com.hp.hpl.jena.rdf.model.Resource> newResources = new ArrayList<>();
