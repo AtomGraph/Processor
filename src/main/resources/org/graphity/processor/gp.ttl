@@ -30,7 +30,7 @@
 # SYSTEM PROPERTIES
 
 <#ontology> a owl:ObjectProperty ;
-    rdfs:label "Application sitemap" ;
+    rdfs:label "Application ontology" ;
     rdfs:domain <#Application> ;
     rdfs:range <#Ontology> ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
