@@ -9,7 +9,7 @@ What Graphity Processor provides for users as out-of-the-box generic features:
 * HTTP content negotiation and caching
 * a separate RDF resource for every application state, following the [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) principle
 
-Graphity's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data.
+Graphity's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](../../wiki/Articles-and-presentations) about Graphity.
 
 For a compatible frontend framework for end-user applications, see [Graphity Client](../graphity-client). The Client extends Processor with RDF rendering and form-based input functionality.
 
