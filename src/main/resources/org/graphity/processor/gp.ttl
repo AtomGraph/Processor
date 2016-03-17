@@ -218,7 +218,7 @@
 
       CONSTRUCT {
           ?this a owl:Class, rdfs:Class ;
-              rdfs:subClassOf foaf:Document, gp:Container, gp:Item,
+              rdfs:subClassOf foaf:Document,
                   [ a owl:Restriction ;
                       owl:onProperty sioc:has_container ;
                       owl:hasValue _:container
@@ -261,7 +261,7 @@
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
-          ?this a sp:Query, _:ConstructOrDescribe ;
+          ?this a sp:Query ;
               rdfs:label " " ;
               sp:text "DESCRIBE ?this" ;
               rdfs:isDefinedBy _:isDefinedBy .
@@ -321,8 +321,7 @@
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
-          ?this a _:Type ;
-            rdfs:label " " ;
+          ?this rdfs:label " " ;
             sp:arg1 _:arg1 ;
             sp:arg2 _:arg2 .
       }

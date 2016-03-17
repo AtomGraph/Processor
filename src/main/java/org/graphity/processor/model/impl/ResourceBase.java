@@ -246,9 +246,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
             }
 
-            if (!Resource.class.isAssignableFrom(clazz))
-                if (log.isWarnEnabled()) log.warn("Java class with URI: {} is not a subclass of Graphity Resource", javaClass.getURI());
-
             if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
             return getResourceContext().getResource(clazz);
         }
@@ -628,6 +625,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
+
+        Link baseLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
+        rb.header("Link", baseLink.toString());
         
         Reasoner reasoner = getMatchedOntClass().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
