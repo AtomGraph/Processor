@@ -70,89 +70,105 @@ brevity, all URIs are relativized against the webapp's base URI):
 # root container
 
 <>
-        a                sioc:Container , sioc:Space , gp:Container , foaf:Document ;
-        rdfs:seeAlso     <sparql> , gps: , <http://graphityhq.com> ;
-        dct:description  "Generic Linked Data processor" ;
-        dct:title        "Graphity Processor" ;
-        foaf:maker       <http://graphityhq.com/#company> .
+        a                   sioc:Container , sioc:Space , gp:Container , foaf:Document ;
+        rdfs:seeAlso        <sparql> , gps: , <http://graphityhq.com> ;
+        dct:description     "Generic Linked Data processor" ;
+        dct:title           "Graphity Processor" ;
+        foaf:maker          <http://graphityhq.com/#company> .
 
-# constructor
+# constructors
 
-<?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
-        a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <> ;
-        gp:forClass       gp:Container ;
-        gp:mode           gp:ConstructMode .
+<?forClass=http://graphity.org/gp%23Item>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <> ;
+        gp:forClass         gp:Item .
+
+<?forClass=http://graphity.org/gp%23Container>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <> ;
+        gp:forClass         gp:Container .
 
 # services
 
 <sparql>
-        a               foaf:Document , gp:SPARQLEndpoint ;
-        dct:title       "SPARQL endpoint" ;
-        sioc:has_space  <> .
+        a                   foaf:Document , gp:SPARQLEndpoint ;
+        dct:title           "SPARQL endpoint" ;
+        sioc:has_space      <> .
 
 <service>
-        a               foaf:Document , gp:GraphStore ;
-        dct:title       "Graph Store Protocol endpoint" ;
-        sioc:has_space  <> .
+        a                   foaf:Document , gp:GraphStore ;
+        dct:title           "Graph Store Protocol endpoint" ;
+        sioc:has_space      <> .
 
 # page
 
 <?offset=0&limit=20>
-        a          gp:Page , foaf:Document ;
-        gp:limit   "20"^^xsd:long ;
-        gp:offset  "0"^^xsd:long ;
-        gp:pageOf  <> ;
+        a                   gp:Page , foaf:Document ;
+        gp:limit            "20"^^xsd:long ;
+        gp:offset           "0"^^xsd:long ;
+        gp:pageOf           <> ;
         <http://www.w3.org/1999/xhtml/vocab#next>
-                <?offset=20&limit=20> .
+                            <?offset=20&limit=20> .
 
 # child container
 
-<ontologies>
-        a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "ontologies" ;
-        dct:title        "Ontologies" ;
-        sioc:has_parent  <> .
+<ontologies/>
+        a                   gp:Container , sioc:Container , foaf:Document ;
+        gp:slug             "ontologies" ;
+        dct:title           "Ontologies" ;
+        sioc:has_parent     <> .
 
-# constructor
+# constructors
 
-<ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
-        a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <ontologies> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+<ontologies/?forClass=http://graphity.org/gp%23Item>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <ontologies/> ;
+        gp:forClass         gp:Item .
 
-# child container
-
-<queries>
-        a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "queries" ;
-        dct:title        "Queries" ;
-        sioc:has_parent  <> .
-
-# constructor
-
-<queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
-        a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <queries> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+<ontologies/?forClass=http://graphity.org/gp%23Container>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <ontologies/> ;
+        gp:forClass         gp:Container .
 
 # child container
 
-<templates>
-        a                gp:Container , sioc:Container , foaf:Document ;
-        gp:slug          "templates" ;
-        dct:title        "Templates" ;
-        sioc:has_parent  <> .
+<queries/>
+        a                   gp:Container , sioc:Container , foaf:Document ;
+        gp:slug             "queries" ;
+        dct:title           "Queries" ;
+        sioc:has_parent     <> .
 
-# constructor
+# constructors
 
-<templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
-        a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <templates> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+<queries/?forClass=http://graphity.org/gp%23Item>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <queries/> ;
+        gp:forClass         gp:Item .
+
+<queries/?forClass=http://graphity.org/gp%23Container>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <queries/> ;
+        gp:forClass         gp:Container .
+
+# child container
+
+<templates/>
+        a                   gp:Container , sioc:Container , foaf:Document ;
+        gp:slug             "templates" ;
+        dct:title           "Templates" ;
+        sioc:has_parent     <> .
+
+# constructors
+
+<templates/?forClass=http://graphity.org/gp%23Item>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <templates/> ;
+        gp:forClass         gp:Item .
+
+<templates/?forClass=http://graphity.org/gp%23Container>
+        a                   gp:Constructor , foaf:Document ;
+        gp:constructorOf    <templates/> ;
+        gp:forClass         gp:Container .
 ```
 
 Support
