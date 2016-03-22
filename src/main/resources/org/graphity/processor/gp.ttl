@@ -30,9 +30,9 @@
 # SYSTEM PROPERTIES
 
 <#ontology> a owl:ObjectProperty ;
-    rdfs:label "Application ontology" ;
     rdfs:domain <#Application> ;
     rdfs:range <#Ontology> ;
+    rdfs:label "Application ontology" ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
     rdfs:isDefinedBy <#> .
 
@@ -56,7 +56,7 @@
 
 <#uriTemplate> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
-    rdfs:range rdfs:Literal ;
+    rdfs:range xsd:string ;
     rdfs:label "URI template" ;
     rdfs:comment "URI template for resource matching (JAX-RS syntax)" ;
     rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html> ;
@@ -64,7 +64,7 @@
 
 <#skolemTemplate> a owl:AnnotationProperty ;
     rdfs:domain owl:Class ;
-    rdfs:range rdfs:Literal ;
+    rdfs:range xsd:string ;
     rdfs:label "Skolemization template" ;
     rdfs:comment "Container-relative URI template for blank node skolemization (JAX-RS syntax)" ;
     rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html>,
@@ -72,7 +72,8 @@
     rdfs:isDefinedBy <#> .
 
 <#cacheControl> a owl:AnnotationProperty ;
-    rdfs:subPropertyOf http:fieldValue ;
+    rdfs:domain <#Template> ;
+    rdfs:range xsd:string ;
     rdfs:label "Cache control" ;
     rdfs:comment "Value of the HTTP Cache-Control response header" ;
     rdfs:seeAlso <http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.1.3> ;
@@ -123,15 +124,15 @@
 # RESOURCE PROPERTIES
 
 <#forClass> a owl:ObjectProperty ;
-    rdfs:label "Instance class" ;
     rdfs:range rdfs:Class ;
+    rdfs:label "Instance class" ;
     rdfs:comment "Indicates class for which SPIN constructor will be invoked" ;
     rdfs:isDefinedBy <#> .
 
 <#pageOf> a owl:ObjectProperty ;
-    rdfs:label "Page of container" ;
     rdfs:domain <#Page> ;
     rdfs:range <#Container> ;
+    rdfs:label "Page of container" ;
     rdfs:comment "Links page resource to its container resource" ;
     rdfs:isDefinedBy <#> .
 
@@ -298,6 +299,7 @@
       WHERE {}""" .
 
 <#Page> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf foaf:Document ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
     rdfs:isDefinedBy <#> .
