@@ -76,13 +76,17 @@ brevity, all URIs are relativized against the webapp's base URI):
         dct:title        "Graphity Processor" ;
         foaf:maker       <http://graphityhq.com/#company> .
 
-# constructor
+# constructors
 
-<?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Container>
+<?forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
         gp:constructorOf  <> ;
-        gp:forClass       gp:Container ;
-        gp:mode           gp:ConstructMode .
+        gp:forClass       gp:Item .
+
+<?forClass=http://graphity.org/gp%23Container>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <> ;
+        gp:forClass       gp:Container .
 
 # services
 
@@ -108,51 +112,63 @@ brevity, all URIs are relativized against the webapp's base URI):
 
 # child container
 
-<ontologies>
+<ontologies/>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "ontologies" ;
         dct:title        "Ontologies" ;
         sioc:has_parent  <> .
 
-# constructor
+# constructors
 
-<ontologies?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<ontologies/?forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <ontologies> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+        gp:constructorOf  <ontologies/> ;
+        gp:forClass      gp:Item .
+
+<ontologies/?forClass=http://graphity.org/gp%23Container>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <ontologies/> ;
+        gp:forClass      gp:Container .
 
 # child container
 
-<queries>
+<queries/>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "queries" ;
         dct:title        "Queries" ;
         sioc:has_parent  <> .
 
-# constructor
+# constructors
 
-<queries?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<queries/?forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <queries> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+        gp:constructorOf  <queries/> ;
+        gp:forClass       gp:Item .
+
+<queries/?forClass=http://graphity.org/gp%23Container>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <queries/> ;
+        gp:forClass       gp:Container .
 
 # child container
 
-<templates>
+<templates/>
         a                gp:Container , sioc:Container , foaf:Document ;
         gp:slug          "templates" ;
         dct:title        "Templates" ;
         sioc:has_parent  <> .
 
-# constructor
+# constructors
 
-<templates?mode=http://graphity.org/gp%23ConstructMode&forClass=http://graphity.org/gp%23Item>
+<templates/?forClass=http://graphity.org/gp%23Item>
         a                 gp:Constructor , foaf:Document ;
-        gp:constructorOf  <templates> ;
-        gp:forClass       gp:Item ;
-        gp:mode           gp:ConstructMode .
+        gp:constructorOf  <templates/> ;
+        gp:forClass       gp:Item .
+
+<templates/?forClass=http://graphity.org/gp%23Container>
+        a                 gp:Constructor , foaf:Document ;
+        gp:constructorOf  <templates/> ;
+        gp:forClass       gp:Container .
 ```
 
 Support
