@@ -88,7 +88,7 @@ public class ConstructorBase
         }
     }
 
-    // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J     
+    // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
     public OntModel fixOntModel(OntModel ontModel)
     {
         if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
