@@ -50,6 +50,7 @@ import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.util.JenaUtil;
 import org.topbraid.spin.vocabulary.SPIN;
 
 /**
@@ -138,7 +139,13 @@ public class HypermediaFilter implements ContainerResponseFilter
                 RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
                 childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
                 childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, matchedOntClass));
-
+                for (Resource superCls : JenaUtil.getAllSuperClasses(matchedOntClass))
+                    if (superCls.isURIResource() && superCls.canAs(OntClass.class))
+                    {
+                        childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, superCls.as(OntClass.class)));
+                        childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, superCls.as(OntClass.class)));
+                    }
+                
                 Iterator<List<OntClass>> it = childrenClasses.values().iterator();
                 while (it.hasNext())
                 {

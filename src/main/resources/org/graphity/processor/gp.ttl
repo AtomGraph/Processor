@@ -345,7 +345,7 @@
     <#skolemTemplate> "{slug}/" ;
     <#query> <#DescribeWithChildren> ;
     spin:constructor <#ContainerConstructor> ;
-    spin:constraint <#MissingSlug> , <#MissingDocumentType> ;
+    # spin:constraint <#MissingDocumentType> ; # <#MissingSlug> 
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
@@ -357,7 +357,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this a foaf:Document, sioc:Container ;
+          ?this # a foaf:Document, sioc:Container ;
               gp:slug " " .
       }
       WHERE {}""" .
@@ -375,7 +375,7 @@
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
     spin:constructor <#ItemConstructor> ;
-    spin:constraint <#MissingSlug> , <#MissingDocumentType> ;
+    # spin:constraint <#MissingDocumentType> ; # <#MissingSlug>
     rdfs:label "Item" ;
     rdfs:comment "Child item of a container" ;
     rdfs:isDefinedBy <#> .
@@ -387,7 +387,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this a foaf:Document, sioc:Item ;
+          ?this # a foaf:Document, sioc:Item ;
               gp:slug " " .
       }
       WHERE {}""" .

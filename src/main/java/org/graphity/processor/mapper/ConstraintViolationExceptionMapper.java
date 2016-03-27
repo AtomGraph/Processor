@@ -25,11 +25,12 @@ import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.graphity.core.model.QueriedResource;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.core.util.Link;
+import org.graphity.core.vocabulary.G;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,6 +44,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
     private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
     
     @Context private ResourceContext resourceContext;
+    @Context private UriInfo uriInfo;
     
     @Override
     public Response toResponse(ConstraintViolationException cve)
@@ -53,11 +55,13 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
+        Link baseUriLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
         
         return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
                 entity(cve).
                 header("Link", classLink.toString()).
-                header("Link", ontologyLink.toString()).                
+                header("Link", ontologyLink.toString()).
+                header("Link", baseUriLink.toString()).
                 build();
     }
         
@@ -78,10 +82,9 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
 	return cr.getContext(Ontology.class);
     }
     
-    public QueriedResource getQueriedResource()
+    public UriInfo getUriInfo()
     {
-	ContextResolver<QueriedResource> cr = getProviders().getContextResolver(QueriedResource.class, null);
-	return cr.getContext(QueriedResource.class);
+        return uriInfo;
     }
     
 }

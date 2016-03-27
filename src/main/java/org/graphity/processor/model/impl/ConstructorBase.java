@@ -19,6 +19,7 @@ package org.graphity.processor.model.impl;
 import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntProperty;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
@@ -26,7 +27,6 @@ import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.util.ArrayList;
@@ -70,14 +70,28 @@ public class ConstructorBase
                 if (superClass.canAs(AllValuesFromRestriction.class))
                 {
                     AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
-                    if (avfr.getOnProperty().equals(FOAF.primaryTopic) && avfr.getAllValuesFrom().canAs(OntClass.class))
+                    if (avfr.getAllValuesFrom().canAs(OntClass.class))
                     {
-                        OntClass topicClass = avfr.getAllValuesFrom().as(OntClass.class);
-                        com.hp.hpl.jena.rdf.model.Resource topic = targetModel.createResource();
-                        topic.addProperty(RDF.type, topicClass).
-                                addProperty(FOAF.isPrimaryTopicOf,
-                                    doc.addProperty(FOAF.primaryTopic, topic));
-                        construct(topicClass, property, topic, targetModel);
+                        OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
+                        com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
+                            addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
+                        doc.addProperty(avfr.getOnProperty(), value);
+                        
+                        // add inverse properties
+                        ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
+                        try
+                        {
+                            while (it.hasNext())
+                            {
+                                value.addProperty(it.next(), doc);
+                            }
+                        }
+                        finally
+                        {
+                            it.close();
+                        }
+                        
+                        construct(valueClass, property, value, targetModel);
                     }
                 }
             }
