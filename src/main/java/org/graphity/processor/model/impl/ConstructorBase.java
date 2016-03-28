@@ -136,25 +136,28 @@ public class ConstructorBase
                     if (avfr.getAllValuesFrom().canAs(OntClass.class))
                     {
                         OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
-                        com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
-                            addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
-                        instance.addProperty(avfr.getOnProperty(), value);
-                        
-                        // add inverse properties
-                        ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
-                        try
+                        if (!valueClass.equals(forClass)) // avoid circular restrictions
                         {
-                            while (it.hasNext())
+                            com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
+                                addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
+                            instance.addProperty(avfr.getOnProperty(), value);
+                        
+                            // add inverse properties
+                            ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
+                            try
                             {
-                                value.addProperty(it.next(), instance);
+                                while (it.hasNext())
+                                {
+                                    value.addProperty(it.next(), instance);
+                                }
                             }
+                            finally
+                            {
+                                it.close();
+                            }
+
+                            construct(valueClass, property, value, targetModel);
                         }
-                        finally
-                        {
-                            it.close();
-                        }
-                        
-                        construct(valueClass, property, value, targetModel);
                     }
                 }
                 else

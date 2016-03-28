@@ -175,18 +175,19 @@
 
 # CLASSES
 
-<#Application> a rdfs:Class, owl:Class ;
+<#Application> a rdfs:Class ;
     rdfs:label "Graphity Processor application" ;
     rdfs:comment "Declarative Linked Data application" ;
     rdfs:isDefinedBy <#> .
 
-<#Ontology> a rdfs:Class, owl:Class ;
+<#Ontology> a rdfs:Class ;
     rdfs:subClassOf owl:Ontology ;
     rdfs:label "Graphity Processor ontology" ;
     rdfs:comment "Ontology annotated with Linked Data templates" ;
     rdfs:isDefinedBy <#> .
 
-<#Template> a rdfs:Class, owl:Class ;
+<#Template> a rdfs:Class ;
+    rdfs:subClassOf rdfs:Class ;
     rdfs:label "Resource template" ;
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
@@ -218,8 +219,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this a owl:Class, rdfs:Class ;
-              rdfs:subClassOf foaf:Document,
+          ?this rdfs:subClassOf foaf:Document,
                   [ a owl:Restriction ;
                       owl:onProperty sioc:has_container ;
                       owl:hasValue _:container
@@ -241,7 +241,7 @@
     # rdfs:label "Template constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#Query> a rdfs:Class, owl:Class ;
+<#Query> a rdfs:Class ;
     rdfs:subClassOf sp:Query, [ a owl:Class ;
         owl:unionOf (sp:Describe sp:Construct)
     ] ;
@@ -262,8 +262,7 @@
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
-          ?this a sp:Query ;
-              rdfs:label " " ;
+          ?this rdfs:label " " ;
               sp:text "DESCRIBE ?this" ;
               rdfs:isDefinedBy _:isDefinedBy .
       }
@@ -271,7 +270,7 @@
     # rdfs:label "Query constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#Update> a rdfs:Class, owl:Class ;
+<#Update> a rdfs:Class ;
     rdfs:subClassOf sp:Update ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#UpdateConstructor> ;
@@ -290,7 +289,7 @@
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
-          ?this a sp:Modify ;
+          ?this # a sp:Modify ;
               rdfs:label " " ;
               rdfs:comment " " ;
               sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" ;
@@ -300,19 +299,19 @@
     # rdfs:label "Update constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#Page> a rdfs:Class, owl:Class ;
+<#Page> a rdfs:Class ;
     rdfs:subClassOf foaf:Document ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
     rdfs:isDefinedBy <#> .
 
-<#Constructor> a rdfs:Class, owl:Class ;
+<#Constructor> a rdfs:Class ;
     rdfs:subClassOf foaf:Document ;
     rdfs:label "Constructor template" ;
     rdfs:comment "A class of RDF resources that are container/item constructors" ;
     rdfs:isDefinedBy <#> .
 
-<#Constraint> a rdfs:Class, owl:Class ;
+<#Constraint> a rdfs:Class ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#ConstraintConstructor> ;
     spin:constraint <#MissingRDFSLabel> ;
@@ -335,7 +334,7 @@
 
 # RESOURCE TEMPLATES
 
-<#Container> a rdfs:Class, owl:Class, <#Template> ;
+<#Container> a rdfs:Class, <#Template> ;
     rdfs:subClassOf foaf:Document, sioc:Container ,
         [ a owl:Restriction ;
             owl:onProperty sioc:has_parent ;
@@ -357,14 +356,13 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this # a foaf:Document, sioc:Container ;
-              gp:slug " " .
+          ?this gp:slug " " .
       }
       WHERE {}""" .
     # rdfs:label "Container constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#Item> a rdfs:Class, owl:Class, <#Template> ;
+<#Item> a rdfs:Class, <#Template> ;
     rdfs:subClassOf foaf:Document, sioc:Item,
         [ a owl:Restriction ;
             owl:onProperty sioc:has_container ;
@@ -387,14 +385,13 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this # a foaf:Document, sioc:Item ;
-              gp:slug " " .
+          ?this gp:slug " " .
       }
       WHERE {}""" .
     # rdfs:label "Item constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#QueryTemplate> a rdfs:Class, owl:Class ;
+<#QueryTemplate> a rdfs:Class ;
     rdfs:subClassOf spin:Template ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     spin:constructor <#QueryTemplateConstructor> ;
@@ -408,8 +405,7 @@
       PREFIX spin:    <http://spinrdf.org/spin#>
 
       CONSTRUCT {
-          ?this a spin:Template ;
-            rdfs:label " " ;
+          ?this rdfs:label " " ;
             spin:body _:body ;
             spin:labelTemplate " " ;
             spin:constraint _:constraint .

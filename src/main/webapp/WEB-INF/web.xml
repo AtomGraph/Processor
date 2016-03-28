@@ -17,7 +17,7 @@ PREFIX sioc:	<http://rdfs.org/sioc/ns#>
 
 SELECT *
 {
-    ?Template a owl:Class ; # not necessarily a gp:Template
+    ?Template a rdfs:Class ; # not necessarily a gp:Template
         rdfs:subClassOf ?Restriction .
     ?Restriction a owl:Restriction ;
         owl:onProperty ?onProperty .
