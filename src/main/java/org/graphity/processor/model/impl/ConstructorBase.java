@@ -57,53 +57,7 @@ public class ConstructorBase
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        com.hp.hpl.jena.rdf.model.Resource doc = targetModel.createResource().
-                addProperty(RDF.type, forClass);
-        construct(forClass, property, doc, targetModel);
-
-        ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
-        try
-        {
-            while (superClassIt.hasNext())
-            {
-                OntClass superClass = superClassIt.next();
-                if (superClass.canAs(AllValuesFromRestriction.class))
-                {
-                    AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
-                    if (avfr.getAllValuesFrom().canAs(OntClass.class))
-                    {
-                        OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
-                        com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
-                            addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
-                        doc.addProperty(avfr.getOnProperty(), value);
-                        
-                        // add inverse properties
-                        ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
-                        try
-                        {
-                            while (it.hasNext())
-                            {
-                                value.addProperty(it.next(), doc);
-                            }
-                        }
-                        finally
-                        {
-                            it.close();
-                        }
-                        
-                        construct(valueClass, property, value, targetModel);
-                    }
-                }
-                else
-                {
-                    doc.addProperty(RDF.type, superClass);
-                }
-            }
-        }
-        finally
-        {
-            superClassIt.close();
-        }
+        construct(forClass, property, targetModel.createResource(), targetModel);
     }
 
     // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
@@ -148,7 +102,7 @@ public class ConstructorBase
         return fixedModel;
     }
     
-    public void construct(OntClass forClass, Property property, com.hp.hpl.jena.rdf.model.Resource instance, Model targetModel)
+    public void construct(OntClass forClass, Property property, Resource instance, Model targetModel)
     {
         if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
@@ -167,6 +121,52 @@ public class ConstructorBase
         OntModel fixedModel = fixOntModel(forClass.getOntModel());
         Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
         SPINConstructors.constructInstance(fixedModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
+        instance.addProperty(RDF.type, forClass);
+        
+        // evaluate AllValuesFromRestriction to construct related instances
+        ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
+        try
+        {
+            while (superClassIt.hasNext())
+            {
+                OntClass superClass = superClassIt.next();
+                if (superClass.canAs(AllValuesFromRestriction.class))
+                {
+                    AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
+                    if (avfr.getAllValuesFrom().canAs(OntClass.class))
+                    {
+                        OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
+                        com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
+                            addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
+                        instance.addProperty(avfr.getOnProperty(), value);
+                        
+                        // add inverse properties
+                        ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
+                        try
+                        {
+                            while (it.hasNext())
+                            {
+                                value.addProperty(it.next(), instance);
+                            }
+                        }
+                        finally
+                        {
+                            it.close();
+                        }
+                        
+                        construct(valueClass, property, value, targetModel);
+                    }
+                }
+                else
+                {
+                    instance.addProperty(RDF.type, superClass); // add type
+                }
+            }
+        }
+        finally
+        {
+            superClassIt.close();
+        }        
     }
     
     public Statement getConstructorStmt(Resource cls, Property property)
