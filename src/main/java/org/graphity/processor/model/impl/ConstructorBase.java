@@ -94,6 +94,10 @@ public class ConstructorBase
                         construct(valueClass, property, value, targetModel);
                     }
                 }
+                else
+                {
+                    doc.addProperty(RDF.type, superClass);
+                }
             }
         }
         finally
