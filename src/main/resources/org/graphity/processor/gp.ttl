@@ -219,11 +219,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this rdfs:subClassOf foaf:Document,
-                  [ a owl:Restriction ;
-                      owl:onProperty sioc:has_container ;
-                      owl:hasValue _:container
-                  ] ;
+          ?this rdfs:subClassOf foaf:Document ;
               rdfs:label " " ;
               gp:uriTemplate " " ;
               gp:skolemTemplate " " ;
@@ -233,6 +229,7 @@
               gp:cacheControl "no-cache" ;
               gp:loadClass _:loadClass ;
               gp:query gp:Describe ;
+              gp:update gp:Delete ;
               spin:constraint _:constraint ;
               spin:constructor _:constructor ;
               rdfs:isDefinedBy _:isDefinedBy .
