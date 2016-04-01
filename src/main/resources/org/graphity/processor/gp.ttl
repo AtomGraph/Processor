@@ -71,6 +71,14 @@
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
 
+<#accept> a owl:AnnotationProperty ;
+    rdfs:domain <#Template> ;
+    rdfs:range <#MediaType> ;
+    rdfs:label "Accept" ;
+    rdfs:comment "Accepted media type" ;
+    # rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html> ;
+    rdfs:isDefinedBy <#> .
+
 <#cacheControl> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:string ;
@@ -119,6 +127,14 @@
     rdfs:range rdf:langString ;
     rdfs:label "Content language" ;
     rdfs:seeAlso <http://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal> ;
+    rdfs:isDefinedBy <#> .
+
+<#mediaType> a owl:AnnotationProperty ;
+    rdfs:domain <#MediaType> ;
+    rdfs:range xsd:string ;
+    rdfs:label "Media type" ;
+    rdfs:comment "Media type identifier" ;
+    rdfs:seeAlso <https://tools.ietf.org/html/rfc6838> ;
     rdfs:isDefinedBy <#> .
 
 # RESOURCE PROPERTIES
@@ -328,6 +344,12 @@
       WHERE {}""" .
     # rdfs:label "Constraint constructor" ;
     # rdfs:isDefinedBy <#> .
+
+<#MediaType> a rdfs:Class ;
+    rdfs:subClassOf dct:FileFormat ;
+    rdfs:label "Media type" ;
+    rdfs:comment "Document media type" ;
+    rdfs:isDefinedBy <#> .
 
 # RESOURCE TEMPLATES
 
