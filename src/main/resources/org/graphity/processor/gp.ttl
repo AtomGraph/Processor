@@ -71,12 +71,12 @@
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
 
-<#accept> a owl:AnnotationProperty ;
+<#consumes> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range <#MediaType> ;
-    rdfs:label "Accept" ;
+    rdfs:label "Consumes" ;
     rdfs:comment "Accepted media type" ;
-    # rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html> ;
+    rdfs:seeAlso <https://docs.oracle.com/javaee/6/api/javax/ws/rs/Consumes.html> ;
     rdfs:isDefinedBy <#> .
 
 <#cacheControl> a owl:AnnotationProperty ;
