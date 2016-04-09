@@ -40,7 +40,7 @@ import org.graphity.processor.mapper.ClientExceptionMapper;
 import org.graphity.processor.mapper.ConfigurationExceptionMapper;
 import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
-import org.graphity.processor.provider.ConstraintViolationExceptionProvider;
+import org.graphity.processor.provider.ConstraintViolationExceptionWriter;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
 import org.graphity.processor.provider.OntologyProvider;
@@ -89,14 +89,14 @@ public class Application extends org.graphity.core.Application
 	singletons.add(new SPARQLEndpointOriginProvider());
         singletons.add(new GraphStoreProvider());
         singletons.add(new GraphStoreOriginProvider());
-        singletons.add(new ConstraintViolationExceptionProvider());
+        singletons.add(new ConstraintViolationExceptionWriter());
 	singletons.add(new ConstraintViolationExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());
-	singletons.add(new org.graphity.processor.mapper.jena.QueryExceptionHTTPMapper());
+	//singletons.add(new org.graphity.processor.mapper.jena.QueryExceptionHTTPMapper());
 	singletons.add(new org.graphity.processor.mapper.jena.QueryParseExceptionMapper());
-	singletons.add(new org.graphity.processor.mapper.jena.HttpExceptionMapper());
+	//singletons.add(new org.graphity.processor.mapper.jena.HttpExceptionMapper());
     }
 
     /**

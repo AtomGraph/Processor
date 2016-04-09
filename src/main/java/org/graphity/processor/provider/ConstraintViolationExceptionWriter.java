@@ -38,9 +38,9 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
 @Provider
-public class ConstraintViolationExceptionProvider implements MessageBodyWriter<ConstraintViolationException>
+public class ConstraintViolationExceptionWriter implements MessageBodyWriter<ConstraintViolationException>
 {
-    private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionWriter.class);
 
     @Context Providers providers;
 
