@@ -29,7 +29,6 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.vocabulary.OWL;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.api.uri.UriTemplateParser;
@@ -105,7 +104,7 @@ public class Skolemizer
 	return model;
     }
     
-    public URI build(Resource resource)
+    public URI build(Resource resource) throws IllegalArgumentException
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
@@ -253,7 +252,7 @@ public class Skolemizer
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, OWL.Class); // some classes are not templates!
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(GP.skolemTemplate);
         try
         {
             while (it.hasNext())
@@ -262,40 +261,39 @@ public class Skolemizer
                 OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
                 // only match templates defined in this ontology - maybe reverse loops?
                 if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
-                        (ontClass.hasProperty(GP.uriTemplate) || ontClass.hasProperty(GP.skolemTemplate)) &&
                         resource.hasProperty(property, ontClass))
                 {
                     ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
                     if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
                     matchedClasses.add(template);
                 } 
-            }
-            
-            ExtendedIterator<OntResource> imports = ontology.listImports();
-            try
-            {
-                while (imports.hasNext())
-                {
-                    OntResource importRes = imports.next();
-                    if (importRes.canAs(Ontology.class))
-                    {
-                        Ontology importedOntology = importRes.asOntology();
-                        // traverse imports recursively
-                        Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
-                        matchedClasses.addAll(matchedImportClasses);
-                    }
-                }
-            }
-            finally
-            {
-                imports.close();
-            }
+            }            
         }
         finally
         {
             it.close();
         }
-            
+
+        ExtendedIterator<OntResource> imports = ontology.listImports();
+        try
+        {
+            while (imports.hasNext())
+            {
+                OntResource importRes = imports.next();
+                if (importRes.canAs(Ontology.class))
+                {
+                    Ontology importedOntology = importRes.asOntology();
+                    // traverse imports recursively
+                    Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
+                    matchedClasses.addAll(matchedImportClasses);
+                }
+            }
+        }
+        finally
+        {
+            imports.close();
+        }
+        
         return matchedClasses;
     }
     

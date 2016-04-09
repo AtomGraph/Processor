@@ -24,6 +24,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
+import org.graphity.processor.exception.SkolemizationException;
 import org.graphity.processor.util.Skolemizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,14 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     
     public Model skolemize(Ontology ontology, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder, Model model)
     {
-        return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder).build(model);
+        try
+        {
+            return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder).build(model);
+        }
+        catch (IllegalArgumentException ex)
+        {
+            throw new SkolemizationException(ex, model);
+        }        
     }
 
     public OntClass getOntClass()

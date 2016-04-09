@@ -16,11 +16,14 @@
 
 package org.graphity.processor.mapper;
 
+import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.sun.jersey.api.core.ResourceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -28,6 +31,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
@@ -46,7 +50,8 @@ abstract public class ExceptionMapperBase
 
     @Context private Request request;
     @Context private Providers providers;
-    //@Context private MediaTypes mediaTypes;
+    @Context private ResourceContext resourceContext;
+    @Context private UriInfo uriInfo;
     
     public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
     {
@@ -85,6 +90,11 @@ abstract public class ExceptionMapperBase
 	ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
 	return cr.getContext(MediaTypes.class);
     }
+
+    public Variant getVariant()
+    {
+        return getRequest().selectVariant(getVariants());
+    }
     
     public List<Variant> getVariants()
     {
@@ -120,6 +130,28 @@ abstract public class ExceptionMapperBase
     public Providers getProviders()
     {
         return providers;
+    }
+
+    public ResourceContext getResourceContext()
+    {
+        return resourceContext;
+    }
+    
+    public OntClass getMatchedOntClass()
+    {
+	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
+	return cr.getContext(OntClass.class);
+    }
+
+    public Ontology getOntology()
+    {
+	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+	return cr.getContext(Ontology.class);
+    }
+    
+    public UriInfo getUriInfo()
+    {
+        return uriInfo;
     }
     
 }

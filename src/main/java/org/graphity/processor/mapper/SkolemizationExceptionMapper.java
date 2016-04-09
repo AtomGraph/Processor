@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Martynas Jusevičius <martynas@graphity.org>.
+ * Copyright 2016 Martynas Jusevičius <martynas@graphity.org>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,39 +21,47 @@ import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.net.URI;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.core.util.Link;
 import org.graphity.core.vocabulary.G;
+import org.graphity.processor.exception.SkolemizationException;
 import org.graphity.processor.vocabulary.GP;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class ConstraintViolationExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ConstraintViolationException>
+public class SkolemizationExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<SkolemizationException>
 {
-    private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
-        
+
     @Override
-    public Response toResponse(ConstraintViolationException cve)
+    public Response toResponse(SkolemizationException ske)
     {
-        Resource exception = toResource(cve, Response.Status.BAD_REQUEST,
+        Resource exception = toResource(ske, Response.Status.BAD_REQUEST,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
-        cve.getModel().add(exception.getModel());
-        
+        ske.getModel().add(exception.getModel());
+       
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
         Link baseUriLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
         
+        Variant variant = getVariant();
+        org.graphity.core.model.impl.Response response = org.graphity.core.model.impl.Response.fromRequest(getRequest());
+        return response.getResponseBuilder(ske, response.getEntityTag(ske.getModel(), variant), variant).
+                status(Response.Status.BAD_REQUEST).
+                header("Link", classLink.toString()).
+                header("Link", ontologyLink.toString()).
+                header("Link", baseUriLink.toString()).                
+                build();
+        /*
         return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
-                entity(cve).
+                entity(ske).
                 header("Link", classLink.toString()).
                 header("Link", ontologyLink.toString()).
                 header("Link", baseUriLink.toString()).
                 build();
+        */
     }
     
 }

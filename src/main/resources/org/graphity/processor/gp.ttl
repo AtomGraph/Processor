@@ -63,7 +63,7 @@
     rdfs:isDefinedBy <#> .
 
 <#skolemTemplate> a owl:AnnotationProperty ;
-    rdfs:domain owl:Class ;
+    rdfs:domain rdfs:Class ;
     rdfs:range xsd:string ;
     rdfs:label "Skolemization template" ;
     rdfs:comment "Container-relative URI template for blank node skolemization (JAX-RS syntax)" ;
@@ -433,7 +433,7 @@
     # rdfs:label "Query template constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#SPARQLEndpoint> a owl:Class, <#Template> ;
+<#SPARQLEndpoint> a rdfs:Class, <#Template> ;
     rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "/sparql" ;
     <#query> <#Describe> ;
@@ -441,7 +441,7 @@
     rdfs:label "SPARQL endpoint" ;
     rdfs:isDefinedBy <#> .
 
-<#GraphStore> a owl:Class, <#Template> ;
+<#GraphStore> a rdfs:Class, <#Template> ;
     rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "/service" ;
     <#query> <#Describe> ;
