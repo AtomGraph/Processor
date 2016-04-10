@@ -114,6 +114,18 @@ public class HypermediaFilter implements ContainerResponseFilter
         return model;
     }
     
+    public StateBuilder getStateBuilder(Resource resource)
+    {
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI(), resource.getModel());
+        
+        if (getResource().getLimit() != null) sb.replaceLiteral(GP.limit, getResource().getLimit());
+        if (getResource().getOffset() != null) sb.replaceLiteral(GP.offset, getResource().getOffset());
+        if (getResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
+        if (getResource().getDesc() != null) sb.replaceLiteral(GP.desc, getResource().getDesc());
+        
+        return sb;
+    }
+    
     public Model addStates(Resource resource, OntClass matchedOntClass)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -123,6 +135,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
+            // TO-DO: move to Client. Constructors do not seem to be a part of hypermedia
             if (getResource().getForClass() != null)
             {
                 StateBuilder.fromUri(resource.getURI(), model).
@@ -191,12 +204,14 @@ public class HypermediaFilter implements ContainerResponseFilter
                     }
                 }
                 
+                /*
                 StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
                 if (getResource().getLimit() != null) sb.replaceLiteral(GP.limit, getResource().getLimit());
                 if (getResource().getOffset() != null) sb.replaceLiteral(GP.offset, getResource().getOffset());
                 if (getResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
                 if (getResource().getDesc() != null) sb.replaceLiteral(GP.desc, getResource().getDesc());
-                Resource page = sb.build().
+                */
+                Resource page = getStateBuilder(resource).build().
                     addProperty(GP.pageOf, resource).
                     addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Page);
@@ -209,12 +224,16 @@ public class HypermediaFilter implements ContainerResponseFilter
                     
                     if (offset >= getResource().getLimit())
                     {
+                        /*
                         StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
                                 replaceLiteral(GP.limit, getResource().getLimit()).
                                 replaceLiteral(GP.offset, offset - getResource().getLimit());
                         if (getResource().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
                         if (getResource().getDesc() != null) prevSb.replaceLiteral(GP.desc, getResource().getDesc());
-                        Resource prev = prevSb.build().
+                        */
+                        Resource prev = getStateBuilder(resource).
+                            replaceLiteral(GP.offset, offset - getResource().getLimit()).
+                            build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
@@ -229,12 +248,16 @@ public class HypermediaFilter implements ContainerResponseFilter
                     //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
                     //if (subjectCount >= getResource().getLimit())
                     {
+                        /*
                         StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
                                 replaceLiteral(GP.limit, getResource().getLimit()).
                                 replaceLiteral(GP.offset, offset + getResource().getLimit());
                         if (getResource().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
                         if (getResource().getDesc() != null) nextSb.replaceLiteral(GP.desc, getResource().getDesc());
-                        Resource next = nextSb.build().
+                        */
+                        Resource next = getStateBuilder(resource).
+                            replaceLiteral(GP.offset, offset + getResource().getLimit()).
+                            build().
                             addProperty(GP.pageOf, resource).
                             addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
