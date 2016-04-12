@@ -20,39 +20,35 @@
     rdfs:label "Graphity Processor sitemap" ;
     rdfs:comment "Ontology of Graphity Client domain resource templates" .
 
-# RESOURCE TEMPLATES
-
 gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:MapMode .
 
-# classes
+# TEMPLATES
 
-<#ClassContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gp:defaultLimit 20 ;
-    gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/classes/" ;
-    rdfs:label "Class container" ;
-    rdfs:isDefinedBy <#> .
-
-# templates
-
-<#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gp:defaultLimit 20 ;
-    gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/templates/" ;
-    rdfs:label "Template container" ;
-    rdfs:isDefinedBy <#> .
-
-<#TemplateItem> a rdfs:Class, owl:Class, gp:Template ;
+<#Document> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf gp:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/templates/{slug}" ;
-    rdfs:label "Template item" ;
+    rdfs:label "Document" ;
     rdfs:isDefinedBy <#> .
+
+<#Container> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf gp:Container ;
+    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode ;
+    gp:defaultLimit 20 ;
+    gc:defaultMode gc:ListMode ;
+    rdfs:label "Container" ;
+    rdfs:isDefinedBy <#> .
+
+<#LabelResourcesContainer> a owl:Class, gp:Template ;
+    rdfs:subClassOf <#Container> ;
+    gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
+    gp:query <#DescribeLabelResources> ;
+    gp:defaultOrderBy "label" ;
+    gp:loadClass <java:org.graphity.processor.resource.labelled.Container> ;
+    rdfs:label "Labelled resource container" ;
+    rdfs:isDefinedBy <#> .
+
+# CLASSES
 
 <#Template> a rdfs:Class, owl:Class ;
     rdfs:subClassOf gp:Template ,
@@ -61,25 +57,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
             owl:allValuesFrom gp:Document
 	] ;
     rdfs:label "Template" ;
-    rdfs:isDefinedBy <#> .
-
-# queries
-
-<#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gp:defaultLimit 20 ;
-    gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/queries/" ;
-    rdfs:label "Query container" ;
-    rdfs:isDefinedBy <#> .
-
-<#QueryItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Document ;
-    gc:supportedMode gc:ReadMode, gc:EditMode ;
-    gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/queries/{slug}" ;
-    rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
 <#Query> a rdfs:Class, owl:Class ;
@@ -91,25 +68,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Query" ;
     rdfs:isDefinedBy <#> .
 
-# constraints
-
-<#ConstraintContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gp:defaultLimit 20 ;
-    gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/constraints/" ;
-    rdfs:label "Constraint container" ;
-    rdfs:isDefinedBy <#> .
-
-<#ConstraintItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Document ;
-    gc:supportedMode gc:ReadMode, gc:EditMode ;
-    gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/constraints/{slug}" ;
-    rdfs:label "Constraint item" ;
-    rdfs:isDefinedBy <#> .
-
 <#Constraint> a rdfs:Class, owl:Class ;
     rdfs:subClassOf gp:Constraint ,
         [ a owl:Restriction ;
@@ -117,25 +75,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
             owl:allValuesFrom gp:Document
 	] ;
     rdfs:label "Constraint" ;
-    rdfs:isDefinedBy <#> .
-
-# query templates
-
-<#QueryTemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    gp:defaultLimit 20 ;
-    gc:defaultMode gc:ListMode ;
-    gp:uriTemplate "/query-templates/" ;
-    rdfs:label "QueryTemplate container" ;
-    rdfs:isDefinedBy <#> .
-
-<#QueryTemplateItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Document ;
-    gc:supportedMode gc:ReadMode, gc:EditMode ;
-    gc:defaultMode gc:ReadMode ;
-    gp:uriTemplate "/query-templates/{slug}" ;
-    rdfs:label "Query template item" ;
     rdfs:isDefinedBy <#> .
 
 <#QueryTemplate> a rdfs:Class, owl:Class ;
@@ -147,22 +86,9 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Query template" ;
     rdfs:isDefinedBy <#> .
 
-# lookup
-
-<#LabelResourcesContainer> a owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
-    gp:query <#DescribeLabelResources> ;
-    gp:defaultLimit 20 ;
-    gp:defaultOrderBy "label" ;
-    gp:loadClass <java:org.graphity.processor.resource.labelled.Container> ;
-    gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
-    rdfs:label "Labelled resource container" ;
-    rdfs:isDefinedBy <#> .
-
 # QUERIES
 
-<#DescribeLabelResources>    a       sp:Describe, sp:Query ;
+<#DescribeLabelResources> a sp:Describe, sp:Query ;
       sp:text """PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 PREFIX foaf: <http://xmlns.com/foaf/0.1/>
 PREFIX sioc: <http://rdfs.org/sioc/ns#>
