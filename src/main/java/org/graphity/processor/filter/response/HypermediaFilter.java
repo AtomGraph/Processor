@@ -131,7 +131,8 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         
-        resource.addProperty(RDF.type, matchedOntClass);
+        // Adding type to description does not work with GSP responses. Can be retrieved from Link header instead.
+        // resource.addProperty(RDF.type, matchedOntClass);
         
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{

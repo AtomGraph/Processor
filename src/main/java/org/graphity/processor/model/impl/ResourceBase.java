@@ -260,7 +260,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Response get()
     {
         if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container) ||
-                getMatchedOntClass().equals(GP.Item) || hasSuperClass(getMatchedOntClass(), GP.Item))
+                getMatchedOntClass().equals(GP.Document) || hasSuperClass(getMatchedOntClass(), GP.Document))
         {
             // transition to a URI of another application state (HATEOAS), except when constructing
             Resource state;
