@@ -27,12 +27,10 @@ import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.vocabulary.DCTerms;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.GregorianCalendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -47,7 +45,6 @@ import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.InsertDataBuilder;
 import org.graphity.core.util.Link;
 import org.graphity.processor.vocabulary.GP;
-import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
@@ -324,9 +321,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
 	}
-        model = addProvenance(model);
-        
-	UpdateRequest insertDataRequest;
+
+        UpdateRequest insertDataRequest;
 	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, model).build();
 	else insertDataRequest = InsertDataBuilder.fromData(model).build();
 
@@ -366,48 +362,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	}
 	
 	return null;
-    }
-
-    /**
-     * Adds provenance properties such to submitted RDF model.
-     * 
-     * @param model RDF model to be processed
-     * @return model with provenance
-     */
-    public Model addProvenance(Model model)
-    {
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-
-	ResIterator resIt = model.listSubjectsWithProperty(RDF.type, FOAF.Document);
-	try
-	{
-            while (resIt.hasNext())
-	    {
-                Resource res = resIt.next();
-
-                ObjectProperty memberProperty = SIOC.HAS_CONTAINER;
-                // use actual this resource types instead?
-                if (hasSuperClass(getMatchedOntClass(), GP.Container) && res.hasProperty(RDF.type, GP.Container))
-                    memberProperty = SIOC.HAS_PARENT;
-
-                if (!res.hasProperty(memberProperty))
-                    res.addProperty(memberProperty, getOntResource());
-                
-                if (!res.hasProperty(DCTerms.created))
-                    res.addLiteral(DCTerms.created, model.createTypedLiteral(GregorianCalendar.getInstance()));
-                else
-                {
-                    res.removeAll(DCTerms.modified).
-                        addLiteral(DCTerms.modified, model.createTypedLiteral(GregorianCalendar.getInstance()));
-                }
-	    }
-	}
-	finally
-	{
-	    resIt.close();
-	}
-        
-        return model;
     }
 
     /**

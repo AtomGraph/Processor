@@ -160,10 +160,12 @@ public class ConstructorBase
                         }
                     }
                 }
+                /*
                 else
                 {
                     instance.addProperty(RDF.type, superClass); // add type
                 }
+                */
             }
         }
         finally

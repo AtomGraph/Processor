@@ -131,14 +131,13 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         
-        Model model = resource.getModel();
+        resource.addProperty(RDF.type, matchedOntClass);
         
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
-            // TO-DO: move to Client. Constructors do not seem to be a part of hypermedia
             if (getResource().getForClass() != null)
             {
-                StateBuilder.fromUri(resource.getURI(), model).
+                StateBuilder.fromResource(resource).
                     replaceProperty(GP.forClass, getResource().getForClass()).
                     build().
                     addProperty(RDF.type, FOAF.Document).
@@ -167,7 +166,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                     while (forIt.hasNext())
                     {
                         OntClass forClass = forIt.next();
-                        StateBuilder.fromUri(resource.getURI(), model).
+                        StateBuilder.fromResource(resource).
                             replaceProperty(GP.forClass, forClass).
                             build().
                             addProperty(RDF.type, FOAF.Document).
@@ -176,7 +175,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                     }
                 }
 
-                ResIterator resIt = model.listResourcesWithProperty(SIOC.HAS_PARENT, resource);
+                ResIterator resIt = resource.getModel().listResourcesWithProperty(SIOC.HAS_PARENT, resource);
                 while (resIt.hasNext())
                 {
                     Resource childContainer = resIt.next();
@@ -194,7 +193,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                         while (forIt.hasNext())
                         {
                             OntClass forClass = forIt.next();
-                            StateBuilder.fromUri(childContainer.getURI(), model).
+                            StateBuilder.fromResource(childContainer).                                    
                                 replaceProperty(GP.forClass, forClass).
                                 build().
                                 addProperty(RDF.type, FOAF.Document).
@@ -204,13 +203,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                     }
                 }
                 
-                /*
-                StateBuilder sb = StateBuilder.fromUri(resource.getURI(), model);
-                if (getResource().getLimit() != null) sb.replaceLiteral(GP.limit, getResource().getLimit());
-                if (getResource().getOffset() != null) sb.replaceLiteral(GP.offset, getResource().getOffset());
-                if (getResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
-                if (getResource().getDesc() != null) sb.replaceLiteral(GP.desc, getResource().getDesc());
-                */
                 Resource page = getStateBuilder(resource).build().
                     addProperty(GP.pageOf, resource).
                     addProperty(RDF.type, FOAF.Document).
@@ -224,13 +216,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                     
                     if (offset >= getResource().getLimit())
                     {
-                        /*
-                        StateBuilder prevSb = StateBuilder.fromUri(resource.getURI(), model).
-                                replaceLiteral(GP.limit, getResource().getLimit()).
-                                replaceLiteral(GP.offset, offset - getResource().getLimit());
-                        if (getResource().getOrderBy() != null) prevSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
-                        if (getResource().getDesc() != null) prevSb.replaceLiteral(GP.desc, getResource().getDesc());
-                        */
                         Resource prev = getStateBuilder(resource).
                             replaceLiteral(GP.offset, offset - getResource().getLimit()).
                             build().
@@ -248,13 +233,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                     //log.debug("describe().listSubjects().toList().size(): {}", subjectCount);
                     //if (subjectCount >= getResource().getLimit())
                     {
-                        /*
-                        StateBuilder nextSb = StateBuilder.fromUri(resource.getURI(), model).
-                                replaceLiteral(GP.limit, getResource().getLimit()).
-                                replaceLiteral(GP.offset, offset + getResource().getLimit());
-                        if (getResource().getOrderBy() != null) nextSb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
-                        if (getResource().getDesc() != null) nextSb.replaceLiteral(GP.desc, getResource().getDesc());
-                        */
                         Resource next = getStateBuilder(resource).
                             replaceLiteral(GP.offset, offset + getResource().getLimit()).
                             build().
@@ -270,7 +248,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             }
         }
         
-        return model;
+        return resource.getModel();
     }
      
     public boolean hasSuperClass(OntClass subClass, OntClass superClass)

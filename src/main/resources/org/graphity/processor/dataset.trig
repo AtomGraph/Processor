@@ -9,85 +9,85 @@
 @prefix gp:	<http://graphity.org/gp#> .
 @prefix gps:	<http://graphity.org/gps#> .
 
-<> a sioc:Space, sioc:Container, gp:Container, foaf:Document ;
+<> a foaf:Document, gp:Document ;
     dct:title "Graphity Processor" ;
     dct:description "Generic Linked Data processor" ;
     foaf:maker <http://graphityhq.com/#company> ;
     rdfs:seeAlso gps: , <sparql>, <http://graphityhq.com>, <http://graphity.org> .
 
-<sparql> a foaf:Document, gp:SPARQLEndpoint ;
+<sparql> a foaf:Document, gp:Document ;
     sioc:has_space <> ;
     dct:title "SPARQL endpoint" .
 
-<service> a foaf:Document, gp:GraphStore ;
+<service> a foaf:Document, gp:Document ;
     sioc:has_space <> ;
     dct:title "Graph Store Protocol endpoint" .
 
 # containers
 
-<ontologies/> a gp:Container, sioc:Container, foaf:Document ;
+<ontologies/> a foaf:Document, gp:Document ;
     gp:slug "ontologies" ;
     sioc:has_parent <> ;
     dct:title "Ontologies" .
 
-<classes/> a gp:Container, sioc:Container, foaf:Document, gps:ClassContainer ;
+<classes/> a foaf:Document, gp:Document ;
     gp:slug "classes" ;
     sioc:has_parent <> ;
     dct:title "Classes" .
 
-<templates/> a gp:Container, sioc:Container, foaf:Document, gps:TemplateContainer ;
+<templates/> a foaf:Document, gp:Document ;
     gp:slug "templates" ;
     sioc:has_parent <> ;
     dct:title "Templates" .
 
-<queries/> a gp:Container, sioc:Container, foaf:Document, gps:QueryContainer ;
+<queries/> a foaf:Document, gp:Document ;
     gp:slug "queries" ;
     sioc:has_parent <> ;
     dct:title "Queries" .
 
-<query-templates/> a gp:Container, sioc:Container, foaf:Document, gps:QueryTemplateContainer ;
+<query-templates/> a foaf:Document, gp:Document ;
     gp:slug "query-templates" ;
     sioc:has_parent <> ;
     dct:title "Query templates" .
 
-<resources/labelled/> a gp:Container, sioc:Container, foaf:Document, gps:LabelResourcesContainer ;
+<resources/labelled/> a foaf:Document, gp:Document ;
     gp:slug "labelled" ;
     sioc:has_parent <resources/> ;
     dct:title "Labelled resources" .
 
 # ontologies 
 
-<ontologies/graphity-processor> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/graphity-processor> a foaf:Document, gp:Document ;
     gp:slug "graphity-processor" ;
     sioc:has_container <ontologies/> ;
     dct:title "Graphity Processor ontology document" ;
     foaf:primaryTopic gp: .
 
-<ontologies/sp> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/sp> a foaf:Document, gp:Document ;
     gp:slug "sp" ;
     sioc:has_container <ontologies/> ;
     dct:title "SP ontology document" ;
     foaf:primaryTopic <http://spinrdf.org/sp#> .
 
-<ontologies/spin> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/spin> a foaf:Document, gp:Document ;
     gp:slug "spin" ;
     sioc:has_container <ontologies/> ;
     dct:title "SPIN ontology document" ;
     foaf:primaryTopic <http://spinrdf.org/spin#> .
 
-<ontologies/sioc> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/sioc> a foaf:Document, gp:Document ;
     gp:slug "sioc" ;
     sioc:has_container <ontologies/> ;
     dct:title "SIOC ontology document" ;
     foaf:primaryTopic sioc: .
 
-<ontologies/foaf> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/foaf> a foaf:Document, gp:Document ;
     gp:slug "foaf" ;
     sioc:has_container <ontologies/> ;
     dct:title "FOAF ontology document" ;
     foaf:primaryTopic foaf: .
 
-<ontologies/void> a foaf:Document, sioc:Item, gp:Item ;
+<ontologies/void> a foaf:Document, gp:Document ;
     gp:slug "void" ;
     sioc:has_container <ontologies/> ;
     dct:title "VoID ontology document" ;
@@ -98,63 +98,63 @@
 
 # templates
 
-<templates/template-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+<templates/template-container> a foaf:Document, gp:Document ;
     gp:slug "template-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:TemplateContainer .
 
-<templates/template-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+<templates/template-item> a foaf:Document, gp:Document ;
     gp:slug "template-item" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:TemplateItem .
 
-<templates/query-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+<templates/query-container> a foaf:Document, gp:Document ;
     gp:slug "query-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:QueryContainer .
 
-<templates/query-item> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+<templates/query-item> a foaf:Document, gp:Document ;
     gp:slug "query-item" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:QueryItem .
 
-<templates/label-resources-container> a foaf:Document, sioc:Item, gp:Item, gps:TemplateItem ;
+<templates/label-resources-container> a foaf:Document, gp:Document ;
     gp:slug "label-resources-container" ;
     sioc:has_container <templates/> ;
     foaf:primaryTopic gps:LabelResourcesContainer .
 
 # queries
 
-<queries/template-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+<queries/template-item-constructor> a foaf:Document, gp:Document ;
     gp:slug "template-item-constructor" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:TemplateItemConstructor .
 
-<queries/query-item-constructor> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+<queries/query-item-constructor> a foaf:Document, gp:Document ;
     gp:slug "query-item-constructor" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:QueryItemConstructor .
 
-<queries/describe-graph-label-resources> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+<queries/describe-graph-label-resources> a foaf:Document, gp:Document ;
     gp:slug "describe-graph-label-resources" ;
     sioc:has_container <queries/> ;
     foaf:primaryTopic gps:DescribeLabelResources .
 
 # constraints
 
-<constraints/missing-rdfs-label> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+<constraints/missing-rdfs-label> a foaf:Document, gp:Document ;
     gp:slug "missing-rdfs-label" ;
     sioc:has_container <constraints/> ;
     foaf:primaryTopic gps:MissingRDFSLabel .
 
-<constraints/missing-rdfs-is-defined-by> a foaf:Document, sioc:Item, gp:Item, gps:QueryItem ;
+<constraints/missing-rdfs-is-defined-by> a foaf:Document, gp:Document ;
     gp:slug "missing-rdfs-is-defined-by" ;
     sioc:has_container <constraints/> ;
     foaf:primaryTopic gps:MissingRDFSisDefinedBy .
 
 # query templates
 
-<query-templates/missing-property-value> a foaf:Document, sioc:Item, gp:Item, gps:QueryTemplateItem ;
+<query-templates/missing-property-value> a foaf:Document, gp:Document ;
     gp:slug "missing-property-value" ;
     sioc:has_container <query-templates/> ;
     foaf:primaryTopic gp:MissingPropertyValue .

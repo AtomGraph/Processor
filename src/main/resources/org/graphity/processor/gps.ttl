@@ -27,7 +27,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # classes
 
 <#ClassContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
@@ -38,7 +38,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 # templates
 
 <#TemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
@@ -47,25 +47,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#TemplateItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item,
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_container ;
-            owl:allValuesFrom <#TemplateContainer>
-        ] ,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:primaryTopic ;
-            owl:allValuesFrom gp:Template
-	] ;
+    rdfs:subClassOf gp:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/templates/{slug}" ;
     rdfs:label "Template item" ;
     rdfs:isDefinedBy <#> .
 
+<#Template> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf gp:Template ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:isPrimaryTopicOf ;
+            owl:allValuesFrom gp:Document
+	] ;
+    rdfs:label "Template" ;
+    rdfs:isDefinedBy <#> .
+
 # queries
 
 <#QueryContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
@@ -74,25 +75,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#QueryItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item, 
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_container ;
-            owl:allValuesFrom <#QueryContainer>
-        ] ,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:primaryTopic ;
-            owl:allValuesFrom gp:Query
-	] ;
+    rdfs:subClassOf gp:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/queries/{slug}" ;
     rdfs:label "Query item" ;
     rdfs:isDefinedBy <#> .
 
+<#Query> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf gp:Query ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:isPrimaryTopicOf ;
+            owl:allValuesFrom gp:Document
+	] ;
+    rdfs:label "Query" ;
+    rdfs:isDefinedBy <#> .
+
 # constraints
 
 <#ConstraintContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
@@ -101,25 +103,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#ConstraintItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item, 
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_container ;
-            owl:allValuesFrom <#ConstraintContainer>
-        ] ,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:primaryTopic ;
-            owl:allValuesFrom gp:Constraint
-	] ;
+    rdfs:subClassOf gp:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/constraints/{slug}" ;
     rdfs:label "Constraint item" ;
     rdfs:isDefinedBy <#> .
 
+<#Constraint> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf gp:Constraint ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:isPrimaryTopicOf ;
+            owl:allValuesFrom gp:Document
+	] ;
+    rdfs:label "Constraint" ;
+    rdfs:isDefinedBy <#> .
+
 # query templates
 
 <#QueryTemplateContainer> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gp:ConstructMode ;
     gp:defaultLimit 20 ;
     gc:defaultMode gc:ListMode ;
@@ -128,25 +131,26 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:isDefinedBy <#> .
 
 <#QueryTemplateItem> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, gp:Item, 
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_container ;
-            owl:allValuesFrom <#QueryTemplateContainer>
-        ] ,
-        [ a owl:Restriction ;
-            owl:onProperty foaf:primaryTopic ;
-            owl:allValuesFrom gp:QueryTemplate
-	] ;
+    rdfs:subClassOf gp:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     gp:uriTemplate "/query-templates/{slug}" ;
     rdfs:label "Query template item" ;
     rdfs:isDefinedBy <#> .
 
+<#QueryTemplate> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf gp:QueryTemplate ,
+        [ a owl:Restriction ;
+            owl:onProperty foaf:isPrimaryTopicOf ;
+            owl:allValuesFrom gp:Document
+	] ;
+    rdfs:label "Query template" ;
+    rdfs:isDefinedBy <#> .
+
 # lookup
 
 <#LabelResourcesContainer> a owl:Class, gp:Template ;
-    rdfs:subClassOf foaf:Document, sioc:Container, gp:Container ;
+    rdfs:subClassOf gp:Container ;
     gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;
     gp:defaultLimit 20 ;

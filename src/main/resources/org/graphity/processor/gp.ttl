@@ -71,14 +71,6 @@
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
 
-<#consumes> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range <#MediaType> ;
-    rdfs:label "Consumes" ;
-    rdfs:comment "Accepted media type" ;
-    rdfs:seeAlso <https://docs.oracle.com/javaee/6/api/javax/ws/rs/Consumes.html> ;
-    rdfs:isDefinedBy <#> .
-
 <#cacheControl> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:string ;
@@ -127,14 +119,6 @@
     rdfs:range rdf:langString ;
     rdfs:label "Content language" ;
     rdfs:seeAlso <http://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal> ;
-    rdfs:isDefinedBy <#> .
-
-<#mediaType> a owl:AnnotationProperty ;
-    rdfs:domain <#MediaType> ;
-    rdfs:range xsd:string ;
-    rdfs:label "Media type" ;
-    rdfs:comment "Media type identifier" ;
-    rdfs:seeAlso <https://tools.ietf.org/html/rfc6838> ;
     rdfs:isDefinedBy <#> .
 
 # RESOURCE PROPERTIES
@@ -354,60 +338,36 @@
 # RESOURCE TEMPLATES
 
 <#Container> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document, sioc:Container ,
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_parent ;
-            owl:allValuesFrom <#Container>
-        ] ;
+    rdfs:subClassOf <#Document>, sioc:Container ;
     <#uriTemplate> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
     <#query> <#DescribeWithChildren> ;
-    spin:constructor <#ContainerConstructor> ;
-    # spin:constraint <#MissingDocumentType> ; # <#MissingSlug> 
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
 
-<#ContainerConstructor> a sp:Construct, sp:Query ; # <#Query> ;
-  sp:text """
-      PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
-      PREFIX gp:      <http://graphity.org/gp#>
-
-      CONSTRUCT {
-          ?this gp:slug " " .
-      }
-      WHERE {}""" .
-    # rdfs:label "Container constructor" ;
-    # rdfs:isDefinedBy <#> .
-
-<#Item> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document, sioc:Item,
-        [ a owl:Restriction ;
-            owl:onProperty sioc:has_container ;
-            owl:allValuesFrom <#Container>
-        ] ;
+<#Document> a rdfs:Class, <#Template> ;
+    rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "{path: .*}" ;
     <#skolemTemplate> "{slug}" ;
     <#query> <#DescribeWithTopic> ;
     <#update> <#DeleteWithTopic> ;
-    spin:constructor <#ItemConstructor> ;
-    # spin:constraint <#MissingDocumentType> ; # <#MissingSlug>
-    rdfs:label "Item" ;
-    rdfs:comment "Child item of a container" ;
+    spin:constructor <#DocumentConstructor> ;
+    rdfs:label "Document" ;
+    rdfs:comment "Generic document resource" ;
     rdfs:isDefinedBy <#> .
 
-<#ItemConstructor> a sp:Construct, sp:Query ; # <#Query> ;
+<#DocumentConstructor> a sp:Construct, sp:Query ; # <#Query> ;
   sp:text """
       PREFIX foaf:    <http://xmlns.com/foaf/0.1/>
-      PREFIX sioc:    <http://rdfs.org/sioc/ns#>
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this gp:slug " " .
+        ?this a foaf:Document ;
+            gp:slug " " .
       }
       WHERE {}""" .
-    # rdfs:label "Item constructor" ;
+    # rdfs:label "Document constructor" ;
     # rdfs:isDefinedBy <#> .
 
 <#QueryTemplate> a rdfs:Class ;
