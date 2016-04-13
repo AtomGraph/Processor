@@ -315,10 +315,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", model, graphURI);
 
-	Resource created = getURIResource(model, RDF.type, FOAF.Document);
+	Resource created = getURIResource(model, RDF.type, GP.Document);
 	if (created == null)
 	{
-	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
+	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", GP.Document.getURI());
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
 	}
 

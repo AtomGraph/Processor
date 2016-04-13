@@ -167,7 +167,7 @@
     rdfs:isDefinedBy <#> .
 
 <#slug> a owl:DatatypeProperty ;
-    rdfs:domain foaf:Document ;
+    rdfs:domain <#Document> ;
     rdfs:range xsd:string ;
     rdfs:label "URI slug" ;
     rdfs:comment "A string that will be used to build URI from template such as /{slug}" ;
@@ -219,7 +219,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this rdfs:subClassOf foaf:Document ;
+          ?this rdfs:subClassOf gp:Document ;
               rdfs:label " " ;
               gp:uriTemplate " " ;
               gp:skolemTemplate " " ;
@@ -329,12 +329,6 @@
     # rdfs:label "Constraint constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#MediaType> a rdfs:Class ;
-    rdfs:subClassOf dct:FileFormat ;
-    rdfs:label "Media type" ;
-    rdfs:comment "Document media type" ;
-    rdfs:isDefinedBy <#> .
-
 # RESOURCE TEMPLATES
 
 <#Container> a rdfs:Class, <#Template> ;
@@ -363,8 +357,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-        ?this a foaf:Document ;
-            gp:slug " " .
+        ?this gp:slug " " .
       }
       WHERE {}""" .
     # rdfs:label "Document constructor" ;
@@ -394,7 +387,7 @@
     # rdfs:isDefinedBy <#> .
 
 <#SPARQLEndpoint> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document ;
+    rdfs:subClassOf <#Document> ;
     <#uriTemplate> "/sparql" ;
     <#query> <#Describe> ;
     <#loadClass> <java:org.graphity.processor.model.impl.SPARQLEndpointBase> ;
@@ -402,7 +395,7 @@
     rdfs:isDefinedBy <#> .
 
 <#GraphStore> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf foaf:Document ;
+    rdfs:subClassOf <#Document> ;
     <#uriTemplate> "/service" ;
     <#query> <#Describe> ;
     rdfs:label "Graph Store" ;
@@ -441,11 +434,11 @@
     sp:arg1 <#slug> ;
     rdfs:isDefinedBy <#> .
 
-<#MissingDocumentType> a <#Constraint>, <#MissingPropertyValue> ;
-    rdfs:label "Missing rdf:type foaf:Document" ;
-    sp:arg1 rdf:type ;
-    sp:arg2 foaf:Document ;
-    rdfs:isDefinedBy <#> .
+#<#MissingDocumentType> a <#Constraint>, <#MissingPropertyValue> ;
+#    rdfs:label "Missing rdf:type foaf:Document" ;
+#    sp:arg1 rdf:type ;
+#    sp:arg2 foaf:Document ;
+#    rdfs:isDefinedBy <#> .
 
 
 # QUERIES

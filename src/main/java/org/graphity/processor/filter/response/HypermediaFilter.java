@@ -21,15 +21,12 @@ import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
-import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -41,7 +38,6 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import org.graphity.processor.model.impl.ConstructorBase;
-import org.graphity.processor.util.OntClassMatcher;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.util.RestrictionMatcher;
@@ -141,7 +137,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 StateBuilder.fromResource(resource).
                     replaceProperty(GP.forClass, getResource().getForClass()).
                     build().
-                    addProperty(RDF.type, FOAF.Document).
+                    //addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Constructor).
                     addProperty(GP.constructorOf, resource);
             }
@@ -170,43 +166,15 @@ public class HypermediaFilter implements ContainerResponseFilter
                         StateBuilder.fromResource(resource).
                             replaceProperty(GP.forClass, forClass).
                             build().
-                            addProperty(RDF.type, FOAF.Document).
+                            //addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Constructor).
                             addProperty(GP.constructorOf, resource);                            
-                    }
-                }
-
-                ResIterator resIt = resource.getModel().listResourcesWithProperty(SIOC.HAS_PARENT, resource);
-                while (resIt.hasNext())
-                {
-                    Resource childContainer = resIt.next();
-                    URI childURI = URI.create(childContainer.getURI());
-                    OntClass childClass = new OntClassMatcher(getOntology()).match(childURI, getUriInfo().getBaseUri());
-                    Map<Property, List<OntClass>> grandChildrenClasses = new HashMap<>();
-                    grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, childClass));
-                    grandChildrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, childClass));
-
-                    Iterator<List<OntClass>> gccIt = grandChildrenClasses.values().iterator();
-                    while (gccIt.hasNext())
-                    {
-                        List<OntClass> forClasses = gccIt.next();
-                        Iterator<OntClass> forIt = forClasses.iterator();
-                        while (forIt.hasNext())
-                        {
-                            OntClass forClass = forIt.next();
-                            StateBuilder.fromResource(childContainer).                                    
-                                replaceProperty(GP.forClass, forClass).
-                                build().
-                                addProperty(RDF.type, FOAF.Document).
-                                addProperty(RDF.type, GP.Constructor).
-                                addProperty(GP.constructorOf, childContainer);
-                        }
                     }
                 }
                 
                 Resource page = getStateBuilder(resource).build().
                     addProperty(GP.pageOf, resource).
-                    addProperty(RDF.type, FOAF.Document).
+                    //addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Page);
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
 
@@ -221,7 +189,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                             replaceLiteral(GP.offset, offset - getResource().getLimit()).
                             build().
                             addProperty(GP.pageOf, resource).
-                            addProperty(RDF.type, FOAF.Document).
+                            //addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
                             addProperty(XHV.next, page);
 
@@ -238,7 +206,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                             replaceLiteral(GP.offset, offset + getResource().getLimit()).
                             build().
                             addProperty(GP.pageOf, resource).
-                            addProperty(RDF.type, FOAF.Document).
+                            //addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
                             addProperty(XHV.prev, page);
 
