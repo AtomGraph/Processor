@@ -48,6 +48,14 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Labelled resource container" ;
     rdfs:isDefinedBy <#> .
 
+<#SPARQLEndpoint> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf gp:SPARQLEndpoint ;
+    rdfs:isDefinedBy <#> .
+
+<#GraphStore> a rdfs:Class, owl:Class, gp:Template ;
+    rdfs:subClassOf gp:GraphStore ;
+    rdfs:isDefinedBy <#> .
+
 # CLASSES
 
 <#Template> a rdfs:Class, owl:Class ;

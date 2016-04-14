@@ -387,7 +387,7 @@
     # rdfs:isDefinedBy <#> .
 
 <#SPARQLEndpoint> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf <#Document> ;
+    rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "/sparql" ;
     <#query> <#Describe> ;
     <#loadClass> <java:org.graphity.processor.model.impl.SPARQLEndpointBase> ;
@@ -395,7 +395,7 @@
     rdfs:isDefinedBy <#> .
 
 <#GraphStore> a rdfs:Class, <#Template> ;
-    rdfs:subClassOf <#Document> ;
+    rdfs:subClassOf foaf:Document ;
     <#uriTemplate> "/service" ;
     <#query> <#Describe> ;
     rdfs:label "Graph Store" ;

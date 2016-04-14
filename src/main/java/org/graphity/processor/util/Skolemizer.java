@@ -26,7 +26,6 @@ import com.hp.hpl.jena.rdf.model.ResIterator;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.sparql.vocabulary.FOAF;
 import com.hp.hpl.jena.util.ResourceUtils;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
@@ -142,7 +141,7 @@ public class Skolemizer
             {
                 Statement stmt = it.next();
                 Resource type = getOntology().getOntModel().getResource(stmt.getResource().getURI());
-                if (JenaUtil.hasSuperClass(type, FOAF.Document)) isInfoRes = false;
+                if (JenaUtil.hasSuperClass(type, GP.Document)) isInfoRes = false;
                 //if (hasSuperClass(type, FOAF.Document));
             }
             if (isInfoRes) builder.fragment("this"); // TO-DO: unique identifiers per resource?
