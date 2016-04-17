@@ -260,8 +260,8 @@
 
       CONSTRUCT {
           ?this rdfs:label " " ;
-              sp:text "DESCRIBE ?this" ;
-              rdfs:isDefinedBy _:isDefinedBy .
+              sp:text "DESCRIBE ?this" .
+              # rdfs:isDefinedBy _:isDefinedBy .
       }
       WHERE {}""" .
     # rdfs:label "Query constructor" ;
