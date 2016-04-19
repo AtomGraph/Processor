@@ -16,9 +16,9 @@
  */
 package org.graphity.processor.resource.labelled;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.vocabulary.RDFS;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.vocabulary.RDFS;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;

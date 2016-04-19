@@ -16,8 +16,8 @@
  */
 package org.graphity.processor.update;
 
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.RDF;
 import org.topbraid.spin.model.Element;
 import org.topbraid.spin.model.ElementList;
 import org.topbraid.spin.model.SPINFactory;

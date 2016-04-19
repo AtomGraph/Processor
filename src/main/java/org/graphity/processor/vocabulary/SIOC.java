@@ -16,9 +16,9 @@
  */
 package org.graphity.processor.vocabulary;
 
-import com.hp.hpl.jena.ontology.*;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Resource;
+import org.apache.jena.ontology.*;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  * SIOC vocabulary.

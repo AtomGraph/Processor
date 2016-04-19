@@ -16,11 +16,11 @@
 
 package org.graphity.processor;
 
-import com.hp.hpl.jena.ontology.DatatypeProperty;
-import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.util.FileManager;
+import org.apache.jena.ontology.DatatypeProperty;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.util.FileManager;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;

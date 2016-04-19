@@ -16,8 +16,8 @@
 
 package org.graphity.processor.model;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -79,6 +79,6 @@ public interface Resource extends QueriedResource
     //@Override
     public Boolean getDesc();
     
-    public com.hp.hpl.jena.rdf.model.Resource getForClass();
+    public org.apache.jena.rdf.model.Resource getForClass();
     
 }

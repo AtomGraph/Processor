@@ -16,9 +16,9 @@
 
 package org.graphity.processor.mapper;
 
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.vocabulary.RDF;
 import java.net.URI;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;

@@ -16,19 +16,19 @@
 
 package org.graphity.processor.model.impl;
 
-import com.hp.hpl.jena.ontology.AllValuesFromRestriction;
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntProperty;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.Statement;
-import com.hp.hpl.jena.rdf.model.StmtIterator;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.ontology.AllValuesFromRestriction;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntProperty;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.RDF;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -75,7 +75,7 @@ public class ConstructorBase
             while (it.hasNext())
             {
                 Statement stmt = it.next();
-                com.hp.hpl.jena.rdf.model.Resource queryOrTemplateCall = stmt.getSubject();
+                org.apache.jena.rdf.model.Resource queryOrTemplateCall = stmt.getSubject();
                 StmtIterator propIt = queryOrTemplateCall.listProperties();
                 try
                 {
@@ -116,10 +116,10 @@ public class ConstructorBase
             throw new SitemapException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
         }
 
-        List<com.hp.hpl.jena.rdf.model.Resource> newResources = new ArrayList<>();
-        Set<com.hp.hpl.jena.rdf.model.Resource> reachedTypes = new HashSet<>();
+        List<org.apache.jena.rdf.model.Resource> newResources = new ArrayList<>();
+        Set<org.apache.jena.rdf.model.Resource> reachedTypes = new HashSet<>();
         OntModel fixedModel = fixOntModel(forClass.getOntModel());
-        Map<com.hp.hpl.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
+        Map<org.apache.jena.rdf.model.Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
         SPINConstructors.constructInstance(fixedModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
         instance.addProperty(RDF.type, forClass);
         
@@ -138,7 +138,7 @@ public class ConstructorBase
                         OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
                         if (!valueClass.equals(forClass)) // avoid circular restrictions
                         {
-                            com.hp.hpl.jena.rdf.model.Resource value = targetModel.createResource().
+                            org.apache.jena.rdf.model.Resource value = targetModel.createResource().
                                 addProperty(RDF.type, valueClass); //addProperty(FOAF.isPrimaryTopicOf, doc)
                             instance.addProperty(avfr.getOnProperty(), value);
                         

@@ -39,7 +39,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Container" ;
     rdfs:isDefinedBy <#> .
 
-<#LabelResourcesContainer> a owl:Class, gp:Template ;
+<#LabelResourcesContainer> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf <#Container> ;
     gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;

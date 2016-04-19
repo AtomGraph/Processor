@@ -17,16 +17,16 @@
 package org.graphity.processor.model.impl;
 
 import org.graphity.core.util.StateBuilder;
-import com.hp.hpl.jena.ontology.*;
-import com.hp.hpl.jena.query.*;
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.reasoner.Reasoner;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
-import com.hp.hpl.jena.sparql.util.Loader;
-import com.hp.hpl.jena.update.UpdateFactory;
-import com.hp.hpl.jena.update.UpdateRequest;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.ontology.*;
+import org.apache.jena.query.*;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.sparql.util.Loader;
+import org.apache.jena.update.UpdateFactory;
+import org.apache.jena.update.UpdateRequest;
+import org.apache.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
@@ -408,7 +408,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	    
 	    UpdateRequest request = getUpdateRequest();
 	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-	    Iterator<com.hp.hpl.jena.update.Update> it = request.getOperations().iterator();
+	    Iterator<org.apache.jena.update.Update> it = request.getOperations().iterator();
 	    while (it.hasNext()) deleteInsertRequest.add(it.next());
 	}
 	
@@ -416,7 +416,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, model).build();
 	else insertDataRequest = InsertDataBuilder.fromData(model).build();
 	if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
-	Iterator<com.hp.hpl.jena.update.Update> it = insertDataRequest.getOperations().iterator();
+	Iterator<org.apache.jena.update.Update> it = insertDataRequest.getOperations().iterator();
 	while (it.hasNext()) deleteInsertRequest.add(it.next());
 	
 	if (log.isDebugEnabled()) log.debug("Combined DELETE/INSERT DATA request: {}", deleteInsertRequest);
