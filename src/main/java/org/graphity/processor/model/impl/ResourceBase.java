@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.model.impl;
 
+import com.hp.hpl.jena.graph.Node;
 import org.graphity.core.util.StateBuilder;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
@@ -23,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.sparql.util.Loader;
+import com.hp.hpl.jena.sparql.util.NodeFactoryExtra;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
@@ -38,6 +40,8 @@ import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import org.apache.jena.riot.RiotException;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
@@ -54,11 +58,9 @@ import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.TemplateCall;
-import org.topbraid.spin.model.update.Update;
 import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
+import org.topbraid.spin.vocabulary.SPL;
 
 /**
  * Base class of generic read-write Graphity Processor resources.
@@ -73,14 +75,13 @@ import org.topbraid.spin.vocabulary.SPIN;
 public class ResourceBase extends QueriedResourceBase implements org.graphity.processor.model.Resource
 {
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
-
+        
     private final GraphStore graphStore;
     private final Ontology ontology;
     private final OntClass matchedOntClass;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    private final Resource queryOrTemplateCall;
     private final Resource forClass;
     private final String orderBy;
     private final Boolean desc;
@@ -125,9 +126,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
-        OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
-        model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
-        this.ontResource = model.createOntResource(getURI().toString());
+        OntModel ontModel = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
+        ontModel.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached        
+        this.ontResource = ontModel.createOntResource(getURI().toString());
         this.ontology = ontology;
         this.matchedOntClass = ontClass;
         this.querySolutionMap = new QuerySolutionMap();
@@ -135,8 +136,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
 
-        queryOrTemplateCall = matchedOntClass.getPropertyResourceValue(GP.query);        
-        if (queryOrTemplateCall == null)
+        if (matchedOntClass.getPropertyResourceValue(GP.query) == null)
         {
             if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", matchedOntClass.getURI());
             throw new SitemapException("Query not defined for template '" + matchedOntClass.getURI() +"'");
@@ -162,9 +162,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             forClass = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.forClass.getLocalName()));
         else forClass = null;
 
-	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
-
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
 
@@ -174,6 +171,46 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public void init()
     {
+        Resource queryOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.query);
+        if (!queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
+        {
+            Resource spinTemplate = getSPINTemplateFromCall(queryOrTemplateCall);
+            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
+            try
+            {
+                while (constraintIt.hasNext())
+                {
+                    Statement stmt = constraintIt.next();
+                    Resource constraint = stmt.getResource();
+                    {
+                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();//entry.getKey();
+                        String queryVarName = predicate.getLocalName();
+                        String queryVarValue = getUriInfo().getQueryParameters(true).getFirst(queryVarName);
+                        if (queryVarValue != null)
+                        {
+                            try
+                            {
+                                Node queryVarNode = NodeFactoryExtra.parseNode(queryVarValue);
+                                querySolutionMap.add(queryVarName, getOntology().getOntModel().asRDFNode(queryVarNode));
+                                // TO-DO: check value type using constraint's spl:valueType
+                            }
+                            catch (RiotException ex)
+                            {
+                                if (log.isErrorEnabled()) log.error("Invalid query param. Name: \"{}\" Value: \"{}\"", queryVarName, queryVarValue);
+                                throw new WebApplicationException(Status.BAD_REQUEST); // throw new IllegalQueryParamException(ex);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                constraintIt.close();
+            }
+        }
+        
+	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
+
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
             Resource updateOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.update);            
@@ -185,14 +222,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             updateRequest = getUpdateRequest(updateOrTemplateCall);
         }
 
-        queryBuilder = QueryBuilder.fromQuery(getQuery(getQueryOrTemplateCall()), getOntResource().getModel());
+        queryBuilder = QueryBuilder.fromQuery(getQuery(queryOrTemplateCall), ModelFactory.createDefaultModel());
         if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
             queryBuilder = getModifiedQueryBuilder(queryBuilder, getLimit(), getOffset(), getOrderBy(), getDesc(), getForClass());
 
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);
         if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
     }
-
+    
     public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
     {
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
@@ -280,7 +317,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     
     public StateBuilder getStateBuilder()
     {
-        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
+        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getRequestUri(), getOntResource().getOntModel());
         
         if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
         if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
@@ -486,20 +523,44 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public Query getQuery(Resource queryOrTemplateCall)
     {
 	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-
-        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
-        queryOrTemplateCall = removeNonSPINRDFProperties(queryOrTemplateCall);
-        // end of workaround
-
-        org.topbraid.spin.model.Query spinQuery = SPINFactory.asQuery(queryOrTemplateCall);
-        if (spinQuery != null) return getParameterizedSparqlString(spinQuery.toString(), null,
-                getUriInfo().getBaseUri().toString()).asQuery();
-
-        TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
-                getUriInfo().getBaseUri().toString()).asQuery();
         
-        return null;
+        if (queryOrTemplateCall.hasProperty(RDF.type, SP.Query)) // works only with subclass inference
+        {
+            Statement textStmt = queryOrTemplateCall.getRequiredProperty(SP.text);
+            if (textStmt == null || !textStmt.getObject().isLiteral())
+            {
+                if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", queryOrTemplateCall);
+                throw new SitemapException("SPARQL string not defined for query '" + queryOrTemplateCall + "'");                
+            }
+            
+            return getParameterizedSparqlString(textStmt.getString(), null,
+                getUriInfo().getBaseUri().toString()).asQuery();
+        }
+
+        Resource template = getSPINTemplateFromCall(queryOrTemplateCall);
+        Statement bodyStmt = template.getProperty(SPIN.body);
+        if (bodyStmt == null || !bodyStmt.getObject().isResource())
+        {
+            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", template);
+            throw new SitemapException("SPIN Template does not have a body: '" + template + "'");                            
+        }
+        
+        return getQuery(bodyStmt.getObject().asResource());
+    }
+
+    public Resource getSPINTemplateFromCall(Resource templateCall)
+    {
+	if (templateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+        
+        Statement typeStmt = templateCall.getProperty(RDF.type);
+        if (typeStmt == null || !typeStmt.getObject().isResource() ||
+                !typeStmt.getObject().asResource().hasProperty(RDF.type, SPIN.Template))
+        {
+            if (log.isErrorEnabled()) log.error("'{}' is not a valid SPIN Template call", templateCall);
+            throw new SitemapException("Not a valid SPIN Template call: '" + templateCall + "'");                            
+        }
+        
+        return typeStmt.getObject().asResource();
     }
     
     /**
@@ -516,48 +577,28 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 
-        // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J 
-        updateOrTemplateCall = removeNonSPINRDFProperties(updateOrTemplateCall);
-        // end of workaround
-
-        Update spinUpdate = SPINFactory.asUpdate(updateOrTemplateCall);
-        if (spinUpdate != null) return getParameterizedSparqlString(spinUpdate.toString(), null,
-                getUriInfo().getBaseUri().toString()).asUpdate();
-
-        TemplateCall templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
-        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
-                getUriInfo().getBaseUri().toString()).asUpdate();
-        
-        return null;
-    }
-    
-    public Resource removeNonSPINRDFProperties(Resource command)
-    {
-	if (command == null) throw new IllegalArgumentException("Resource cannot be null");
-
-        Model queryModel = ModelFactory.createDefaultModel();
-        StmtIterator stmtIt = command.listProperties(RDF.type);
-        try
+        if (updateOrTemplateCall.hasProperty(RDF.type, SP.Update)) // works only with subclass inference
         {
-            queryModel.add(stmtIt);
-            stmtIt = command.listProperties(SP.text);
-            queryModel.add(stmtIt);
-            ResIterator resIt = queryModel.listResourcesWithProperty(SP.text);
-            try
+            Statement textStmt = updateOrTemplateCall.getRequiredProperty(SP.text);
+            if (textStmt == null || !textStmt.getObject().isLiteral())
             {
-                if (resIt.hasNext()) return resIt.next();
+                if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", updateOrTemplateCall);
+                throw new SitemapException("SPARQL string not defined for update '" + updateOrTemplateCall + "'");                
             }
-            finally
-            {
-                resIt.close();
-            }
+            
+            return getParameterizedSparqlString(textStmt.getString(), null,
+                getUriInfo().getBaseUri().toString()).asUpdate();
         }
-        finally
+
+        Resource template = getSPINTemplateFromCall(updateOrTemplateCall);
+        Statement bodyStmt = template.getProperty(SPIN.body);
+        if (bodyStmt == null || !bodyStmt.getObject().isResource())
         {
-            stmtIt.close();
+            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", template);
+            throw new SitemapException("SPIN Template does not have a body: '" + template + "'");                            
         }
         
-        return null; // command?
+        return getUpdateRequest(bodyStmt.getObject().asResource());
     }
     
     /**
@@ -877,11 +918,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public ResourceContext getResourceContext()
     {
         return resourceContext;
-    }
- 
-    public Resource getQueryOrTemplateCall()
-    {
-        return queryOrTemplateCall;
     }
     
 }
