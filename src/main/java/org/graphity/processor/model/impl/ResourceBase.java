@@ -16,6 +16,7 @@
  */
 package org.graphity.processor.model.impl;
 
+import com.hp.hpl.jena.graph.Node;
 import org.graphity.core.util.StateBuilder;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
@@ -23,6 +24,7 @@ import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.sparql.util.Loader;
+import com.hp.hpl.jena.sparql.util.NodeFactoryExtra;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
@@ -30,14 +32,18 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import org.apache.jena.riot.RiotException;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
@@ -59,6 +65,7 @@ import org.topbraid.spin.model.TemplateCall;
 import org.topbraid.spin.model.update.Update;
 import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
+import org.topbraid.spin.vocabulary.SPL;
 
 /**
  * Base class of generic read-write Graphity Processor resources.
@@ -73,7 +80,17 @@ import org.topbraid.spin.vocabulary.SPIN;
 public class ResourceBase extends QueriedResourceBase implements org.graphity.processor.model.Resource
 {
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
-
+    
+    private static final Set<Property> RESERVED_PROPERTIES = new HashSet();
+    static
+    {
+        RESERVED_PROPERTIES.add(GP.forClass);
+        RESERVED_PROPERTIES.add(GP.limit);
+        RESERVED_PROPERTIES.add(GP.offset);
+        RESERVED_PROPERTIES.add(GP.orderBy);
+        RESERVED_PROPERTIES.add(GP.desc);
+    }
+    
     private final GraphStore graphStore;
     private final Ontology ontology;
     private final OntClass matchedOntClass;
@@ -125,9 +142,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
-        OntModel model = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
-        model.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached
-        this.ontResource = model.createOntResource(getURI().toString());
+        OntModel ontModel = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
+        ontModel.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached        
+        this.ontResource = ontModel.createOntResource(getURI().toString());
         this.ontology = ontology;
         this.matchedOntClass = ontClass;
         this.querySolutionMap = new QuerySolutionMap();
@@ -162,9 +179,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             forClass = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.forClass.getLocalName()));
         else forClass = null;
 
-	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-	querySolutionMap.add(G.baseUri.getLocalName(), ResourceFactory.createResource(getUriInfo().getBaseUri().toString())); // ?baseUri
-
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
 
@@ -174,6 +188,47 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public void init()
     {
+        /*
+        if (!queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
+        {
+            Resource spinTemplate = getSPINTemplateFromCall(queryOrTemplateCall);
+            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
+            try
+            {
+                while (constraintIt.hasNext())
+                {
+                    Statement stmt = constraintIt.next();
+                    Resource constraint = stmt.getResource();
+                    {
+                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();//entry.getKey();
+                        String queryVarName = predicate.getLocalName();
+                        String queryVarValue = getUriInfo().getQueryParameters(true).getFirst(queryVarName);
+                        if (queryVarValue != null)
+                        {
+                            try
+                            {
+                                Node queryVarNode = NodeFactoryExtra.parseNode(queryVarValue);
+                                querySolutionMap.add(queryVarName, getOntology().getOntModel().asRDFNode(queryVarNode));
+                                // TO-DO: check value type using constraint's spl:valueType
+                            }
+                            catch (RiotException ex)
+                            {
+                                if (log.isErrorEnabled()) log.error("Invalid query param. Name: \"{}\" Value: \"{}\"", queryVarName, queryVarValue);
+                                throw new WebApplicationException(Status.BAD_REQUEST); // throw new IllegalQueryParamException(ex);
+                            }
+                        }
+                    }
+                }
+            }
+            finally
+            {
+                constraintIt.close();
+            }
+        }
+        */
+        
+	querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
             Resource updateOrTemplateCall = getMatchedOntClass().getPropertyResourceValue(GP.update);            
@@ -193,6 +248,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
     }
 
+    public Set<String> getReservedQueryParamNames()
+    {
+        Set<String> names = new HashSet();
+        Iterator<Property> it = RESERVED_PROPERTIES.iterator();
+        while (it.hasNext()) names.add(it.next().getLocalName());
+        return names;
+    }
+    
     public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
     {
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
@@ -280,7 +343,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     
     public StateBuilder getStateBuilder()
     {
-        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
+        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getRequestUri(), getOntResource().getOntModel());
         
         if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
         if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
@@ -500,6 +563,46 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 getUriInfo().getBaseUri().toString()).asQuery();
         
         return null;
+
+        /*
+        if (queryOrTemplateCall.hasProperty(RDF.type, SP.Query)) // works only with subclass inference
+        {
+            Statement textStmt = queryOrTemplateCall.getRequiredProperty(SP.text);
+            if (textStmt == null || !textStmt.getObject().isLiteral())
+            {
+                if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", queryOrTemplateCall);
+                throw new SitemapException("SPARQL string not defined for query '" + queryOrTemplateCall + "'");                
+            }
+            
+            return getParameterizedSparqlString(textStmt.getString(), null,
+                getUriInfo().getBaseUri().toString()).asQuery();
+        }
+
+        Resource template = getSPINTemplateFromCall(queryOrTemplateCall);
+        Statement bodyStmt = template.getProperty(SPIN.body);
+        if (bodyStmt == null || !bodyStmt.getObject().isResource())
+        {
+            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", template);
+            throw new SitemapException("SPIN Template does not have a body: '" + template + "'");                            
+        }
+        
+        return getQuery(bodyStmt.getObject().asResource());
+        */
+    }
+
+    public Resource getSPINTemplateFromCall(Resource templateCall)
+    {
+	if (templateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+        
+        Statement typeStmt = templateCall.getProperty(RDF.type);
+        if (typeStmt == null || !typeStmt.getObject().isResource() ||
+                !typeStmt.getObject().asResource().hasProperty(RDF.type, SPIN.Template))
+        {
+            if (log.isErrorEnabled()) log.error("'{}' is not a valid SPIN Template call", templateCall);
+            throw new SitemapException("Not a valid SPIN Template call: '" + templateCall + "'");                            
+        }
+        
+        return typeStmt.getObject().asResource();
     }
     
     /**
@@ -557,7 +660,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             stmtIt.close();
         }
         
-        return null; // command?
+        return command; // command?
     }
     
     /**

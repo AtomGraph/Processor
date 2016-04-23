@@ -18,7 +18,6 @@ package org.graphity.processor.filter.response;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.query.Query;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
@@ -27,10 +26,6 @@ import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Application;
 import javax.ws.rs.core.Context;
@@ -40,13 +35,10 @@ import javax.ws.rs.ext.Providers;
 import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
-import org.graphity.processor.util.RestrictionMatcher;
 import org.graphity.processor.vocabulary.GP;
-import org.graphity.processor.vocabulary.SIOC;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.util.JenaUtil;
 import org.topbraid.spin.vocabulary.SPIN;
 
 /**
@@ -127,9 +119,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         
-        // Adding type to description does not work with GSP responses. Can be retrieved from Link header instead.
-        // resource.addProperty(RDF.type, matchedOntClass);
-        
 	if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container))
 	{
             if (getResource().getForClass() != null)
@@ -137,44 +126,13 @@ public class HypermediaFilter implements ContainerResponseFilter
                 StateBuilder.fromResource(resource).
                     replaceProperty(GP.forClass, getResource().getForClass()).
                     build().
-                    //addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Constructor).
                     addProperty(GP.constructorOf, resource);
             }
             else
-            {
-                Map<Property, List<OntClass>> childrenClasses = new HashMap<>();
-                Query restrictionQuery = ((org.graphity.processor.Application)getApplication()).getQuery(GP.restrictionsQuery);
-                RestrictionMatcher restrictionMatcher = new RestrictionMatcher(getOntology(), restrictionQuery);
-                childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, matchedOntClass));
-                childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, matchedOntClass));
-                for (Resource superCls : JenaUtil.getAllSuperClasses(matchedOntClass))
-                    if (superCls.isURIResource() && superCls.canAs(OntClass.class))
-                    {
-                        childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_PARENT, superCls.as(OntClass.class)));
-                        childrenClasses.putAll(restrictionMatcher.match(SIOC.HAS_CONTAINER, superCls.as(OntClass.class)));
-                    }
-                
-                Iterator<List<OntClass>> it = childrenClasses.values().iterator();
-                while (it.hasNext())
-                {
-                    List<OntClass> forClasses = it.next();
-                    Iterator<OntClass> forIt = forClasses.iterator();
-                    while (forIt.hasNext())
-                    {
-                        OntClass forClass = forIt.next();
-                        StateBuilder.fromResource(resource).
-                            replaceProperty(GP.forClass, forClass).
-                            build().
-                            //addProperty(RDF.type, FOAF.Document).
-                            addProperty(RDF.type, GP.Constructor).
-                            addProperty(GP.constructorOf, resource);                            
-                    }
-                }
-                
+            {                
                 Resource page = getStateBuilder(resource).build().
                     addProperty(GP.pageOf, resource).
-                    //addProperty(RDF.type, FOAF.Document).
                     addProperty(RDF.type, GP.Page);
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, resource);
 
@@ -189,7 +147,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                             replaceLiteral(GP.offset, offset - getResource().getLimit()).
                             build().
                             addProperty(GP.pageOf, resource).
-                            //addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
                             addProperty(XHV.next, page);
 
@@ -206,7 +163,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                             replaceLiteral(GP.offset, offset + getResource().getLimit()).
                             build().
                             addProperty(GP.pageOf, resource).
-                            //addProperty(RDF.type, FOAF.Document).
                             addProperty(RDF.type, GP.Page).
                             addProperty(XHV.prev, page);
 
