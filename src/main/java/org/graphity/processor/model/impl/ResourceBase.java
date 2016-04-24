@@ -40,7 +40,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import org.apache.jena.riot.RiotException;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.exception.NotFoundException;
@@ -53,6 +52,7 @@ import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
+import org.graphity.processor.exception.QueryArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.util.RulePrinter;
@@ -183,7 +183,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     Statement stmt = constraintIt.next();
                     Resource constraint = stmt.getResource();
                     {
-                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();//entry.getKey();
+                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
                         String queryVarName = predicate.getLocalName();
                         String queryVarValue = getUriInfo().getQueryParameters(true).getFirst(queryVarName);
                         if (queryVarValue != null)
@@ -197,7 +197,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                             catch (RiotException ex)
                             {
                                 if (log.isErrorEnabled()) log.error("Invalid query param. Name: \"{}\" Value: \"{}\"", queryVarName, queryVarValue);
-                                throw new WebApplicationException(Status.BAD_REQUEST); // throw new IllegalQueryParamException(ex);
+                                throw new QueryArgumentException(ex);
                             }
                         }
                     }
@@ -560,7 +560,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             throw new SitemapException("Not a valid SPIN Template call: '" + templateCall + "'");                            
         }
         
-        return typeStmt.getObject().asResource();
+        return typeStmt.getResource();
     }
     
     /**
@@ -629,6 +629,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
             rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
         }
+        
         return rb;
     }
     

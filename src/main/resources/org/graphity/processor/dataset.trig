@@ -9,48 +9,48 @@
 @prefix gp:	<http://graphity.org/gp#> .
 @prefix gps:	<http://graphity.org/gps#> .
 
-<> a gp:Document ;
+<> a gp:Container ;
     dct:title "Graphity Processor" ;
     dct:description "Generic Linked Data processor" ;
     foaf:maker <http://graphityhq.com/#company> ;
     rdfs:seeAlso gps: , <sparql>, <http://graphityhq.com>, <http://graphity.org> .
 
-<sparql> a gp:Document ;
+<sparql> a gp:SPARQLEndpoint ;
     sioc:has_space <> ;
     dct:title "SPARQL endpoint" .
 
-<service> a gp:Document ;
+<service> a gp:GraphStore ;
     sioc:has_space <> ;
     dct:title "Graph Store Protocol endpoint" .
 
 # containers
 
-<ontologies/> a gp:Document ;
+<ontologies/> a gp:Container ;
     gp:slug "ontologies" ;
     sioc:has_parent <> ;
     dct:title "Ontologies" .
 
-<classes/> a gp:Document ;
+<classes/> a gp:Container ;
     gp:slug "classes" ;
     sioc:has_parent <> ;
     dct:title "Classes" .
 
-<templates/> a gp:Document ;
+<templates/> a gp:Container ;
     gp:slug "templates" ;
     sioc:has_parent <> ;
     dct:title "Templates" .
 
-<queries/> a gp:Document ;
+<queries/> a gp:Container ;
     gp:slug "queries" ;
     sioc:has_parent <> ;
     dct:title "Queries" .
 
-<query-templates/> a gp:Document ;
+<query-templates/> a gp:Container ;
     gp:slug "query-templates" ;
     sioc:has_parent <> ;
     dct:title "Query templates" .
 
-<resources/labelled/> a gp:Document ;
+<resources/labelled/> a gp:Container ;
     gp:slug "labelled" ;
     sioc:has_parent <resources/> ;
     dct:title "Labelled resources" .
@@ -92,9 +92,6 @@
     sioc:has_container <ontologies/> ;
     dct:title "VoID ontology document" ;
     foaf:primaryTopic void: .
-
-# classes
-
 
 # templates
 

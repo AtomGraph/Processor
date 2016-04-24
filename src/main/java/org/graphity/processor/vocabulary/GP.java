@@ -116,4 +116,6 @@ public final class GP
 
     public static final ObjectProperty constructorOf = m_model.createObjectProperty( NS + "constructorOf" );
 
+    public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
+    
 }
