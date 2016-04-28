@@ -141,35 +141,26 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             throw new SitemapException("Query not defined for template '" + matchedOntClass.getURI() +"'");
         }
         
-        if (matchedOntClass.hasSuperClass(GP.Container)) // modifiers only apply to containers
-        {
-            if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
-                offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
-            else
-            {
-                Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
-                if (defaultOffset != null) offset = defaultOffset;
-                else offset = Long.valueOf(0);
-            }
-
-            if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
-                limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-            else limit = getLongValue(matchedOntClass, GP.defaultLimit);
-
-            if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-                orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-            else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
-
-            if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
-                desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-            else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
-        }
+        if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
+            offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
         else
         {
-            offset = limit = null;
-            orderBy = null;
-            desc = null;
+            Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
+            if (defaultOffset != null) offset = defaultOffset;
+            else offset = Long.valueOf(0);
         }
+
+        if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
+            limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
+        else limit = getLongValue(matchedOntClass, GP.defaultLimit);
+
+        if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+            orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
+        else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
+
+        if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
+            desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+        else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
         
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
@@ -304,10 +295,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response get()
     {
-        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container) ||
-                getMatchedOntClass().equals(GP.Document) || hasSuperClass(getMatchedOntClass(), GP.Document))
+        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
         {
-            // transition to a URI of another application state (HATEOAS), except when constructing
+            // transition to a URI of another application state (HATEOAS)
             Resource state = getStateBuilder().build();
 
             if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
