@@ -82,7 +82,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    private final Resource forClass;
     private final String orderBy;
     private final Boolean desc;
     private final Long limit, offset;
@@ -142,26 +141,36 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             throw new SitemapException("Query not defined for template '" + matchedOntClass.getURI() +"'");
         }
         
-        if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
-            offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
-        else offset = getLongValue(matchedOntClass, GP.defaultOffset);
+        if (matchedOntClass.hasSuperClass(GP.Container)) // modifiers only apply to containers
+        {
+            if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
+                offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
+            else
+            {
+                Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
+                if (defaultOffset != null) offset = defaultOffset;
+                else offset = Long.valueOf(0);
+            }
 
-        if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
-            limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-        else limit = getLongValue(matchedOntClass, GP.defaultLimit);
+            if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
+                limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
+            else limit = getLongValue(matchedOntClass, GP.defaultLimit);
 
-        if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-            orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-        else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
+            if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+                orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
+            else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
 
-        if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
-            desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-        else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
+            if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
+                desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+            else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
+        }
+        else
+        {
+            offset = limit = null;
+            orderBy = null;
+            desc = null;
+        }
         
-        if (uriInfo.getQueryParameters().containsKey(GP.forClass.getLocalName()))
-            forClass = ResourceFactory.createResource(uriInfo.getQueryParameters().getFirst(GP.forClass.getLocalName()));
-        else forClass = null;
-
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
 
@@ -224,7 +233,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         queryBuilder = QueryBuilder.fromQuery(getQuery(queryOrTemplateCall), ModelFactory.createDefaultModel());
         if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
-            queryBuilder = getModifiedQueryBuilder(queryBuilder, getLimit(), getOffset(), getOrderBy(), getDesc(), getForClass());
+            queryBuilder = getModifiedQueryBuilder(queryBuilder, getLimit(), getOffset(), getOrderBy(), getDesc());
 
         cacheControl = getCacheControl(getMatchedOntClass(), GP.cacheControl);
         if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
@@ -299,11 +308,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 getMatchedOntClass().equals(GP.Document) || hasSuperClass(getMatchedOntClass(), GP.Document))
         {
             // transition to a URI of another application state (HATEOAS), except when constructing
-            Resource state;
-            if (getForClass() != null)
-                state = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel()).
-                        replaceProperty(GP.forClass, getForClass()).build();
-            else state = getStateBuilder().build();
+            Resource state = getStateBuilder().build();
 
             if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
             {
@@ -492,17 +497,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
 
         return false;
-    }
-
-    /**
-     * Returns the forClass query parameter value.
-     * 
-     * @return class URI
-     */
-    @Override
-    public Resource getForClass()
-    {
-	return forClass;
     }
     
     /**
@@ -788,7 +782,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
-    public QueryBuilder getModifiedQueryBuilder(QueryBuilder builder, Long limit, Long offset, String orderBy, Boolean desc, Resource forClass)
+    public QueryBuilder getModifiedQueryBuilder(QueryBuilder builder, Long limit, Long offset, String orderBy, Boolean desc)
     {
 	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
                 
@@ -823,12 +817,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 {
                     if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
                 }
-            }
-
-            if (forClass != null)
-            {
-                if (log.isDebugEnabled()) log.debug("gp:forClass is {}, setting sub-SELECT LIMIT to zero", forClass);
-                subSelectBuilder.replaceLimit(Long.valueOf(0));
             }
         }
         catch (NumberFormatException ex)

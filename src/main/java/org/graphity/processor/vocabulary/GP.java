@@ -55,22 +55,16 @@ public final class GP
     public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
 
     public static final OntClass GraphStore = m_model.createClass( NS + "GraphStore" );
-    
-    public static final OntClass Space = m_model.createClass( NS + "Space" );
-    
+        
     public static final OntClass Container = m_model.createClass( NS + "Container" );
 
     public static final OntClass Document = m_model.createClass( NS + "Document" );
-
-    public static final OntClass Constructor = m_model.createClass( NS + "Constructor" );
 
     public static final OntClass Page = m_model.createClass( NS + "Page" );
 
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );
 
     public static final AnnotationProperty update = m_model.createAnnotationProperty( NS + "update" );
-
-    public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
     
     public static final AnnotationProperty defaultOffset = m_model.createAnnotationProperty( NS + "defaultOffset" );
     
@@ -92,8 +86,6 @@ public final class GP
         
     public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
     
-    public static final ObjectProperty forClass = m_model.createObjectProperty( NS + "forClass" );
-
     public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
 
     public static final DatatypeProperty dataset = m_model.createDatatypeProperty( NS + "dataset" );
@@ -113,8 +105,6 @@ public final class GP
     public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
 
     public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
-
-    public static final ObjectProperty constructorOf = m_model.createObjectProperty( NS + "constructorOf" );
 
     public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
     

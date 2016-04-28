@@ -79,6 +79,4 @@ public interface Resource extends QueriedResource
     //@Override
     public Boolean getDesc();
     
-    public com.hp.hpl.jena.rdf.model.Resource getForClass();
-    
 }

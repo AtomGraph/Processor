@@ -22,7 +22,6 @@ import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -44,7 +43,6 @@ import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
-import org.graphity.processor.model.impl.ConstructorBase;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.vocabulary.GP;
@@ -104,33 +102,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (resource.hasProperty(RDF.type, GP.Container))
             addPagination(resource, getResource().getLimit(), getResource().getOffset());
 
-        // TO-DO: move constructor logic to Graphity Client
-        if (getResource().getForClass() != null && !(response.getEntity() instanceof ConstraintViolationException))
-        {
-            OntClass forClass = getOntology().getOntModel().createClass(getResource().getForClass().getURI());
-            model = addInstance(infModel, forClass);
-
-            StateBuilder.fromResource(resource).
-                replaceProperty(GP.forClass, getResource().getForClass()).
-                build().
-                addProperty(RDF.type, GP.Constructor).
-                addProperty(GP.constructorOf, resource);            
-        }
-
         if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
         response.setEntity(infModel.getRawModel());
         return response;
-    }
-
-    public Model addInstance(Model model, OntClass forClass)
-    {
-        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-
-        Property property = SPIN.constructor;
-        if (log.isDebugEnabled()) log.debug("Invoking constructor on class {} using property {}", forClass, property);
-        new ConstructorBase().construct(forClass, property, model);
-        
-        return model;
     }
     
     public StateBuilder getStateBuilder(Resource resource)
@@ -175,15 +149,18 @@ public class HypermediaFilter implements ContainerResponseFilter
                     }
                 }
                 
-                Resource view = viewBuilder.build().
-                    addProperty(GP.viewOf, resource);
-                
-                if (resource.hasProperty(RDF.type, GP.Container))
-                    view.addProperty(RDF.type, GP.Container);
-                else
-                    view.addProperty(RDF.type, GP.Document);
-                
-                return view;
+                Resource view = viewBuilder.build();
+                if (!view.equals(resource))
+                {
+                    view.addProperty(GP.viewOf, resource);
+
+                    if (resource.hasProperty(RDF.type, GP.Container))
+                        view.addProperty(RDF.type, GP.Container);
+                    else
+                        view.addProperty(RDF.type, GP.Document);
+                    
+                    return view;
+                }
             }
             finally
             {
@@ -198,7 +175,6 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         if (container == null) throw new IllegalArgumentException("Resource cannot be null");
         
-	//if (matchedOntClass.equals(GP.Container) || hasSuperClass(matchedOntClass, GP.Container) ||
         Resource page = getStateBuilder(container).build().
             addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
@@ -206,8 +182,6 @@ public class HypermediaFilter implements ContainerResponseFilter
 
         if (limit != null)
         {
-            if (offset == null) offset = Long.valueOf(0);
-
             if (offset >= limit)
             {
                 Resource prev = getStateBuilder(container).

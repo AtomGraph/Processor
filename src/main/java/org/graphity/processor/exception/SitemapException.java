@@ -22,7 +22,7 @@ import org.graphity.core.exception.ConfigurationException;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class SitemapException extends ConfigurationException
+public class SitemapException extends RuntimeException
 {
 
     public SitemapException()
