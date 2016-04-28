@@ -18,13 +18,19 @@ package org.graphity.processor.mapper;
 
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import com.hp.hpl.jena.reasoner.Reasoner;
+import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
+import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.vocabulary.RDF;
 import java.net.URI;
+import java.util.List;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.core.util.Link;
 import org.graphity.core.vocabulary.G;
+import org.graphity.processor.util.RulePrinter;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,12 +54,20 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
         Link baseUriLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
         
-        return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
+        ResponseBuilder builder = Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
                 entity(cve).
                 header("Link", classLink.toString()).
                 header("Link", ontologyLink.toString()).
-                header("Link", baseUriLink.toString()).
-                build();
+                header("Link", baseUriLink.toString());
+
+        Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
+        if (reasoner instanceof GenericRuleReasoner)
+        {
+            List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
+            builder.header("Rules", RulePrinter.print(rules));
+        }
+        
+        return builder.build();
     }
     
 }

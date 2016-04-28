@@ -50,7 +50,6 @@ abstract public class ExceptionMapperBase
 
     @Context private Request request;
     @Context private Providers providers;
-    @Context private ResourceContext resourceContext;
     @Context private UriInfo uriInfo;
     
     public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
@@ -70,20 +69,6 @@ abstract public class ExceptionMapperBase
         
         return resource;
     }
-
-    /*
-    public Response toResponse(RuntimeException ex)
-    {
-	return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, getStatus(ex), getResource(ex)).getModel(), getVariants()).
-                    status(getStatus(ex)).
-                    build();
-    }
-    
-    public abstract Status getStatus(RuntimeException ex);
-    
-    public abstract Resource getResource(RuntimeException ex);
-    */
     
     public MediaTypes getMediaTypes()
     {
@@ -130,11 +115,6 @@ abstract public class ExceptionMapperBase
     public Providers getProviders()
     {
         return providers;
-    }
-
-    public ResourceContext getResourceContext()
-    {
-        return resourceContext;
     }
     
     public OntClass getMatchedOntClass()

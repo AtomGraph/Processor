@@ -139,7 +139,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                     {
                         Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
                         String queryVarName = predicate.getLocalName();                        
-                        String queryVarValue = getUriInfo().getQueryParameters(true).getFirst(queryVarName);
+                        String queryVarValue = getUriInfo().getQueryParameters().getFirst(queryVarName);
                         if (queryVarValue != null)
                         {
                             Node queryVarNode = NodeFactoryExtra.parseNode(queryVarValue);
