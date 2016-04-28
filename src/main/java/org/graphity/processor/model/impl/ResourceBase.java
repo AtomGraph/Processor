@@ -141,26 +141,36 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             throw new SitemapException("Query not defined for template '" + matchedOntClass.getURI() +"'");
         }
         
-        if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
-            offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
+        // TO-DO: replace with rdfs:subClassOf inference and matchedOntClass.hasSuperClass(GP.Container, false)
+        if (hasSuperClass(matchedOntClass, GP.Container)) // modifiers only apply to containers
+        {
+            if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
+                offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
+            else
+            {
+                Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
+                if (defaultOffset != null) offset = defaultOffset;
+                else offset = Long.valueOf(0);
+            }
+
+            if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
+                limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
+            else limit = getLongValue(matchedOntClass, GP.defaultLimit);
+
+            if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+                orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
+            else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
+
+            if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
+                desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
+            else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
+        }
         else
         {
-            Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
-            if (defaultOffset != null) offset = defaultOffset;
-            else offset = Long.valueOf(0);
+            offset = limit = null;
+            orderBy = null;
+            desc = null;
         }
-
-        if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
-            limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-        else limit = getLongValue(matchedOntClass, GP.defaultLimit);
-
-        if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-            orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-        else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
-
-        if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
-            desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-        else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
         
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
     }
@@ -295,7 +305,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response get()
     {
-        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container))
+        // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
+        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container) ||
+                getMatchedOntClass().equals(GP.Document) || hasSuperClass(getMatchedOntClass(), GP.Document))
         {
             // transition to a URI of another application state (HATEOAS)
             Resource state = getStateBuilder().build();
@@ -476,7 +488,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return Response.noContent().build();
     }
     
-    public boolean hasSuperClass(OntClass subClass, OntClass superClass)
+    public final boolean hasSuperClass(OntClass subClass, OntClass superClass)
     {
         ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
         
