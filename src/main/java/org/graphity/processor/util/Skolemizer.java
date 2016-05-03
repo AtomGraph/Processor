@@ -129,7 +129,7 @@ public class Skolemizer
             }
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
             {
-                String uriTemplate = getStringValue(typeClass, GP.uriTemplate);
+                String uriTemplate = getStringValue(typeClass, GP.path);
                 builder = getBaseUriBuilder().clone().path(uriTemplate);
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
             }

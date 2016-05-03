@@ -41,7 +41,7 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 
 <#LabelResourcesContainer> a owl:Class, gp:Template ;
     rdfs:subClassOf <#Container> ;
-    gp:uriTemplate "/resources/labelled/" ; # "/{path}/labelled" ?
+    gp:path "/resources/labelled/" ; # "/{path}/labelled" ?
     gp:query <#DescribeLabelResources> ;
     gp:defaultOrderBy "label" ;
     gp:loadClass <java:org.graphity.processor.resource.labelled.Container> ;

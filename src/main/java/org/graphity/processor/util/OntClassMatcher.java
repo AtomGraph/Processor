@@ -104,13 +104,13 @@ public class OntClassMatcher
                 // only match templates defined in this ontology - maybe reverse loops?
                 if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology))
                 {
-                    if (!templateRes.hasProperty(GP.uriTemplate))
+                    if (!templateRes.hasProperty(GP.path))
                     {
-                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.uriTemplate);
-                        throw new SitemapException("Template class '" + templateRes + "' does not have value for '" + GP.uriTemplate + "' annotation");
+                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.path);
+                        throw new SitemapException("Template class '" + templateRes + "' does not have value for '" + GP.path + "' annotation");
                     }
 
-                    UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.uriTemplate).getString());
+                    UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.path).getString());
                     HashMap<String, String> map = new HashMap<>();
 
                     if (uriTemplate.match(path, map))
