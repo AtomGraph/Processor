@@ -50,10 +50,12 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 
 <#SPARQLEndpoint> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf gp:SPARQLEndpoint ;
+    rdfs:label "SPARQL endpoint" ;
     rdfs:isDefinedBy <#> .
 
 <#GraphStore> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf gp:GraphStore ;
+    rdfs:label "Graph Store" ;
     rdfs:isDefinedBy <#> .
 
 # CLASSES
