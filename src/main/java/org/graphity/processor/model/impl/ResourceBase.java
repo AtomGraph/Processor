@@ -324,7 +324,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     
     public StateBuilder getStateBuilder()
     {
-        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getRequestUri(), getOntResource().getOntModel());
+        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
         
         if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
         if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
