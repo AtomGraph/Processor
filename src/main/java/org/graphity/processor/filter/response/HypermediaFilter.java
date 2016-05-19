@@ -17,8 +17,11 @@
 package org.graphity.processor.filter.response;
 
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
-import com.hp.hpl.jena.graph.Node;
+import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.ontology.OntDocumentManager;
+import com.hp.hpl.jena.ontology.OntModel;
+import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
@@ -31,23 +34,23 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
-import com.hp.hpl.jena.sparql.util.NodeFactoryExtra;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Iterator;
 import java.util.List;
-import javax.servlet.ServletConfig;
-import javax.ws.rs.core.Application;
-import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
+import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
+import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
@@ -66,106 +69,143 @@ import org.topbraid.spin.vocabulary.SPL;
 public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
-    
-    @Context Application application;
-    @Context Providers providers;
-    @Context ServletConfig servletConfig;
-    
-    private final UriInfo uriInfo;
-    private final org.graphity.processor.model.Resource matchedResource;
-    
-    public HypermediaFilter(@Context UriInfo uriInfo)
-    {
-        this.uriInfo = uriInfo;
-        
-        if (!uriInfo.getMatchedResources().isEmpty())
-        {
-            if (uriInfo.getMatchedResources().get(0) instanceof org.graphity.processor.model.Resource)
-                matchedResource = (org.graphity.processor.model.Resource)uriInfo.getMatchedResources().get(0);
-            else matchedResource = null;
-        }
-        else matchedResource = null;
-    }
-    
+            
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
     {
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        if (getMatchedResource() == null || 
-                response.getStatusType().getFamily().equals(REDIRECTION) || response.getEntity() == null ||
+        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getEntity() == null ||
                 (!(response.getEntity() instanceof Model)) && !(response.getEntity() instanceof ConstraintViolationException))
             return response;
         
-        Object rulesString = response.getHttpHeaders().getFirst("Rules");
-        if (rulesString == null) return response;
+        MultivaluedMap<String, Object> headerMap = response.getHttpHeaders();
+        try
+        {
+            URI ontologyHref = getOntologyURI(headerMap);
+            URI typeHref = getTypeURI(headerMap);
+            if (ontologyHref == null || typeHref == null) return response;
+            Object rulesString = response.getHttpHeaders().getFirst("Rules");
+            if (rulesString == null) return response;
+
+            OntModelSpec ontModelSpec = getOntModelSpec(Rule.parseRules(rulesString.toString()));
+            OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyHref.toString(), ontModelSpec);
+            Ontology ontology = ontModel.getOntology(ontologyHref.toString());
+            if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
+            OntClass template = ontModel.getOntClass(typeHref.toString());
+
+            Model model;
+            if (response.getEntity() instanceof ConstraintViolationException)
+                model = ((ConstraintViolationException)response.getEntity()).getModel();
+            else
+                model = (Model)response.getEntity();
+            long oldCount = model.size();
+
+            InfModel infModel = ModelFactory.createInfModel(ontModelSpec.getReasoner(), ontModel, model);
+            Resource resource = infModel.createResource(request.getAbsolutePath().toString());        
+
+            // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
+            if (resource.hasProperty(RDF.type, GP.Container) || resource.hasProperty(RDF.type, GP.Document))
+            {
+                // transition to a URI of another application state (HATEOAS)
+                Resource state = getStateBuilder(resource, request.getQueryParameters(), template).
+                        build();
+
+                if (!state.getURI().equals(request.getRequestUri().toString()))
+                {
+                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
+                    response.setResponse(Response.seeOther(URI.create(state.getURI())).build());
+                    return response;
+                }                    
+            }
+
+            resource = applyView(resource, request.getQueryParameters(), template);
+            if (resource.hasProperty(RDF.type, GP.Container))
+                addPagination(resource, request.getQueryParameters(), template);
+
+            if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
+            response.setEntity(infModel.getRawModel());
+        }
+        catch (URISyntaxException ex)
+        {
+            return response;
+        }
         
-        Model model;
-        if (response.getEntity() instanceof ConstraintViolationException)
-            model = ((ConstraintViolationException)response.getEntity()).getModel();
-        else
-            model = (Model)response.getEntity();
-        long oldCount = model.size();
-
-        List<Rule> rules = Rule.parseRules(rulesString.toString());
-        Reasoner reasoner = new GenericRuleReasoner(rules);
-        InfModel infModel = ModelFactory.createInfModel(reasoner, getOntology().getOntModel(), model);
-
-        Resource resource = infModel.createResource(request.getAbsolutePath().toString());
-        // TO-DO: remove dependency on matched class. The filter should operate solely on the in-band RDF response
-        resource = applyView(resource, getMatchedOntClass());
-        //String limit = request.getQueryParameters(true).getFirst(GP.limit.getLocalName());
-        //String offset = request.getQueryParameters(true).getFirst(GP.offset.getLocalName());
-        if (resource.hasProperty(RDF.type, GP.Container))
-            addPagination(resource, getMatchedResource().getLimit(), getMatchedResource().getOffset());
-
-        if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
-        response.setEntity(infModel.getRawModel());
         return response;
     }
     
-    public StateBuilder getStateBuilder(String uri, Model model)
+    public StateBuilder getStateBuilder(Resource resource, MultivaluedMap<String, String> queryParams, OntClass template)
     {
-        StateBuilder sb = StateBuilder.fromUri(uri, model);
-        
-        if (getMatchedResource().getLimit() != null) sb.replaceLiteral(GP.limit, getMatchedResource().getLimit());
-        if (getMatchedResource().getOffset() != null) sb.replaceLiteral(GP.offset, getMatchedResource().getOffset());
-        if (getMatchedResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getMatchedResource().getOrderBy());
-        if (getMatchedResource().getDesc() != null) sb.replaceLiteral(GP.desc, getMatchedResource().getDesc());
-        
-        StmtIterator paramIt = getMatchedOntClass().listProperties(GP.param);
-        try
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+
+        final Long offset;
+        if (queryParams.containsKey(GP.offset.getLocalName()))
+            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
+        else
         {
-            while (paramIt.hasNext())
+            Long defaultOffset = getLongValue(template, GP.defaultOffset);
+            if (defaultOffset != null) offset = defaultOffset;
+            else offset = Long.valueOf(0);
+        }
+        if (offset != null) sb.replaceLiteral(GP.offset, offset);
+        
+        final Long limit;
+        if (queryParams.containsKey(GP.limit.getLocalName()))
+            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
+        else limit = getLongValue(template, GP.defaultLimit);
+        if (limit != null) sb.replaceLiteral(GP.limit, limit);
+
+        final String orderBy;
+        if (queryParams.containsKey(GP.orderBy.getLocalName()))
+            orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
+        else orderBy = getStringValue(template, GP.defaultOrderBy);
+        if (orderBy != null) sb.replaceLiteral(GP.orderBy, orderBy);
+
+        final Boolean desc;
+        if (queryParams.containsKey(GP.desc.getLocalName()))
+            desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
+        else desc = getBooleanValue(template, GP.defaultDesc);        
+        if (desc != null) sb.replaceLiteral(GP.desc, desc);
+
+        Resource queryOrTemplate = template.getProperty(GP.query).getResource();
+        if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
+        {
+            Resource spinTemplate = queryOrTemplate.getProperty(RDF.type).getResource();
+            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
+            try
             {
-                Statement stmt = paramIt.next();
-                Property property = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
-                if (getUriInfo().getQueryParameters().containsKey(property.getLocalName()))
+                while (constraintIt.hasNext())
                 {
-                    String value = getUriInfo().getQueryParameters().getFirst(property.getLocalName());
-                    Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                    if (valueType != null && valueType.equals(RDFS.Resource))
-                        sb.replaceProperty(property, ResourceFactory.createResource(value));
-                    else
-                        sb.replaceLiteral(property, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
+                    Statement stmt = constraintIt.next();
+                    Property predicate = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
+                    if (queryParams.containsKey(predicate.getLocalName()))
+                    {
+                        String value = queryParams.getFirst(predicate.getLocalName());
+                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                        if (valueType != null && valueType.equals(RDFS.Resource))
+                            sb.replaceProperty(predicate, ResourceFactory.createResource(value));
+                        else
+                            sb.replaceLiteral(predicate, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
+                    }
                 }
             }
+            finally
+            {
+                constraintIt.close();
+            }
         }
-        finally
-        {
-            paramIt.close();
-        }
-                
+        
         return sb;
     }
 
-    public Resource applyView(Resource resource, OntClass matchedOntClass)
+    public Resource applyView(Resource resource, MultivaluedMap<String, String> queryParams, OntClass template)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (matchedOntClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
+        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
 
-        Resource queryOrTemplate = matchedOntClass.getProperty(GP.query).getResource();
+        Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
         {
             Resource spinTemplate = queryOrTemplate.getProperty(RDF.type).getResource();
@@ -178,14 +218,16 @@ public class HypermediaFilter implements ContainerResponseFilter
                     Statement stmt = constraintIt.next();
                     Resource constraint = stmt.getResource();
                     {
-                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
-                        String queryVarName = predicate.getLocalName();                        
-                        String queryVarValue = getUriInfo().getQueryParameters().getFirst(queryVarName);
-                        if (queryVarValue != null)
+                        Property predicate = constraint.getRequiredProperty(SPL.predicate).getResource().as(Property.class);
+                        String paramName = predicate.getLocalName();                        
+                        String paramValue = queryParams.getFirst(paramName);
+                        if (paramValue != null)
                         {
-                            Node queryVarNode = NodeFactoryExtra.parseNode(queryVarValue);
-                            viewBuilder.replaceProperty(ResourceFactory.createProperty(predicate.getURI()),
-                                resource.getModel().asRDFNode(queryVarNode));
+                            Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                            if (valueType != null && valueType.equals(RDFS.Resource))                                
+                                viewBuilder.replaceProperty(predicate, ResourceFactory.createResource(paramValue));
+                            else // TO-DO: add support for datatypes other than string
+                                viewBuilder.replaceLiteral(predicate, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));
                         }
                     }
                 }
@@ -212,11 +254,28 @@ public class HypermediaFilter implements ContainerResponseFilter
         return resource;
     }
     
-    public Resource addPagination(Resource container, Long limit, Long offset)
+    public Resource addPagination(Resource container, MultivaluedMap<String, String> queryParams, OntClass template)
     {
         if (container == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
+    
+        final Long limit, offset;
+
+        if (queryParams.containsKey(GP.offset.getLocalName()))
+            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
+        else
+        {
+            Long defaultOffset = getLongValue(template, GP.defaultOffset);
+            if (defaultOffset != null) offset = defaultOffset;
+            else offset = Long.valueOf(0);
+        }
+
+        if (queryParams.containsKey(GP.limit.getLocalName()))
+            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
+        else limit = getLongValue(template, GP.defaultLimit);
         
-        Resource page = getStateBuilder(container.getURI(), container.getModel()).build().
+        Resource page = getStateBuilder(container, queryParams, template).build().
             addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
         if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
@@ -225,7 +284,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         {
             if (offset >= limit)
             {
-                Resource prev = getStateBuilder(container.getURI(), container.getModel()).
+                Resource prev = getStateBuilder(container, queryParams, template).
                     replaceLiteral(GP.offset, offset - limit).
                     build().
                     addProperty(GP.pageOf, container).
@@ -236,7 +295,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            Resource next = getStateBuilder(container.getURI(), container.getModel()).
+            Resource next = getStateBuilder(container, queryParams, template).
                 replaceLiteral(GP.offset, offset + limit).
                 build().
                 addProperty(GP.pageOf, container).
@@ -249,60 +308,75 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         return container;
     }
-     
-    public boolean hasSuperClass(OntClass subClass, OntClass superClass)
+
+    public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
     {
-        ExtendedIterator<OntClass> it = subClass.listSuperClasses(false);
+        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+            return ontClass.getPropertyValue(property).asLiteral().getLong();
         
-        try
+        return null;
+    }
+
+    public final Boolean getBooleanValue(OntClass ontClass, AnnotationProperty property)
+    {
+        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+            return ontClass.getPropertyValue(property).asLiteral().getBoolean();
+        
+        return null;
+    }
+
+    public final String getStringValue(OntClass ontClass, AnnotationProperty property)
+    {
+        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+            return ontClass.getPropertyValue(property).asLiteral().getString();
+        
+        return null;
+    }
+    
+    public URI getTypeURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
+    {
+        return getLinkHref(headerMap, "Link", RDF.type.getLocalName());
+    }
+
+    public URI getOntologyURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
+    {
+        return getLinkHref(headerMap, "Link", GP.ontology.getURI());
+    }
+
+    public URI getLinkHref(MultivaluedMap<String, Object> headerMap, String headerName, String rel) throws URISyntaxException
+    {
+	if (headerMap == null) throw new IllegalArgumentException("Header Map cannot be null");
+	if (headerName == null) throw new IllegalArgumentException("String header name cannot be null");
+        if (rel == null) throw new IllegalArgumentException("Property Map cannot be null");
+        
+        List<Object> links = headerMap.get(headerName);
+        if (links != null)
         {
+            Iterator<Object> it = links.iterator();
             while (it.hasNext())
             {
-                OntClass nextClass = it.next();
-                if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
+                String linkHeader = it.next().toString();
+                Link link = Link.valueOf(linkHeader);
+                if (link.getRel().equals(rel)) return link.getHref();
             }
         }
-        finally
+        
+        return null;
+    }
+    
+    public OntModelSpec getOntModelSpec(List<Rule> rules)
+    {
+        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
+        
+        if (rules != null)
         {
-            it.close();
+            Reasoner reasoner = new GenericRuleReasoner(rules);
+            //reasoner.setDerivationLogging(true);
+            //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
+            ontModelSpec.setReasoner(reasoner);
         }
         
-        return false;
-    }
-    
-    public Providers getProviders()
-    {
-        return providers;
-    }
-    
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
-    }
-    
-    public ServletConfig getServletConfig()
-    {
-        return servletConfig;
-    }
-    
-    public org.graphity.processor.model.Resource getMatchedResource()
-    {
-        return matchedResource;
-    }
-    
-    public OntClass getMatchedOntClass()
-    {
-        return getMatchedResource().getMatchedOntClass();
-    }
-
-    public Ontology getOntology()
-    {
-        return getMatchedResource().getOntology();
-    }
-
-    public Application getApplication()
-    {
-        return application;
+        return ontModelSpec;
     }
     
 }

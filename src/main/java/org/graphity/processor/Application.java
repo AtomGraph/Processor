@@ -46,7 +46,7 @@ import org.graphity.processor.provider.ConstraintViolationExceptionWriter;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
 import org.graphity.processor.provider.OntologyProvider;
-import org.graphity.processor.provider.OntClassProvider;
+import org.graphity.processor.provider.TemplateProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
 import org.graphity.processor.provider.SkolemizationExceptionWriter;
@@ -87,7 +87,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
         singletons.add(new OntologyProvider(getServletConfig()));
-        singletons.add(new OntClassProvider());
+        singletons.add(new TemplateProvider());
 	singletons.add(new SPARQLEndpointProvider());
 	singletons.add(new SPARQLEndpointOriginProvider());
         singletons.add(new GraphStoreProvider());

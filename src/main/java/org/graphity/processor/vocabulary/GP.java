@@ -78,8 +78,6 @@ public final class GP
 
     public static final AnnotationProperty priority = m_model.createAnnotationProperty( NS + "priority" );
 
-    public static final AnnotationProperty param = m_model.createAnnotationProperty( NS + "param" );
-    
     public static final AnnotationProperty skolemTemplate = m_model.createAnnotationProperty( NS + "skolemTemplate" );
 
     public static final AnnotationProperty loadClass = m_model.createAnnotationProperty( NS + "loadClass" );

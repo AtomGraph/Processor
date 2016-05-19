@@ -70,14 +70,6 @@
     rdfs:seeAlso <https://www.w3.org/TR/xslt20/#conflict> ;
     rdfs:isDefinedBy <#> .
 
-<#param> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range spl:Argument ;
-    rdfs:label "Parameter" ;
-    rdfs:comment "Template parameter" ;
-    rdfs:seeAlso <http://spinrdf.org/spin.html#spin-templates> ;
-    rdfs:isDefinedBy <#> .
-
 <#skolemTemplate> a owl:AnnotationProperty ;
     rdfs:domain rdfs:Class ;
     rdfs:range xsd:string ;

@@ -16,19 +16,18 @@
  */
 package org.graphity.processor.model.impl;
 
-import com.hp.hpl.jena.graph.Node;
-import org.graphity.core.util.StateBuilder;
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.sparql.util.Loader;
-import com.hp.hpl.jena.sparql.util.NodeFactoryExtra;
 import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
@@ -40,7 +39,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import org.apache.jena.riot.RiotException;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
@@ -52,9 +50,7 @@ import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
-import org.graphity.processor.exception.QueryArgumentException;
 import org.graphity.processor.exception.SitemapException;
-import org.graphity.processor.filter.response.HypermediaFilter;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
@@ -79,7 +75,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
     private final GraphStore graphStore;
     private final Ontology ontology;
-    private final OntClass matchedOntClass;
+    private final OntClass template;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
@@ -130,41 +126,41 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         ontModel.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached        
         this.ontResource = ontModel.createOntResource(getURI().toString());
         this.ontology = ontology;
-        this.matchedOntClass = ontClass;
+        this.template = ontClass;
         this.querySolutionMap = new QuerySolutionMap();
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
 
-        if (matchedOntClass.getPropertyResourceValue(GP.query) == null)
+        if (template.getPropertyResourceValue(GP.query) == null)
         {
-            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", matchedOntClass.getURI());
-            throw new SitemapException("Query not defined for template '" + matchedOntClass.getURI() +"'");
+            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", template.getURI());
+            throw new SitemapException("Query not defined for template '" + template.getURI() +"'");
         }
         
         // TO-DO: replace with rdfs:subClassOf inference and matchedOntClass.hasSuperClass(GP.Container, false)
-        if (hasSuperClass(matchedOntClass, GP.Container)) // modifiers only apply to containers
+        if (hasSuperClass(template, GP.Container)) // modifiers only apply to containers
         {
             if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
                 offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
             else
             {
-                Long defaultOffset = getLongValue(matchedOntClass, GP.defaultOffset);
+                Long defaultOffset = getLongValue(template, GP.defaultOffset);
                 if (defaultOffset != null) offset = defaultOffset;
                 else offset = Long.valueOf(0);
             }
 
             if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
                 limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-            else limit = getLongValue(matchedOntClass, GP.defaultLimit);
+            else limit = getLongValue(template, GP.defaultLimit);
 
             if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
                 orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-            else orderBy = getStringValue(matchedOntClass, GP.defaultOrderBy);
+            else orderBy = getStringValue(template, GP.defaultOrderBy);
 
             if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
                 desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-            else desc = getBooleanValue(matchedOntClass, GP.defaultDesc);
+            else desc = getBooleanValue(template, GP.defaultDesc);
         }
         else
         {
@@ -173,7 +169,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             desc = null;
         }
         
-        if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", matchedOntClass);
+        if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", template);
     }
 
     /**
@@ -195,21 +191,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     Resource constraint = stmt.getResource();
                     {
                         Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
-                        String queryVarName = predicate.getLocalName();
-                        String queryVarValue = getUriInfo().getQueryParameters(true).getFirst(queryVarName);
-                        if (queryVarValue != null)
+                        String paramName = predicate.getLocalName();
+                        String paramValue = getUriInfo().getQueryParameters().getFirst(paramName);
+                        if (paramValue != null)
                         {
-                            try
-                            {
-                                Node queryVarNode = NodeFactoryExtra.parseNode(queryVarValue);
-                                querySolutionMap.add(queryVarName, getOntology().getOntModel().asRDFNode(queryVarNode));
-                                // TO-DO: check value type using constraint's spl:valueType
-                            }
-                            catch (RiotException ex)
-                            {
-                                if (log.isErrorEnabled()) log.error("Invalid query param. Name: \"{}\" Value: \"{}\"", queryVarName, queryVarValue);
-                                throw new QueryArgumentException(ex);
-                            }
+                            Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                            if (valueType != null && valueType.equals(RDFS.Resource))                                
+                                querySolutionMap.add(paramName, ResourceFactory.createResource(paramValue));
+                            else // TO-DO: add support for datatypes other than string
+                                querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));
                         }
                     }
                 }
@@ -296,39 +286,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         return this;
     }
-    
-    /**
-     * Handles GET request and returns response with RDF description of this resource.
-     * In case this resource is a container, a redirect to its first page is returned.
-     * 
-     * @return response with RDF description, or a redirect in case of container
-     */
-    @Override
-    public Response get()
-    {
-        // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
-        if (getMatchedOntClass().equals(GP.Container) || hasSuperClass(getMatchedOntClass(), GP.Container) ||
-                getMatchedOntClass().equals(GP.Document) || hasSuperClass(getMatchedOntClass(), GP.Document))
-        {
-            // transition to a URI of another application state (HATEOAS)
-            Resource state = getStateBuilder().build();
-
-            if (!state.getURI().equals(getUriInfo().getRequestUri().toString()))
-            {
-                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
-                return Response.seeOther(URI.create(state.getURI())).build();
-            }                    
-        }
         
-        return super.get();
-    }
-    
-    public StateBuilder getStateBuilder()
-    {
-        return new HypermediaFilter(getUriInfo()).getStateBuilder(getUriInfo().getAbsolutePath().toString(),
-                getOntResource().getOntModel());
-    }
-    
     /**
      * Handles POST method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.
      * 
@@ -528,12 +486,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 getUriInfo().getBaseUri().toString()).asQuery();
         }
 
-        Resource template = getSPINTemplateFromCall(queryOrTemplateCall);
-        Statement bodyStmt = template.getProperty(SPIN.body);
+        Resource spinTemplate = getSPINTemplateFromCall(queryOrTemplateCall);
+        Statement bodyStmt = spinTemplate.getProperty(SPIN.body);
         if (bodyStmt == null || !bodyStmt.getObject().isResource())
         {
-            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", template);
-            throw new SitemapException("SPIN Template does not have a body: '" + template + "'");                            
+            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", spinTemplate);
+            throw new SitemapException("SPIN Template does not have a body: '" + spinTemplate + "'");                            
         }
         
         return getQuery(bodyStmt.getObject().asResource());
@@ -581,12 +539,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 getUriInfo().getBaseUri().toString()).asUpdate();
         }
 
-        Resource template = getSPINTemplateFromCall(updateOrTemplateCall);
-        Statement bodyStmt = template.getProperty(SPIN.body);
+        Resource spinTemplate = getSPINTemplateFromCall(updateOrTemplateCall);
+        Statement bodyStmt = spinTemplate.getProperty(SPIN.body);
         if (bodyStmt == null || !bodyStmt.getObject().isResource())
         {
-            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", template);
-            throw new SitemapException("SPIN Template does not have a body: '" + template + "'");                            
+            if (log.isErrorEnabled()) log.error("SPIN Template '{}' does not have a body", spinTemplate);
+            throw new SitemapException("SPIN Template does not have a body: '" + spinTemplate + "'");                            
         }
         
         return getUpdateRequest(bodyStmt.getObject().asResource());
@@ -739,7 +697,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public OntClass getMatchedOntClass()
     {
-	return matchedOntClass;
+	return template;
     }
 
     /**

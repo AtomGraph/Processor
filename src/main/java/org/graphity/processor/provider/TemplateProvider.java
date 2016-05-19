@@ -25,7 +25,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-import org.graphity.processor.util.OntClassMatcher;
+import org.graphity.processor.util.TemplateMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,15 +33,15 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class OntClassProvider extends PerRequestTypeInjectableProvider<Context, OntClass> implements ContextResolver<OntClass>
+public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, OntClass> implements ContextResolver<OntClass>
 {
 
-    private static final Logger log = LoggerFactory.getLogger(OntClassProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(TemplateProvider.class);
 
     @Context UriInfo uriInfo;    
     @Context Providers providers;
     
-    public OntClassProvider()
+    public TemplateProvider()
     {
         super(OntClass.class);
     }
@@ -54,7 +54,7 @@ public class OntClassProvider extends PerRequestTypeInjectableProvider<Context, 
 	    @Override
 	    public OntClass getValue()
 	    {
-                return getOntClass();
+                return getTemplate();
 	    }
 	};
     }
@@ -62,12 +62,12 @@ public class OntClassProvider extends PerRequestTypeInjectableProvider<Context, 
     @Override
     public OntClass getContext(Class<?> type)
     {
-        return getOntClass();
+        return getTemplate();
     }
     
-    public OntClass getOntClass()
+    public OntClass getTemplate()
     {
-        return new OntClassMatcher(getOntology()).match(getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
+        return new TemplateMatcher(getOntology()).match(getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
     }
     
     public UriInfo getUriInfo()

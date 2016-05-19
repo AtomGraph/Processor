@@ -42,13 +42,13 @@ import org.slf4j.LoggerFactory;
  * 
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class OntClassMatcher
+public class TemplateMatcher
 {
-    private static final Logger log = LoggerFactory.getLogger(OntClassMatcher.class);
+    private static final Logger log = LoggerFactory.getLogger(TemplateMatcher.class);
 
     private final Ontology ontology;
     
-    public OntClassMatcher(Ontology ontology)
+    public TemplateMatcher(Ontology ontology)
     {
         this.ontology = ontology;
     }
