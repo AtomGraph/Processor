@@ -16,12 +16,14 @@
 
 package org.graphity.processor.filter.response;
 
+import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.Node;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
+import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -32,6 +34,7 @@ import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.sparql.util.NodeFactoryExtra;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -66,8 +69,23 @@ public class HypermediaFilter implements ContainerResponseFilter
     
     @Context Application application;
     @Context Providers providers;
-    @Context UriInfo uriInfo;
     @Context ServletConfig servletConfig;
+    
+    private final UriInfo uriInfo;
+    private final org.graphity.processor.model.Resource matchedResource;
+    
+    public HypermediaFilter(@Context UriInfo uriInfo)
+    {
+        this.uriInfo = uriInfo;
+        
+        if (!uriInfo.getMatchedResources().isEmpty())
+        {
+            if (uriInfo.getMatchedResources().get(0) instanceof org.graphity.processor.model.Resource)
+                matchedResource = (org.graphity.processor.model.Resource)uriInfo.getMatchedResources().get(0);
+            else matchedResource = null;
+        }
+        else matchedResource = null;
+    }
     
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
@@ -75,7 +93,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        if (getResource() == null || 
+        if (getMatchedResource() == null || 
                 response.getStatusType().getFamily().equals(REDIRECTION) || response.getEntity() == null ||
                 (!(response.getEntity() instanceof Model)) && !(response.getEntity() instanceof ConstraintViolationException))
             return response;
@@ -100,22 +118,45 @@ public class HypermediaFilter implements ContainerResponseFilter
         //String limit = request.getQueryParameters(true).getFirst(GP.limit.getLocalName());
         //String offset = request.getQueryParameters(true).getFirst(GP.offset.getLocalName());
         if (resource.hasProperty(RDF.type, GP.Container))
-            addPagination(resource, getResource().getLimit(), getResource().getOffset());
+            addPagination(resource, getMatchedResource().getLimit(), getMatchedResource().getOffset());
 
         if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
         response.setEntity(infModel.getRawModel());
         return response;
     }
     
-    public StateBuilder getStateBuilder(Resource resource)
+    public StateBuilder getStateBuilder(String uri, Model model)
     {
-        StateBuilder sb = StateBuilder.fromUri(resource.getURI(), resource.getModel());
+        StateBuilder sb = StateBuilder.fromUri(uri, model);
         
-        if (getResource().getLimit() != null) sb.replaceLiteral(GP.limit, getResource().getLimit());
-        if (getResource().getOffset() != null) sb.replaceLiteral(GP.offset, getResource().getOffset());
-        if (getResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getResource().getOrderBy());
-        if (getResource().getDesc() != null) sb.replaceLiteral(GP.desc, getResource().getDesc());
+        if (getMatchedResource().getLimit() != null) sb.replaceLiteral(GP.limit, getMatchedResource().getLimit());
+        if (getMatchedResource().getOffset() != null) sb.replaceLiteral(GP.offset, getMatchedResource().getOffset());
+        if (getMatchedResource().getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getMatchedResource().getOrderBy());
+        if (getMatchedResource().getDesc() != null) sb.replaceLiteral(GP.desc, getMatchedResource().getDesc());
         
+        StmtIterator paramIt = getMatchedOntClass().listProperties(GP.param);
+        try
+        {
+            while (paramIt.hasNext())
+            {
+                Statement stmt = paramIt.next();
+                Property property = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
+                if (getUriInfo().getQueryParameters().containsKey(property.getLocalName()))
+                {
+                    String value = getUriInfo().getQueryParameters().getFirst(property.getLocalName());
+                    Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                    if (valueType != null && valueType.equals(RDFS.Resource))
+                        sb.replaceProperty(property, ResourceFactory.createResource(value));
+                    else
+                        sb.replaceLiteral(property, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
+                }
+            }
+        }
+        finally
+        {
+            paramIt.close();
+        }
+                
         return sb;
     }
 
@@ -175,7 +216,7 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         if (container == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        Resource page = getStateBuilder(container).build().
+        Resource page = getStateBuilder(container.getURI(), container.getModel()).build().
             addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
         if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
@@ -184,7 +225,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         {
             if (offset >= limit)
             {
-                Resource prev = getStateBuilder(container).
+                Resource prev = getStateBuilder(container.getURI(), container.getModel()).
                     replaceLiteral(GP.offset, offset - limit).
                     build().
                     addProperty(GP.pageOf, container).
@@ -195,7 +236,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            Resource next = getStateBuilder(container).
+            Resource next = getStateBuilder(container.getURI(), container.getModel()).
                 replaceLiteral(GP.offset, offset + limit).
                 build().
                 addProperty(GP.pageOf, container).
@@ -244,25 +285,19 @@ public class HypermediaFilter implements ContainerResponseFilter
         return servletConfig;
     }
     
-    public org.graphity.processor.model.Resource getResource()
+    public org.graphity.processor.model.Resource getMatchedResource()
     {
-        if (!getUriInfo().getMatchedResources().isEmpty())
-        {
-            Object resource = getUriInfo().getMatchedResources().get(0);
-            if (resource instanceof org.graphity.processor.model.Resource) return (org.graphity.processor.model.Resource)resource;
-        }
-        
-        return null;
+        return matchedResource;
     }
     
     public OntClass getMatchedOntClass()
     {
-        return getResource().getMatchedOntClass();
+        return getMatchedResource().getMatchedOntClass();
     }
 
     public Ontology getOntology()
     {
-        return getResource().getOntology();
+        return getMatchedResource().getOntology();
     }
 
     public Application getApplication()

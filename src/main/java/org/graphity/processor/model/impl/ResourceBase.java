@@ -54,6 +54,7 @@ import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.QueryArgumentException;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.filter.response.HypermediaFilter;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
@@ -324,14 +325,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     
     public StateBuilder getStateBuilder()
     {
-        StateBuilder sb = StateBuilder.fromUri(getUriInfo().getAbsolutePath(), getOntResource().getOntModel());
-        
-        if (getLimit() != null) sb.replaceLiteral(GP.limit, getLimit());
-        if (getOffset() != null) sb.replaceLiteral(GP.offset, getOffset());
-        if (getOrderBy() != null) sb.replaceLiteral(GP.orderBy, getOrderBy());
-        if (getDesc() != null) sb.replaceLiteral(GP.desc, getDesc());
-        
-        return sb;
+        return new HypermediaFilter(getUriInfo()).getStateBuilder(getUriInfo().getAbsolutePath().toString(),
+                getOntResource().getOntModel());
     }
     
     /**

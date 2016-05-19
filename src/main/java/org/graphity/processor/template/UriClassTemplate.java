@@ -17,9 +17,11 @@
 package org.graphity.processor.template;
 
 import com.hp.hpl.jena.ontology.OntClass;
+import com.hp.hpl.jena.rdf.model.Statement;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.util.Comparator;
 import java.util.Objects;
+import org.graphity.processor.vocabulary.GP;
 
 /**
  *
@@ -36,6 +38,14 @@ public class UriClassTemplate extends ClassTemplate
         public int compare(UriClassTemplate template1, UriClassTemplate template2)
         {
             Double diff = template2.getPrecedence() - template1.getPrecedence();
+            if (diff != 0) return diff.intValue();
+    
+            Double priority1 = Double.valueOf(0), priority2 = Double.valueOf(0);
+            Statement stmt1 = template1.getOntClass().getProperty(GP.priority);
+            if (stmt1 != null && stmt1.getObject().isLiteral()) priority1 = stmt1.getDouble();
+            Statement stmt2 = template2.getOntClass().getProperty(GP.priority);
+            if (stmt2 != null && stmt2.getObject().isLiteral()) priority2 = stmt2.getDouble();
+            diff = priority2 - priority1;
             if (diff != 0) return diff.intValue();
             
             return UriTemplate.COMPARATOR.compare(template1.getUriTemplate(), template2.getUriTemplate());
