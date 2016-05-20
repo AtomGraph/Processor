@@ -109,9 +109,10 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (resource.hasProperty(RDF.type, GP.Container) || resource.hasProperty(RDF.type, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
-                Resource state = getStateBuilder(resource, request.getQueryParameters(), template).
+                //Resource state = getStateBuilder(resource, request.getQueryParameters(), template).
+                Resource state = getStateBuilder(model.createResource(request.getRequestUri().toString()),
+                        request.getQueryParameters(), template).
                         build();
-
                 if (!state.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
@@ -120,7 +121,6 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
-            resource = applyView(resource, request.getQueryParameters(), template);
             if (resource.hasProperty(RDF.type, GP.Container))
                 addPagination(resource, request.getQueryParameters(), template);
 
@@ -148,25 +148,25 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (defaultOffset != null) offset = defaultOffset;
             else offset = Long.valueOf(0);
         }
-        if (offset != null) sb.replaceLiteral(GP.offset, offset);
+        if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
         
         final Long limit;
         if (queryParams.containsKey(GP.limit.getLocalName()))
             limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
         else limit = getLongValue(template, GP.defaultLimit);
-        if (limit != null) sb.replaceLiteral(GP.limit, limit);
+        if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
 
         final String orderBy;
         if (queryParams.containsKey(GP.orderBy.getLocalName()))
             orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
         else orderBy = getStringValue(template, GP.defaultOrderBy);
-        if (orderBy != null) sb.replaceLiteral(GP.orderBy, orderBy);
+        if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
 
         final Boolean desc;
         if (queryParams.containsKey(GP.desc.getLocalName()))
             desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
         else desc = getBooleanValue(template, GP.defaultDesc);        
-        if (desc != null) sb.replaceLiteral(GP.desc, desc);
+        if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
 
         Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
@@ -186,7 +186,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                         if (valueType != null && valueType.equals(RDFS.Resource))
                             sb.replaceProperty(predicate, ResourceFactory.createResource(value));
                         else
-                            sb.replaceLiteral(predicate, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
+                            sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
                     }
                 }
             }
@@ -197,61 +197,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         }
         
         return sb;
-    }
-
-    public Resource applyView(Resource resource, MultivaluedMap<String, String> queryParams, OntClass template)
-    {
-        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
-        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
-
-        Resource queryOrTemplate = template.getProperty(GP.query).getResource();
-        if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
-        {
-            Resource spinTemplate = queryOrTemplate.getProperty(RDF.type).getResource();
-            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
-            StateBuilder viewBuilder = StateBuilder.fromResource(resource);
-            try
-            {
-                while (constraintIt.hasNext())
-                {
-                    Statement stmt = constraintIt.next();
-                    Resource constraint = stmt.getResource();
-                    {
-                        Property predicate = constraint.getRequiredProperty(SPL.predicate).getResource().as(Property.class);
-                        String paramName = predicate.getLocalName();                        
-                        String paramValue = queryParams.getFirst(paramName);
-                        if (paramValue != null)
-                        {
-                            Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                            if (valueType != null && valueType.equals(RDFS.Resource))                                
-                                viewBuilder.replaceProperty(predicate, ResourceFactory.createResource(paramValue));
-                            else // TO-DO: add support for datatypes other than string
-                                viewBuilder.replaceLiteral(predicate, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));
-                        }
-                    }
-                }
-                
-                Resource view = viewBuilder.build();
-                if (!view.equals(resource))
-                {
-                    view.addProperty(GP.viewOf, resource);
-
-                    if (resource.hasProperty(RDF.type, GP.Container))
-                        view.addProperty(RDF.type, GP.Container);
-                    else
-                        view.addProperty(RDF.type, GP.Document);
-                    
-                    return view;
-                }
-            }
-            finally
-            {
-                constraintIt.close();
-            }
-        }
-        
-        return resource;
     }
     
     public Resource addPagination(Resource container, MultivaluedMap<String, String> queryParams, OntClass template)
@@ -285,7 +230,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (offset >= limit)
             {
                 Resource prev = getStateBuilder(container, queryParams, template).
-                    replaceLiteral(GP.offset, offset - limit).
+                    replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset - limit)).
                     build().
                     addProperty(GP.pageOf, container).
                     addProperty(RDF.type, GP.Page).
@@ -296,7 +241,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             }
 
             Resource next = getStateBuilder(container, queryParams, template).
-                replaceLiteral(GP.offset, offset + limit).
+                replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset + limit)).
                 build().
                 addProperty(GP.pageOf, container).
                 addProperty(RDF.type, GP.Page).
