@@ -139,35 +139,38 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
 
-        final Long offset;
-        if (queryParams.containsKey(GP.offset.getLocalName()))
-            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
-        else
+        if (resource.hasProperty(RDF.type, GP.Container))
         {
-            Long defaultOffset = getLongValue(template, GP.defaultOffset);
-            if (defaultOffset != null) offset = defaultOffset;
-            else offset = Long.valueOf(0);
+            final Long offset;
+            if (queryParams.containsKey(GP.offset.getLocalName()))
+                offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
+            else
+            {
+                Long defaultOffset = getLongValue(template, GP.defaultOffset);
+                if (defaultOffset != null) offset = defaultOffset;
+                else offset = Long.valueOf(0);
+            }
+            if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
+
+            final Long limit;
+            if (queryParams.containsKey(GP.limit.getLocalName()))
+                limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
+            else limit = getLongValue(template, GP.defaultLimit);
+            if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
+
+            final String orderBy;
+            if (queryParams.containsKey(GP.orderBy.getLocalName()))
+                orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
+            else orderBy = getStringValue(template, GP.defaultOrderBy);
+            if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
+
+            final Boolean desc;
+            if (queryParams.containsKey(GP.desc.getLocalName()))
+                desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
+            else desc = getBooleanValue(template, GP.defaultDesc);        
+            if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
         }
-        if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
         
-        final Long limit;
-        if (queryParams.containsKey(GP.limit.getLocalName()))
-            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
-        else limit = getLongValue(template, GP.defaultLimit);
-        if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
-
-        final String orderBy;
-        if (queryParams.containsKey(GP.orderBy.getLocalName()))
-            orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
-        else orderBy = getStringValue(template, GP.defaultOrderBy);
-        if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
-
-        final Boolean desc;
-        if (queryParams.containsKey(GP.desc.getLocalName()))
-            desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
-        else desc = getBooleanValue(template, GP.defaultDesc);        
-        if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
-
         Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
         {
