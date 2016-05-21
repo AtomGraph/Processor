@@ -103,16 +103,13 @@ public class HypermediaFilter implements ContainerResponseFilter
             long oldCount = model.size();
 
             InfModel infModel = ModelFactory.createInfModel(ontModelSpec.getReasoner(), ontModel, model);
-            Resource resource = infModel.createResource(request.getAbsolutePath().toString());        
+            Resource resource = infModel.createResource(request.getRequestUri().toString());        
 
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
             if (resource.hasProperty(RDF.type, GP.Container) || resource.hasProperty(RDF.type, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
-                //Resource state = getStateBuilder(resource, request.getQueryParameters(), template).
-                Resource state = getStateBuilder(model.createResource(request.getRequestUri().toString()),
-                        request.getQueryParameters(), template).
-                        build();
+                Resource state = getStateBuilder(resource, request.getQueryParameters(), template).build();
                 if (!state.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
@@ -121,8 +118,9 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
-            if (resource.hasProperty(RDF.type, GP.Container))
-                addPagination(resource, request.getQueryParameters(), template);
+            Resource container = infModel.createResource(request.getAbsolutePath().toString());
+            if (container.hasProperty(RDF.type, GP.Container))
+                addPagination(container, request.getQueryParameters(), template);
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
             response.setEntity(infModel.getRawModel());
