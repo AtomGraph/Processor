@@ -16,7 +16,9 @@
 
 package org.graphity.processor.filter.response;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.OntDocumentManager;
@@ -35,7 +37,6 @@ import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -103,13 +104,14 @@ public class HypermediaFilter implements ContainerResponseFilter
             long oldCount = model.size();
 
             InfModel infModel = ModelFactory.createInfModel(ontModelSpec.getReasoner(), ontModel, model);
-            Resource resource = infModel.createResource(request.getRequestUri().toString());        
+            Resource requestUri = infModel.createResource(request.getRequestUri().toString());        
+            Resource absolutePath = infModel.createResource(request.getAbsolutePath().toString());
 
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
-            if (resource.hasProperty(RDF.type, GP.Container) || resource.hasProperty(RDF.type, GP.Document))
+            if (absolutePath.hasProperty(RDF.type, GP.Container) || absolutePath.hasProperty(RDF.type, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
-                Resource state = getStateBuilder(resource, request.getQueryParameters(), template).build();
+                Resource state = getStateBuilder(requestUri, request.getQueryParameters(), template).build();
                 if (!state.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
@@ -118,11 +120,10 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
-            Resource container = infModel.createResource(request.getAbsolutePath().toString());
-            if (container.hasProperty(RDF.type, GP.Container))
-                addPagination(container, request.getQueryParameters(), template);
+            if (absolutePath.hasProperty(RDF.type, GP.Container))
+                addPagination(absolutePath, request.getQueryParameters(), template);
 
-            if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", resource.getURI(), model.size() - oldCount);
+            if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
             response.setEntity(infModel.getRawModel());
         }
         catch (URISyntaxException ex)
@@ -137,37 +138,29 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
 
-        if (resource.hasProperty(RDF.type, GP.Container))
-        {
-            final Long offset;
-            if (queryParams.containsKey(GP.offset.getLocalName()))
-                offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
-            else
-            {
-                Long defaultOffset = getLongValue(template, GP.defaultOffset);
-                if (defaultOffset != null) offset = defaultOffset;
-                else offset = Long.valueOf(0);
-            }
-            if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
+        final Long offset;
+        if (queryParams.containsKey(GP.offset.getLocalName()))
+            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
+        else offset = getLongValue(template, GP.defaultOffset);
+        if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
 
-            final Long limit;
-            if (queryParams.containsKey(GP.limit.getLocalName()))
-                limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
-            else limit = getLongValue(template, GP.defaultLimit);
-            if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
+        final Long limit;
+        if (queryParams.containsKey(GP.limit.getLocalName()))
+            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
+        else limit = getLongValue(template, GP.defaultLimit);
+        if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
 
-            final String orderBy;
-            if (queryParams.containsKey(GP.orderBy.getLocalName()))
-                orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
-            else orderBy = getStringValue(template, GP.defaultOrderBy);
-            if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
+        final String orderBy;
+        if (queryParams.containsKey(GP.orderBy.getLocalName()))
+            orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
+        else orderBy = getStringValue(template, GP.defaultOrderBy);
+        if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
 
-            final Boolean desc;
-            if (queryParams.containsKey(GP.desc.getLocalName()))
-                desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
-            else desc = getBooleanValue(template, GP.defaultDesc);        
-            if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
-        }
+        final Boolean desc;
+        if (queryParams.containsKey(GP.desc.getLocalName()))
+            desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
+        else desc = getBooleanValue(template, GP.defaultDesc);        
+        if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
         
         Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
@@ -184,8 +177,20 @@ public class HypermediaFilter implements ContainerResponseFilter
                     {
                         String value = queryParams.getFirst(predicate.getLocalName());
                         Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                        if (valueType != null && valueType.equals(RDFS.Resource))
-                            sb.replaceProperty(predicate, ResourceFactory.createResource(value));
+                        // if no spl:valueType is specified, value is treated as literal with xsd:string datatype
+                        if (valueType != null)
+                        {
+                            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
+                            if (valueType.getLocalName().equals(XSDDatatype.XSD))
+                            {
+                                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
+                                sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value,
+                                    dataType));
+                            }
+                            // otherwise, value is treated as URI resource
+                            else
+                                sb.replaceProperty(predicate, ResourceFactory.createResource(value));                                
+                        }
                         else
                             sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
                     }

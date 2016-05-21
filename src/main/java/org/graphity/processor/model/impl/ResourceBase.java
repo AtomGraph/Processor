@@ -16,7 +16,9 @@
  */
 package org.graphity.processor.model.impl;
 
+import com.hp.hpl.jena.datatypes.RDFDatatype;
 import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
+import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.ontology.*;
 import com.hp.hpl.jena.query.*;
 import com.hp.hpl.jena.rdf.model.*;
@@ -27,7 +29,6 @@ import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
-import com.hp.hpl.jena.vocabulary.RDFS;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
@@ -196,11 +197,20 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                         if (paramValue != null)
                         {
                             Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                            if (valueType != null && valueType.equals(RDFS.Resource))                                
-                                querySolutionMap.add(paramName, ResourceFactory.createResource(paramValue));
-                            else // TO-DO: add support for datatypes other than string
-                                querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));
-                        }
+                            if (valueType != null)
+                            {
+                                // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
+                                if (valueType.getLocalName().equals(XSDDatatype.XSD))
+                                {
+                                    RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
+                                    querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, dataType));
+                                }
+                                // otherwise, value is treated as URI resource
+                                else
+                                    querySolutionMap.add(paramName, ResourceFactory.createResource(paramValue));
+                            }
+                            else
+                                querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));                        }
                     }
                 }
             }
