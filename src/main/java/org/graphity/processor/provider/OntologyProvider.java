@@ -138,8 +138,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         
         if (ontologyURI == null)
         {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (gp:sitemap) not configured");
-            throw new ConfigurationException("Sitemap ontology URI (gp:sitemap) not configured");
+            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + GP.ontology.getURI() + ") not configured");
+            throw new ConfigurationException("Sitemap ontology URI (" + GP.ontology.getURI() + ") not configured");
         }
 
         return ontologyURI;
