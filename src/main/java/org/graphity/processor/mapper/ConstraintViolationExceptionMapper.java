@@ -54,8 +54,9 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
         Link baseUriLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
         
-        ResponseBuilder builder = Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
-                entity(cve).
+        ResponseBuilder builder = org.graphity.core.model.impl.Response.fromRequest(getRequest()).
+            getResponseBuilder(cve.getModel(), getVariants()).
+                status(Response.Status.BAD_REQUEST).
                 header("Link", classLink.toString()).
                 header("Link", ontologyLink.toString()).
                 header("Link", baseUriLink.toString());
