@@ -25,7 +25,6 @@ import com.hp.hpl.jena.query.QueryFactory;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.util.List;
-import org.graphity.processor.exception.ConstraintViolationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.constraints.ConstraintViolation;
@@ -49,23 +48,14 @@ public class Validator
         SPINModuleRegistry.get().registerAll(ontModel, null);
     }
 
-    public Model validate(Model model)
+    public List<ConstraintViolation> validate(Model model)
     {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
-        // It looks like we don't need annotation inheritance Rules reasoner during validation.
-        // Existing data should be valid; only the incoming RDF Model should be able to violate the constraints.
-        OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM; // getOntModel().getSpecification()
+        OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM;
         OntModel tempModel = ModelFactory.createOntologyModel(ontModelSpec);
         tempModel.add(fixOntModel(getOntModel())).add(model);
-	List<ConstraintViolation> cvs = SPINConstraints.check(tempModel, null);
-	if (!cvs.isEmpty())
-        {
-            if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-            throw new ConstraintViolationException(cvs, model);
-        }
-        
-        return model;
+	return SPINConstraints.check(tempModel, null);
     }
 
     // remove additional types from constraints, otherwise SPIN API will not find their queries :/

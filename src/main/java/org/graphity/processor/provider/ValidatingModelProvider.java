@@ -17,11 +17,14 @@
 package org.graphity.processor.provider;
 
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.List;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -29,9 +32,11 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import org.graphity.core.provider.ModelProvider;
+import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.util.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.constraints.ConstraintViolation;
 
 /**
  *
@@ -56,7 +61,17 @@ public class ValidatingModelProvider extends ModelProvider
     
     public Model validate(Model model)
     {
-        return new Validator(getOntology().getOntModel()).validate(model);
+        // annotation inheritance requires an inferencing model (mostly for rdfs:subClassOf)
+        InfModel infModel = ModelFactory.createInfModel(getOntology().getOntModel().getReasoner(), getOntology().getOntModel(), model);
+        List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(infModel);
+        
+	if (!cvs.isEmpty())
+        {
+            if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
+            throw new ConstraintViolationException(cvs, model);
+        }
+        
+        return model;
     }
         
     public Ontology getOntology()
