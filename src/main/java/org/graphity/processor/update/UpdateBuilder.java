@@ -74,6 +74,11 @@ public class UpdateBuilder implements Update
 	return fromUpdate(arq2spin.createUpdate(update, uri));
     }
 
+    public static UpdateBuilder fromUpdate(com.hp.hpl.jena.update.Update update, Model model)
+    {
+	return fromUpdate(update, null, model);
+    }
+    
     protected Resource createTripleTemplate(Statement stmt)
     {
 	if (stmt == null) throw new IllegalArgumentException("Statement cannot be null");

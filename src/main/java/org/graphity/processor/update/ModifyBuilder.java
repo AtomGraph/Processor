@@ -18,6 +18,7 @@ package org.graphity.processor.update;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.RDF;
+import org.topbraid.spin.arq.ARQ2SPIN;
 import org.topbraid.spin.model.Element;
 import org.topbraid.spin.model.ElementList;
 import org.topbraid.spin.model.SPINFactory;
@@ -57,13 +58,6 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
 
 	return fromModify((Modify)update);
     }
-
-    /*
-    public static ModifyBuilder newInstance()
-    {
-	return fromModify(ModelFactory.createDefaultModel());
-    }
-    */
     
     public static ModifyBuilder fromModify(Model model)
     {
@@ -71,6 +65,19 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
 	    addProperty(RDF.type, SP.Modify));
     }
 
+    public static ModifyBuilder fromUpdate(Update update)
+    {
+	return fromModify((Modify)update);
+    }
+    
+    public static ModifyBuilder fromUpdate(com.hp.hpl.jena.update.Update update, String uri, Model model)
+    {
+	if (update == null) throw new IllegalArgumentException("Update cannot be null");
+	
+	ARQ2SPIN arq2spin = new ARQ2SPIN(model);
+	return fromUpdate(arq2spin.createUpdate(update, uri));
+    }
+    
     public ModifyBuilder insertPattern(RDFList pattern)
     {
 	if (pattern == null) throw new IllegalArgumentException("INSERT pattern cannot be null");

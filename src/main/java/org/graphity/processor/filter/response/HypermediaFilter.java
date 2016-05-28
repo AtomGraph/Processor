@@ -111,7 +111,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (absolutePath.hasProperty(RDF.type, GP.Container) || absolutePath.hasProperty(RDF.type, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
-                Resource state = getStateBuilder(requestUri, request.getQueryParameters(), template).build();
+                Resource state = getStateBuilder(requestUri, request, template).build();
                 if (!state.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
@@ -121,7 +121,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             }
 
             if (absolutePath.hasProperty(RDF.type, GP.Container))
-                addPagination(absolutePath, request.getQueryParameters(), template);
+                addPagination(absolutePath, request, template);
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
             response.setEntity(infModel.getRawModel());
@@ -134,10 +134,15 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
     
-    public StateBuilder getStateBuilder(Resource resource, MultivaluedMap<String, String> queryParams, OntClass template)
+    public StateBuilder getStateBuilder(Resource resource, ContainerRequest request, OntClass template)
     {
-        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
+        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
 
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+        MultivaluedMap<String, String> queryParams = request.getQueryParameters();
+        
         final Long offset;
         if (queryParams.containsKey(GP.offset.getLocalName()))
             offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
@@ -205,12 +210,13 @@ public class HypermediaFilter implements ContainerResponseFilter
         return sb;
     }
     
-    public Resource addPagination(Resource container, MultivaluedMap<String, String> queryParams, OntClass template)
+    public Resource addPagination(Resource container, ContainerRequest request, OntClass template)
     {
         if (container == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
-        if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
     
+        MultivaluedMap<String, String> queryParams = request.getQueryParameters();
         final Long limit, offset;
 
         if (queryParams.containsKey(GP.offset.getLocalName()))
@@ -226,7 +232,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
         else limit = getLongValue(template, GP.defaultLimit);
         
-        Resource page = getStateBuilder(container, queryParams, template).build().
+        Resource page = getStateBuilder(container, request, template).build().
             addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
         if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
@@ -235,7 +241,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         {
             if (offset >= limit)
             {
-                Resource prev = getStateBuilder(container, queryParams, template).
+                Resource prev = getStateBuilder(container, request, template).
                     replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset - limit)).
                     build().
                     addProperty(GP.pageOf, container).
@@ -246,7 +252,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            Resource next = getStateBuilder(container, queryParams, template).
+            Resource next = getStateBuilder(container, request, template).
                 replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset + limit)).
                 build().
                 addProperty(GP.pageOf, container).
