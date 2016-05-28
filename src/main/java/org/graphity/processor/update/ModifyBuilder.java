@@ -18,10 +18,13 @@ package org.graphity.processor.update;
 
 import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.vocabulary.RDF;
+import java.net.URI;
 import org.topbraid.spin.arq.ARQ2SPIN;
 import org.topbraid.spin.model.Element;
 import org.topbraid.spin.model.ElementList;
+import org.topbraid.spin.model.NamedGraph;
 import org.topbraid.spin.model.SPINFactory;
+import org.topbraid.spin.model.Variable;
 import org.topbraid.spin.model.update.Modify;
 import org.topbraid.spin.model.update.Update;
 import org.topbraid.spin.vocabulary.SP;
@@ -92,6 +95,56 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
 	return insertPattern(createDataList(model));
     }
 
+    public ModifyBuilder insertPattern(NamedGraph graph, RDFList dataList)
+    {
+	if (graph == null) throw new IllegalArgumentException("INSERT DATA graph resource cannot be null");
+	if (dataList == null) throw new IllegalArgumentException("INSERT DATA data List resource cannot be null");
+	
+	return insertPattern(getModel().createList().
+		with(graph.addProperty(SP.elements, dataList)));
+    }
+
+    public ModifyBuilder insertPattern(NamedGraph graph, Model model)
+    {
+	return insertPattern(graph, createDataList(model));
+    }
+
+    public ModifyBuilder insertPattern(URI graphUri, RDFList dataList)
+    {
+	if (graphUri == null) throw new IllegalArgumentException("INSERT graph resource cannot be null");
+	if (dataList == null) throw new IllegalArgumentException("INSERT data List cannot be null");
+
+	NamedGraph graph = getModel().createResource().
+	    addProperty(RDF.type, SP.NamedGraph).
+	    addProperty(SP.graphNameNode, getModel().createResource(graphUri.toString())).
+	    as(NamedGraph.class);
+	
+	return insertPattern(graph, dataList);
+    }
+
+    public ModifyBuilder insertPattern(String graphVarName, RDFList dataList)
+    {
+        return insertPattern(SPINFactory.createVariable(getModel(), graphVarName), dataList);
+    }    
+
+    public ModifyBuilder insertPattern(Variable graphVar, RDFList dataList)
+    {
+	if (graphVar == null) throw new IllegalArgumentException("INSERT graph variable cannot be null");
+	if (dataList == null) throw new IllegalArgumentException("INSERT data List cannot be null");
+
+	NamedGraph graph = getModel().createResource().
+	    addProperty(RDF.type, SP.NamedGraph).
+	    addProperty(SP.graphNameNode, graphVar).
+	    as(NamedGraph.class);
+	
+	return insertPattern(graph, dataList);
+    }
+
+    public ModifyBuilder insertPattern(URI graphUri, Model model)
+    {
+	return insertPattern(graphUri, createDataList(model));
+    }
+    
     public ModifyBuilder deletePattern(RDFList pattern)
     {
 	if (pattern == null) throw new IllegalArgumentException("DELETE pattern cannot be null");

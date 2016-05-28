@@ -55,6 +55,8 @@ import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.model.NamedGraph;
+import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
 import org.topbraid.spin.vocabulary.SPL;
@@ -828,6 +830,20 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (builder == null) throw new IllegalArgumentException("ModifyBuilder cannot be null");
 
+        // inject ground triples into DELETE named graph, if it is present in the Modify
+        Resource deletePattern = builder.getPropertyResourceValue(SP.deletePattern);
+        if (deletePattern != null)
+        {
+            RDFNode deleteListHead = deletePattern.as(RDFList.class).getHead();
+            if (deleteListHead.canAs(NamedGraph.class))
+            {
+                NamedGraph deleteNamedGraph = deleteListHead.as(NamedGraph.class);
+                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(), deleteNamedGraph.getNameNode(), builder.createDataList(model));
+                return builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
+            }
+        }
+
+        // otherwise, inject ground triples into the default graph
         return builder.insertPattern(model);
     }
     

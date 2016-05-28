@@ -89,7 +89,7 @@ public class UpdateBuilder implements Update
 	    addProperty(SP.object, stmt.getObject());
     }
 
-    protected RDFList createDataList(Model model)
+    public RDFList createDataList(Model model)
     {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
