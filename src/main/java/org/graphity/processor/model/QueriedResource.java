@@ -17,6 +17,7 @@
 package org.graphity.processor.model;
 
 import org.graphity.processor.query.QueryBuilder;
+import org.graphity.processor.update.ModifyBuilder;
 
 /**
  * RDF resource, representation of which was queried from a SPARQL endpoint.
@@ -34,4 +35,6 @@ public interface QueriedResource extends org.graphity.core.model.QueriedResource
      */
     public QueryBuilder getQueryBuilder();
 
+    public ModifyBuilder getModifyBuilder();
+    
 }

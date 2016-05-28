@@ -25,14 +25,12 @@ import com.hp.hpl.jena.rdf.model.*;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.sparql.util.Loader;
-import com.hp.hpl.jena.update.UpdateFactory;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import javax.servlet.ServletConfig;
@@ -53,6 +51,7 @@ import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.query.SelectBuilder;
+import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RulePrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +83,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final Boolean desc;
     private final Long limit, offset;
     private QueryBuilder queryBuilder;
-    private UpdateRequest updateRequest;
+    private ModifyBuilder modifyBuilder;
     private final QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
 
@@ -102,18 +101,18 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      * @param endpoint SPARQL endpoint of this resource
      * @param graphStore Graph Store of this resource
      * @param ontology principal ontology
-     * @param ontClass matched ontology class
+     * @param template matched ontology class
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context OntClass ontClass,
+            @Context Ontology ontology, @Context OntClass template,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
 
-        if (ontClass == null)
+        if (template == null)
         {
             if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template OntClass, returning 404 Not Found", getURI());
             throw new NotFoundException("Resource has not matched any template");
@@ -123,11 +122,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
-        OntModel ontModel = ModelFactory.createOntologyModel(ontClass.getOntModel().getSpecification());
-        ontModel.add(ontClass.getModel()); // we don't want to make permanent changes to base ontology which is cached        
+        OntModel ontModel = ModelFactory.createOntologyModel(template.getOntModel().getSpecification());
+        ontModel.add(template.getModel()); // we don't want to make permanent changes to base ontology which is cached        
         this.ontResource = ontModel.createOntResource(getURI().toString());
         this.ontology = ontology;
-        this.template = ontClass;
+        this.template = template;
         this.querySolutionMap = new QuerySolutionMap();
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
@@ -230,7 +229,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedOntClass().getURI());
                 throw new SitemapException("Update not defined for template '" + getMatchedOntClass().getURI() +"'");
             }
-            updateRequest = getUpdateRequest(updateOrTemplateCall);
+            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(updateOrTemplateCall).getOperations().get(0), null, ModelFactory.createDefaultModel());
         }
 
         queryBuilder = QueryBuilder.fromQuery(getQuery(queryOrTemplateCall), ModelFactory.createDefaultModel());
@@ -401,7 +400,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	}
 	
 	Model description = describe();	
-	UpdateRequest deleteInsertRequest = UpdateFactory.create();
 	
 	if (!description.isEmpty()) // remove existing representation
 	{
@@ -412,23 +410,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 		if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
 		return rb.build();
 	    }
-	    
-	    UpdateRequest request = getUpdateRequest();
-	    if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-	    Iterator<com.hp.hpl.jena.update.Update> it = request.getOperations().iterator();
-	    while (it.hasNext()) deleteInsertRequest.add(it.next());
-	}
-	
-	UpdateRequest insertDataRequest; 
-	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, model).build();
-	else insertDataRequest = InsertDataBuilder.fromData(model).build();
-	if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
-	Iterator<com.hp.hpl.jena.update.Update> it = insertDataRequest.getOperations().iterator();
-	while (it.hasNext()) deleteInsertRequest.add(it.next());
-	
-	if (log.isDebugEnabled()) log.debug("Combined DELETE/INSERT DATA request: {}", deleteInsertRequest);
+        }
+        
+        UpdateRequest deleteInsertRequest = getUpdateRequest(model);
+        if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
 	getSPARQLEndpoint().post(deleteInsertRequest, null, null);
-	
 	if (description.isEmpty()) return Response.created(getURI()).build();
 	else return getResponse(model);
     }
@@ -444,7 +430,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	if (log.isDebugEnabled()) log.debug("DELETEing resource: {} matched OntClass: {}", this, getMatchedOntClass());
 	
-        UpdateRequest request = getUpdateRequest();
+        UpdateRequest request = getUpdateRequest((Model)null);
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
 	getSPARQLEndpoint().post(request, null, null);
 	
@@ -829,12 +815,29 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         
 	return queryBuilder;
     }
-    
-    public UpdateRequest getUpdateRequest()
+
+    @Override
+    public ModifyBuilder getModifyBuilder()
     {
-        if (updateRequest == null) throw new IllegalStateException("UpdateRequest should not be null at this point. Check initialization in init()");
+        if (modifyBuilder == null) throw new IllegalStateException("ModifyBuilder should not be null at this point. Check initialization in init()");
         
-        return getUpdateRequest(updateRequest.toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+	return modifyBuilder;
+    }
+
+    public ModifyBuilder getModifyBuilderWithData(ModifyBuilder builder, Model model)
+    {
+	if (builder == null) throw new IllegalArgumentException("ModifyBuilder cannot be null");
+
+        return builder.insertPattern(model);
+    }
+    
+    public UpdateRequest getUpdateRequest(Model model)
+    {
+        if (model != null && !model.isEmpty())
+            return getUpdateRequest(getModifyBuilderWithData(getModifyBuilder(), model).build().toString(),
+                    getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+            
+        return getUpdateRequest(getModifyBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
     public ParameterizedSparqlString getParameterizedSparqlString(String command, QuerySolutionMap qsm, String baseUri)
