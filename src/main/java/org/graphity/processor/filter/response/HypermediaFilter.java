@@ -36,7 +36,9 @@ import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
+import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.XSD;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
@@ -108,7 +110,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             Resource absolutePath = infModel.createResource(request.getAbsolutePath().toString());
 
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
-            if (absolutePath.hasProperty(RDF.type, GP.Container) || absolutePath.hasProperty(RDF.type, GP.Document))
+            if (hasSuperClass(template, GP.Container) || hasSuperClass(template, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
                 Resource state = getStateBuilder(requestUri, request, template).build();
@@ -120,7 +122,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
-            if (absolutePath.hasProperty(RDF.type, GP.Container))
+            if (hasSuperClass(template, GP.Container))
                 addPagination(absolutePath, request, template);
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
@@ -186,7 +188,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                         if (valueType != null)
                         {
                             // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-                            if (valueType.getLocalName().equals(XSDDatatype.XSD))
+                            if (valueType.getNameSpace().equals(XSD.getURI()))
                             {
                                 RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
                                 sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value,
@@ -232,9 +234,12 @@ public class HypermediaFilter implements ContainerResponseFilter
             limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
         else limit = getLongValue(template, GP.defaultLimit);
         
-        Resource page = getStateBuilder(container, request, template).build().
-            addProperty(GP.pageOf, container).
+        Resource page = getStateBuilder(container, request, template).build();
+        if (!page.equals(container))
+        {
+            page.addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
+        }
         if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
 
         if (limit != null)
@@ -334,6 +339,19 @@ public class HypermediaFilter implements ContainerResponseFilter
         }
         
         return ontModelSpec;
+    }
+
+    public final boolean hasSuperClass(OntClass subClass, OntClass superClass)
+    {
+        ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
+        
+        while (extIt.hasNext())
+        {
+            OntClass nextClass = extIt.next();
+            if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
+        }
+
+        return false;
     }
     
 }

@@ -28,6 +28,7 @@ import com.hp.hpl.jena.sparql.util.Loader;
 import com.hp.hpl.jena.update.UpdateRequest;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.hp.hpl.jena.vocabulary.RDF;
+import com.hp.hpl.jena.vocabulary.XSD;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
@@ -201,7 +202,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                             if (valueType != null)
                             {
                                 // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-                                if (valueType.getLocalName().equals(XSDDatatype.XSD))
+                                if (valueType.getNameSpace().equals(XSD.getURI()))
                                 {
                                     RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
                                     querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, dataType));
@@ -380,20 +381,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Response put(Model model)
     {
-	return put(model, null);
-    }
-    
-    /**
-     * Handles PUT method, stores the submitted RDF model in the specified named graph of the specified SPARQL endpoint, and returns response.
-     * 
-     * @param model RDF payload
-     * @param graphURI target graph name
-     * @return response
-     */
-    public Response put(Model model, URI graphURI)
-    {
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-	if (log.isDebugEnabled()) log.debug("PUT Model: {} GRAPH URI: {}", model, graphURI);
+	if (log.isDebugEnabled()) log.debug("PUT Model: {}", model);
 
 	if (!model.containsResource(getOntResource()))
 	{
