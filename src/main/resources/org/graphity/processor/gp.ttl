@@ -459,11 +459,11 @@
 <#DescribeWithTopic> a sp:Describe, sp:Query ; # <#Query>  ;
     sp:text """PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
 
-DESCRIBE ?this ?topic
+DESCRIBE ?this ?primaryTopic
 WHERE
   { ?this ?p ?o
     OPTIONAL
-      { ?this foaf:primaryTopic ?topic }
+      { ?this foaf:primaryTopic ?primaryTopic }
   }""" .
     # rdfs:label "Describe with topic" ;
     # rdfs:isDefinedBy <#> .
@@ -474,7 +474,7 @@ WHERE
     sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
 PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
 
-DESCRIBE ?this ?child ?childPrimaryTopic
+DESCRIBE ?this ?primaryTopic ?child ?childPrimaryTopic
 WHERE
   { ?this ?p ?o 
     OPTIONAL
