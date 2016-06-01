@@ -384,12 +384,16 @@
   sp:text """
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX spin:    <http://spinrdf.org/spin#>
+      PREFIX spl:     <http://spinrdf.org/spl#>
 
       CONSTRUCT {
           ?this rdfs:label " " ;
             spin:body _:body ;
             spin:labelTemplate " " ;
-            spin:constraint _:constraint .
+            spin:constraint [ a spl:Argument ;
+                spl:predicate _:predicate ;
+                spl:valueType _:valueType
+            ] .
       }
       WHERE {}""" .
     # rdfs:label "Query template constructor" ;
@@ -443,13 +447,6 @@
     sp:arg1 <#slug> ;
     rdfs:isDefinedBy <#> .
 
-#<#MissingDocumentType> a <#Constraint>, <#MissingPropertyValue> ;
-#    rdfs:label "Missing rdf:type foaf:Document" ;
-#    sp:arg1 rdf:type ;
-#    sp:arg2 foaf:Document ;
-#    rdfs:isDefinedBy <#> .
-
-
 # QUERIES
 
 <#Describe> a sp:Describe, sp:Query ; # <#Query> ;
@@ -460,43 +457,40 @@
 # ====
 
 <#DescribeWithTopic> a sp:Describe, sp:Query ; # <#Query>  ;
-    sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-DESCRIBE ?this ?topic WHERE {
-    ?topic foaf:isPrimaryTopicOf ?this .
-}""" .
+    sp:text """PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
+
+DESCRIBE ?this ?topic
+WHERE
+  { ?this ?p ?o
+    OPTIONAL
+      { ?this foaf:primaryTopic ?topic }
+  }""" .
     # rdfs:label "Describe with topic" ;
     # rdfs:isDefinedBy <#> .
 
 # ====
 
 <#DescribeWithChildren> a sp:Describe, sp:Query ; # <#Query>  ;
-    sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-PREFIX sioc: <http://rdfs.org/sioc/ns#>
-DESCRIBE ?this ?doc ?thing WHERE {
-    OPTIONAL {
-        {
-            ?thing foaf:isPrimaryTopicOf ?this .
+    sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
+PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
+
+DESCRIBE ?this ?child ?childPrimaryTopic
+WHERE
+  { ?this ?p ?o 
+    OPTIONAL
+      { ?this foaf:primaryTopic ?primaryTopic }
+    OPTIONAL
+      { { SELECT DISTINCT ?child ?childPrimaryTopic
+          WHERE
+            {   { ?child sioc:has_parent ?this }
+              UNION
+                { ?child sioc:has_container ?this }
+              OPTIONAL
+                { ?child foaf:primaryTopic ?childPrimaryTopic }
+            }
         }
-        UNION
-        {
-            {
-                SELECT DISTINCT ?doc ?thing
-                WHERE {
-                    {
-                        ?doc sioc:has_parent ?this
-                    }
-                    UNION
-                    {
-                        ?doc sioc:has_container ?this
-                    }
-                    OPTIONAL {
-                        ?doc foaf:primaryTopic ?thing .
-                    } .
-                }
-            } .
-        } .
-    } .
-}""" .
+      }
+  }""" .
     # rdfs:label "Describe with children" ;
     # rdfs:isDefinedBy <#> .
 

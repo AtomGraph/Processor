@@ -12,8 +12,8 @@
 <> a gp:Container ;
     dct:title "Graphity Processor" ;
     dct:description "Generic Linked Data processor" ;
-    foaf:maker <http://graphityhq.com/#company> ;
-    rdfs:seeAlso gps: , <sparql>, <http://graphityhq.com>, <http://graphity.org> .
+    foaf:maker <http://atomgraph.com/#company> ;
+    rdfs:seeAlso gps: , <sparql>, <http://atomgraph.com>, <http://github.com/AtomGraph> .
 
 <sparql> a gp:SPARQLEndpoint ;
     sioc:has_space <> ;
