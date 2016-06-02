@@ -30,7 +30,6 @@ import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.reasoner.Reasoner;
@@ -113,17 +112,25 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (hasSuperClass(template, GP.Container) || hasSuperClass(template, GP.Document))
             {
                 // transition to a URI of another application state (HATEOAS)
-                Resource state = getStateBuilder(requestUri, request, template).build();
-                if (!state.getURI().equals(request.getRequestUri().toString()))
+                Resource defaultState = getPageBuilder(requestUri,
+                        getOffset(request, template), getLimit(request, template),
+                        getOrderBy(request, template), getDesc(request, template)).build();
+                if (!defaultState.getURI().equals(request.getRequestUri().toString()))
                 {
-                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", state.getURI());
-                    response.setResponse(Response.seeOther(URI.create(state.getURI())).build());
+                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
+                    response.setResponse(Response.seeOther(URI.create(defaultState.getURI())).build());
                     return response;
                 }                    
             }
 
+            Resource view = getViewBuilder(absolutePath, request, template).build();
+            if (!view.equals(absolutePath))
+                view.addProperty(GP.viewOf, absolutePath).
+                addProperty(RDF.type, GP.View);
+            
             if (hasSuperClass(template, GP.Container))
-                addPagination(absolutePath, request, template);
+                addPagination(view, getOffset(request, template), getLimit(request, template),
+                        getOrderBy(request, template), getDesc(request, template));
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
             response.setEntity(infModel.getRawModel());
@@ -136,38 +143,27 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
     
-    public StateBuilder getStateBuilder(Resource resource, ContainerRequest request, OntClass template)
+    public StateBuilder getPageBuilder(Resource resource, Long offset, Long limit, String orderBy, Boolean desc)
+    {
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+        
+        if (offset != null) sb.replaceProperty(GP.offset, resource.getModel().createTypedLiteral(offset));
+        if (limit != null) sb.replaceProperty(GP.limit, resource.getModel().createTypedLiteral(limit));
+        if (orderBy != null) sb.replaceProperty(GP.orderBy, resource.getModel().createTypedLiteral(orderBy));
+        if (desc != null) sb.replaceProperty(GP.desc, resource.getModel().createTypedLiteral(desc));        
+        
+        return sb;
+    }
+
+    public StateBuilder getViewBuilder(Resource resource, ContainerRequest request, OntClass template)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
-
-        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
-        MultivaluedMap<String, String> queryParams = request.getQueryParameters();
         
-        final Long offset;
-        if (queryParams.containsKey(GP.offset.getLocalName()))
-            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
-        else offset = getLongValue(template, GP.defaultOffset);
-        if (offset != null) sb.replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset));
-
-        final Long limit;
-        if (queryParams.containsKey(GP.limit.getLocalName()))
-            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
-        else limit = getLongValue(template, GP.defaultLimit);
-        if (limit != null) sb.replaceProperty(GP.limit, ResourceFactory.createTypedLiteral(limit));
-
-        final String orderBy;
-        if (queryParams.containsKey(GP.orderBy.getLocalName()))
-            orderBy = queryParams.getFirst(GP.orderBy.getLocalName());
-        else orderBy = getStringValue(template, GP.defaultOrderBy);
-        if (orderBy != null) sb.replaceProperty(GP.orderBy, ResourceFactory.createTypedLiteral(orderBy));
-
-        final Boolean desc;
-        if (queryParams.containsKey(GP.desc.getLocalName()))
-            desc = Boolean.parseBoolean(queryParams.getFirst(GP.orderBy.getLocalName()));
-        else desc = getBooleanValue(template, GP.defaultDesc);        
-        if (desc != null) sb.replaceProperty(GP.desc, ResourceFactory.createTypedLiteral(desc));
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
         
         Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
@@ -180,9 +176,9 @@ public class HypermediaFilter implements ContainerResponseFilter
                 {
                     Statement stmt = constraintIt.next();
                     Property predicate = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
-                    if (queryParams.containsKey(predicate.getLocalName()))
+                    if (request.getQueryParameters().containsKey(predicate.getLocalName()))
                     {
-                        String value = queryParams.getFirst(predicate.getLocalName());
+                        String value = request.getQueryParameters().getFirst(predicate.getLocalName());
                         Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
                         // if no spl:valueType is specified, value is treated as literal with xsd:string datatype
                         if (valueType != null)
@@ -191,15 +187,13 @@ public class HypermediaFilter implements ContainerResponseFilter
                             if (valueType.getNameSpace().equals(XSD.getURI()))
                             {
                                 RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                                sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value,
-                                    dataType));
+                                sb.replaceProperty(predicate, resource.getModel().createTypedLiteral(value, dataType));
                             }
                             // otherwise, value is treated as URI resource
                             else
-                                sb.replaceProperty(predicate, ResourceFactory.createResource(value));                                
-                        }
+                                sb.replaceProperty(predicate, resource.getModel().createResource(value));                        }
                         else
-                            sb.replaceProperty(predicate, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
+                            sb.replaceProperty(predicate, resource.getModel().createTypedLiteral(value, XSDDatatype.XSDstring));
                     }
                 }
             }
@@ -211,44 +205,62 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         return sb;
     }
+
+    public Long getOffset(ContainerRequest request, OntClass template)
+    {
+        final Long offset;
+        if (request.getQueryParameters().containsKey(GP.offset.getLocalName()))
+            offset = Long.parseLong(request.getQueryParameters().getFirst(GP.offset.getLocalName()));
+        else offset = getLongValue(template, GP.defaultOffset);
+        return offset;
+    }
+
+    public Long getLimit(ContainerRequest request, OntClass template)
+    {
+        final Long limit;
+        if (request.getQueryParameters().containsKey(GP.limit.getLocalName()))
+            limit = Long.parseLong(request.getQueryParameters().getFirst(GP.limit.getLocalName()));
+        else limit = getLongValue(template, GP.defaultLimit);
+        return limit;
+    }
+
+    public String getOrderBy(ContainerRequest request, OntClass template)
+    {
+        final String orderBy;
+        if (request.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
+            orderBy = request.getQueryParameters().getFirst(GP.orderBy.getLocalName());
+        else orderBy = getStringValue(template, GP.defaultOrderBy);
+        return orderBy;
+    }
     
-    public Resource addPagination(Resource container, ContainerRequest request, OntClass template)
+    public Boolean getDesc(ContainerRequest request, OntClass template)
+    {
+        final Boolean desc;
+        if (request.getQueryParameters().containsKey(GP.desc.getLocalName()))
+            desc = Boolean.parseBoolean(request.getQueryParameters().getFirst(GP.desc.getLocalName()));
+        else desc = getBooleanValue(template, GP.defaultDesc);        
+        return desc;
+    }
+    
+    public void addPagination(Resource container, Long offset, Long limit, String orderBy, Boolean desc)
     {
         if (container == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
-        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
-    
-        MultivaluedMap<String, String> queryParams = request.getQueryParameters();
-        final Long limit, offset;
-
-        if (queryParams.containsKey(GP.offset.getLocalName()))
-            offset = Long.parseLong(queryParams.getFirst(GP.offset.getLocalName()));
-        else
-        {
-            Long defaultOffset = getLongValue(template, GP.defaultOffset);
-            if (defaultOffset != null) offset = defaultOffset;
-            else offset = Long.valueOf(0);
-        }
-
-        if (queryParams.containsKey(GP.limit.getLocalName()))
-            limit = Long.parseLong(queryParams.getFirst(GP.limit.getLocalName()));
-        else limit = getLongValue(template, GP.defaultLimit);
-        
-        Resource page = getStateBuilder(container, request, template).build();
+            
+        Resource page = getPageBuilder(container, offset, limit, orderBy, desc).build();
         if (!page.equals(container))
         {
+            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
             page.addProperty(GP.pageOf, container).
             addProperty(RDF.type, GP.Page);
         }
-        if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
 
         if (limit != null)
         {
+            if (offset == null) offset = Long.valueOf(0);
+            
             if (offset >= limit)
             {
-                Resource prev = getStateBuilder(container, request, template).
-                    replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset - limit)).
-                    build().
+                Resource prev = getPageBuilder(container, offset - limit, limit, orderBy, desc).build().
                     addProperty(GP.pageOf, container).
                     addProperty(RDF.type, GP.Page).
                     addProperty(XHV.next, page);
@@ -257,9 +269,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            Resource next = getStateBuilder(container, request, template).
-                replaceProperty(GP.offset, ResourceFactory.createTypedLiteral(offset + limit)).
-                build().
+            Resource next = getPageBuilder(container, offset + limit, limit, orderBy, desc).build().
                 addProperty(GP.pageOf, container).
                 addProperty(RDF.type, GP.Page).
                 addProperty(XHV.prev, page);
@@ -268,7 +278,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             page.addProperty(XHV.next, next);
         }
         
-        return container;
+        //return container;
     }
 
     public final Long getLongValue(OntClass ontClass, AnnotationProperty property)

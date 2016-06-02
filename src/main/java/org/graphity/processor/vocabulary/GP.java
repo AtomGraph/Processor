@@ -61,6 +61,8 @@ public final class GP
     public static final OntClass Document = m_model.createClass( NS + "Document" );
 
     public static final OntClass Page = m_model.createClass( NS + "Page" );
+    
+    public static final OntClass View = m_model.createClass( NS + "View" );    
 
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );
 
