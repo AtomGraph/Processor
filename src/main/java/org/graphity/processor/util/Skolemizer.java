@@ -45,7 +45,6 @@ import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.util.JenaUtil;
 
 /**
  * Builder class that can build URIs from templates for RDF resources as well as models.
@@ -116,7 +115,7 @@ public class Skolemizer
             OntClass typeClass = matchedTypes.first().getOntClass();
             if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
 
-            // optionally, skolemization template builds with absolute path builder (e.g. "{slug}")
+            // skolemization template builds with absolute path builder (e.g. "{slug}")
             String skolemTemplate = getStringValue(typeClass, GP.skolemTemplate);
             if (skolemTemplate != null)
             {
@@ -134,19 +133,9 @@ public class Skolemizer
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
             }
 
-            // add fragment identifier for non-information resources
-            boolean isInfoRes = true;
-            StmtIterator it = resource.listProperties(RDF.type);
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                Resource type = getOntology().getOntModel().getResource(stmt.getResource().getURI());
-                if (JenaUtil.hasSuperClass(type, GP.Document)) isInfoRes = false;
-                //if (hasSuperClass(type, FOAF.Document));
-            }
-            if (isInfoRes) builder.fragment("this"); // TO-DO: unique identifiers per resource?
-            
-            return builder.buildFromMap(nameValueMap); // if (!nameValueMap.isEmpty())
+            // add fragment identifier
+            String fragmentTemplate = getStringValue(typeClass, GP.fragmentTemplate);            
+            return builder.fragment(fragmentTemplate).buildFromMap(nameValueMap);
         }
         
         return null;

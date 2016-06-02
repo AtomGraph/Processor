@@ -74,7 +74,16 @@
     rdfs:domain rdfs:Class ;
     rdfs:range xsd:string ;
     rdfs:label "Skolemization template" ;
-    rdfs:comment "Container-relative URI template for blank node skolemization (JAX-RS syntax)" ;
+    rdfs:comment "Parent-relative URI template for blank node skolemization (JAX-RS syntax)" ;
+    rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html>,
+        <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
+    rdfs:isDefinedBy <#> .
+
+<#fragmentTemplate> a owl:AnnotationProperty ;
+    rdfs:domain rdfs:Class ;
+    rdfs:range xsd:string ;
+    rdfs:label "Fragment template" ;
+    rdfs:comment "URI fragment template for blank node skolemization (JAX-RS syntax)" ;
     rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html>,
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
@@ -199,6 +208,7 @@
     rdfs:label "Resource template" ;
     rdfs:comment "A class of RDF resources that share the same URI template and SPARQL query template" ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    <#fragmentTemplate> "this" ;
     spin:constructor <#TemplateConstructor> ;
     spin:constraint <#MissingRDFSLabel> , <#MissingRDFSisDefinedBy> ,
         #[ a <#MissingPropertyValue> ;
@@ -231,6 +241,7 @@
               rdfs:label " " ;
               gp:path " " ;
               gp:skolemTemplate " " ;
+              gp:fragmentTemplate " " ;
               gp:defaultLimit 20 ;
               gp:defaultOffset 0 ;
               gp:defaultOrderBy " " ;
@@ -251,6 +262,7 @@
         owl:unionOf (sp:Describe sp:Construct)
     ] ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    <#fragmentTemplate> "this" ;
     spin:constructor <#QueryConstructor> ;
     spin:constraint <#MissingRDFSLabel>,
         [ a <#MissingPropertyValue> ;
@@ -278,6 +290,7 @@
 <#Update> a rdfs:Class ;
     rdfs:subClassOf sp:Update ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    <#fragmentTemplate> "this" ;
     spin:constructor <#UpdateConstructor> ;
     spin:constraint <#MissingRDFSLabel> ,
         [ a <#MissingPropertyValue> ;
@@ -318,6 +331,7 @@
 
 <#Constraint> a rdfs:Class ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    <#fragmentTemplate> "this" ;
     spin:constructor <#ConstraintConstructor> ;
     spin:constraint <#MissingRDFSLabel> ;
     rdfs:label "Constraint" ;
@@ -375,6 +389,7 @@
 <#QueryTemplate> a rdfs:Class ;
     rdfs:subClassOf spin:Template ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
+    <#fragmentTemplate> "this" ;
     spin:constructor <#QueryTemplateConstructor> ;
     spin:constraint <#MissingRDFSLabel> ;
     rdfs:label "Query template" ;
