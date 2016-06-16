@@ -237,7 +237,7 @@
       PREFIX gp:      <http://graphity.org/gp#>
 
       CONSTRUCT {
-          ?this rdfs:subClassOf gp:Document ;
+          ?this rdfs:subClassOf [ a rdfs:Class ] ;
               rdfs:label " " ;
               gp:path " " ;
               gp:skolemTemplate " " ;
@@ -246,12 +246,12 @@
               gp:defaultOffset 0 ;
               gp:defaultOrderBy " " ;
               gp:cacheControl "no-cache" ;
-              gp:loadClass _:loadClass ;
+              gp:loadClass [ a rdfs:Resource ] ;
               gp:query gp:Describe ;
               gp:update gp:Delete ;
-              spin:constraint _:constraint ;
-              spin:constructor _:constructor ;
-              rdfs:isDefinedBy _:isDefinedBy .
+              spin:constraint [ a rdfs:Resource ] ;
+              spin:constructor [ a spin:Rule ] ;
+              rdfs:isDefinedBy [ a gp:Ontology ] .
       }
       WHERE {}""" .
     # rdfs:label "Template constructor" ;
@@ -275,13 +275,14 @@
 <#QueryConstructor> a sp:Construct, sp:Query ; # <#Query> ;
   sp:text """
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX gp:      <http://graphity.org/gp#>
       PREFIX xsd:     <http://www.w3.org/2001/XMLSchema#>
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
           ?this rdfs:label " " ;
               sp:text "DESCRIBE ?this" .
-              # rdfs:isDefinedBy _:isDefinedBy .
+              # rdfs:isDefinedBy [ a gp:Ontology ] .
       }
       WHERE {}""" .
     # rdfs:label "Query constructor" ;
@@ -304,6 +305,7 @@
   sp:text """
       PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX gp:      <http://graphity.org/gp#>
       PREFIX sp:      <http://spinrdf.org/sp#>
 
       CONSTRUCT {
@@ -311,7 +313,7 @@
               rdfs:label " " ;
               rdfs:comment " " ;
               sp:text "DELETE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nINSERT\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}\\r\\nWHERE\\r\\n{\\r\\n  ?s ?p ?o\\r\\n}" ;
-              rdfs:isDefinedBy _:isDefinedBy .
+              rdfs:isDefinedBy [ a gp:Ontology ] .
       }
       WHERE {}""" .
     # rdfs:label "Update constructor" ;
@@ -344,8 +346,8 @@
 
       CONSTRUCT {
           ?this rdfs:label " " ;
-            sp:arg1 _:arg1 ;
-            sp:arg2 _:arg2 .
+            sp:arg1 [ a rdfs:Resource ] ;
+            sp:arg2 [ a rdfs:Resource ] .
       }
       WHERE {}""" .
     # rdfs:label "Constraint constructor" ;
@@ -398,16 +400,17 @@
 <#QueryTemplateConstructor> a sp:Construct, sp:Query ; # <#Query> ;
   sp:text """
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+      PREFIX gp:      <http://graphity.org/gp#>
       PREFIX spin:    <http://spinrdf.org/spin#>
       PREFIX spl:     <http://spinrdf.org/spl#>
 
       CONSTRUCT {
           ?this rdfs:label " " ;
-            spin:body _:body ;
+            spin:body [ a gp:Query ] ;
             spin:labelTemplate " " ;
             spin:constraint [ a spl:Argument ;
-                spl:predicate _:predicate ;
-                spl:valueType _:valueType
+                spl:predicate [ a rdfs:Resource ] ;
+                spl:valueType [ a rdfs:Resource ]
             ] .
       }
       WHERE {}""" .
