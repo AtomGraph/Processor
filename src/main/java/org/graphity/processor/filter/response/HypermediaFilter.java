@@ -21,13 +21,9 @@ import com.hp.hpl.jena.datatypes.xsd.XSDDatatype;
 import com.hp.hpl.jena.graph.NodeFactory;
 import com.hp.hpl.jena.ontology.AnnotationProperty;
 import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.InfModel;
 import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.rdf.model.Property;
 import com.hp.hpl.jena.rdf.model.Resource;
 import com.hp.hpl.jena.rdf.model.Statement;
@@ -53,6 +49,7 @@ import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
@@ -91,11 +88,10 @@ public class HypermediaFilter implements ContainerResponseFilter
             Object rulesString = response.getHttpHeaders().getFirst("Rules");
             if (rulesString == null) return response;
 
-            OntModelSpec ontModelSpec = getOntModelSpec(Rule.parseRules(rulesString.toString()));
-            OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyHref.toString(), ontModelSpec);
-            Ontology ontology = ontModel.getOntology(ontologyHref.toString());
+            OntologyProvider provider = new OntologyProvider(null);
+            Ontology ontology = provider.getOntology(ontologyHref.toString(), provider.getOntModelSpec(Rule.parseRules(rulesString.toString())));
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
-            OntClass template = ontModel.getOntClass(typeHref.toString());
+            OntClass template = ontology.getOntModel().getOntClass(typeHref.toString());
 
             Model model;
             if (response.getEntity() instanceof ConstraintViolationException)
@@ -104,9 +100,8 @@ public class HypermediaFilter implements ContainerResponseFilter
                 model = (Model)response.getEntity();
             long oldCount = model.size();
 
-            InfModel infModel = ModelFactory.createInfModel(ontModelSpec.getReasoner(), ontModel, model);
-            Resource requestUri = infModel.createResource(request.getRequestUri().toString());        
-            Resource absolutePath = infModel.createResource(request.getAbsolutePath().toString());
+            Resource requestUri = model.createResource(request.getRequestUri().toString());        
+            Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
 
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
             if (hasSuperClass(template, GP.Container) || hasSuperClass(template, GP.Document))
@@ -133,7 +128,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                         getOrderBy(request, template), getDesc(request, template));
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
-            response.setEntity(infModel.getRawModel());
+            response.setEntity(model);
         }
         catch (URISyntaxException ex)
         {
@@ -147,7 +142,7 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 
-        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI(), resource.getModel());
         
         if (offset != null) sb.replaceProperty(GP.offset, resource.getModel().createTypedLiteral(offset));
         if (limit != null) sb.replaceProperty(GP.limit, resource.getModel().createTypedLiteral(limit));
@@ -163,7 +158,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
         
-        StateBuilder sb = StateBuilder.fromUri(resource.getURI().toString(), resource.getModel());
+        StateBuilder sb = StateBuilder.fromUri(resource.getURI(), resource.getModel());
         
         Resource queryOrTemplate = template.getProperty(GP.query).getResource();
         if (!queryOrTemplate.hasProperty(RDF.type, SP.Query))
