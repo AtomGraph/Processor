@@ -570,13 +570,14 @@ WHERE {
 # ====
 
 <#ConstructMissingPropertyValue> a sp:Construct, sp:Query ; # <#Query> ;
-      sp:text """CONSTRUCT {
+      sp:text """PREFIX spin:	<http://spinrdf.org/spin#>
+CONSTRUCT {
     _:b0 a spin:ConstraintViolation .
     _:b0 spin:violationRoot ?this .
     _:b0 spin:violationPath ?arg1 .
 }
 WHERE {
-    NOT EXISTS {
+    FILTER NOT EXISTS {
         ?this ?arg1 ?arg2 .
     } 
 }""" .

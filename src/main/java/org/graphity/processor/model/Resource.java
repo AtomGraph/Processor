@@ -18,6 +18,7 @@ package org.graphity.processor.model;
 
 import com.hp.hpl.jena.ontology.OntClass;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.rdf.model.Model;
 
 /**
  *
@@ -28,7 +29,9 @@ public interface Resource extends QueriedResource
     
     public Ontology getOntology();
     
-    public OntClass getMatchedOntClass();
+    public OntClass getMatchedTemplate();
+    
+    public Model getCommandModel();
         
     /**
      * Returns value of <samp>limit</samp> query string parameter, which indicates the number of resources per page.
