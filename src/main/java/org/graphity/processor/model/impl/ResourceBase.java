@@ -187,7 +187,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         Resource queryOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.query);
         if (!queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
-            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall));
+            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall), getUriInfo().getQueryParameters());
         else querySolutionMap = new QuerySolutionMap();
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
@@ -471,12 +471,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return typeStmt.getResource();
     }
 
-    public QuerySolutionMap getQuerySolutionMap(Resource spinTemplate)
+    public QuerySolutionMap getQuerySolutionMap(Resource spinTemplate, MultivaluedMap<String, String> queryParams)
     {
 	if (spinTemplate == null) throw new IllegalArgumentException("Resource cannot be null");
-        
+	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
+
         QuerySolutionMap qsm = new QuerySolutionMap();
-        
+
         StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
         try
         {
@@ -487,24 +488,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 {
                     Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
                     String paramName = predicate.getLocalName();
-                    String paramValue = getUriInfo().getQueryParameters().getFirst(paramName);
+                    String paramValue = queryParams.getFirst(paramName);
                     if (paramValue != null)
                     {
                         Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                        if (valueType != null)
-                        {
-                            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-                            if (valueType.getNameSpace().equals(XSD.getURI()))
-                            {
-                                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                                qsm.add(paramName, ResourceFactory.createTypedLiteral(paramValue, dataType));
-                            }
-                            // otherwise, value is treated as URI resource
-                            else
-                                qsm.add(paramName, ResourceFactory.createResource(paramValue));
-                        }
-                        else
-                            qsm.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));                        }
+                        qsm.addAll(getQuerySolutionMap(paramName, paramValue, valueType));
+                    }
                 }
             }
         }
@@ -512,6 +501,31 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         {
             constraintIt.close();
         }
+        
+        return qsm;
+    }
+
+    public QuerySolutionMap getQuerySolutionMap(String name, String value, Resource valueType)
+    {
+	if (name == null) throw new IllegalArgumentException("Param name cannot be null");
+	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
+
+        QuerySolutionMap qsm = new QuerySolutionMap();
+    
+        if (valueType != null)
+        {
+            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
+            if (valueType.getNameSpace().equals(XSD.getURI()))
+            {
+                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
+                qsm.add(name, ResourceFactory.createTypedLiteral(value, dataType));
+            }
+            // otherwise, value is treated as URI resource
+            else
+                qsm.add(name, ResourceFactory.createResource(value));
+        }
+        else
+            qsm.add(name, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
         
         return qsm;
     }
