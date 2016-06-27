@@ -511,23 +511,29 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
 
         QuerySolutionMap qsm = new QuerySolutionMap();
+        qsm.add(name, getNodeByValueType(value, valueType));
+        
+        return qsm;
+    }
     
+    public RDFNode getNodeByValueType(String value, Resource valueType)
+    {
+	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
+        
         if (valueType != null)
         {
             // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
             if (valueType.getNameSpace().equals(XSD.getURI()))
             {
                 RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                qsm.add(name, ResourceFactory.createTypedLiteral(value, dataType));
+                return ResourceFactory.createTypedLiteral(value, dataType);
             }
             // otherwise, value is treated as URI resource
             else
-                qsm.add(name, ResourceFactory.createResource(value));
+                return ResourceFactory.createResource(value);
         }
         else
-            qsm.add(name, ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring));
-        
-        return qsm;
+            return ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring);
     }
     
     /**
