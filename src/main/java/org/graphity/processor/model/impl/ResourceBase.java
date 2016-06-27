@@ -91,7 +91,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final Model commandModel;
     private QueryBuilder queryBuilder;
     private ModifyBuilder modifyBuilder;
-    private final QuerySolutionMap querySolutionMap;
+    private QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
 
     /**
@@ -134,7 +134,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.ontResource = ontModel.createOntResource(getURI().toString());
         this.ontology = ontology;
         this.template = template;
-        this.querySolutionMap = new QuerySolutionMap();
         this.commandModel = ModelFactory.createDefaultModel();
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
@@ -188,44 +187,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         Resource queryOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.query);
         if (!queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
-        {
-            Resource spinTemplate = getSPINTemplateFromCall(queryOrTemplateCall);
-            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
-            try
-            {
-                while (constraintIt.hasNext())
-                {
-                    Statement stmt = constraintIt.next();
-                    Resource constraint = stmt.getResource();
-                    {
-                        Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
-                        String paramName = predicate.getLocalName();
-                        String paramValue = getUriInfo().getQueryParameters().getFirst(paramName);
-                        if (paramValue != null)
-                        {
-                            Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                            if (valueType != null)
-                            {
-                                // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-                                if (valueType.getNameSpace().equals(XSD.getURI()))
-                                {
-                                    RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                                    querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, dataType));
-                                }
-                                // otherwise, value is treated as URI resource
-                                else
-                                    querySolutionMap.add(paramName, ResourceFactory.createResource(paramValue));
-                            }
-                            else
-                                querySolutionMap.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));                        }
-                    }
-                }
-            }
-            finally
-            {
-                constraintIt.close();
-            }
-        }
+            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall));
+        else querySolutionMap = new QuerySolutionMap();
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
 
@@ -506,6 +469,51 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         }
         
         return typeStmt.getResource();
+    }
+
+    public QuerySolutionMap getQuerySolutionMap(Resource spinTemplate)
+    {
+	if (spinTemplate == null) throw new IllegalArgumentException("Resource cannot be null");
+        
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        
+        StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
+        try
+        {
+            while (constraintIt.hasNext())
+            {
+                Statement stmt = constraintIt.next();
+                Resource constraint = stmt.getResource();
+                {
+                    Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
+                    String paramName = predicate.getLocalName();
+                    String paramValue = getUriInfo().getQueryParameters().getFirst(paramName);
+                    if (paramValue != null)
+                    {
+                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                        if (valueType != null)
+                        {
+                            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
+                            if (valueType.getNameSpace().equals(XSD.getURI()))
+                            {
+                                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
+                                qsm.add(paramName, ResourceFactory.createTypedLiteral(paramValue, dataType));
+                            }
+                            // otherwise, value is treated as URI resource
+                            else
+                                qsm.add(paramName, ResourceFactory.createResource(paramValue));
+                        }
+                        else
+                            qsm.add(paramName, ResourceFactory.createTypedLiteral(paramValue, XSDDatatype.XSDstring));                        }
+                }
+            }
+        }
+        finally
+        {
+            constraintIt.close();
+        }
+        
+        return qsm;
     }
     
     /**
@@ -888,6 +896,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return resourceContext;
     }
     
+    @Override
     public Model getCommandModel()
     {
         return commandModel;
