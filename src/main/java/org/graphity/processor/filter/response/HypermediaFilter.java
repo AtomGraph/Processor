@@ -25,7 +25,9 @@ import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.Ontology;
 import com.hp.hpl.jena.rdf.model.Model;
 import com.hp.hpl.jena.rdf.model.Property;
+import com.hp.hpl.jena.rdf.model.RDFNode;
 import com.hp.hpl.jena.rdf.model.Resource;
+import com.hp.hpl.jena.rdf.model.ResourceFactory;
 import com.hp.hpl.jena.rdf.model.Statement;
 import com.hp.hpl.jena.rdf.model.StmtIterator;
 import com.hp.hpl.jena.reasoner.Reasoner;
@@ -173,22 +175,10 @@ public class HypermediaFilter implements ContainerResponseFilter
                     Property predicate = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
                     if (request.getQueryParameters().containsKey(predicate.getLocalName()))
                     {
-                        String value = request.getQueryParameters().getFirst(predicate.getLocalName());
-                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                        // if no spl:valueType is specified, value is treated as literal with xsd:string datatype
-                        if (valueType != null)
-                        {
-                            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-                            if (valueType.getNameSpace().equals(XSD.getURI()))
-                            {
-                                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                                sb.replaceProperty(predicate, resource.getModel().createTypedLiteral(value, dataType));
-                            }
-                            // otherwise, value is treated as URI resource
-                            else
-                                sb.replaceProperty(predicate, resource.getModel().createResource(value));                        }
-                        else
-                            sb.replaceProperty(predicate, resource.getModel().createTypedLiteral(value, XSDDatatype.XSDstring));
+                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);                        
+                        List<String> values = request.getQueryParameters().get(predicate.getLocalName());
+                        for (String value : values)
+                            sb.property(predicate, getNodeByValueType(value, valueType));
                     }
                 }
             }
@@ -201,6 +191,26 @@ public class HypermediaFilter implements ContainerResponseFilter
         return sb;
     }
 
+    public RDFNode getNodeByValueType(String value, Resource valueType)
+    {
+	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
+        
+        if (valueType != null)
+        {
+            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
+            if (valueType.getNameSpace().equals(XSD.getURI()))
+            {
+                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
+                return ResourceFactory.createTypedLiteral(value, dataType);
+            }
+            // otherwise, value is treated as URI resource
+            else
+                return ResourceFactory.createResource(value);
+        }
+        else
+            return ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring);
+    }
+    
     public Long getOffset(ContainerRequest request, OntClass template)
     {
         final Long offset;
