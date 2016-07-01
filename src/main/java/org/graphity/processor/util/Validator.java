@@ -76,7 +76,14 @@ public class Validator
 "}");
         
         QueryExecution qex = QueryExecutionFactory.create(fix, ontModel);
-        fixedModel.add(qex.execConstruct());
+        try
+        {
+            fixedModel.add(qex.execConstruct());
+        }
+        finally
+        {
+            qex.close();
+        }
         
         return fixedModel;
     }
