@@ -16,13 +16,13 @@
  */
 package org.graphity.processor.query;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.util.ResourceUtils;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.util.ResourceUtils;
+import org.apache.jena.vocabulary.RDF;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -426,7 +426,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
     
     public Query build()
     {
-	com.hp.hpl.jena.query.Query arqQuery = ARQFactory.get().createQuery(getQuery());
+	org.apache.jena.query.Query arqQuery = ARQFactory.get().createQuery(getQuery());
 	
 	// generate SPARQL query string
 	removeAll(SP.text)

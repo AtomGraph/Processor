@@ -16,9 +16,9 @@
 
 package org.graphity.processor.resource.graph;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Model;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;

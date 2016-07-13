@@ -16,10 +16,10 @@
 
 package org.graphity.processor.util;
 
-import com.hp.hpl.jena.reasoner.TriplePattern;
-import com.hp.hpl.jena.reasoner.rulesys.ClauseEntry;
-import com.hp.hpl.jena.reasoner.rulesys.Rule;
-import com.hp.hpl.jena.util.PrintUtil;
+import org.apache.jena.reasoner.TriplePattern;
+import org.apache.jena.reasoner.rulesys.ClauseEntry;
+import org.apache.jena.reasoner.rulesys.Rule;
+import org.apache.jena.util.PrintUtil;
 import java.util.List;
 
 /**

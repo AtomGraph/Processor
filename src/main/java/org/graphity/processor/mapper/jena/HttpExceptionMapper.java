@@ -16,7 +16,7 @@
 
 package org.graphity.processor.mapper.jena;
 
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.atlas.web.HttpException;

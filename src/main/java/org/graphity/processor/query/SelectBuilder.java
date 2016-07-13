@@ -16,12 +16,12 @@
  */
 package org.graphity.processor.query;
 
-import com.hp.hpl.jena.query.QueryFactory;
-import com.hp.hpl.jena.rdf.model.Model;
-import com.hp.hpl.jena.rdf.model.RDFList;
-import com.hp.hpl.jena.rdf.model.RDFNode;
-import com.hp.hpl.jena.rdf.model.Resource;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.query.QueryFactory;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFList;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.vocabulary.RDF;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,7 +78,7 @@ public class SelectBuilder extends QueryBuilder implements Select
 	return fromSelect((Select)query);
     }
 
-    public static SelectBuilder fromQuery(com.hp.hpl.jena.query.Query query, String uri, Model model)
+    public static SelectBuilder fromQuery(org.apache.jena.query.Query query, String uri, Model model)
     {
 	if (query == null) throw new IllegalArgumentException("Query cannot be null");
 	
@@ -86,7 +86,7 @@ public class SelectBuilder extends QueryBuilder implements Select
 	return fromQuery(arq2spin.createQuery(query, uri));
     }
 
-    public static SelectBuilder fromQuery(com.hp.hpl.jena.query.Query query, Model model)
+    public static SelectBuilder fromQuery(org.apache.jena.query.Query query, Model model)
     {
 	return fromQuery(query, null, model);
     }

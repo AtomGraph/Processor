@@ -16,10 +16,10 @@
  */
 package org.graphity.processor.update;
 
-import com.hp.hpl.jena.datatypes.RDFDatatype;
-import com.hp.hpl.jena.graph.Node;
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.update.UpdateRequest;
+import org.apache.jena.datatypes.RDFDatatype;
+import org.apache.jena.graph.Node;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.update.UpdateRequest;
 import org.topbraid.spin.arq.ARQ2SPIN;
 import org.topbraid.spin.arq.ARQFactory;
 import org.topbraid.spin.model.SPINFactory;
@@ -66,7 +66,7 @@ public class UpdateBuilder implements Update
 	return fromUpdate(SPINFactory.asUpdate(resource));
     }
 
-    public static UpdateBuilder fromUpdate(com.hp.hpl.jena.update.Update update, String uri, Model model)
+    public static UpdateBuilder fromUpdate(org.apache.jena.update.Update update, String uri, Model model)
     {
 	if (update == null) throw new IllegalArgumentException("Update cannot be null");
 	
@@ -74,7 +74,7 @@ public class UpdateBuilder implements Update
 	return fromUpdate(arq2spin.createUpdate(update, uri));
     }
 
-    public static UpdateBuilder fromUpdate(com.hp.hpl.jena.update.Update update, Model model)
+    public static UpdateBuilder fromUpdate(org.apache.jena.update.Update update, Model model)
     {
 	return fromUpdate(update, null, model);
     }
@@ -104,7 +104,7 @@ public class UpdateBuilder implements Update
 
     public UpdateRequest build()
     {
-	com.hp.hpl.jena.update.UpdateRequest request = ARQFactory.get().createUpdateRequest(getUpdate());
+	org.apache.jena.update.UpdateRequest request = ARQFactory.get().createUpdateRequest(getUpdate());
 	
 	// generate SPARQL query string
 	removeAll(SP.text)
