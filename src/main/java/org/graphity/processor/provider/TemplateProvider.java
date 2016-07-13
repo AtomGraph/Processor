@@ -84,5 +84,5 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     public Providers getProviders()
     {
         return providers;
-    }    
+    }
 }

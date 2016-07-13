@@ -16,6 +16,7 @@
 
 package org.graphity.processor;
 
+import java.io.InputStream;
 import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.query.ParameterizedSparqlString;
@@ -27,6 +28,10 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.util.FileUtils;
+import org.apache.jena.util.LocationMapper;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.core.provider.ClientProvider;
 import org.graphity.core.provider.DataManagerProvider;
@@ -139,7 +144,14 @@ public class Application extends org.graphity.core.Application
     
     public FileManager getFileManager()
     {
-        return FileManager.get();
+        String uriConfig = "/WEB-INF/classes/location-mapping.n3"; // TO-DO: make configurable (in web.xml)
+        String syntax = FileUtils.guessLang(uriConfig);
+        Model mapping = ModelFactory.createDefaultModel();
+        InputStream in = getServletConfig().getServletContext().getResourceAsStream(uriConfig);
+        mapping.read(in, uriConfig, syntax) ;
+        FileManager fileManager = FileManager.get();
+        fileManager.setLocationMapper(new LocationMapper(mapping));
+        return fileManager;
     }
     
     /**

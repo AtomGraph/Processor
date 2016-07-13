@@ -171,7 +171,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
         }
         
-        return ontology;        
+        return ontology;
     }
     
     public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
