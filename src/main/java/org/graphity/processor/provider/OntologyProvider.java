@@ -240,6 +240,9 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
         
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
+        // explicitly loading owl:imports -- workaround for Jena 3.0.1 bug
+        // https://mail-archives.apache.org/mod_mbox/jena-users/201607.mbox/%3CCAE35Vmw%3DdJjhhZeie7Y%2Beu4-sGD1UcU5mjhv%3Ds-R_oLQ%2B17UrA%40mail.gmail.com%3E
+        ontModel.loadImports();
         if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
     
         return ontModel;
