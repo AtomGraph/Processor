@@ -23,9 +23,11 @@ import com.hp.hpl.jena.ontology.OntModel;
 import com.hp.hpl.jena.ontology.OntModelSpec;
 import com.hp.hpl.jena.ontology.OntResource;
 import com.hp.hpl.jena.ontology.Ontology;
+import com.hp.hpl.jena.rdf.model.ModelFactory;
 import com.hp.hpl.jena.reasoner.Reasoner;
 import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
 import com.hp.hpl.jena.reasoner.rulesys.Rule;
+import com.hp.hpl.jena.shared.Lock;
 import com.hp.hpl.jena.util.iterator.ExtendedIterator;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
@@ -240,9 +242,22 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
         
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
-        if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
+        
+        // lock and clone the model to avoid ConcurrentModificationExceptions
+        ontModel.enterCriticalSection(Lock.READ);
+        try
+        {
+            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec);
+            clonedModel.add(ontModel);
+        
+            if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
     
-        return ontModel;
+            return clonedModel;
+        }
+        finally
+        {
+            ontModel.leaveCriticalSection();
+        }
     }
 
     public final List<Rule> getRules(ServletConfig servletConfig, DatatypeProperty property)
