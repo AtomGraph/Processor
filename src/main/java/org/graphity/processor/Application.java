@@ -16,17 +16,22 @@
 
 package org.graphity.processor;
 
-import com.hp.hpl.jena.ontology.DatatypeProperty;
-import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.query.ParameterizedSparqlString;
-import com.hp.hpl.jena.query.Query;
-import com.hp.hpl.jena.util.FileManager;
+import java.io.InputStream;
+import org.apache.jena.ontology.DatatypeProperty;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.util.FileManager;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.util.FileUtils;
+import org.apache.jena.util.LocationMapper;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.core.provider.ClientProvider;
 import org.graphity.core.provider.DataManagerProvider;
@@ -86,7 +91,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new DataManagerProvider());
         singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
-        singletons.add(new OntologyProvider(getServletConfig()));
+        singletons.add(new OntologyProvider(servletConfig));
         singletons.add(new TemplateProvider());
 	singletons.add(new SPARQLEndpointProvider());
 	singletons.add(new SPARQLEndpointOriginProvider());
@@ -139,7 +144,14 @@ public class Application extends org.graphity.core.Application
     
     public FileManager getFileManager()
     {
-        return FileManager.get();
+        String uriConfig = "/WEB-INF/classes/location-mapping.n3"; // TO-DO: make configurable (in web.xml)
+        String syntax = FileUtils.guessLang(uriConfig);
+        Model mapping = ModelFactory.createDefaultModel();
+        InputStream in = getServletConfig().getServletContext().getResourceAsStream(uriConfig);
+        mapping.read(in, uriConfig, syntax) ;
+        FileManager fileManager = FileManager.get();
+        fileManager.setLocationMapper(new LocationMapper(mapping));
+        return fileManager;
     }
     
     /**

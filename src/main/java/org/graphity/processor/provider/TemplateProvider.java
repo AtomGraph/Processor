@@ -16,8 +16,8 @@
 
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.Ontology;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -84,5 +84,5 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     public Providers getProviders()
     {
         return providers;
-    }    
+    }
 }

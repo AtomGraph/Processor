@@ -16,8 +16,8 @@
  */
 package org.graphity.processor.update;
 
-import com.hp.hpl.jena.rdf.model.*;
-import com.hp.hpl.jena.vocabulary.RDF;
+import org.apache.jena.rdf.model.*;
+import org.apache.jena.vocabulary.RDF;
 import java.net.URI;
 import org.topbraid.spin.arq.ARQ2SPIN;
 import org.topbraid.spin.model.Element;
@@ -73,7 +73,7 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
 	return fromModify((Modify)update);
     }
     
-    public static ModifyBuilder fromUpdate(com.hp.hpl.jena.update.Update update, String uri, Model model)
+    public static ModifyBuilder fromUpdate(org.apache.jena.update.Update update, String uri, Model model)
     {
 	if (update == null) throw new IllegalArgumentException("Update cannot be null");
 	

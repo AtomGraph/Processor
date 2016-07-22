@@ -16,8 +16,8 @@
 
 package org.graphity.processor.template;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.rdf.model.Statement;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.rdf.model.Statement;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.util.Comparator;
 import java.util.Objects;

@@ -16,8 +16,8 @@
 
 package org.graphity.processor.mapper.jena;
 
-import com.hp.hpl.jena.query.QueryParseException;
-import com.hp.hpl.jena.rdf.model.ResourceFactory;
+import org.apache.jena.query.QueryParseException;
+import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;

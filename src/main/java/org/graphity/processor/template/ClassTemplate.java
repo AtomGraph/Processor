@@ -16,7 +16,7 @@
 
 package org.graphity.processor.template;
 
-import com.hp.hpl.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntClass;
 
 /**
  *

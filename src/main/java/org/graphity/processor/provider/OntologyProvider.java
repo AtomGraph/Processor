@@ -16,19 +16,17 @@
  */
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.ontology.DatatypeProperty;
-import com.hp.hpl.jena.ontology.ObjectProperty;
-import com.hp.hpl.jena.ontology.OntDocumentManager;
-import com.hp.hpl.jena.ontology.OntModel;
-import com.hp.hpl.jena.ontology.OntModelSpec;
-import com.hp.hpl.jena.ontology.OntResource;
-import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.ModelFactory;
-import com.hp.hpl.jena.reasoner.Reasoner;
-import com.hp.hpl.jena.reasoner.rulesys.GenericRuleReasoner;
-import com.hp.hpl.jena.reasoner.rulesys.Rule;
-import com.hp.hpl.jena.shared.Lock;
-import com.hp.hpl.jena.util.iterator.ExtendedIterator;
+import org.apache.jena.ontology.DatatypeProperty;
+import org.apache.jena.ontology.ObjectProperty;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.ontology.OntResource;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.Rule;
+import org.apache.jena.util.iterator.ExtendedIterator;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -173,7 +171,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
         }
         
-        return ontology;        
+        return ontology;
     }
     
     public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
@@ -242,22 +240,12 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
         
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
-        
-        // lock and clone the model to avoid ConcurrentModificationExceptions
-        ontModel.enterCriticalSection(Lock.READ);
-        try
-        {
-            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec);
-            clonedModel.add(ontModel);
-        
-            if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
+        // explicitly loading owl:imports -- workaround for Jena 3.0.1 bug
+        // https://mail-archives.apache.org/mod_mbox/jena-users/201607.mbox/%3CCAE35Vmw%3DdJjhhZeie7Y%2Beu4-sGD1UcU5mjhv%3Ds-R_oLQ%2B17UrA%40mail.gmail.com%3E
+        ontModel.loadImports();
+        if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
     
-            return clonedModel;
-        }
-        finally
-        {
-            ontModel.leaveCriticalSection();
-        }
+        return ontModel;
     }
 
     public final List<Rule> getRules(ServletConfig servletConfig, DatatypeProperty property)

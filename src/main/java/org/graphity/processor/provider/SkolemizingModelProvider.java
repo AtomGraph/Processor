@@ -16,9 +16,9 @@
 
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.ontology.OntClass;
-import com.hp.hpl.jena.ontology.Ontology;
-import com.hp.hpl.jena.rdf.model.Model;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Model;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;

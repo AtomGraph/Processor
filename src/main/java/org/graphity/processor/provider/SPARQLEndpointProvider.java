@@ -16,7 +16,7 @@
  */
 package org.graphity.processor.provider;
 
-import com.hp.hpl.jena.query.Dataset;
+import org.apache.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.ext.ContextResolver;
