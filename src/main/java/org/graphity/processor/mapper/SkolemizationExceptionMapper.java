@@ -54,14 +54,6 @@ public class SkolemizationExceptionMapper extends ExceptionMapperBase implements
                 header("Link", ontologyLink.toString()).
                 header("Link", baseUriLink.toString()).                
                 build();
-        /*
-        return Response.status(Response.Status.BAD_REQUEST). // TO-DO: use ModelResponse
-                entity(ske).
-                header("Link", classLink.toString()).
-                header("Link", ontologyLink.toString()).
-                header("Link", baseUriLink.toString()).
-                build();
-        */
     }
     
 }

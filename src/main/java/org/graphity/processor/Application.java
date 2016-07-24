@@ -47,6 +47,8 @@ import org.graphity.processor.mapper.ConstraintViolationExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.mapper.QueryArgumentExceptionMapper;
 import org.graphity.processor.mapper.SkolemizationExceptionMapper;
+import org.graphity.processor.mapper.jena.QueryParseExceptionMapper;
+import org.graphity.processor.mapper.jena.RiotExceptionMapper;
 import org.graphity.processor.provider.ConstraintViolationExceptionWriter;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
@@ -98,14 +100,15 @@ public class Application extends org.graphity.core.Application
         singletons.add(new GraphStoreProvider());
         singletons.add(new GraphStoreOriginProvider());
         singletons.add(new ConstraintViolationExceptionWriter());
-        singletons.add(new SkolemizationExceptionWriter());        
+        singletons.add(new SkolemizationExceptionWriter());
+        singletons.add(new RiotExceptionMapper());
 	singletons.add(new ConstraintViolationExceptionMapper());
 	singletons.add(new SkolemizationExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());
         singletons.add(new QueryArgumentExceptionMapper());
-	singletons.add(new org.graphity.processor.mapper.jena.QueryParseExceptionMapper());
+	singletons.add(new QueryParseExceptionMapper());
     }
 
     /**

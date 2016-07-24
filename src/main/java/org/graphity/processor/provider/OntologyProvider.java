@@ -37,6 +37,8 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.shared.Lock;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.vocabulary.GP;
@@ -238,14 +240,36 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
-        
+
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
+        
         // explicitly loading owl:imports -- workaround for Jena 3.0.1 bug
         // https://mail-archives.apache.org/mod_mbox/jena-users/201607.mbox/%3CCAE35Vmw%3DdJjhhZeie7Y%2Beu4-sGD1UcU5mjhv%3Ds-R_oLQ%2B17UrA%40mail.gmail.com%3E
-        ontModel.loadImports();
-        if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", ontModel.size());
+        ontModel.enterCriticalSection(Lock.WRITE);
+        try
+        {
+            ontModel.loadImports();
+        }
+        finally
+        {
+            ontModel.leaveCriticalSection();
+        }
+
+        // lock and clone the model to avoid ConcurrentModificationExceptions
+        ontModel.enterCriticalSection(Lock.READ);
+        try
+        {
+            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec);
+            clonedModel.add(ontModel);
+        
+            if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
     
-        return ontModel;
+            return clonedModel;
+        }
+        finally
+        {
+            ontModel.leaveCriticalSection();
+        }
     }
 
     public final List<Rule> getRules(ServletConfig servletConfig, DatatypeProperty property)
