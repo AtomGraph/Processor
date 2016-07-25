@@ -243,8 +243,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
         
-        // explicitly loading owl:imports -- workaround for Jena 3.0.1 bug
-        // https://mail-archives.apache.org/mod_mbox/jena-users/201607.mbox/%3CCAE35Vmw%3DdJjhhZeie7Y%2Beu4-sGD1UcU5mjhv%3Ds-R_oLQ%2B17UrA%40mail.gmail.com%3E
+        // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
         ontModel.enterCriticalSection(Lock.WRITE);
         try
         {
@@ -259,11 +258,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         ontModel.enterCriticalSection(Lock.READ);
         try
         {
-            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec);
-            clonedModel.add(ontModel);
-        
+            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec, ontModel.getBaseModel());        
             if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
-    
             return clonedModel;
         }
         finally
