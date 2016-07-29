@@ -22,20 +22,12 @@ import org.apache.jena.rdf.model.Model;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class SkolemizationException extends RuntimeException
+public class SkolemizationException extends ModelException
 {
-    
-    private final Model model;
     
     public SkolemizationException(IllegalArgumentException ex, Model model)
     {
-        super(ex);
-        this.model = model;
-    }
-    
-    public Model getModel()
-    {
-        return model;
+        super(ex, model);
     }
     
 }

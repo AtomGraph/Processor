@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Martynas Jusevičius <martynas@graphity.org>.
+ * Copyright 2016 Martynas Jusevičius <martynas@graphity.org>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,32 +13,45 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.graphity.processor.exception;
 
 import org.apache.jena.rdf.model.Model;
-import java.util.List;
-import org.topbraid.spin.constraints.ConstraintViolation;
-import org.topbraid.spin.constraints.SPINConstraints;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class ConstraintViolationException extends ModelException
+public class ModelException extends RuntimeException
 {
-    private final List<ConstraintViolation> cvs;
-    
-    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
+
+    private final Model model;
+
+    public ModelException(Model model)
     {
-        super(model);
-	this.cvs = cvs;
-        SPINConstraints.addConstraintViolationsRDF(cvs, model, true);
+        this.model = model;
+    }
+    
+    public ModelException(String message, Model model)
+    {
+        super(message);
+        this.model = model;
     }
 
-    public List<ConstraintViolation> getConstraintViolations()
+    public ModelException(Throwable throwable, Model model)
     {
-	return cvs;
+        super(throwable);
+        this.model = model;
     }
-    
+
+    public ModelException(String message, Throwable throwable, Model model)
+    {
+        super(message, throwable);
+        this.model = model;
+    }
+
+    public Model getModel()
+    {
+        return model;
+    }
+
 }

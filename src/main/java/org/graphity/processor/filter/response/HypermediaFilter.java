@@ -49,7 +49,6 @@ import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import javax.ws.rs.ext.Provider;
 import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
-import org.graphity.processor.exception.ConstraintViolationException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.vocabulary.GP;
@@ -77,8 +76,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getEntity() == null ||
-                (!(response.getEntity() instanceof Model)) && !(response.getEntity() instanceof ConstraintViolationException))
+        // do not process hypermedia if the response is a redirect or returns the body of bad request
+        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(Response.Status.BAD_REQUEST) ||
+                response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         
         MultivaluedMap<String, Object> headerMap = response.getHttpHeaders();
@@ -95,11 +95,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             OntClass template = ontology.getOntModel().getOntClass(typeHref.toString());
 
-            Model model;
-            if (response.getEntity() instanceof ConstraintViolationException)
-                model = ((ConstraintViolationException)response.getEntity()).getModel();
-            else
-                model = (Model)response.getEntity();
+            Model model = (Model)response.getEntity();
             long oldCount = model.size();
 
             Resource requestUri = model.createResource(request.getRequestUri().toString());        

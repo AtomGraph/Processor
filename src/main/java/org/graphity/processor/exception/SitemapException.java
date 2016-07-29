@@ -16,8 +16,6 @@
 
 package org.graphity.processor.exception;
 
-import org.graphity.core.exception.ConfigurationException;
-
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
