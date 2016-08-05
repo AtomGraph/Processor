@@ -15,7 +15,7 @@ For a compatible frontend framework for end-user applications, see [AtomGraph Cl
 Getting started
 ===============
 
-* [how AtomGraph Processor works](../../wiki/How-AtomGraph-Processor-works)
+* [how AtomGraph Processor works](../../wiki/How-Processor-works)
 * [installing AtomGraph Processor](../../wiki/Installation)
 * [configuring AtomGraph Processor](../../wiki/Configuration)
 * [JavaDoc](http://graphity.github.io/graphity-processor/apidocs)
