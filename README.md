@@ -10,7 +10,7 @@ What AtomGraph Processor provides for users as out-of-the-box generic features:
 
 AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](../../wiki/Articles-and-presentations) about AtomGraph.
 
-For a compatible frontend framework for end-user applications, see [AtomGraph Web-Client](../Web-Client). The Client extends Processor with RDF rendering and form-based input functionality.
+For a compatible frontend framework for end-user applications, see [AtomGraph Web-Client](../../../Web-Client). The Client extends Processor with RDF rendering and form-based input functionality.
 
 Getting started
 ===============
