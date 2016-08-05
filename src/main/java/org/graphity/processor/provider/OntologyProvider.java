@@ -229,7 +229,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     }
     
     /**
-     * Reads ontology model from a file.
+     * Loads ontology by URI.
      * 
      * @param ontologyURI ontology location
      * @param ontModelSpec ontology model specification
