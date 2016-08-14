@@ -10,12 +10,12 @@ What AtomGraph Processor provides for users as out-of-the-box generic features:
 
 AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](../../wiki/Articles-and-presentations) about AtomGraph.
 
-For a compatible frontend framework for end-user applications, see [AtomGraph Client](../Web-Client). The Client extends Processor with RDF rendering and form-based input functionality.
+For a compatible frontend framework for end-user applications, see [AtomGraph Web-Client](../../../Web-Client). The Client extends Processor with RDF rendering and form-based input functionality.
 
 Getting started
 ===============
 
-* [how AtomGraph Processor works](../../wiki/How-AtomGraph-Processor-works)
+* [how AtomGraph Processor works](../../wiki/How-Processor-works)
 * [installing AtomGraph Processor](../../wiki/Installation)
 * [configuring AtomGraph Processor](../../wiki/Configuration)
 * [JavaDoc](http://graphity.github.io/graphity-processor/apidocs)
@@ -28,7 +28,7 @@ Maven
 AtomGraph artifacts [`graphity-processor`](http://search.maven.org/#browse%7C2124019457) and [`graphity-core`](http://search.maven.org/#browse%7C57568460) are
 released on Maven under the [`org.graphity`](http://search.maven.org/#browse%7C1400901156) group ID.
 
-You should normally choose [AtomGraph Client](../../../Web-Client) as it includes both XSLT and Linked Data functionality, making it useful for end-user as
+You should normally choose [AtomGraph Web-Client](../../../Web-Client) as it includes both XSLT and Linked Data functionality, making it useful for end-user as
 well as server applications. However, if you do not need XSLT and dependency on Saxon or want to use Client and Processor in a client-server setup, you
 can choose `graphity-processor`. Dependencies to other AtomGraph artifacts will be resolved automagically during the Maven build processs. 
 
