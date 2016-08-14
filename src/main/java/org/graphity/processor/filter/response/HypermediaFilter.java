@@ -77,7 +77,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
         // do not process hypermedia if the response is a redirect or returns the body of bad request
-        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(Response.Status.BAD_REQUEST) ||
+        if (response.getStatusType().getFamily().equals(REDIRECTION) || // response.getStatusType().equals(Response.Status.BAD_REQUEST) ||
                 response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         

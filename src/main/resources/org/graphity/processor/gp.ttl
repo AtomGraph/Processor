@@ -153,12 +153,6 @@
     rdfs:comment "Links page resource to its container resource" ;
     rdfs:isDefinedBy <#> .
 
-<#constructorOf> a owl:ObjectProperty ;
-    rdfs:domain <#Constructor> ;
-    rdfs:range <#Container> ;
-    rdfs:label "Links constructor resource to its container" ;
-    rdfs:isDefinedBy <#> .
-
 <#limit> a owl:DatatypeProperty ;
     rdfs:domain <#Page> ;
     rdfs:range xsd:long ;
