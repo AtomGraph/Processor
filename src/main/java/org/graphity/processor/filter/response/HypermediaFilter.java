@@ -43,10 +43,14 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.List;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import javax.ws.rs.ext.Provider;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.utils.URLEncodedUtils;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.SitemapException;
@@ -95,12 +99,12 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             OntClass template = ontology.getOntModel().getOntClass(typeHref.toString());
 
-            Model model = (Model)response.getEntity();
+            Model model = ModelFactory.createDefaultModel(); // (Model)response.getEntity();
             long oldCount = model.size();
 
-            Resource requestUri = model.createResource(request.getRequestUri().toString());        
+            Resource requestUri = model.createResource(request.getRequestUri().toString());
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
-
+            
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
             if (hasSuperClass(template, GP.Container) || hasSuperClass(template, GP.Document))
             {
@@ -116,6 +120,42 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
+            List<NameValuePair> params = URLEncodedUtils.parse(request.getRequestUri(), "UTF-8");
+            Resource oldState = absolutePath;
+            StateBuilder sb = StateBuilder.fromResource(oldState);
+            //Iterator<Entry<String, List<String>>> it = request.getQueryParameters().entrySet().iterator();
+            Iterator <NameValuePair> it = params.iterator();
+            while (it.hasNext())
+            {
+                //Entry<String, List<String>> entry = it.next();
+                NameValuePair pair = it.next();
+                
+                String paramName = pair.getName();
+                String paramValue = pair.getValue();
+                // Resource oldState = sb.build();
+                Statement stmt = getParamStmt(template, model.createResource(), paramName, paramValue); // dummy blank node
+                if (stmt == null) throw new WebApplicationException(Response.Status.BAD_REQUEST); // TO-DO: create custom Exception
+                
+                Resource newState = sb.property(stmt.getPredicate(), stmt.getObject()).build();
+                newState.addProperty(GP.viewOf, oldState); // build a chain of states that are each others Views
+                StmtIterator oldProps = oldState.listProperties();
+                try
+                {
+                    while (oldProps.hasNext())
+                    {
+                        Statement oldProp = oldProps.next();
+                        newState.addProperty(oldProp.getPredicate(), oldProp.getObject());
+                    }
+                }
+                finally
+                {
+                    oldProps.close();
+                }
+                
+                oldState = newState;
+            }
+            
+            /*
             Resource view = getViewBuilder(absolutePath, request, template).build();
             if (!view.equals(absolutePath))
                 view.addProperty(GP.viewOf, absolutePath).
@@ -124,9 +164,10 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (hasSuperClass(template, GP.Container))
                 addPagination(view, getOffset(request, template), getLimit(request, template),
                         getOrderBy(request, template), getDesc(request, template));
+            */
 
             if (log.isDebugEnabled()) log.debug("Added HATEOAS transitions to the response RDF Model for resource: {} # of statements: {}", requestUri.getURI(), model.size() - oldCount);
-            response.setEntity(model);
+            response.setEntity(model.add((Model)response.getEntity()));
         }
         catch (URISyntaxException ex)
         {
@@ -150,6 +191,40 @@ public class HypermediaFilter implements ContainerResponseFilter
         return sb;
     }
 
+    public Statement getParamStmt(OntClass template, Resource resource, String paramName, String paramValue)
+    {
+        if (template == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");        
+        if (paramName == null) throw new IllegalArgumentException("Name String cannot be null");
+        if (paramValue == null) throw new IllegalArgumentException("Value String cannot be null");
+        
+        Resource queryOrTemplate = template.getProperty(GP.query).getResource();
+        if (!queryOrTemplate.hasProperty(RDF.type, SP.Query)) // if it's not a query, then it's a query template
+        {
+            Resource spinTemplate = queryOrTemplate.getProperty(RDF.type).getResource();
+            StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
+            try
+            {
+                while (constraintIt.hasNext())
+                {
+                    Statement stmt = constraintIt.next();
+                    Property predicate = stmt.getResource().getPropertyResourceValue(SPL.predicate).as(Property.class);
+                    if (predicate.getLocalName().equals(paramName))
+                    {
+                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
+                        return resource.getModel().createStatement(resource, predicate, getNodeByValueType(paramValue, valueType));
+                    }
+                }
+            }
+            finally
+            {
+                constraintIt.close();
+            }
+        }
+        
+        return null;
+    }
+    
     public StateBuilder getViewBuilder(Resource resource, ContainerRequest request, OntClass template)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");

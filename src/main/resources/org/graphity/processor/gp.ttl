@@ -140,13 +140,15 @@
 
 # RESOURCE PROPERTIES
 
-<#forClass> a owl:ObjectProperty ;
-    rdfs:range rdfs:Class ;
-    rdfs:label "Instance class" ;
-    rdfs:comment "Indicates class for which SPIN constructor will be invoked" ;
+<#viewOf> a owl:ObjectProperty ;
+    rdfs:domain <#View> ;
+    rdfs:range <#Document> ;
+    rdfs:label "View of resource" ;
+    rdfs:comment "Links resource view to its resource" ;
     rdfs:isDefinedBy <#> .
 
 <#pageOf> a owl:ObjectProperty ;
+    rdfs:subPropertyOf <#viewOf> ;
     rdfs:domain <#Page> ;
     rdfs:range <#Container> ;
     rdfs:label "Page of container" ;
@@ -313,8 +315,14 @@
     # rdfs:label "Update constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#Page> a rdfs:Class ;
+<#View> a rdfs:Class ;
     rdfs:subClassOf foaf:Document ;
+    rdfs:label "View resource" ;
+    rdfs:comment "A parameterized view of a resource" ;
+    rdfs:isDefinedBy <#> .
+
+<#Page> a rdfs:Class ;
+    rdfs:subClassOf <#View> ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
     rdfs:isDefinedBy <#> .
@@ -353,7 +361,7 @@
     rdfs:subClassOf <#Document>, sioc:Container ;
     <#path> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
-    <#query> <#DescribeWithChildren> ;
+    <#query> [ a <#DescribeWithChildrenTemplate> ] ; # <#DescribeWithChildren> ;
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
@@ -481,6 +489,25 @@ WHERE
     # rdfs:isDefinedBy <#> .
 
 # ====
+
+<#DescribeWithChildrenTemplate> a <#QueryTemplate> ;
+    rdfs:label "Describe with children" ;
+    spin:body <#DescribeWithChildren> ;
+    # spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
+    spin:constraint [ a spl:Argument ;
+        spl:predicate <#limit> ;
+        spl:valueType xsd:long
+    ] , [ a spl:Argument ;
+        spl:predicate <#offset> ;
+        spl:valueType xsd:long
+    ] , [ a spl:Argument ;
+        spl:predicate <#orderBy> ;
+        spl:valueType xsd:string
+    ], [ a spl:Argument ;
+        spl:predicate <#desc> ;
+        spl:valueType xsd:boolean
+    ] ;
+    rdfs:isDefinedBy <#> .
 
 <#DescribeWithChildren> a sp:Describe, sp:Query ; # <#Query>  ;
     sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
