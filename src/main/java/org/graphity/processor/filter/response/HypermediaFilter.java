@@ -144,7 +144,8 @@ public class HypermediaFilter implements ContainerResponseFilter
                     while (oldProps.hasNext())
                     {
                         Statement oldProp = oldProps.next();
-                        newState.addProperty(oldProp.getPredicate(), oldProp.getObject());
+                        if (!oldProp.getPredicate().equals(GP.viewOf))
+                            newState.addProperty(oldProp.getPredicate(), oldProp.getObject());
                     }
                 }
                 finally
