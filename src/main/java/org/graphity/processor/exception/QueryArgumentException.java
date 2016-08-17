@@ -16,7 +16,7 @@
 
 package org.graphity.processor.exception;
 
-import org.apache.jena.riot.RiotException;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  *
@@ -25,9 +25,14 @@ import org.apache.jena.riot.RiotException;
 public class QueryArgumentException extends RuntimeException
 {
 
-    public QueryArgumentException(RiotException ex)
+    public QueryArgumentException(String paramName, Resource spinTemplate)
     {
-        super(ex);
+        super("Parameter '" + paramName + "' not supported by SPIN template '" + spinTemplate.toString() + "'");
+    }
+
+    public QueryArgumentException(Resource spinQuery)
+    {
+        super("Parameters not supported by SPIN query '" + spinQuery.toString() + "'");
     }
     
 }

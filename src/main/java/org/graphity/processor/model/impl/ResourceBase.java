@@ -16,9 +16,6 @@
  */
 package org.graphity.processor.model.impl;
 
-import org.apache.jena.datatypes.RDFDatatype;
-import org.apache.jena.datatypes.xsd.XSDDatatype;
-import org.apache.jena.graph.NodeFactory;
 import org.apache.jena.ontology.*;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
@@ -29,12 +26,12 @@ import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import org.apache.jena.vocabulary.XSD;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
@@ -51,6 +48,7 @@ import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
+import org.graphity.processor.exception.QueryArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.update.ModifyBuilder;
@@ -63,7 +61,6 @@ import org.topbraid.spin.model.TemplateCall;
 import org.topbraid.spin.util.SPTextUtil;
 import org.topbraid.spin.vocabulary.SP;
 import org.topbraid.spin.vocabulary.SPIN;
-import org.topbraid.spin.vocabulary.SPL;
 
 /**
  * Base class of generic read-write Graphity Processor resources.
@@ -186,8 +183,16 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     public void init()
     {
         Resource queryOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.query);
-        if (!queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
-            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall), getUriInfo().getQueryParameters());
+        MultivaluedMap<String, String> queryParams = getUriInfo().getQueryParameters();
+        if (!queryParams.isEmpty())
+        {
+            // a SPIN query cannot have arguments, only SPIN template can
+            if (queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
+                throw new QueryArgumentException(queryOrTemplateCall);
+
+            // if it's not a SPIN query, must be a SPIN query template
+            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall), queryParams);
+        }
         else querySolutionMap = new QuerySolutionMap();
         
 	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
@@ -478,64 +483,20 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 
         QuerySolutionMap qsm = new QuerySolutionMap();
 
-        StmtIterator constraintIt = spinTemplate.listProperties(SPIN.constraint);
-        try
+        Set<String> paramNames = queryParams.keySet();
+        for (String paramName : paramNames)
         {
-            while (constraintIt.hasNext())
-            {
-                Statement stmt = constraintIt.next();
-                Resource constraint = stmt.getResource();
-                {
-                    Resource predicate = constraint.getRequiredProperty(SPL.predicate).getResource();
-                    String paramName = predicate.getLocalName();
-                    String paramValue = queryParams.getFirst(paramName);
-                    if (paramValue != null)
-                    {
-                        Resource valueType = stmt.getResource().getPropertyResourceValue(SPL.valueType);
-                        qsm.addAll(getQuerySolutionMap(paramName, paramValue, valueType));
-                    }
-                }
-            }
-        }
-        finally
-        {
-            constraintIt.close();
+            String paramValue = queryParams.getFirst(paramName);            
+            QuerySolutionMap arg = new org.graphity.processor.util.TemplateCallArg(spinTemplate).
+                getQuerySolutionMap(paramName, paramValue);
+            if (arg == null) throw new QueryArgumentException(paramName, spinTemplate);
+                
+            qsm.addAll(arg);
         }
         
         return qsm;
     }
-
-    public QuerySolutionMap getQuerySolutionMap(String name, String value, Resource valueType)
-    {
-	if (name == null) throw new IllegalArgumentException("Param name cannot be null");
-	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
-
-        QuerySolutionMap qsm = new QuerySolutionMap();
-        qsm.add(name, getNodeByValueType(value, valueType));
         
-        return qsm;
-    }
-    
-    public RDFNode getNodeByValueType(String value, Resource valueType)
-    {
-	if (value == null) throw new IllegalArgumentException("Param value cannot be null");
-        
-        if (valueType != null)
-        {
-            // if value type is from XSD namespace, value is treated as typed literal with XSD datatype
-            if (valueType.getNameSpace().equals(XSD.getURI()))
-            {
-                RDFDatatype dataType = NodeFactory.getType(valueType.getURI());
-                return ResourceFactory.createTypedLiteral(value, dataType);
-            }
-            // otherwise, value is treated as URI resource
-            else
-                return ResourceFactory.createResource(value);
-        }
-        else
-            return ResourceFactory.createTypedLiteral(value, XSDDatatype.XSDstring);
-    }
-    
     /**
      * Returns variable bindings for description query.
      * 

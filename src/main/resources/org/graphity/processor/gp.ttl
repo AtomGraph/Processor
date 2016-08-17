@@ -503,7 +503,7 @@ WHERE
     ] , [ a spl:Argument ;
         spl:predicate <#orderBy> ;
         spl:valueType xsd:string
-    ], [ a spl:Argument ;
+    ] , [ a spl:Argument ;
         spl:predicate <#desc> ;
         spl:valueType xsd:boolean
     ] ;
