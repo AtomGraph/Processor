@@ -53,8 +53,10 @@ import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RulePrinter;
+import org.graphity.processor.util.RDFNodeFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.topbraid.spin.model.Argument;
 import org.topbraid.spin.model.NamedGraph;
 import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.model.TemplateCall;
@@ -187,11 +189,11 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         if (!queryParams.isEmpty())
         {
             // a SPIN query cannot have arguments, only SPIN template can
-            if (queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
-                throw new QueryArgumentException(queryOrTemplateCall);
+            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
+            if (templateCall == null) throw new QueryArgumentException(queryOrTemplateCall);
 
-            // if it's not a SPIN query, must be a SPIN query template
-            querySolutionMap = getQuerySolutionMap(getSPINTemplateFromCall(queryOrTemplateCall), queryParams);
+            // if it's not a SPIN query, must be a SPIN query template call
+            querySolutionMap = getQuerySolutionMap(templateCall, queryParams);
         }
         else querySolutionMap = new QuerySolutionMap();
         
@@ -461,24 +463,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return null;
     }
 
-    public Resource getSPINTemplateFromCall(Resource templateCall)
+    public QuerySolutionMap getQuerySolutionMap(TemplateCall templateCall, MultivaluedMap<String, String> queryParams)
     {
 	if (templateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-        
-        Statement typeStmt = templateCall.getProperty(RDF.type);
-        if (typeStmt == null || !typeStmt.getObject().isResource() ||
-                !typeStmt.getObject().asResource().hasProperty(RDF.type, SPIN.Template))
-        {
-            if (log.isErrorEnabled()) log.error("'{}' is not a valid SPIN Template call", templateCall);
-            throw new SitemapException("Not a valid SPIN Template call: '" + templateCall + "'");                            
-        }
-        
-        return typeStmt.getResource();
-    }
-
-    public QuerySolutionMap getQuerySolutionMap(Resource spinTemplate, MultivaluedMap<String, String> queryParams)
-    {
-	if (spinTemplate == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
 
         QuerySolutionMap qsm = new QuerySolutionMap();
@@ -486,12 +473,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         Set<String> paramNames = queryParams.keySet();
         for (String paramName : paramNames)
         {
+            Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
+            if (arg == null) throw new QueryArgumentException(paramName, templateCall.getTemplate());
+
             String paramValue = queryParams.getFirst(paramName);            
-            QuerySolutionMap arg = new org.graphity.processor.util.TemplateCallArg(spinTemplate).
-                getQuerySolutionMap(paramName, paramValue);
-            if (arg == null) throw new QueryArgumentException(paramName, spinTemplate);
-                
-            qsm.addAll(arg);
+            QuerySolutionMap argQsm = new QuerySolutionMap();
+            argQsm.add(paramName, RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
+            
+            qsm.addAll(argQsm);
         }
         
         return qsm;
@@ -716,7 +705,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Query getQuery()
     {
-        return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+        return getQuery(getQueryBuilder().build().toString(), ResourceBase.this.getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
     public QueryBuilder getModifiedQueryBuilder(QueryBuilder builder, Long limit, Long offset, String orderBy, Boolean desc)
@@ -835,9 +824,9 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         if (model != null && !model.isEmpty())
             return getUpdateRequest(getModifyBuilderWithData(getModifyBuilder(), model).build().toString(),
-                    getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+                    ResourceBase.this.getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
             
-        return getUpdateRequest(getModifyBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+        return getUpdateRequest(getModifyBuilder().build().toString(), ResourceBase.this.getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
     public ParameterizedSparqlString getParameterizedSparqlString(String command, QuerySolutionMap qsm, String baseUri)

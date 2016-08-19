@@ -17,6 +17,7 @@
 package org.graphity.processor.exception;
 
 import org.apache.jena.rdf.model.Resource;
+import org.topbraid.spin.model.Template;
 
 /**
  *
@@ -25,9 +26,9 @@ import org.apache.jena.rdf.model.Resource;
 public class QueryArgumentException extends RuntimeException
 {
 
-    public QueryArgumentException(String paramName, Resource spinTemplate)
+    public QueryArgumentException(String paramName, Template template)
     {
-        super("Parameter '" + paramName + "' not supported by SPIN template '" + spinTemplate.toString() + "'");
+        super("Parameter '" + paramName + "' not supported by SPIN template '" + template.toString() + "'");
     }
 
     public QueryArgumentException(Resource spinQuery)

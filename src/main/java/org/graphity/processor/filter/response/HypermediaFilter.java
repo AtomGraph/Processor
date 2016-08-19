@@ -22,7 +22,6 @@ import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
@@ -48,12 +47,14 @@ import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.QueryArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.provider.OntologyProvider;
-import org.graphity.processor.util.TemplateCallArg;
+import org.graphity.processor.util.RDFNodeFactory;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.vocabulary.SP;
+import org.topbraid.spin.model.Argument;
+import org.topbraid.spin.model.SPINFactory;
+import org.topbraid.spin.model.TemplateCall;
 
 /**
  * A filter that adds HATEOAS transitions to the RDF query result.
@@ -113,12 +114,13 @@ public class HypermediaFilter implements ContainerResponseFilter
 
             List<NameValuePair> params = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());
             Resource queryOrTemplateCall = template.getProperty(GP.query).getResource();
+            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);            
             // if there are parameters but template is using a SPIN query, not a SPIN template, we cannot use them
-            if (!params.isEmpty() && queryOrTemplateCall.hasProperty(RDF.type, SP.Query))
+            if (!params.isEmpty() && templateCall == null)
                 throw new QueryArgumentException(queryOrTemplateCall);
 
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
-            Resource view = getViewBuilder(absolutePath, queryOrTemplateCall, params).build();
+            Resource view = getViewBuilder(StateBuilder.fromResource(absolutePath), templateCall, params).build();
             if (!view.equals(absolutePath))
                 view.addProperty(GP.viewOf, absolutePath).
                     addProperty(RDF.type, GP.View);
@@ -138,28 +140,26 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
     
-    public StateBuilder getViewBuilder(Resource resource, Resource queryOrTemplateCall, List<NameValuePair> params)
+    public StateBuilder getViewBuilder(StateBuilder stateBuilder, TemplateCall templateCall, List<NameValuePair> params)
     {
-        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query or template call Resource cannot be null");
+        if (stateBuilder == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (templateCall == null) throw new IllegalArgumentException("Templatecall cannot be null");
         if (params == null) throw new IllegalArgumentException("Param List cannot be null");
         
-        StateBuilder sb = StateBuilder.fromResource(resource);
         Iterator <NameValuePair> it = params.iterator();
         while (it.hasNext())
         {
             NameValuePair pair = it.next();
-
             String paramName = pair.getName();
             String paramValue = pair.getValue();
-            Statement stmt = new TemplateCallArg(queryOrTemplateCall).
-                getStatement(resource.getModel().createResource(), paramName, paramValue); // use dummy blank node as subject
-            if (stmt == null) throw new QueryArgumentException(paramName, queryOrTemplateCall);
 
-            sb.property(stmt.getPredicate(), stmt.getObject());
+            Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
+            if (arg == null) throw new QueryArgumentException(paramName, templateCall.getTemplate());
+
+            stateBuilder.property(arg.getPredicate(), RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
         }
         
-        return sb;
+        return stateBuilder;
     }
     
     public StateBuilder getPageBuilder(Resource resource, Long offset, Long limit, String orderBy, Boolean desc)
