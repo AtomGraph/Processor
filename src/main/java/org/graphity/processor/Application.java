@@ -46,6 +46,7 @@ import org.graphity.processor.mapper.ConfigurationExceptionMapper;
 import org.graphity.processor.mapper.ModelExceptionMapper;
 import org.graphity.processor.mapper.NotFoundExceptionMapper;
 import org.graphity.processor.mapper.SPINArgumentExceptionMapper;
+import org.graphity.processor.mapper.jena.DatatypeFormatExceptionMapper;
 import org.graphity.processor.mapper.jena.QueryParseExceptionMapper;
 import org.graphity.processor.mapper.jena.RiotExceptionMapper;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
@@ -98,6 +99,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new GraphStoreOriginProvider());
         singletons.add(new RiotExceptionMapper());
 	singletons.add(new ModelExceptionMapper());
+	singletons.add(new DatatypeFormatExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());

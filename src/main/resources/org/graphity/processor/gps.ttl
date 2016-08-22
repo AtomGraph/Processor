@@ -44,8 +44,8 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 <#LabelResourcesContainer> a owl:Class, gp:Template ;
     rdfs:subClassOf <#Container> ;
     gp:path "/resources/labelled/" ; # "/{path}/labelled" ?
-    gp:query <#DescribeLabelResources> ;
-    gp:defaultOrderBy "label" ;
+    gp:query <#DescribeLabelResources> ; # TO-DO: refactor into a SPIN TemplateCall and pass gp:orderBy "label" argument
+    # gp:defaultOrderBy "label" ;
     gp:loadClass <java:org.graphity.processor.resource.labelled.Container> ;
     rdfs:label "Labelled resource container" ;
     rdfs:isDefinedBy <#> .

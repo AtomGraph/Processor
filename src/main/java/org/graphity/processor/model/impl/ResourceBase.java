@@ -84,9 +84,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    //private final String orderBy;
-    //private final Boolean desc;
-    //private final Long limit, offset;
     private final Model commandModel;
     private org.topbraid.spin.model.Query query;
     private org.topbraid.spin.model.update.Update update;    
@@ -196,9 +193,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);        
         if (templateCall != null)
         {
+            // build query before query Arguments are applied on TemplateCall!
+            queryBuilder = QueryBuilder.fromQuery(getQuery(templateCall), commandModel);
             templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
             querySolutionMap = getQuerySolutionMap(templateCall);            
-            queryBuilder = QueryBuilder.fromQuery(getQuery(templateCall), commandModel);
             if (getMatchedTemplate().equals(GP.Container) || hasSuperClass(getMatchedTemplate(), GP.Container))
                 queryBuilder = getModifiedQueryBuilder(queryBuilder, templateCall);
         }
@@ -236,10 +234,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
         if (templateCall != null)
         {
-            // if it's not a SPIN query, must be a SPIN query template call
+            // build update before query Arguments are applied on TemplateCall!
+            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(templateCall).getOperations().get(0), commandModel);
             templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
             querySolutionMap = getQuerySolutionMap(templateCall);            
-            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(templateCall).getOperations().get(0), commandModel);
         }
         else
         {
@@ -250,30 +248,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
             querySolutionMap = new QuerySolutionMap();
             modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(update).getOperations().get(0), commandModel);
         }
-    }
-    
-    public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
-    {
-        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
-            return ontClass.getPropertyValue(property).asLiteral().getLong();
-        
-        return null;
-    }
-
-    public final Boolean getBooleanValue(OntClass ontClass, AnnotationProperty property)
-    {
-        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
-            return ontClass.getPropertyValue(property).asLiteral().getBoolean();
-        
-        return null;
-    }
-
-    public final String getStringValue(OntClass ontClass, AnnotationProperty property)
-    {
-        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
-            return ontClass.getPropertyValue(property).asLiteral().getString();
-        
-        return null;
     }
     
     /**
@@ -496,7 +470,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         Map<String, RDFNode> argMap = templateCall.getArgumentsMapByVarNames();
         
         Set<String> argNames = argMap.keySet();
-        for (String argName : argNames)    
+        for (String argName : argNames)
             qsm.add(argName, argMap.get(argName));
         
         return qsm;
@@ -611,7 +585,12 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
 	return ontResource;
     }
-    
+
+    public TemplateCall getTemplateCall()
+    {
+	return templateCall;
+    }
+
     /**
      * Returns ontology class that this resource matches.
      * If the request URI did not match any ontology class, <code>404 Not Found</code> was returned.

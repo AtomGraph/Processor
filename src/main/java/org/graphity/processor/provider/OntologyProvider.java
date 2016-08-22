@@ -37,6 +37,7 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import org.graphity.core.exception.ConfigurationException;
@@ -258,7 +259,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         ontModel.enterCriticalSection(Lock.READ);
         try
         {
-            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec, ontModel.getBaseModel());        
+            Model baseModel = ModelFactory.createDefaultModel().add(ontModel.getBaseModel());
+            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec, baseModel);
             if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
             return clonedModel;
         }

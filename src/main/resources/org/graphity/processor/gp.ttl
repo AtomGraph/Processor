@@ -96,34 +96,6 @@
     rdfs:seeAlso <http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.1.3> ;
     rdfs:isDefinedBy <#> .
 
-<#defaultLimit> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range xsd:long ;
-    rdfs:label "LIMIT modifier" ;
-    rdfs:comment "Sets sp:limit value for the first sp:Select subquery" ;
-    rdfs:isDefinedBy <#> .
-
-<#defaultOffset> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range xsd:long ;
-    rdfs:label "OFFSET modifier" ;
-    rdfs:comment "Sets sp:offset value for the first sp:Select subquery" ;
-    rdfs:isDefinedBy <#> .
-
-<#defaultOrderBy> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range xsd:string ;
-    rdfs:label "ORDER BY ?varName" ;
-    rdfs:comment "Variable name of the default ORDER BY" ;
-    rdfs:isDefinedBy <#> .
-
-<#defaultDesc> a owl:AnnotationProperty ;
-    rdfs:domain <#Template> ;
-    rdfs:range xsd:boolean ;
-    rdfs:label "DESC" ;
-    rdfs:comment "DESC if true" ;
-    rdfs:isDefinedBy <#> .
-
 <#loadClass> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:label "Load class";
