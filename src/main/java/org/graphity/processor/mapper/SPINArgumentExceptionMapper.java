@@ -19,17 +19,17 @@ package org.graphity.processor.mapper;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.graphity.processor.exception.QueryArgumentException;
+import org.graphity.processor.exception.SPINArgumentException;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class QueryArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<QueryArgumentException>
+public class SPINArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<SPINArgumentException>
 {
     
     @Override
-    public Response toResponse(QueryArgumentException ex)
+    public Response toResponse(SPINArgumentException ex)
     {
         return org.graphity.core.model.impl.Response.fromRequest(getRequest()).
                 getResponseBuilder(toResource(ex, Response.Status.BAD_REQUEST,

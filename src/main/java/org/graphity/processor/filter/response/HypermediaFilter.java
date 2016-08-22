@@ -16,7 +16,6 @@
 
 package org.graphity.processor.filter.response;
 
-import org.apache.jena.ontology.AnnotationProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.Ontology;
@@ -44,10 +43,11 @@ import org.apache.jena.ext.com.google.common.base.Charsets;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
-import org.graphity.processor.exception.QueryArgumentException;
+import org.graphity.processor.exception.SPINArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.util.RDFNodeFactory;
+import org.graphity.processor.util.SPINTemplateCall;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
@@ -92,18 +92,23 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             OntClass template = ontology.getOntModel().getOntClass(typeHref.toString());
 
+            Resource queryOrTemplateCall = template.getProperty(GP.query).getResource();
+            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);            
+            // if there are parameters but template is using a SPIN query, not a SPIN template, we cannot use them
+            if (templateCall == null) return response;
+
             Model model = ModelFactory.createDefaultModel(); // (Model)response.getEntity();
             long oldCount = model.size();
-            
+            List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());            
+            templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
+
+            Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
+
             // we need this check to avoid building state for gp:SPARQLEndpoint and other system classes
             if (hasSuperClass(template, GP.Container) || hasSuperClass(template, GP.Document))
-            {
-                Resource requestUri = model.createResource(request.getRequestUri().toString());
-                
+            {                
                 // transition to a URI of another application state (HATEOAS)
-                Resource defaultState = getPageBuilder(requestUri,
-                        getOffset(request, template), getLimit(request, template),
-                        getOrderBy(request, template), getDesc(request, template)).build();
+                Resource defaultState = getPageBuilder(StateBuilder.fromResource(absolutePath), templateCall).build();
                 if (!defaultState.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
@@ -112,22 +117,23 @@ public class HypermediaFilter implements ContainerResponseFilter
                 }                    
             }
 
-            List<NameValuePair> params = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());
-            Resource queryOrTemplateCall = template.getProperty(GP.query).getResource();
-            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);            
-            // if there are parameters but template is using a SPIN query, not a SPIN template, we cannot use them
-            if (!params.isEmpty() && templateCall == null)
-                throw new QueryArgumentException(queryOrTemplateCall);
-
-            Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
-            Resource view = getViewBuilder(StateBuilder.fromResource(absolutePath), templateCall, params).build();
-            if (!view.equals(absolutePath))
+            StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);
+            Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();
+            if (!view.equals(absolutePath)) // add hypermedia if there are query parameters
+            {
                 view.addProperty(GP.viewOf, absolutePath).
                     addProperty(RDF.type, GP.View);
-            
-            if (hasSuperClass(template, GP.Container))
-                addPagination(absolutePath, getOffset(request, template), getLimit(request, template),
-                        getOrderBy(request, template), getDesc(request, template));
+
+                if (hasSuperClass(template, GP.Container))
+                {
+                    //Resource page = sb.build();
+                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", view, absolutePath);
+                    view.addProperty(GP.pageOf, absolutePath).
+                    addProperty(RDF.type, GP.Page); // do we still need gp:Page now that we have gp:View?
+
+                    addPrevNextPage(absolutePath, viewBuilder, templateCall);
+                }
+            }
 
             if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", model.size());
             response.setEntity(model.add((Model)response.getEntity()));
@@ -140,7 +146,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
     
-    public StateBuilder getViewBuilder(StateBuilder stateBuilder, TemplateCall templateCall, List<NameValuePair> params)
+    public StateBuilder applyArguments(StateBuilder stateBuilder, TemplateCall templateCall, List<NameValuePair> params)
     {
         if (stateBuilder == null) throw new IllegalArgumentException("Resource cannot be null");
         if (templateCall == null) throw new IllegalArgumentException("Templatecall cannot be null");
@@ -154,7 +160,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             String paramValue = pair.getValue();
 
             Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
-            if (arg == null) throw new QueryArgumentException(paramName, templateCall.getTemplate());
+            if (arg == null) throw new SPINArgumentException(paramName, templateCall.getTemplate());
 
             stateBuilder.property(arg.getPredicate(), RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
         }
@@ -162,20 +168,20 @@ public class HypermediaFilter implements ContainerResponseFilter
         return stateBuilder;
     }
     
-    public StateBuilder getPageBuilder(Resource resource, Long offset, Long limit, String orderBy, Boolean desc)
+    public StateBuilder getPageBuilder(StateBuilder sb, TemplateCall templateCall)
     {
-        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-
-        StateBuilder sb = StateBuilder.fromResource(resource);
+        if (sb == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
         
-        if (offset != null) sb.replaceProperty(GP.offset, resource.getModel().createTypedLiteral(offset));
-        if (limit != null) sb.replaceProperty(GP.limit, resource.getModel().createTypedLiteral(limit));
-        if (orderBy != null) sb.replaceProperty(GP.orderBy, resource.getModel().createTypedLiteral(orderBy));
-        if (desc != null) sb.replaceProperty(GP.desc, resource.getModel().createTypedLiteral(desc));        
+        if (templateCall.hasProperty(GP.offset)) sb.replaceProperty(GP.offset, templateCall.getProperty(GP.offset).getObject());
+        if (templateCall.hasProperty(GP.limit)) sb.replaceProperty(GP.limit, templateCall.getProperty(GP.limit).getObject());
+        if (templateCall.hasProperty(GP.orderBy)) sb.replaceProperty(GP.orderBy, templateCall.getProperty(GP.orderBy).getObject());
+        if (templateCall.hasProperty(GP.desc)) sb.replaceProperty(GP.desc, templateCall.getProperty(GP.desc).getObject());
         
         return sb;
     }
-    
+
+    /*
     public Long getOffset(ContainerRequest request, OntClass template)
     {
         final Long offset;
@@ -211,27 +217,28 @@ public class HypermediaFilter implements ContainerResponseFilter
         else desc = getBooleanValue(template, GP.defaultDesc);        
         return desc;
     }
+    */
     
-    public void addPagination(Resource container, Long offset, Long limit, String orderBy, Boolean desc)
+    public void addPrevNextPage(Resource absolutePath, StateBuilder pageBuilder, TemplateCall pageCall)
     {
-        if (container == null) throw new IllegalArgumentException("Resource cannot be null");
-            
-        Resource page = getPageBuilder(container, offset, limit, orderBy, desc).build();
-        if (!page.equals(container))
+        if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (pageBuilder == null) throw new IllegalArgumentException("StateBuilder cannot be null");
+        if (pageCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+        
+        if (pageCall.hasProperty(GP.limit))
         {
-            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", page, container);
-            page.addProperty(GP.pageOf, container).
-            addProperty(RDF.type, GP.Page);
-        }
-
-        if (limit != null)
-        {
-            if (offset == null) offset = Long.valueOf(0);
+            Resource page = pageBuilder.build();
+            Long limit = pageCall.getProperty(GP.limit).getLong();            
+            Long offset = Long.valueOf(0);
+            if (pageCall.hasProperty(GP.offset)) offset = pageCall.getProperty(GP.offset).getLong();
             
             if (offset >= limit)
             {
-                Resource prev = getPageBuilder(container, offset - limit, limit, orderBy, desc).build().
-                    addProperty(GP.pageOf, container).
+
+                TemplateCall prevCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
+                        addLiteral(GP.offset, offset - limit));
+                Resource prev = getPageBuilder(pageBuilder, prevCall).build().
+                    addProperty(GP.pageOf, absolutePath).
                     addProperty(RDF.type, GP.Page).
                     addProperty(XHV.next, page);
 
@@ -239,8 +246,10 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            Resource next = getPageBuilder(container, offset + limit, limit, orderBy, desc).build().
-                addProperty(GP.pageOf, container).
+            TemplateCall nextCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
+                        addLiteral(GP.offset, offset + limit));
+            Resource next = getPageBuilder(pageBuilder, nextCall).build().
+                addProperty(GP.pageOf, absolutePath).
                 addProperty(RDF.type, GP.Page).
                 addProperty(XHV.prev, page);
 
@@ -251,6 +260,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         //return container;
     }
 
+    /*
     public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
     {
         if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
@@ -274,6 +284,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         return null;
     }
+    */
     
     public URI getTypeURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
     {

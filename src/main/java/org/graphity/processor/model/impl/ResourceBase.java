@@ -31,6 +31,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
@@ -48,15 +49,14 @@ import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
 import org.graphity.core.vocabulary.G;
-import org.graphity.processor.exception.QueryArgumentException;
+import org.graphity.processor.exception.SPINArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RulePrinter;
-import org.graphity.processor.util.RDFNodeFactory;
+import org.graphity.processor.util.SPINTemplateCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.Argument;
 import org.topbraid.spin.model.NamedGraph;
 import org.topbraid.spin.model.SPINFactory;
 import org.topbraid.spin.model.TemplateCall;
@@ -84,13 +84,16 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    private final String orderBy;
-    private final Boolean desc;
-    private final Long limit, offset;
+    //private final String orderBy;
+    //private final Boolean desc;
+    //private final Long limit, offset;
     private final Model commandModel;
+    private org.topbraid.spin.model.Query query;
+    private org.topbraid.spin.model.update.Update update;    
+    private TemplateCall templateCall;
+    private QuerySolutionMap querySolutionMap;
     private QueryBuilder queryBuilder;
     private ModifyBuilder modifyBuilder;
-    private QuerySolutionMap querySolutionMap;
     private CacheControl cacheControl;
 
     /**
@@ -137,43 +140,6 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-
-        if (template.getPropertyResourceValue(GP.query) == null)
-        {
-            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", template.getURI());
-            throw new SitemapException("Query not defined for template '" + template.getURI() +"'");
-        }
-        
-        // TO-DO: replace with rdfs:subClassOf inference and matchedOntClass.hasSuperClass(GP.Container, false)
-        if (hasSuperClass(template, GP.Container)) // modifiers only apply to containers
-        {
-            if (uriInfo.getQueryParameters().containsKey(GP.offset.getLocalName()))
-                offset = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.offset.getLocalName()));
-            else
-            {
-                Long defaultOffset = getLongValue(template, GP.defaultOffset);
-                if (defaultOffset != null) offset = defaultOffset;
-                else offset = Long.valueOf(0);
-            }
-
-            if (uriInfo.getQueryParameters().containsKey(GP.limit.getLocalName()))
-                limit = Long.parseLong(uriInfo.getQueryParameters().getFirst(GP.limit.getLocalName()));
-            else limit = getLongValue(template, GP.defaultLimit);
-
-            if (uriInfo.getQueryParameters().containsKey(GP.orderBy.getLocalName()))
-                orderBy = uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName());
-            else orderBy = getStringValue(template, GP.defaultOrderBy);
-
-            if (uriInfo.getQueryParameters().containsKey(GP.desc.getLocalName()))
-                desc = Boolean.parseBoolean(uriInfo.getQueryParameters().getFirst(GP.orderBy.getLocalName()));
-            else desc = getBooleanValue(template, GP.defaultDesc);
-        }
-        else
-        {
-            offset = limit = null;
-            orderBy = null;
-            desc = null;
-        }
         
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched OntClass: {}", template);
     }
@@ -184,21 +150,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public void init()
     {
-        Resource queryOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.query);
-        MultivaluedMap<String, String> queryParams = getUriInfo().getQueryParameters();
-        if (!queryParams.isEmpty())
-        {
-            // a SPIN query cannot have arguments, only SPIN template can
-            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-            if (templateCall == null) throw new QueryArgumentException(queryOrTemplateCall);
-
-            // if it's not a SPIN query, must be a SPIN query template call
-            querySolutionMap = getQuerySolutionMap(templateCall, queryParams);
-        }
-        else querySolutionMap = new QuerySolutionMap();
+        MultivaluedMap<String, String> queryParams = getUriInfo().getQueryParameters();        
         
-	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
-
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
         {
             Resource updateOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.update);            
@@ -207,22 +160,96 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                 if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getMatchedTemplate().getURI());
                 throw new SitemapException("Update not defined for template '" + getMatchedTemplate().getURI() +"'");
             }
-            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(updateOrTemplateCall, commandModel).getOperations().get(0), null, commandModel);
+            initUpdate(updateOrTemplateCall, commandModel, queryParams);                        
         }
+        else
+        {
+            Resource queryOrTemplateCall = getMatchedTemplate().getPropertyResourceValue(GP.query);
+            if (queryOrTemplateCall == null)
+            {
+                if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", template.getURI());
+                throw new SitemapException("Query not defined for template '" + template.getURI() +"'");
+            }
+            initQuery(queryOrTemplateCall, commandModel, queryParams);
+        }
+        
+	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
 
+        cacheControl = getCacheControl(getMatchedTemplate(), GP.cacheControl);
+        if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
+    }
+    
+    public void initQuery(Resource queryOrTemplateCall, Model commandModel, MultivaluedMap<String, String> queryParams)
+    {
+	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+	if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
+        
+        // build query in a separate model
         commandModel.add(ResourceUtils.reachableClosure(queryOrTemplateCall));
         SPTextUtil.ensureSPINRDFExists(commandModel);
         if (queryOrTemplateCall.isURIResource())
             queryOrTemplateCall = commandModel.createResource(queryOrTemplateCall.getURI()); // URI
         else
             queryOrTemplateCall = commandModel.createResource(queryOrTemplateCall.getId()); // blank node
-        
-        queryBuilder = QueryBuilder.fromQuery(getQuery(queryOrTemplateCall, commandModel), commandModel);
-        if (getMatchedTemplate().equals(GP.Container) || hasSuperClass(getMatchedTemplate(), GP.Container))
-            queryBuilder = getModifiedQueryBuilder(queryBuilder, getLimit(), getOffset(), getOrderBy(), getDesc());
 
-        cacheControl = getCacheControl(getMatchedTemplate(), GP.cacheControl);
-        if (log.isDebugEnabled()) log.debug("OntResource {} gets HTTP Cache-Control header value {}", this, cacheControl);
+        templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);        
+        if (templateCall != null)
+        {
+            templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
+            querySolutionMap = getQuerySolutionMap(templateCall);            
+            queryBuilder = QueryBuilder.fromQuery(getQuery(templateCall), commandModel);
+            if (getMatchedTemplate().equals(GP.Container) || hasSuperClass(getMatchedTemplate(), GP.Container))
+                queryBuilder = getModifiedQueryBuilder(queryBuilder, templateCall);
+        }
+        else
+        {
+            // a SPIN query cannot have arguments, only SPIN template can
+            if (!queryParams.isEmpty()) throw new SPINArgumentException(queryOrTemplateCall);
+            
+            query = SPINFactory.asQuery(queryOrTemplateCall);
+            if (query == null)
+            {
+                if (log.isErrorEnabled()) log.error("Class '{}' gp:query value '{}' is not a SPIN query", getMatchedTemplate().getURI(), queryOrTemplateCall);
+                throw new SitemapException("Class '" + getMatchedTemplate().getURI() + "' gp:query value '" + queryOrTemplateCall + "' not a SPIN query");
+            }
+            
+            querySolutionMap = new QuerySolutionMap();
+            queryBuilder = QueryBuilder.fromQuery(getQuery(query), commandModel);
+        }
+    }
+
+    public void initUpdate(Resource updateOrTemplateCall, Model commandModel, MultivaluedMap<String, String> queryParams)
+    {
+	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+	if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
+
+        // build update in a separate model
+        commandModel.add(ResourceUtils.reachableClosure(updateOrTemplateCall));
+        SPTextUtil.ensureSPINRDFExists(commandModel);
+        if (updateOrTemplateCall.isURIResource())
+            updateOrTemplateCall = commandModel.createResource(updateOrTemplateCall.getURI()); // URI
+        else
+            updateOrTemplateCall = commandModel.createResource(updateOrTemplateCall.getId()); // blank node
+
+        templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
+        if (templateCall != null)
+        {
+            // if it's not a SPIN query, must be a SPIN query template call
+            templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
+            querySolutionMap = getQuerySolutionMap(templateCall);            
+            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(templateCall).getOperations().get(0), commandModel);
+        }
+        else
+        {
+            // a SPIN update cannot have arguments, only SPIN template can
+            if (!queryParams.isEmpty()) throw new SPINArgumentException(updateOrTemplateCall);
+
+            update = SPINFactory.asUpdate(updateOrTemplateCall);
+            querySolutionMap = new QuerySolutionMap();
+            modifyBuilder = ModifyBuilder.fromUpdate(getUpdateRequest(update).getOperations().get(0), commandModel);
+        }
     }
     
     public final Long getLongValue(OntClass ontClass, AnnotationProperty property)
@@ -438,54 +465,43 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	return null;
     }
 
-    public Query getQuery(Resource queryOrTemplateCall, Model commandModel)
+    public Query getQuery(org.topbraid.spin.model.Query query)
     {
-	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+	if (query == null) throw new IllegalArgumentException("Query cannot be null");
 
-        if (queryOrTemplateCall.hasProperty(RDF.type, SP.Query)) // works only with subclass inference
+        Statement textStmt = query.getRequiredProperty(SP.text);
+        if (textStmt == null || !textStmt.getObject().isLiteral())
         {
-            Statement textStmt = queryOrTemplateCall.getRequiredProperty(SP.text);
-            if (textStmt == null || !textStmt.getObject().isLiteral())
-            {
-                if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", queryOrTemplateCall);
-                throw new SitemapException("SPARQL string not defined for query '" + queryOrTemplateCall + "'");                
-            }
-            
-            return getParameterizedSparqlString(SPINFactory.asQuery(queryOrTemplateCall).toString(), null,
-                    getUriInfo().getBaseUri().toString()).asQuery();
+            if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", query);
+            throw new SitemapException("SPARQL string not defined for query '" + query + "'");                
         }
 
-        TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
-        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+        return getParameterizedSparqlString(query.toString(), null,
                 getUriInfo().getBaseUri().toString()).asQuery();
-        
-        return null;
     }
 
-    public QuerySolutionMap getQuerySolutionMap(TemplateCall templateCall, MultivaluedMap<String, String> queryParams)
+    public Query getQuery(TemplateCall templateCall)
     {
-	if (templateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
+	if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+
+        return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                getUriInfo().getBaseUri().toString()).asQuery();
+    }
+    
+    public QuerySolutionMap getQuerySolutionMap(TemplateCall templateCall)
+    {
+	if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
 
         QuerySolutionMap qsm = new QuerySolutionMap();
-
-        Set<String> paramNames = queryParams.keySet();
-        for (String paramName : paramNames)
-        {
-            Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
-            if (arg == null) throw new QueryArgumentException(paramName, templateCall.getTemplate());
-
-            String paramValue = queryParams.getFirst(paramName);            
-            QuerySolutionMap argQsm = new QuerySolutionMap();
-            argQsm.add(paramName, RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
-            
-            qsm.addAll(argQsm);
-        }
+        Map<String, RDFNode> argMap = templateCall.getArgumentsMapByVarNames();
+        
+        Set<String> argNames = argMap.keySet();
+        for (String argName : argNames)    
+            qsm.add(argName, argMap.get(argName));
         
         return qsm;
     }
-        
+
     /**
      * Returns variable bindings for description query.
      * 
@@ -496,31 +512,29 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return querySolutionMap;
     }
     
-    public UpdateRequest getUpdateRequest(Resource updateOrTemplateCall, Model commandModel)
+    public UpdateRequest getUpdateRequest(org.topbraid.spin.model.update.Update update)
     {
-	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+	if (update == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        if (updateOrTemplateCall.hasProperty(RDF.type, SP.Update)) // works only with subclass inference
+        Statement textStmt = update.getRequiredProperty(SP.text);
+        if (textStmt == null || !textStmt.getObject().isLiteral())
         {
-            Statement textStmt = updateOrTemplateCall.getRequiredProperty(SP.text);
-            if (textStmt == null || !textStmt.getObject().isLiteral())
-            {
-                if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", updateOrTemplateCall);
-                throw new SitemapException("SPARQL string not defined for update '" + updateOrTemplateCall + "'");                
-            }
-            
-            return getParameterizedSparqlString(SPINFactory.asUpdate(updateOrTemplateCall).toString(), null,
-                    getUriInfo().getBaseUri().toString()).asUpdate();
+            if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", update);
+            throw new SitemapException("SPARQL string not defined for update '" + update + "'");                
         }
 
-       TemplateCall templateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
-        if (templateCall != null) return getParameterizedSparqlString(templateCall.getQueryString(), null,
+        return getParameterizedSparqlString(update.toString(), null,
                 getUriInfo().getBaseUri().toString()).asUpdate();
-        
-        return null;
     }
+
+    public UpdateRequest getUpdateRequest(TemplateCall templateCall)
+    {
+	if (templateCall == null) throw new IllegalArgumentException("Resource cannot be null");
         
+        return getParameterizedSparqlString(templateCall.getQueryString(), null,
+                getUriInfo().getBaseUri().toString()).asUpdate();
+    }
+    
     /**
      * Adds matched sitemap class as affordance metadata in <pre>Link</pre> header.
      * 
@@ -587,68 +601,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     {
         return getLanguages(GP.lang);
     }
-    
-    /**
-     * Returns value of <samp>limit</samp> query string parameter, which indicates the number of resources per page.
-     * This value is set as <code>LIMIT</code> query modifier when this resource is a page (therefore
-     * pagination is used).
-     * 
-     * @return limit value
-     * @see <a href="http://www.w3.org/TR/sparql11-query/#modResultLimit">15.5 LIMIT</a>
-     */
-    @Override
-    public Long getLimit()
-    {
-	return limit;
-    }
-
-    /**
-     * Returns value of <samp>offset</samp> query string parameter, which indicates the number of resources the page
-     * has skipped from the start of the container.
-     * This value is set as <code>OFFSET</code> query modifier when this resource is a page (therefore
-     * pagination is used).
-     * 
-     * @return offset value
-     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOffset">15.4 OFFSET</a>
-     */
-    @Override
-    public Long getOffset()
-    {
-	return offset;
-    }
-
-    /**
-     * Returns value of <samp>orderBy</samp> query string parameter, which indicates the name of the variable after
-     * which the container (and the page) is sorted.
-     * This value is set as <code>ORDER BY</code> query modifier when this resource is a page (therefore
-     * pagination is used).
-     * Note that ordering might be undefined, in which case the same page might not contain identical resources
-     * during different requests.
-     * 
-     * @return name of ordering variable or null, if not specified
-     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
-     */
-    @Override
-    public String getOrderBy()
-    {
-	return orderBy;
-    }
-
-    /**
-     * Returns value of <samp>desc</samp> query string parameter, which indicates the direction of resource ordering
-     * in the container (and the page).
-     * If this method returns true, <code>DESC</code> order modifier is set if this resource is a page
-     * (therefore pagination is used).
-     * 
-     * @return true if the order is descending, false otherwise
-     * @see <a href="http://www.w3.org/TR/sparql11-query/#modOrderBy">15.1 ORDER BY</a>
-     */
-    @Override
-    public Boolean getDesc()
-    {
-	return desc;
-    }
-    
+        
     /**
      * Returns this resource as ontology resource.
      * 
@@ -705,36 +658,50 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
     @Override
     public Query getQuery()
     {
-        return getQuery(getQueryBuilder().build().toString(), ResourceBase.this.getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+        return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
-    public QueryBuilder getModifiedQueryBuilder(QueryBuilder builder, Long limit, Long offset, String orderBy, Boolean desc)
+    public QueryBuilder getModifiedQueryBuilder(QueryBuilder builder, TemplateCall templateCall)
     {
 	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
+	if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
                 
         if (builder.getSubSelectBuilders().isEmpty())
         {
             if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
-            throw new SitemapException("Sub-SELECT missing in QueryBuilder: " + queryBuilder +"'");
+            throw new SitemapException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
         }
 
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        try
+        if (templateCall.hasProperty(GP.offset))
         {
+            Long offset = templateCall.getProperty(GP.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
+        }
 
+        if (templateCall.hasProperty(GP.limit))
+        {
+            Long limit = templateCall.getProperty(GP.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
+        }
 
-            if (orderBy != null)
+        /*
+        try
+        {
+        */
+            if (templateCall.hasProperty(GP.orderBy))
             {
                 try
                 {
-                    if (desc == null) desc = false; // ORDERY BY is ASC() by default
-
+                    String orderBy = templateCall.getProperty(GP.orderBy).getString();
+                    
+                    Boolean desc = false; // ORDERY BY is ASC() by default
+                    if (templateCall.hasProperty(GP.desc)) desc = templateCall.getProperty(GP.desc).getBoolean();
+                        
                     if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                     subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
                         orderBy(orderBy, desc);
@@ -744,11 +711,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
                     if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
                 }
             }
+        /*
         }
         catch (NumberFormatException ex)
         {
             throw new WebApplicationException(ex);
         }
+        */
         
         return builder;
     }

@@ -72,6 +72,11 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
     {
 	return fromModify((Modify)update);
     }
+
+    public static ModifyBuilder fromUpdate(org.apache.jena.update.Update update, Model model)
+    {
+        return fromUpdate(update, null, model);
+    }
     
     public static ModifyBuilder fromUpdate(org.apache.jena.update.Update update, String uri, Model model)
     {

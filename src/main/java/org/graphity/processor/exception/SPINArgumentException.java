@@ -23,15 +23,15 @@ import org.topbraid.spin.model.Template;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class QueryArgumentException extends RuntimeException
+public class SPINArgumentException extends RuntimeException
 {
 
-    public QueryArgumentException(String paramName, Template template)
+    public SPINArgumentException(String paramName, Template template)
     {
         super("Parameter '" + paramName + "' not supported by SPIN template '" + template.toString() + "'");
     }
 
-    public QueryArgumentException(Resource spinQuery)
+    public SPINArgumentException(Resource spinQuery)
     {
         super("Parameters not supported by SPIN query '" + spinQuery.toString() + "'");
     }

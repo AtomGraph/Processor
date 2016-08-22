@@ -496,16 +496,20 @@ WHERE
     # spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
     spin:constraint [ a spl:Argument ;
         spl:predicate <#limit> ;
-        spl:valueType xsd:long
+        spl:valueType xsd:long ;
+        spl:optional true
     ] , [ a spl:Argument ;
         spl:predicate <#offset> ;
-        spl:valueType xsd:long
+        spl:valueType xsd:long ;
+        spl:optional true
     ] , [ a spl:Argument ;
         spl:predicate <#orderBy> ;
-        spl:valueType xsd:string
+        spl:valueType xsd:string ;
+        spl:optional true
     ] , [ a spl:Argument ;
         spl:predicate <#desc> ;
-        spl:valueType xsd:boolean
+        spl:valueType xsd:boolean ;
+        spl:optional true
     ] ;
     rdfs:isDefinedBy <#> .
 
