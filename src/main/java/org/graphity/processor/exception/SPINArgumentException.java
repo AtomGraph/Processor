@@ -31,9 +31,9 @@ public class SPINArgumentException extends RuntimeException
         super("Parameter '" + paramName + "' not supported by SPIN template '" + template.toString() + "'");
     }
 
-    public SPINArgumentException(Resource spinQuery)
+    public SPINArgumentException(Resource command)
     {
-        super("Parameters not supported by SPIN query '" + spinQuery.toString() + "'");
+        super("Parameters not supported by SPIN command '" + command.toString() + "'");
     }
     
 }

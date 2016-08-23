@@ -362,16 +362,16 @@
     # rdfs:label "Document constructor" ;
     # rdfs:isDefinedBy <#> .
 
-<#QueryTemplate> a rdfs:Class ;
+<#CommandTemplate> a rdfs:Class ;
     rdfs:subClassOf spin:Template ;
     <#skolemTemplate> "{isPrimaryTopicOf.slug}" ;
     <#fragmentTemplate> "this" ;
-    spin:constructor <#QueryTemplateConstructor> ;
+    spin:constructor <#CommandTemplateConstructor> ;
     spin:constraint <#MissingRDFSLabel> ;
-    rdfs:label "Query template" ;
+    rdfs:label "Command template" ;
     rdfs:isDefinedBy <#> .
 
-<#QueryTemplateConstructor> a sp:Construct, sp:Query ; # <#Query> ;
+<#CommandTemplateConstructor> a sp:Construct, sp:Query ; # <#Query> ;
   sp:text """
       PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
       PREFIX gp:      <http://graphity.org/gp#>
@@ -408,7 +408,7 @@
 
 # SPIN TEMPLATES
 
-<#MissingPropertyValue> a rdfs:Class, spin:Template, <#QueryTemplate> ;
+<#MissingPropertyValue> a rdfs:Class, spin:Template, <#CommandTemplate> ;
     rdfs:subClassOf <#Constraint> ;
     rdfs:label "Missing property value" ;
     spin:body <#ConstructMissingPropertyValue> ;
@@ -462,7 +462,7 @@ WHERE
 
 # ====
 
-<#DescribeWithChildrenTemplate> a <#QueryTemplate> ;
+<#DescribeWithChildrenTemplate> a <#CommandTemplate> ;
     rdfs:label "Describe with children" ;
     spin:body <#DescribeWithChildren> ;
     # spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;

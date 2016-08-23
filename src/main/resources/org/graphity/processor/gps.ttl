@@ -89,13 +89,13 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
     rdfs:label "Constraint" ;
     rdfs:isDefinedBy <#> .
 
-<#QueryTemplate> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:QueryTemplate ,
+<#CommandTemplate> a rdfs:Class, owl:Class ;
+    rdfs:subClassOf gp:CommandTemplate ,
         [ a owl:Restriction ;
             owl:onProperty foaf:isPrimaryTopicOf ;
             owl:allValuesFrom gp:Document
 	] ;
-    rdfs:label "Query template" ;
+    rdfs:label "Command template" ;
     rdfs:isDefinedBy <#> .
 
 # QUERIES
