@@ -92,7 +92,10 @@ public class SPINTemplateCall
                     argValue = param.getValue();
 
             if (argValue != null)
+            {
+                templateCall.removeAll(arg.getPredicate());
                 templateCall.addProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
+            }
             else if (!arg.isOptional())
                 throw new SPINArgumentException(argName, templateCall.getTemplate()); // TO-DO: throw as required            
         }

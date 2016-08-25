@@ -40,6 +40,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.jena.ext.com.google.common.base.Charsets;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.exception.SPINArgumentException;
@@ -106,7 +108,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (templateCall.hasProperty(GP.limit))
             {                
                 // transition to a URI of another application state (HATEOAS)
-                Resource pageState = getPageBuilder(StateBuilder.fromResource(requestUri), templateCall).build();
+                Resource pageState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
                 if (!pageState.getURI().equals(request.getRequestUri().toString()))
                 {
                     if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", pageState.getURI());
@@ -165,15 +167,25 @@ public class HypermediaFilter implements ContainerResponseFilter
         return stateBuilder;
     }
     
-    public StateBuilder getPageBuilder(StateBuilder sb, TemplateCall templateCall)
+    public StateBuilder applyTemplateCall(StateBuilder sb, TemplateCall templateCall)
     {
         if (sb == null) throw new IllegalArgumentException("Resource cannot be null");
         if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
         
-        if (templateCall.hasProperty(GP.offset)) sb.replaceProperty(GP.offset, templateCall.getProperty(GP.offset).getObject());
-        if (templateCall.hasProperty(GP.limit)) sb.replaceProperty(GP.limit, templateCall.getProperty(GP.limit).getObject());
-        if (templateCall.hasProperty(GP.orderBy)) sb.replaceProperty(GP.orderBy, templateCall.getProperty(GP.orderBy).getObject());
-        if (templateCall.hasProperty(GP.desc)) sb.replaceProperty(GP.desc, templateCall.getProperty(GP.desc).getObject());
+        StmtIterator it = templateCall.listProperties();
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                if (!stmt.getPredicate().equals(RDF.type)) // the rdf:type of the template call is its template
+                sb.replaceProperty(stmt.getPredicate(), stmt.getObject());
+            }
+        }
+        finally
+        {
+            it.close();
+        }
         
         return sb;
     }
@@ -196,7 +208,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 
                 TemplateCall prevCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
                         addLiteral(GP.offset, offset - limit));
-                Resource prev = getPageBuilder(pageBuilder, prevCall).build().
+                Resource prev = applyTemplateCall(pageBuilder, prevCall).build().
                     addProperty(GP.pageOf, absolutePath).
                     addProperty(RDF.type, GP.Page).
                     addProperty(XHV.next, page);
@@ -207,7 +219,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 
             TemplateCall nextCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
                         addLiteral(GP.offset, offset + limit));
-            Resource next = getPageBuilder(pageBuilder, nextCall).build().
+            Resource next = applyTemplateCall(pageBuilder, nextCall).build().
                 addProperty(GP.pageOf, absolutePath).
                 addProperty(RDF.type, GP.Page).
                 addProperty(XHV.prev, page);

@@ -429,8 +429,8 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	org.apache.jena.query.Query arqQuery = ARQFactory.get().createQuery(getQuery());
 	
 	// generate SPARQL query string
-	removeAll(SP.text)
-	    .addLiteral(SP.text, getModel().createTypedLiteral(arqQuery.toString()));
+	removeAll(SP.text).
+            addLiteral(SP.text, getModel().createTypedLiteral(arqQuery.toString()));
 	
 	return arqQuery;
     }
