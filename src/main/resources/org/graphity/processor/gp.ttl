@@ -62,6 +62,14 @@
     rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html> ;
     rdfs:isDefinedBy <#> .
 
+<#argument> a owl:AnnotationProperty ;
+    rdfs:domain <#Template> ;
+    rdfs:range <#Argument> ;
+    rdfs:label "Argument" ;
+    rdfs:comment "Template argument" ;
+    rdfs:seeAlso spin:constraint ;
+    rdfs:isDefinedBy <#> .
+
 <#priority> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:float ;
@@ -287,6 +295,13 @@
     # rdfs:label "Update constructor" ;
     # rdfs:isDefinedBy <#> .
 
+
+<#Argument> a rdfs:Class ;
+    rdfs:label "Template argument" ;
+    rdfs:comment "Represents a template argument that has predicate, value type, default value etc." ;
+    rdfs:seeAlso spl:Argument ;
+    rdfs:isDefinedBy <#> .
+
 <#View> a rdfs:Class ;
     rdfs:subClassOf foaf:Document ;
     rdfs:label "View resource" ;
@@ -333,7 +348,24 @@
     rdfs:subClassOf <#Document>, sioc:Container ;
     <#path> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
-    <#query> [ a <#DescribeWithChildrenTemplate> ] ; # <#DescribeWithChildren> ;
+    <#query> <#DescribeWithChildren> ;
+    <#argument> [ a <#Argument> ;
+        spl:predicate <#limit> ;
+        spl:valueType xsd:long ;
+        spl:optional true
+    ] , [ a <#Argument> ;
+        spl:predicate <#offset> ;
+        spl:valueType xsd:long ;
+        spl:optional true
+    ] , [ a <#Argument> ;
+        spl:predicate <#orderBy> ;
+        spl:valueType xsd:string ;
+        spl:optional true
+    ] , [ a <#Argument> ;
+        spl:predicate <#desc> ;
+        spl:valueType xsd:boolean ;
+        spl:optional true
+    ] ;
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
@@ -462,36 +494,13 @@ WHERE
 
 # ====
 
-<#DescribeWithChildrenTemplate> a <#CommandTemplate> ;
-    rdfs:label "Describe with children" ;
-    spin:body <#DescribeWithChildren> ;
-    # spin:labelTemplate "Instance does not have a mandatory RDF property {?arg1} with optional value {?arg2}" ;
-    spin:constraint [ a spl:Argument ;
-        spl:predicate <#limit> ;
-        spl:valueType xsd:long ;
-        spl:optional true
-    ] , [ a spl:Argument ;
-        spl:predicate <#offset> ;
-        spl:valueType xsd:long ;
-        spl:optional true
-    ] , [ a spl:Argument ;
-        spl:predicate <#orderBy> ;
-        spl:valueType xsd:string ;
-        spl:optional true
-    ] , [ a spl:Argument ;
-        spl:predicate <#desc> ;
-        spl:valueType xsd:boolean ;
-        spl:optional true
-    ] ;
-    rdfs:isDefinedBy <#> .
-
 <#DescribeWithChildren> a sp:Describe, sp:Query ; # <#Query>  ;
     sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
 PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
 
 DESCRIBE ?this ?primaryTopic ?child ?childPrimaryTopic
 WHERE
-  { ?this ?p ?o 
+  { ?this ?p ?o
     OPTIONAL
       { ?this foaf:primaryTopic ?primaryTopic }
     OPTIONAL
@@ -576,7 +585,7 @@ CONSTRUCT {
 WHERE {
     FILTER NOT EXISTS {
         ?this ?arg1 ?arg2 .
-    } 
+    }
 }""" .
     # rdfs:label "Construct missing property value" ;
     # rdfs:isDefinedBy <#> .
