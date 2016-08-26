@@ -16,7 +16,6 @@
 
 package org.graphity.processor.provider;
 
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
@@ -25,6 +24,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
+import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.util.TemplateMatcher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,39 +33,39 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, OntClass> implements ContextResolver<OntClass>
+public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Context, TemplateCall> implements ContextResolver<TemplateCall>
 {
 
-    private static final Logger log = LoggerFactory.getLogger(TemplateProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
 
     @Context UriInfo uriInfo;    
     @Context Providers providers;
     
-    public TemplateProvider()
+    public TemplateCallProvider()
     {
-        super(OntClass.class);
+        super(TemplateCall.class);
     }
     
     @Override
-    public Injectable<OntClass> getInjectable(ComponentContext ic, Context a)
+    public Injectable<TemplateCall> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<OntClass>()
+	return new Injectable<TemplateCall>()
 	{
 	    @Override
-	    public OntClass getValue()
+	    public TemplateCall getValue()
 	    {
-                return getTemplate();
+                return getTemplateCall();
 	    }
 	};
     }
 
     @Override
-    public OntClass getContext(Class<?> type)
+    public TemplateCall getContext(Class<?> type)
     {
-        return getTemplate();
+        return getTemplateCall();
     }
     
-    public OntClass getTemplate()
+    public TemplateCall getTemplateCall()
     {
         return new TemplateMatcher(getOntology()).match(getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
     }

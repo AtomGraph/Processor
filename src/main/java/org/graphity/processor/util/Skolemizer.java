@@ -16,7 +16,6 @@
 
 package org.graphity.processor.util;
 
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Literal;
@@ -40,7 +39,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
-import org.graphity.processor.template.ClassTemplate;
+import org.graphity.processor.model.Template;
+import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
@@ -109,14 +109,14 @@ public class Skolemizer
         UriBuilder builder;
         Map<String, String> nameValueMap;
         
-        SortedSet<ClassTemplate> matchedTypes = match(getOntology(), resource, RDF.type, 0);
-        if (!matchedTypes.isEmpty())
+        SortedSet<TemplateCall> templateCalls = match(getOntology(), resource, RDF.type, 0);
+        if (!templateCalls.isEmpty())
         {
-            OntClass typeClass = matchedTypes.first().getOntClass();
-            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
+            Template template = templateCalls.first().getTemplate();
+            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, template);
 
             // skolemization template builds with absolute path builder (e.g. "{slug}")
-            String skolemTemplate = getStringValue(typeClass, GP.skolemTemplate);
+            String skolemTemplate = template.getSkolemTemplate();
             if (skolemTemplate != null)
             {
                 builder = getAbsolutePathBuilder().clone();
@@ -128,14 +128,13 @@ public class Skolemizer
             }
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
             {
-                String uriTemplate = getStringValue(typeClass, GP.path);
+                String uriTemplate = template.getPath().getTemplate();
                 builder = getBaseUriBuilder().clone().path(uriTemplate);
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
             }
 
             // add fragment identifier
-            String fragmentTemplate = getStringValue(typeClass, GP.fragmentTemplate);            
-            return builder.fragment(fragmentTemplate).buildFromMap(nameValueMap);
+            return builder.fragment(template.getFragmentTemplate()).buildFromMap(nameValueMap);
         }
         
         return null;
@@ -222,38 +221,32 @@ public class Skolemizer
 	
 	return null;
     }
-
-    protected String getStringValue(OntClass ontClass, Property property)
-    {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
-            return ontClass.getPropertyValue(property).asLiteral().getString();
-        
-        return null;
-    }
-    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
+    
+    public SortedSet<TemplateCall> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
+        SortedSet<TemplateCall> templateCalls = new TreeSet<>();
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(GP.skolemTemplate);
         try
         {
             while (it.hasNext())
             {
-                Resource ontClassRes = it.next();
-                OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
+                Resource templateRes = it.next();
+                Template template = ontology.getOntModel().getOntResource(templateRes).as(Template.class);
                 // only match templates defined in this ontology - maybe reverse loops?
-                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
-                        resource.hasProperty(property, ontClass))
+                if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology) &&
+                        resource.hasProperty(property, template))
                 {
-                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
-                    if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
-                    matchedClasses.add(template);
+                    TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
+                        addProperty(GP.template, template).
+                        addLiteral(GP.priority, new Double(level * -1)).
+                        as(TemplateCall.class);
+                    
+                    if (log.isTraceEnabled()) log.trace("Resource {} matched Template {}", resource, template);
+                    templateCalls.add(templateCall);
                 } 
             }            
         }
@@ -272,8 +265,8 @@ public class Skolemizer
                 {
                     Ontology importedOntology = importRes.asOntology();
                     // traverse imports recursively
-                    Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
-                    matchedClasses.addAll(matchedImportClasses);
+                    Set<TemplateCall> importCalls = match(importedOntology, resource, property, level + 1);
+                    templateCalls.addAll(importCalls);
                 }
             }
         }
@@ -282,7 +275,7 @@ public class Skolemizer
             imports.close();
         }
         
-        return matchedClasses;
+        return templateCalls;
     }
     
     public Ontology getOntology()

@@ -51,7 +51,11 @@ public final class GP
     public static final OntClass Application = m_model.createClass( NS + "Application" );
 
     public static final OntClass Template = m_model.createClass( NS + "Template" );
-    
+
+    public static final OntClass TemplateCall = m_model.createClass( NS + "TemplateCall" );
+
+    public static final OntClass Argument = m_model.createClass( NS + "Argument" );
+
     public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
 
     public static final OntClass GraphStore = m_model.createClass( NS + "GraphStore" );
@@ -64,6 +68,8 @@ public final class GP
     
     public static final OntClass View = m_model.createClass( NS + "View" );    
 
+    public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
+    
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );
 
     public static final AnnotationProperty update = m_model.createAnnotationProperty( NS + "update" );

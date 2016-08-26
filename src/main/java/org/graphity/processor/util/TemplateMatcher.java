@@ -16,13 +16,10 @@
 
 package org.graphity.processor.util;
 
-import org.graphity.processor.template.ClassTemplate;
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ResIterator;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.api.uri.UriTemplate;
@@ -32,7 +29,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import org.graphity.processor.exception.SitemapException;
-import org.graphity.processor.template.UriClassTemplate;
+import org.graphity.processor.model.Template;
+import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,7 +58,7 @@ public class TemplateMatcher
      * @param base base URI
      * @return matching ontology class or null, if none
      */
-    public OntClass match(URI uri, URI base)
+    public TemplateCall match(URI uri, URI base)
     {
 	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
 	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
@@ -70,10 +68,7 @@ public class TemplateMatcher
 	StringBuilder path = new StringBuilder();
 	// instead of path, include query string by relativizing request URI against base URI
 	path.append("/").append(base.relativize(uri));
-	ClassTemplate template = match(getOntology(), path);
-        if (template != null) return template.getOntClass();
-        
-        return null;
+	return match(getOntology(), path);
     }
             
     /**
@@ -85,40 +80,44 @@ public class TemplateMatcher
      * @param level
      * @return URI template/class mapping
      */    
-    public List<UriClassTemplate> match(Ontology ontology, CharSequence path, int level)
+    public List<TemplateCall> match(Ontology ontology, CharSequence path, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
         if (log.isTraceEnabled()) log.trace("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         if (log.isTraceEnabled()) log.trace("Ontology import level: {}", level);
-        List<UriClassTemplate> matchedClasses = new ArrayList<>();
+        List<TemplateCall> templateCalls = new ArrayList<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
         try
         {
             while (it.hasNext())
             {
-                Resource templateRes = it.next();
-                OntClass ontClass = ontology.getOntModel().getOntResource(templateRes).asClass();
+                //Resource templateRes = it.next();
+                Template template = it.next().as(Template.class);
                 // only match templates defined in this ontology - maybe reverse loops?
-                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology))
+                if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology))
                 {
-                    if (!templateRes.hasProperty(GP.path))
+                    if (template.getPath() == null)
                     {
-                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", templateRes, GP.path);
-                        throw new SitemapException("Template class '" + templateRes + "' does not have value for '" + GP.path + "' annotation");
+                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", template, GP.path);
+                        throw new SitemapException("Template class '" + template + "' does not have value for '" + GP.path + "' annotation");
                     }
 
-                    UriTemplate uriTemplate = new UriTemplate(templateRes.getProperty(GP.path).getString());
+                    UriTemplate uriTemplate = template.getPath();
                     HashMap<String, String> map = new HashMap<>();
 
                     if (uriTemplate.match(path, map))
                     {
-                        UriClassTemplate template = new UriClassTemplate(ontClass, new Double(level * -1), uriTemplate);
+                        TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
+                            addProperty(GP.template, template).
+                            addLiteral(GP.priority, new Double(level * -1)).
+                            as(TemplateCall.class);
+
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
-                        if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, ontClass);
-                        matchedClasses.add(template);
+                        if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, template);
+                        templateCalls.add(templateCall);
                     }
                     else
                         if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
@@ -135,7 +134,7 @@ public class TemplateMatcher
                     {
                         Ontology importedOntology = importRes.asOntology();
                         // traverse imports recursively
-                        matchedClasses.addAll(match(importedOntology, path, level + 1));
+                        templateCalls.addAll(match(importedOntology, path, level + 1));
                     }
                 }
             }
@@ -149,7 +148,7 @@ public class TemplateMatcher
             it.close();
         }
 
-        return matchedClasses;
+        return templateCalls;
     }
     
     /**
@@ -163,23 +162,23 @@ public class TemplateMatcher
      * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      */
-    public UriClassTemplate match(Ontology ontology, CharSequence path)
+    public TemplateCall match(Ontology ontology, CharSequence path)
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        List<UriClassTemplate> matchedTemplates = match(ontology, path, 0);
-        if (!matchedTemplates.isEmpty())
+        List<TemplateCall> templateCalls = match(ontology, path, 0);
+        if (!templateCalls.isEmpty())
         {
-            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matchedTemplates);
-            Collections.sort(matchedTemplates, UriClassTemplate.COMPARATOR);
+            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, templateCalls);
+            Collections.sort(templateCalls, TemplateCall.COMPARATOR);
 
-            UriClassTemplate match = matchedTemplates.get(0);            
+            TemplateCall match = templateCalls.get(0);            
             if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match);
             
             // Check for conflicts: Templates with identical UriTemplate and precedence
-            for (UriClassTemplate template : matchedTemplates)
-                if (!template.getOntClass().equals(match.getOntClass()) && template.equals(match))
-                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, template);
+            for (TemplateCall templateCall : templateCalls)
+                if (!templateCall.getTemplate().equals(match.getTemplate()) && templateCall.equals(match))
+                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, templateCall);
 
             return match;
         }

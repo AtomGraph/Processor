@@ -28,8 +28,11 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
+import org.apache.jena.enhanced.BuiltinPersonalities;
+import org.apache.jena.enhanced.Personality;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.util.LocationMapper;
 import org.graphity.core.exception.ConfigurationException;
@@ -49,10 +52,14 @@ import org.graphity.processor.mapper.SPINArgumentExceptionMapper;
 import org.graphity.processor.mapper.jena.DatatypeFormatExceptionMapper;
 import org.graphity.processor.mapper.jena.QueryParseExceptionMapper;
 import org.graphity.processor.mapper.jena.RiotExceptionMapper;
+import org.graphity.processor.model.Template;
+import org.graphity.processor.model.TemplateCall;
+import org.graphity.processor.model.impl.TemplateCallImpl;
+import org.graphity.processor.model.impl.TemplateImpl;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
 import org.graphity.processor.provider.GraphStoreProvider;
 import org.graphity.processor.provider.OntologyProvider;
-import org.graphity.processor.provider.TemplateProvider;
+import org.graphity.processor.provider.TemplateCallProvider;
 import org.graphity.processor.provider.SPARQLEndpointOriginProvider;
 import org.graphity.processor.provider.SPARQLEndpointProvider;
 import org.graphity.processor.provider.SkolemizingModelProvider;
@@ -92,7 +99,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
         singletons.add(new OntologyProvider(servletConfig));
-        singletons.add(new TemplateProvider());
+        singletons.add(new TemplateCallProvider());
 	singletons.add(new SPARQLEndpointProvider());
 	singletons.add(new SPARQLEndpointOriginProvider());
         singletons.add(new GraphStoreProvider());
@@ -106,7 +113,7 @@ public class Application extends org.graphity.core.Application
         singletons.add(new SPINArgumentExceptionMapper());
 	singletons.add(new QueryParseExceptionMapper());
     }
-
+    
     /**
      * Initializes (post construction) DataManager, its LocationMapper and Locators, and Context
      * 
@@ -122,6 +129,7 @@ public class Application extends org.graphity.core.Application
     {
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", getClasses(), getSingletons());
 
+        initPersonalities(BuiltinPersonalities.model); // map model interfaces to implementations
 	SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
@@ -136,6 +144,14 @@ public class Application extends org.graphity.core.Application
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
     }
 
+    private static void initPersonalities(Personality<RDFNode> p)
+    {
+        if (p == null) throw new IllegalArgumentException("Personality<RDFNode> cannot be null");
+        
+        p.add(Template.class, TemplateImpl.factory);
+        p.add(TemplateCall.class, TemplateCallImpl.factory);
+    }
+    
     public void initOntDocumentManager(FileManager fileManager)
     {
         OntDocumentManager.getInstance().setFileManager(fileManager);

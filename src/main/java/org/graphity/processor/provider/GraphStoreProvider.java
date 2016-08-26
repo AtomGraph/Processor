@@ -21,7 +21,7 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.ext.ContextResolver;
 import org.graphity.core.MediaTypes;
-import org.graphity.processor.model.GraphStoreFactory;
+import org.graphity.processor.service.GraphStoreFactory;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.util.jena.DataManager;
 import org.slf4j.Logger;

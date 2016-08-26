@@ -14,39 +14,38 @@
  *  limitations under the License.
  *
  */
+package org.graphity.processor.service;
 
-package org.graphity.processor.model;
-
-import org.graphity.processor.model.impl.GraphStoreBase;
+import org.graphity.processor.model.impl.SPARQLEndpointBase;
 import org.apache.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;
 import org.graphity.core.MediaTypes;
 import org.graphity.core.util.jena.DataManager;
-import org.graphity.core.model.GraphStore;
+import org.graphity.core.model.SPARQLEndpoint;
 
 /**
- * Factory class for creating Graph Stores.
+ * A factory class for creating SPARQL endpoints.
  * 
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class GraphStoreFactory extends org.graphity.core.model.GraphStoreFactory
+public class SPARQLEndpointFactory extends org.graphity.core.model.SPARQLEndpointFactory
 {
-
+    
     /**
-     * Creates new Graph Store instance backed by dataset.
+     * Creates new SPARQL endpoint instance backed by dataset.
      * 
      * @param request current request
      * @param servletConfig webapp context
-     * @param mediaTypes
+     * @param mediaTypes supported media types
      * @param dataset dataset of the store
-     * @param dataManager RDF data manager for this graph store
-     * @return graph store instance
+     * @param dataManager RDF data manager for this endpoint
+     * @return new endpoint
      */
-    public static GraphStore create(Request request, ServletConfig servletConfig, MediaTypes mediaTypes,
+    public static SPARQLEndpoint create(Request request, ServletConfig servletConfig, MediaTypes mediaTypes,
             Dataset dataset, DataManager dataManager)
     {
-	return new GraphStoreBase(request, servletConfig, mediaTypes, dataset, dataManager);
+	return new SPARQLEndpointBase(request, servletConfig, mediaTypes, dataset, dataManager);
     }
-
+    
 }

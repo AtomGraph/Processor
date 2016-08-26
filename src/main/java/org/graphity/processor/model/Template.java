@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Martynas Jusevičius <martynas@graphity.org>.
+ * Copyright 2016 Martynas Jusevičius <martynas@graphity.org>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.graphity.processor.model;
 
-import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.Model;
+import com.sun.jersey.api.uri.UriTemplate;
+import java.util.Map;
+import javax.ws.rs.core.CacheControl;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public interface Resource extends QueriedResource
+public interface Template extends OntClass
 {
     
-    public Ontology getOntology();
+    UriTemplate getPath();
     
-    public TemplateCall getTemplateCall();
+    String getSkolemTemplate();
+
+    String getFragmentTemplate();
     
-    public Model getCommandModel();
+    org.apache.jena.rdf.model.Resource getQuery();
+    
+    org.apache.jena.rdf.model.Resource getUpdate();
+    
+    Double getPriority();
+    
+    Map<Property, RDFNode> getArguments();
+   
+    CacheControl getCacheControl();
     
 }

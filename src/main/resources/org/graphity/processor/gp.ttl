@@ -62,7 +62,7 @@
     rdfs:seeAlso <http://docs.oracle.com/cd/E19798-01/821-1841/6nmq2cp26/index.html> ;
     rdfs:isDefinedBy <#> .
 
-<#argument> a owl:AnnotationProperty ;
+<#param> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range <#Argument> ;
     rdfs:label "Argument" ;
@@ -349,7 +349,7 @@
     <#path> "{path: .*}/" ;
     <#skolemTemplate> "{slug}/" ;
     <#query> <#DescribeWithChildren> ;
-    <#argument> [ a <#Argument> ;
+    <#param> [ a <#Argument> ;
         spl:predicate <#limit> ;
         spl:valueType xsd:long ;
         spl:optional true
