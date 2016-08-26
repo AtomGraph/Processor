@@ -33,9 +33,6 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
 
 <#Container> a rdfs:Class, owl:Class, gp:Template ;
     rdfs:subClassOf gp:Container ;
-    gp:query [ a gp:DescribeWithChildrenTemplate ;
-        gp:limit 20
-    ] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode ;
     gc:defaultMode gc:ListMode ;
     rdfs:label "Container" ;

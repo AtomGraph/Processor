@@ -52,8 +52,10 @@ import org.graphity.processor.mapper.SPINArgumentExceptionMapper;
 import org.graphity.processor.mapper.jena.DatatypeFormatExceptionMapper;
 import org.graphity.processor.mapper.jena.QueryParseExceptionMapper;
 import org.graphity.processor.mapper.jena.RiotExceptionMapper;
+import org.graphity.processor.model.Argument;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
+import org.graphity.processor.model.impl.ArgumentImpl;
 import org.graphity.processor.model.impl.TemplateCallImpl;
 import org.graphity.processor.model.impl.TemplateImpl;
 import org.graphity.processor.provider.GraphStoreOriginProvider;
@@ -144,12 +146,13 @@ public class Application extends org.graphity.core.Application
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
     }
 
-    private static void initPersonalities(Personality<RDFNode> p)
+    private static void initPersonalities(Personality<RDFNode> personality)
     {
-        if (p == null) throw new IllegalArgumentException("Personality<RDFNode> cannot be null");
+        if (personality == null) throw new IllegalArgumentException("Personality<RDFNode> cannot be null");
         
-        p.add(Template.class, TemplateImpl.factory);
-        p.add(TemplateCall.class, TemplateCallImpl.factory);
+        personality.add(Argument.class, ArgumentImpl.factory);
+        personality.add(Template.class, TemplateImpl.factory);
+        personality.add(TemplateCall.class, TemplateCallImpl.factory);
     }
     
     public void initOntDocumentManager(FileManager fileManager)

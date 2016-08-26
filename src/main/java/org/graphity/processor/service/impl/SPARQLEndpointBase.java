@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.graphity.processor.model.impl;
+package org.graphity.processor.service.impl;
 
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.Query;

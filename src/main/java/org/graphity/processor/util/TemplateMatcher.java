@@ -124,24 +124,24 @@ public class TemplateMatcher
                 }
             }
 
-            ExtendedIterator<OntResource> imports = ontology.listImports();
+            List<Ontology> importedOntologies = new ArrayList<>(); // collect imports first to avoid CME within iterator
+            ExtendedIterator<OntResource> importIt = ontology.listImports();
             try
             {
-                while (imports.hasNext())
+                while (importIt.hasNext())
                 {
-                    OntResource importRes = imports.next();
-                    if (importRes.canAs(Ontology.class))
-                    {
-                        Ontology importedOntology = importRes.asOntology();
-                        // traverse imports recursively
-                        templateCalls.addAll(match(importedOntology, path, level + 1));
-                    }
+                    OntResource importRes = importIt.next();
+                    if (importRes.canAs(Ontology.class)) importedOntologies.add(importRes.asOntology());
                 }
             }
             finally
             {
-                imports.close();
+                importIt.close();
             }
+            
+            //traverse imports recursively, safely make changes to OntModel outside the iterator
+            for (Ontology importedOntology : importedOntologies)
+                templateCalls.addAll(match(importedOntology, path, level + 1));            
         }
         finally
         {

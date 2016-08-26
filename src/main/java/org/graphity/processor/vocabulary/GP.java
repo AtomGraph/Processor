@@ -73,7 +73,8 @@ public final class GP
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );
 
     public static final AnnotationProperty update = m_model.createAnnotationProperty( NS + "update" );
-    
+
+    /**
     public static final AnnotationProperty defaultOffset = m_model.createAnnotationProperty( NS + "defaultOffset" );
     
     public static final AnnotationProperty defaultLimit = m_model.createAnnotationProperty( NS + "defaultLimit" );
@@ -81,6 +82,7 @@ public final class GP
     public static final AnnotationProperty defaultOrderBy = m_model.createAnnotationProperty( NS + "defaultOrderBy" );
 
     public static final AnnotationProperty defaultDesc = m_model.createAnnotationProperty( NS + "defaultDesc" );
+    */
 
     public static final AnnotationProperty path = m_model.createAnnotationProperty( NS + "path" );
 
@@ -89,13 +91,17 @@ public final class GP
     public static final AnnotationProperty skolemTemplate = m_model.createAnnotationProperty( NS + "skolemTemplate" );
 
     public static final AnnotationProperty fragmentTemplate = m_model.createAnnotationProperty( NS + "fragmentTemplate" );
+
+    public static final AnnotationProperty param = m_model.createAnnotationProperty( NS + "param" );
     
     public static final AnnotationProperty loadClass = m_model.createAnnotationProperty( NS + "loadClass" );
 
     public static final AnnotationProperty cacheControl = m_model.createAnnotationProperty( NS + "cacheControl" );
     
     public static final AnnotationProperty lang = m_model.createAnnotationProperty( NS + "lang" );
-        
+
+    public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
+    
     public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
     
     public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
@@ -117,7 +123,5 @@ public final class GP
     public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
 
     public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
-
-    public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
     
 }

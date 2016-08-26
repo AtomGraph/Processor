@@ -15,37 +15,11 @@
  */
 package org.graphity.processor.model;
 
-import com.sun.jersey.api.uri.UriTemplate;
-import java.util.List;
-import java.util.Locale;
-import javax.ws.rs.core.CacheControl;
-import org.apache.jena.ontology.OntClass;
-
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public interface Template extends OntClass
+public interface Argument extends org.topbraid.spin.model.Argument
 {
-    
-    UriTemplate getPath();
-    
-    String getSkolemTemplate();
-
-    String getFragmentTemplate();
-    
-    org.apache.jena.rdf.model.Resource getQuery();
-    
-    org.apache.jena.rdf.model.Resource getUpdate();
-    
-    Double getPriority();
-    
-    List<Argument> getArguments();
-   
-    List<Locale> getLanguages();
-    
-    org.apache.jena.rdf.model.Resource getLoadClass();
-    
-    CacheControl getCacheControl();
     
 }

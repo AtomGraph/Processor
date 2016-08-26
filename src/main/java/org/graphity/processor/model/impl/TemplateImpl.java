@@ -16,7 +16,10 @@
 package org.graphity.processor.model.impl;
 
 import com.sun.jersey.api.uri.UriTemplate;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
@@ -25,11 +28,17 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.ontology.impl.OntClassImpl;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
+import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.model.Argument;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.vocabulary.GP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.topbraid.spin.util.JenaUtil;
 
 /**
  *
@@ -37,6 +46,8 @@ import org.graphity.processor.vocabulary.GP;
  */
 public class TemplateImpl extends OntClassImpl implements Template
 {
+
+    private static final Logger log = LoggerFactory.getLogger(TemplateImpl.class);
 
     public static Implementation factory = new Implementation() 
     {
@@ -106,15 +117,79 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public Double getPriority()
     {
-        return getProperty(GP.priority).getDouble();
+        if (getProperty(GP.priority) != null) return getProperty(GP.priority).getDouble();
+        
+        return Double.valueOf(0);
     }
 
     @Override
-    public Map<Property, RDFNode> getArguments()
+    public List<Argument> getArguments()
     {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        List<Argument> args = new ArrayList<>();
+
+        Set<Resource> classes = JenaUtil.getAllSuperClasses(this);
+        classes.add(this);
+        
+        for (Resource cls : classes)
+        {
+            StmtIterator it = cls.listProperties(GP.param);
+            try
+            {
+                while(it.hasNext())
+                {
+                    Statement stmt = it.next();
+                    if (stmt.getObject().canAs(Argument.class)) args.add(stmt.getObject().as(Argument.class));
+                }
+            }
+            finally
+            {
+                it.close();
+            }
+        }
+
+        return args;
     }
 
+    @Override
+    public List<Locale> getLanguages()
+    {
+        return getLanguages(GP.lang);
+    }
+
+    protected List<Locale> getLanguages(Property property)
+    {
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        
+        List<Locale> languages = new ArrayList<>();
+        StmtIterator it = listProperties(property);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                if (!stmt.getObject().isLiteral())
+                {
+                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (gp:language is not literal)", getURI());
+                    throw new SitemapException("Illegal non-literal gp:language value for template '" + getURI() +"'");
+                }
+                
+                languages.add(Locale.forLanguageTag(stmt.getString()));
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return languages;
+    }
+        
+    @Override
+    public Resource getLoadClass()
+    {
+        return getPropertyResourceValue(GP.loadClass);
+    }
     
     /**
      * Returns <code>Cache-Control</code> HTTP header value, specified on an ontology class with given property.

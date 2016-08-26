@@ -16,8 +16,14 @@
 package org.graphity.processor.model;
 
 import com.sun.jersey.api.uri.UriTemplate;
+import java.net.URI;
 import java.util.Comparator;
+import java.util.Map;
 import org.apache.jena.ontology.OntResource;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFNode;
+import org.graphity.processor.query.QueryBuilder;
+import org.graphity.processor.update.ModifyBuilder;
 
 /**
  *
@@ -35,10 +41,8 @@ public interface TemplateCall extends OntResource, Comparable
             Double diff = templateCall2.getPrecedence() - templateCall1.getPrecedence();
             if (diff != 0) return diff.intValue();
     
-            Double priority1 = templateCall1.getTemplate().getPriority() == null ?
-                    Double.valueOf(0) : templateCall1.getTemplate().getPriority();
-            Double priority2 = templateCall2.getTemplate().getPriority() == null ?
-                    Double.valueOf(0) : templateCall2.getTemplate().getPriority();
+            Double priority1 = templateCall1.getTemplate().getPriority();
+            Double priority2 = templateCall2.getTemplate().getPriority();
             diff = priority2 - priority1;
             if (diff != 0) return diff.intValue();                
             
@@ -47,8 +51,22 @@ public interface TemplateCall extends OntResource, Comparable
 
     };
     
-    public Template getTemplate();
+    Template getTemplate();
  
-    public Double getPrecedence();
+    Double getPrecedence();
+
+    /**
+     * Gets a Map from ArgumentDescriptors to RDFNodes.
+     * @return a Map from ArgumentDescriptors to RDFNodes
+     */
+    Map<Argument, RDFNode> getArgumentsMap();
+
+    QueryBuilder getQueryBuilder(URI base);
+        
+    //QueryBuilder getQueryBuilder(URI base, Model commandModel);
+
+    ModifyBuilder getModifyBuilder(URI base);
+    
+    //ModifyBuilder getModifyBuilder(URI base, Model commandModel);
     
 }

@@ -17,7 +17,7 @@
 
 package org.graphity.processor.service;
 
-import org.graphity.processor.model.impl.GraphStoreBase;
+import org.graphity.processor.service.impl.GraphStoreBase;
 import org.apache.jena.query.Dataset;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Request;

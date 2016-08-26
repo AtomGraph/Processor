@@ -16,18 +16,36 @@
 
 package org.graphity.processor.model.impl;
 
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
 import org.apache.jena.enhanced.Implementation;
 import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.ConversionException;
-import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.Profile;
 import org.apache.jena.ontology.impl.OntResourceImpl;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
+import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.model.Argument;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
+import org.graphity.processor.query.QueryBuilder;
+import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.vocabulary.GP;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.topbraid.spin.model.SPINFactory;
+import org.topbraid.spin.util.SPTextUtil;
+import org.topbraid.spin.vocabulary.SP;
 
 /**
  *
@@ -36,6 +54,8 @@ import org.graphity.processor.vocabulary.GP;
 public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
 {
     
+    private static final Logger log = LoggerFactory.getLogger(TemplateCallImpl.class);
+
     public static Implementation factory = new Implementation() 
     {
         
@@ -70,18 +90,6 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     {
         super(node, graph);
     }
-        
-    /*
-    public TemplateCallImpl(Template template, Double precedence)
-    {
-        super(GP.Template.getModel().createResource().
-                addProperty(GP.template, template).
-                addLiteral(GP.priority, precedence).asNode(), 
-                GP.Template.getModel().createResource().
-                addProperty(GP.template, template).
-                addLiteral(GP.priority, precedence).getOntModel().getGraph());
-    }
-    */
     
     @Override
     public final Template getTemplate()
@@ -95,6 +103,147 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         return getProperty(GP.priority).getDouble();
     }
 
+    @Override
+    public Map<Argument,RDFNode> getArgumentsMap()
+    {
+        Map<Argument,RDFNode> map = new HashMap<>();
+        Template template = getTemplate();
+        if (template != null)
+        {
+            for (Argument ad : template.getArguments())
+            {
+                Property argProperty = ad.getPredicate();
+                if (argProperty == null)
+                {
+                    if (log.isErrorEnabled()) log.error("Parameter of template '{}' does not have a predicate", template.getURI());
+                    throw new SitemapException("Parameter of template '" + template.getURI() +"' does not have a predicate");
+                }
+
+                Statement valueS = getProperty(argProperty);
+                if (valueS != null) map.put(ad, valueS.getObject());
+            }
+        }
+
+        return map;
+    }
+
+    @Override
+    public QueryBuilder getQueryBuilder(URI base)
+    {
+        Resource queryOrTemplateCall = getTemplate().getQuery();
+        if (queryOrTemplateCall == null)
+        {
+            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getTemplate().getURI());
+            throw new SitemapException("Query not defined for template '" + getTemplate().getURI() +"'");
+        }
+
+        return getQueryBuilder(queryOrTemplateCall, base, getTemplate().getQuery().getModel());
+    }
+
+    
+    public QueryBuilder getQueryBuilder(Resource queryOrTemplateCall, URI base, Model commandModel)
+    {
+	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query Resource cannot be null");
+	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+        
+        SPTextUtil.ensureSPINRDFExists(commandModel);        
+        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
+        if (spinTemplateCall != null)
+            return QueryBuilder.fromQuery(getQuery(spinTemplateCall, base), commandModel);
+        else
+        {
+            org.topbraid.spin.model.Query query = SPINFactory.asQuery(queryOrTemplateCall);
+            if (query == null)
+            {
+                if (log.isErrorEnabled()) log.error("Class '{}' gp:query value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), queryOrTemplateCall);
+                throw new SitemapException("Class '" + getTemplate().getURI() + "' gp:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
+            }
+            
+            return QueryBuilder.fromQuery(getQuery(query, base), commandModel);
+        }
+    }
+
+    public Query getQuery(org.topbraid.spin.model.TemplateCall spinTemplateCall, URI base)
+    {
+	if (spinTemplateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+	if (base == null) throw new IllegalArgumentException("URI cannot be null");
+
+        return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asQuery();
+    }
+
+    public Query getQuery(org.topbraid.spin.model.Query query, URI base)
+    {
+	if (query == null) throw new IllegalArgumentException("Query cannot be null");
+	if (base == null) throw new IllegalArgumentException("URI cannot be null");
+
+        Statement textStmt = query.getRequiredProperty(SP.text);
+        if (textStmt == null || !textStmt.getObject().isLiteral())
+        {
+            if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", query);
+            throw new SitemapException("SPARQL string not defined for query '" + query + "'");                
+        }
+
+        return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asQuery();
+    }
+    
+    @Override
+    public ModifyBuilder getModifyBuilder(URI base)
+    {
+        Resource updateOrTemplateCall = getTemplate().getUpdate();
+        if (updateOrTemplateCall == null)
+        {
+            if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getTemplate().getURI());
+            throw new SitemapException("Update not defined for template '" + getTemplate().getURI() +"'");
+        }
+
+        return getModifyBuilder(updateOrTemplateCall, base, getTemplate().getUpdate().getModel());
+    }
+            
+    public ModifyBuilder getModifyBuilder(Resource updateOrTemplateCall, URI base, Model commandModel)
+    {
+	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+
+        SPTextUtil.ensureSPINRDFExists(commandModel);
+        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
+        if (spinTemplateCall != null)
+            return ModifyBuilder.fromUpdate(getUpdateRequest(spinTemplateCall, base).getOperations().get(0), commandModel);
+        else
+        {
+            org.topbraid.spin.model.update.Update update = SPINFactory.asUpdate(updateOrTemplateCall);
+            if (update == null)
+            {
+                if (log.isErrorEnabled()) log.error("Class '{}' gp:update value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), updateOrTemplateCall);
+                throw new SitemapException("Class '" + getTemplate().getURI() + "' gp:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
+            }
+            
+            return ModifyBuilder.fromUpdate(getUpdateRequest(update, base).getOperations().get(0), commandModel);
+        }
+    }
+
+    public UpdateRequest getUpdateRequest(org.topbraid.spin.model.update.Update update, URI base)
+    {
+	if (update == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (base == null) throw new IllegalArgumentException("URI cannot be null");
+
+        Statement textStmt = update.getRequiredProperty(SP.text);
+        if (textStmt == null || !textStmt.getObject().isLiteral())
+        {
+            if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", update);
+            throw new SitemapException("SPARQL string not defined for update '" + update + "'");                
+        }
+
+        return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asUpdate();
+    }
+
+    public UpdateRequest getUpdateRequest(org.topbraid.spin.model.TemplateCall spinTemplateCall, URI base)
+    {
+	if (spinTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (base == null) throw new IllegalArgumentException("URI cannot be null");
+
+        return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asUpdate();
+    }
+    
     /*
     @Override
     public int hashCode()
