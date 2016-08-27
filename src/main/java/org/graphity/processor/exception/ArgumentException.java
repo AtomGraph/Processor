@@ -16,24 +16,18 @@
 
 package org.graphity.processor.exception;
 
-import org.apache.jena.rdf.model.Resource;
-import org.topbraid.spin.model.Template;
+import org.graphity.processor.model.Template;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public class SPINArgumentException extends RuntimeException
+public class ArgumentException extends RuntimeException
 {
 
-    public SPINArgumentException(String paramName, Template template)
+    public ArgumentException(String paramName, Template template)
     {
-        super("Parameter '" + paramName + "' not supported by SPIN template '" + template.toString() + "'");
-    }
-
-    public SPINArgumentException(Resource command)
-    {
-        super("Parameters not supported by SPIN command '" + command.toString() + "'");
+        super("Parameter '" + paramName + "' not supported by Template '" + template.toString() + "'");
     }
     
 }

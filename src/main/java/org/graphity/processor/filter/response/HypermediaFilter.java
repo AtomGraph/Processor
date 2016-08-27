@@ -16,7 +16,6 @@
 
 package org.graphity.processor.filter.response;
 
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
@@ -44,18 +43,17 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.graphity.core.util.Link;
 import org.graphity.core.util.StateBuilder;
-import org.graphity.processor.exception.SPINArgumentException;
+import org.graphity.processor.exception.ArgumentException;
 import org.graphity.processor.exception.SitemapException;
+import org.graphity.processor.model.Template;
+import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.provider.OntologyProvider;
 import org.graphity.processor.util.RDFNodeFactory;
-import org.graphity.processor.util.SPINTemplateCall;
 import org.graphity.processor.vocabulary.GP;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.Argument;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.TemplateCall;
 
 /**
  * A filter that adds HATEOAS transitions to the RDF query result.
@@ -91,17 +89,14 @@ public class HypermediaFilter implements ContainerResponseFilter
             OntologyProvider provider = new OntologyProvider(null);
             Ontology ontology = provider.getOntology(ontologyHref.toString(), provider.getOntModelSpec(Rule.parseRules(rulesString.toString())));
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
-            OntClass template = ontology.getOntModel().getOntClass(typeHref.toString());
-
-            Resource queryOrTemplateCall = template.getProperty(GP.query).getResource();
-            TemplateCall templateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);            
-            // if there are parameters but template is using a SPIN query, not a SPIN template, we cannot use them
-            if (templateCall == null) return response;
+            Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
+            
+            List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());
+            TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
+                addProperty(GP.template, template).
+                as(TemplateCall.class).applyArguments(queryParams);
 
             Model model = ModelFactory.createDefaultModel();
-            List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());            
-            templateCall = new SPINTemplateCall(templateCall).applyArguments(queryParams);
-
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
             Resource requestUri = model.createResource(request.getRequestUri().toString());
 
@@ -159,7 +154,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             String paramValue = pair.getValue();
 
             Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
-            if (arg == null) throw new SPINArgumentException(paramName, templateCall.getTemplate());
+            if (arg == null) throw new ArgumentException(paramName, templateCall.getTemplate());
 
             stateBuilder.property(arg.getPredicate(), RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
         }
@@ -178,8 +173,9 @@ public class HypermediaFilter implements ContainerResponseFilter
             while (it.hasNext())
             {
                 Statement stmt = it.next();
-                if (!stmt.getPredicate().equals(RDF.type)) // the rdf:type of the template call is its template
-                sb.replaceProperty(stmt.getPredicate(), stmt.getObject());
+                // ignore system properties on TemplateCall. TO-DO: find a better solution to this
+                if (!stmt.getPredicate().equals(RDF.type) && !stmt.getPredicate().equals(GP.template))
+                    sb.replaceProperty(stmt.getPredicate(), stmt.getObject());
             }
         }
         finally
@@ -205,9 +201,9 @@ public class HypermediaFilter implements ContainerResponseFilter
             
             if (offset >= limit)
             {
-
-                TemplateCall prevCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
-                        addLiteral(GP.offset, offset - limit));
+                TemplateCall prevCall = pageCall.removeAll(GP.offset).
+                    addLiteral(GP.offset, offset - limit).
+                    as(TemplateCall.class);
                 Resource prev = applyTemplateCall(pageBuilder, prevCall).build().
                     addProperty(GP.pageOf, absolutePath).
                     addProperty(RDF.type, GP.Page).
@@ -217,8 +213,9 @@ public class HypermediaFilter implements ContainerResponseFilter
                 page.addProperty(XHV.prev, prev);
             }
 
-            TemplateCall nextCall = SPINFactory.asTemplateCall(pageCall.removeAll(GP.offset).
-                        addLiteral(GP.offset, offset + limit));
+            TemplateCall nextCall = pageCall.removeAll(GP.offset).
+                addLiteral(GP.offset, offset + limit).
+                as(TemplateCall.class);
             Resource next = applyTemplateCall(pageBuilder, nextCall).build().
                 addProperty(GP.pageOf, absolutePath).
                 addProperty(RDF.type, GP.Page).

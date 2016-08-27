@@ -112,7 +112,7 @@ public class TemplateMatcher
                     {
                         TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
                             addProperty(GP.template, template).
-                            addLiteral(GP.priority, new Double(level * -1)).
+                            addLiteral(GP.priority, new Double(level * -1)). // precedence instead of priority?
                             as(TemplateCall.class);
 
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);

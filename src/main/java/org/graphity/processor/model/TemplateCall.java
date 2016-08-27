@@ -18,10 +18,13 @@ package org.graphity.processor.model;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
+import javax.ws.rs.core.MultivaluedMap;
+import org.apache.http.NameValuePair;
 import org.apache.jena.ontology.OntResource;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
+import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 
@@ -68,5 +71,11 @@ public interface TemplateCall extends OntResource, Comparable
     ModifyBuilder getModifyBuilder(URI base);
     
     //ModifyBuilder getModifyBuilder(URI base, Model commandModel);
+ 
+    TemplateCall applyArguments(MultivaluedMap<String, String> queryParams);
+
+    TemplateCall applyArguments(List<NameValuePair> queryParams);
+    
+    // StateBuilder applyTemplateCall(StateBuilder sb);
     
 }

@@ -18,7 +18,11 @@ package org.graphity.processor.model.impl;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import javax.ws.rs.core.MultivaluedMap;
+import org.apache.http.NameValuePair;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
 import org.apache.jena.enhanced.Implementation;
@@ -34,12 +38,14 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
+import org.graphity.processor.exception.ArgumentException;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.model.Argument;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.ModifyBuilder;
+import org.graphity.processor.util.RDFNodeFactory;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -243,7 +249,74 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
 
         return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asUpdate();
     }
-    
+
+    @Override
+    public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
+    {
+	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
+
+        // iterate query params to find unrecognized ones
+        Set<String> paramNames = queryParams.keySet();
+        for (String paramName : paramNames)
+        {
+            Argument arg = getTemplate().getArgumentsMap().get(paramName);
+            if (arg == null) throw new ArgumentException(paramName, getTemplate());
+        }
+        
+        // iterate arguments to find required (non-optional) ones
+        Set<String> argNames = getTemplate().getArgumentsMap().keySet();
+        for (String argName : argNames)
+        {
+            Argument arg = getTemplate().getArgumentsMap().get(argName);
+            if (queryParams.containsKey(argName))
+            {            
+                String argValue = queryParams.getFirst(argName);
+                addProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
+            }
+            else
+                if (!arg.isOptional())
+                    throw new ArgumentException(argName, getTemplate()); // TO-DO: throw as required
+        }
+        
+        return this;
+    }
+
+    @Override
+    public TemplateCall applyArguments(List<NameValuePair> queryParams)
+    {
+	if (queryParams == null) throw new IllegalArgumentException("Query parameter list cannot be null");
+
+        // iterate query params to find unrecognized ones
+        //Set<String> paramNames = queryParams.keySet();
+        for (NameValuePair param : queryParams)
+        {
+            Argument arg = getTemplate().getArgumentsMap().get(param.getName());
+            if (arg == null) throw new ArgumentException(param.getName(), getTemplate());
+        }
+        
+        // iterate arguments to find required (non-optional) ones
+        Set<String> argNames = getTemplate().getArgumentsMap().keySet();
+        for (String argName : argNames)
+        {
+            Argument arg = getTemplate().getArgumentsMap().get(argName);
+            String argValue = null;
+            
+            for (NameValuePair param : queryParams)
+                if (param.getName().equals(argName))
+                    argValue = param.getValue();
+
+            if (argValue != null)
+            {
+                removeAll(arg.getPredicate());
+                addProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
+            }
+            else if (!arg.isOptional())
+                throw new ArgumentException(argName, getTemplate()); // TO-DO: throw as required            
+        }
+        
+        return this;
+    }
+
     /*
     @Override
     public int hashCode()

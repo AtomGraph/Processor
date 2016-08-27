@@ -17,8 +17,10 @@ package org.graphity.processor.model.impl;
 
 import com.sun.jersey.api.uri.UriTemplate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.enhanced.EnhGraph;
@@ -150,6 +152,21 @@ public class TemplateImpl extends OntClassImpl implements Template
         return args;
     }
 
+    @Override
+    public Map<String, Argument> getArgumentsMap()
+    {
+        Map<String,Argument> entry = new HashMap<>();
+
+        for (Argument argument : getArguments())
+        {
+            Property property = argument.getPredicate();
+            if (property != null) entry.put(property.getLocalName(), argument);
+        }
+
+        return entry;
+    }
+
+    
     @Override
     public List<Locale> getLanguages()
     {

@@ -18,6 +18,7 @@ package org.graphity.processor.model;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
 
@@ -42,6 +43,8 @@ public interface Template extends OntClass
     
     List<Argument> getArguments();
    
+    Map<String, Argument> getArgumentsMap();
+
     List<Locale> getLanguages();
     
     org.apache.jena.rdf.model.Resource getLoadClass();
