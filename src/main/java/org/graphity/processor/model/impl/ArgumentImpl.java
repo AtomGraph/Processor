@@ -70,4 +70,21 @@ public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl impl
         super(node, enhGraph);
     }
     
+    @Override
+    public String toString()
+    {
+        StringBuilder sb = new StringBuilder();
+        sb.append("[<").
+        append(getPredicate().getURI()).
+        append(">");
+        if (getDefaultValue() != null)
+            sb.append(", ").
+            append(getDefaultValue());
+        if (getValueType() != null)
+            sb.append(", ").
+            append(getValueType());
+        sb.append("]");
+        return sb.toString();
+    }
+    
 }

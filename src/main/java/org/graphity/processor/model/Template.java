@@ -21,6 +21,8 @@ import java.util.Locale;
 import java.util.Map;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  *
@@ -44,6 +46,8 @@ public interface Template extends OntClass
     List<Argument> getArguments();
    
     Map<String, Argument> getArgumentsMap();
+
+    Map<Property, RDFNode> getDefaultValues();
 
     List<Locale> getLanguages();
     

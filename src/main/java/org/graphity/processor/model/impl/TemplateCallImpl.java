@@ -18,8 +18,10 @@ package org.graphity.processor.model.impl;
 
 import java.net.URI;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 import org.apache.http.NameValuePair;
@@ -70,10 +72,14 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         {
             if (canWrap(node, enhGraph))
             {
-                return new TemplateCallImpl(node, enhGraph);
+                TemplateCallImpl impl = new TemplateCallImpl(node, enhGraph);
+                // apply spl:defaultValues on all new TemplateCall instances
+                impl.applyArguments(impl.getTemplate().getDefaultValues());
+                return impl;
             }
-            else {
-                throw new ConversionException( "Cannot convert node " + node.toString() + " to OntClass: it does not have rdf:type owl:Class or equivalent");
+            else
+            {
+                throw new ConversionException("Cannot convert node " + node.toString() + " to OntClass: it does not have rdf:type owl:Class or equivalent");
             }
         }
 
@@ -100,6 +106,8 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     @Override
     public final Template getTemplate()
     {
+        // SPIN uses Template registry instead:
+        // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
         return getPropertyResourceValue(GP.template).as(Template.class);
     }
 
@@ -110,9 +118,9 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     }
 
     @Override
-    public Map<Argument,RDFNode> getArgumentsMap()
+    public Map<Argument, RDFNode> getArgumentsMap()
     {
-        Map<Argument,RDFNode> map = new HashMap<>();
+        Map<Argument, RDFNode> map = new HashMap<>();
         Template template = getTemplate();
         if (template != null)
         {
@@ -250,6 +258,19 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asUpdate();
     }
 
+    public TemplateCall applyArguments(Map<Property, RDFNode> values)
+    {
+        Iterator<Entry<Property, RDFNode>> entryIt = values.entrySet().iterator();
+        
+        while (entryIt.hasNext())
+        {
+            Entry<Property, RDFNode> entry = entryIt.next();
+            addProperty(entry.getKey(), entry.getValue());
+        }
+        
+        return this;
+    }
+    
     @Override
     public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
     {

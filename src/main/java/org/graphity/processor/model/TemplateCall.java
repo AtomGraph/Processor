@@ -24,7 +24,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import org.apache.http.NameValuePair;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.rdf.model.RDFNode;
-import org.graphity.core.util.StateBuilder;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 

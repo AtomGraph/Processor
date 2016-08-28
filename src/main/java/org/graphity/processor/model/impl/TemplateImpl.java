@@ -30,6 +30,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.ontology.impl.OntClassImpl;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
@@ -140,7 +141,13 @@ public class TemplateImpl extends OntClassImpl implements Template
                 while(it.hasNext())
                 {
                     Statement stmt = it.next();
-                    if (stmt.getObject().canAs(Argument.class)) args.add(stmt.getObject().as(Argument.class));
+                    if (!stmt.getObject().canAs(Argument.class))
+                    {
+                        if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type gp:Argument missing)", stmt.getObject(), getURI());
+                        throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type gp:Argument missing)");
+                    }
+                    
+                    args.add(stmt.getObject().as(Argument.class));
                 }
             }
             finally
@@ -166,6 +173,20 @@ public class TemplateImpl extends OntClassImpl implements Template
         return entry;
     }
 
+    @Override
+    public Map<Property, RDFNode> getDefaultValues()
+    {
+        Map<Property, RDFNode> defaultValues = new HashMap<>();
+        
+        List<Argument> args = getArguments();
+        for (Argument arg : args)
+        {
+            RDFNode defaultValue = arg.getDefaultValue();
+            if (defaultValue != null) defaultValues.put(arg.getPredicate(), defaultValue);
+        }
+        
+        return defaultValues;
+    }
     
     @Override
     public List<Locale> getLanguages()
@@ -231,5 +252,19 @@ public class TemplateImpl extends OntClassImpl implements Template
         
         return null;
     }
-    
+
+    @Override
+    public String toString()
+    {
+        return new StringBuilder().
+        append("[<").
+        append(getURI()).
+        append(">: \"").
+        append(getPath()).
+        append("\", ").
+        append(Double.toString(getPriority())).
+        append("]").
+        toString();
+    }
+
 }
