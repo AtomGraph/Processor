@@ -124,7 +124,8 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
         this.querySolutionMap = new QuerySolutionMap();
-        
+	this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
 
@@ -133,21 +134,15 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     @Override
     public void init()
-    {
-        MultivaluedMap<String, String> queryParams = getUriInfo().getQueryParameters();        
-        
+    {        
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
-        {
-            modifyBuilder = getTemplateCall().getModifyBuilder(getUriInfo().getBaseUri());            
-        }
+            modifyBuilder = getTemplateCall().getModifyBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
         else
         {
-            queryBuilder = getTemplateCall().getQueryBuilder(getUriInfo().getBaseUri());
+            queryBuilder = getTemplateCall().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             if (getTemplateCall().getTemplate().equals(GP.Container) || hasSuperClass(getTemplateCall().getTemplate(), GP.Container))
-                queryBuilder = getPageQueryBuilder(queryBuilder, templateCall);
-        }
-        
-	querySolutionMap.add(SPIN.THIS_VAR_NAME, getOntResource()); // ?this
+                queryBuilder = getPageQueryBuilder(queryBuilder, getTemplateCall());
+        }        
     }
     
     /**
@@ -522,17 +517,13 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
      */
     @Override
     public QueryBuilder getQueryBuilder()
-    {
-        if (queryBuilder == null) throw new IllegalStateException("QueryBuilder should not be null at this point. Check initialization in init()");
-        
+    {        
 	return queryBuilder;
     }
 
     @Override
     public ModifyBuilder getModifyBuilder()
-    {
-        if (modifyBuilder == null) throw new IllegalStateException("ModifyBuilder should not be null at this point. Check initialization in init()");
-        
+    {        
 	return modifyBuilder;
     }
 
@@ -582,10 +573,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.pr
         return resourceContext;
     }
     
-    @Deprecated
+    @Override
     public Model getCommandModel()
     {
-        return getTemplateCall().getModel();
+        return getQueryBuilder().getModel();
     }
     
 }

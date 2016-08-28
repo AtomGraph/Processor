@@ -100,17 +100,14 @@ public class HypermediaFilter implements ContainerResponseFilter
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
             Resource requestUri = model.createResource(request.getRequestUri().toString());
 
-            if (templateCall.hasProperty(GP.limit))
-            {                
-                // transition to a URI of another application state (HATEOAS)
-                Resource pageState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
-                if (!pageState.getURI().equals(request.getRequestUri().toString()))
-                {
-                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", pageState.getURI());
-                    response.setResponse(Response.seeOther(URI.create(pageState.getURI())).build());
-                    return response;
-                }                    
-            }
+            // transition to a URI of another application state (HATEOAS)
+            Resource pageState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
+            if (!pageState.getURI().equals(request.getRequestUri().toString()))
+            {
+                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", pageState.getURI());
+                response.setResponse(Response.seeOther(URI.create(pageState.getURI())).build());
+                return response;
+            }                    
 
             StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);
             Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();

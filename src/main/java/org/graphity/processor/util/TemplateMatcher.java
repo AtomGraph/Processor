@@ -94,7 +94,6 @@ public class TemplateMatcher
         {
             while (it.hasNext())
             {
-                //Resource templateRes = it.next();
                 Template template = it.next().as(Template.class);
                 // only match templates defined in this ontology - maybe reverse loops?
                 if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology))

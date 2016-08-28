@@ -17,6 +17,7 @@
 package org.graphity.processor.model;
 
 import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Model;
 
 /**
  *
@@ -29,6 +30,6 @@ public interface Resource extends QueriedResource
     
     public TemplateCall getTemplateCall();
     
-    //public Model getCommandModel();
+    public Model getCommandModel();
     
 }

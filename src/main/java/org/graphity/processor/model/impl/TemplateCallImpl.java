@@ -52,7 +52,6 @@ import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.util.SPTextUtil;
 import org.topbraid.spin.vocabulary.SP;
 
 /**
@@ -144,23 +143,27 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     @Override
     public QueryBuilder getQueryBuilder(URI base)
     {
+        return getQueryBuilder(base, getTemplate().getQuery().getModel());
+    }
+
+    @Override
+    public QueryBuilder getQueryBuilder(URI base, Model commandModel)
+    {
         Resource queryOrTemplateCall = getTemplate().getQuery();
         if (queryOrTemplateCall == null)
         {
             if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getTemplate().getURI());
             throw new SitemapException("Query not defined for template '" + getTemplate().getURI() +"'");
         }
-
-        return getQueryBuilder(queryOrTemplateCall, base, getTemplate().getQuery().getModel());
+        
+        return getQueryBuilder(queryOrTemplateCall, base, commandModel);
     }
-
     
     public QueryBuilder getQueryBuilder(Resource queryOrTemplateCall, URI base, Model commandModel)
     {
 	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
         
-        SPTextUtil.ensureSPINRDFExists(commandModel);        
         org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
         if (spinTemplateCall != null)
             return QueryBuilder.fromQuery(getQuery(spinTemplateCall, base), commandModel);
@@ -203,6 +206,12 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     @Override
     public ModifyBuilder getModifyBuilder(URI base)
     {
+        return getModifyBuilder(base, getTemplate().getUpdate().getModel());
+    }
+     
+    @Override
+    public ModifyBuilder getModifyBuilder(URI base, Model commandModel)
+    {
         Resource updateOrTemplateCall = getTemplate().getUpdate();
         if (updateOrTemplateCall == null)
         {
@@ -210,15 +219,14 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             throw new SitemapException("Update not defined for template '" + getTemplate().getURI() +"'");
         }
 
-        return getModifyBuilder(updateOrTemplateCall, base, getTemplate().getUpdate().getModel());
+        return getModifyBuilder(updateOrTemplateCall, base, commandModel);
     }
-            
+    
     public ModifyBuilder getModifyBuilder(Resource updateOrTemplateCall, URI base, Model commandModel)
     {
 	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        SPTextUtil.ensureSPINRDFExists(commandModel);
         org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
         if (spinTemplateCall != null)
             return ModifyBuilder.fromUpdate(getUpdateRequest(spinTemplateCall, base).getOperations().get(0), commandModel);

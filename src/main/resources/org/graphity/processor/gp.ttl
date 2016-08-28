@@ -70,6 +70,14 @@
     rdfs:seeAlso spin:constraint ;
     rdfs:isDefinedBy <#> .
 
+<#tunnel> a owl:AnnotationProperty ;
+    rdfs:domain <#Argument> ;
+    rdfs:range xsd:boolean ;
+    rdfs:label "Tunnel argument" ;
+    rdfs:comment "Template subclasses inherit tunnel parameters" ;
+    rdfs:seeAlso <https://www.w3.org/TR/xslt20/#tunnel-params> ;
+    rdfs:isDefinedBy <#> .
+
 <#priority> a owl:AnnotationProperty ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:float ;

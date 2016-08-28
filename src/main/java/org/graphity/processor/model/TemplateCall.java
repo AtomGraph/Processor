@@ -23,6 +23,7 @@ import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 import org.apache.http.NameValuePair;
 import org.apache.jena.ontology.OntResource;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFNode;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.ModifyBuilder;
@@ -65,11 +66,11 @@ public interface TemplateCall extends OntResource, Comparable
 
     QueryBuilder getQueryBuilder(URI base);
         
-    //QueryBuilder getQueryBuilder(URI base, Model commandModel);
+    QueryBuilder getQueryBuilder(URI base, Model commandModel);
 
     ModifyBuilder getModifyBuilder(URI base);
     
-    //ModifyBuilder getModifyBuilder(URI base, Model commandModel);
+    ModifyBuilder getModifyBuilder(URI base, Model commandModel);
  
     TemplateCall applyArguments(MultivaluedMap<String, String> queryParams);
 
