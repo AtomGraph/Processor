@@ -71,6 +71,14 @@ public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl impl
     }
     
     @Override
+    public Boolean isTunnelled()
+    {
+        if (getProperty(GP.tunnel) != null) return getProperty(GP.tunnel).getBoolean();
+        
+        return null;
+    }
+    
+    @Override
     public String toString()
     {
         StringBuilder sb = new StringBuilder();

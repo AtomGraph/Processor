@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
@@ -41,7 +40,6 @@ import org.graphity.processor.model.Template;
 import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.util.JenaUtil;
 
 /**
  *
@@ -130,32 +128,26 @@ public class TemplateImpl extends OntClassImpl implements Template
     {
         List<Argument> args = new ArrayList<>();
 
-        Set<Resource> classes = JenaUtil.getAllSuperClasses(this);
-        classes.add(this);
-        
-        for (Resource cls : classes)
+        StmtIterator it = listProperties(GP.param);
+        try
         {
-            StmtIterator it = cls.listProperties(GP.param);
-            try
+            while(it.hasNext())
             {
-                while(it.hasNext())
+                Statement stmt = it.next();
+                if (!stmt.getObject().canAs(Argument.class))
                 {
-                    Statement stmt = it.next();
-                    if (!stmt.getObject().canAs(Argument.class))
-                    {
-                        if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type gp:Argument missing)", stmt.getObject(), getURI());
-                        throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type gp:Argument missing)");
-                    }
-                    
-                    args.add(stmt.getObject().as(Argument.class));
+                    if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type gp:Argument missing)", stmt.getObject(), getURI());
+                    throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type gp:Argument missing)");
                 }
-            }
-            finally
-            {
-                it.close();
+
+                args.add(stmt.getObject().as(Argument.class));
             }
         }
-
+        finally
+        {
+            it.close();
+        }
+        
         return args;
     }
 

@@ -38,7 +38,8 @@ gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:Ma
         spl:predicate gp:limit ;
         spl:valueType xsd:long ;
         spl:defaultValue 20 ;
-        spl:optional true
+        spl:optional true ;
+        gp:tunnel true
     ] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode ;
     gc:defaultMode gc:ListMode ;

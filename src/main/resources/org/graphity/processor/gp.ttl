@@ -38,7 +38,7 @@
 
 # ANNOTATION PROPERTIES
 
-<#query> a owl:AnnotationProperty ;
+<#query> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:subPropertyOf spin:query ;
     rdfs:domain <#Template> ;
     rdfs:range <#Query> ;
@@ -46,7 +46,7 @@
     rdfs:comment "SPIN query to retrieve resource description (DESCRIBE or CONSTRUCT)" ;
     rdfs:isDefinedBy <#> .
 
-<#update> a owl:AnnotationProperty ;
+<#update> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:subPropertyOf spin:update ;
     rdfs:domain <#Template> ;
     rdfs:range <#Update> ;
@@ -54,7 +54,7 @@
     rdfs:comment "SPIN update to remove resource description" ;
     rdfs:isDefinedBy <#> .
 
-<#path> a owl:AnnotationProperty ;
+<#path> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:string ;
     rdfs:label "URI template" ;
@@ -78,7 +78,7 @@
     rdfs:seeAlso <https://www.w3.org/TR/xslt20/#tunnel-params> ;
     rdfs:isDefinedBy <#> .
 
-<#priority> a owl:AnnotationProperty ;
+<#priority> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:float ;
     rdfs:label "Priority" ;
@@ -86,7 +86,7 @@
     rdfs:seeAlso <https://www.w3.org/TR/xslt20/#conflict> ;
     rdfs:isDefinedBy <#> .
 
-<#skolemTemplate> a owl:AnnotationProperty ;
+<#skolemTemplate> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain rdfs:Class ;
     rdfs:range xsd:string ;
     rdfs:label "Skolemization template" ;
@@ -95,7 +95,7 @@
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
 
-<#fragmentTemplate> a owl:AnnotationProperty ;
+<#fragmentTemplate> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain rdfs:Class ;
     rdfs:range xsd:string ;
     rdfs:label "Fragment template" ;
@@ -104,7 +104,7 @@
         <http://www.w3.org/TR/rdf11-concepts/#section-skolemization> ;
     rdfs:isDefinedBy <#> .
 
-<#cacheControl> a owl:AnnotationProperty ;
+<#cacheControl> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain <#Template> ;
     rdfs:range xsd:string ;
     rdfs:label "Cache control" ;
@@ -112,14 +112,14 @@
     rdfs:seeAlso <http://www.w3.org/Protocols/rfc2616/rfc2616-sec13.html#sec13.1.3> ;
     rdfs:isDefinedBy <#> .
 
-<#loadClass> a owl:AnnotationProperty ;
+<#loadClass> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain <#Template> ;
     rdfs:label "Load class";
     rdfs:comment "Indicates the Java class that will handle requests matched by this template. Needs to start with 'java:' URI scheme." ;
     rdfs:seeAlso <http://jena.hpl.hp.com/2005/11/Assembler#loadClass> ;
     rdfs:isDefinedBy <#> .
 
-<#lang> a owl:AnnotationProperty ;
+<#lang> a owl:AnnotationProperty, <#InheritedProperty> ;
     rdfs:domain <#Template> ;
     rdfs:range rdf:langString ;
     rdfs:label "Content language" ;
@@ -175,6 +175,12 @@
     rdfs:isDefinedBy <#> .
 
 # CLASSES
+
+<#InheritedProperty> a rdfs:Class ;
+    rdfs:subClassOf owl:AnnotationProperty ;
+    rdfs:label "Inherited property" ;
+    rdfs:comment "Values of this property are inherited by subclasses that do not have this property" ;
+    rdfs:isDefinedBy <#> .
 
 <#Application> a rdfs:Class ;
     rdfs:label "Graphity Processor application" ;
@@ -360,19 +366,23 @@
     <#param> [ a <#Argument> ;
         spl:predicate <#limit> ;
         spl:valueType xsd:long ;
-        spl:optional true
+        spl:optional true ;
+        <#tunnel> true
     ] , [ a <#Argument> ;
         spl:predicate <#offset> ;
         spl:valueType xsd:long ;
-        spl:optional true
+        spl:optional true ;
+        <#tunnel> true
     ] , [ a <#Argument> ;
         spl:predicate <#orderBy> ;
         spl:valueType xsd:string ;
-        spl:optional true
+        spl:optional true ;
+        <#tunnel> true
     ] , [ a <#Argument> ;
         spl:predicate <#desc> ;
         spl:valueType xsd:boolean ;
-        spl:optional true
+        spl:optional true ;
+        <#tunnel> true
     ] ;
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
