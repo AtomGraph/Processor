@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.core.MediaTypes;
-import org.graphity.server.impl.ResourceBase;
+import org.graphity.server.model.impl.ResourceBase;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
