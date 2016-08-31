@@ -14,27 +14,23 @@
  * limitations under the License.
  */
 
-package org.graphity.processor.model;
+package org.graphity.server;
 
-import org.graphity.processor.query.QueryBuilder;
-import org.graphity.processor.update.ModifyBuilder;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Model;
+import org.graphity.processor.model.TemplateCall;
 
 /**
- * RDF resource, representation of which was queried from a SPARQL endpoint.
- * 
+ *
  * @author Martynas Jusevičius <martynas@graphity.org>
- * @see org.graphity.processor.query.QueryBuilder
  */
-public interface QueriedResource extends org.graphity.core.model.QueriedResource
+public interface Resource extends QueriedResource
 {
     
-    /**
-     * Returns query builder, which is used to build SPARQL query to retrieve RDF description of this resource.
-     * 
-     * @return query builder
-     */
-    public QueryBuilder getQueryBuilder();
-
-    public ModifyBuilder getModifyBuilder();
+    public Ontology getOntology();
+    
+    public TemplateCall getTemplateCall();
+    
+    public Model getCommandModel();
     
 }

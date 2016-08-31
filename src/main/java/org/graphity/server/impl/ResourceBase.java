@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package org.graphity.processor.model.impl;
+package org.graphity.server.impl;
 
 import org.apache.jena.ontology.*;
 import org.apache.jena.query.*;
@@ -67,7 +67,7 @@ import org.topbraid.spin.vocabulary.SPIN;
  * @see <a href="http://www.w3.org/TR/sparql11-query/#solutionModifiers">15 Solution Sequences and Modifiers</a>
  */
 @Path("/")
-public class ResourceBase extends QueriedResourceBase implements org.graphity.processor.model.Resource
+public class ResourceBase extends QueriedResourceBase implements org.graphity.server.Resource
 {
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
         

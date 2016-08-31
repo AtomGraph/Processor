@@ -39,7 +39,7 @@ import org.graphity.core.exception.ConfigurationException;
 import org.graphity.core.provider.ClientProvider;
 import org.graphity.core.provider.DataManagerProvider;
 import org.graphity.core.provider.MediaTypesProvider;
-import org.graphity.processor.model.impl.ResourceBase;
+import org.graphity.server.impl.ResourceBase;
 import org.graphity.processor.provider.DatasetProvider;
 import org.graphity.core.provider.QueryParamProvider;
 import org.graphity.core.provider.ResultSetProvider;

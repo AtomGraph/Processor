@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package org.graphity.processor.resource.graph;
+package org.graphity.server.resource.graph;
 
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
@@ -29,7 +29,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import org.graphity.core.MediaTypes;
-import org.graphity.processor.model.impl.ResourceBase;
+import org.graphity.server.impl.ResourceBase;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.SPARQLEndpoint;
 import org.graphity.core.util.ModelUtils;
