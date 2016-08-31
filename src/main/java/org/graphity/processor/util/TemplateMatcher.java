@@ -31,7 +31,7 @@ import java.util.List;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ public class TemplateMatcher
         if (log.isTraceEnabled()) log.trace("Ontology import level: {}", level);
         List<TemplateCall> templateCalls = new ArrayList<>();
 
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, GP.Template);
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, LDT.Template);
         try
         {
             while (it.hasNext())
@@ -100,8 +100,8 @@ public class TemplateMatcher
                 {
                     if (template.getPath() == null)
                     {
-                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", template, GP.path);
-                        throw new SitemapException("Template class '" + template + "' does not have value for '" + GP.path + "' annotation");
+                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", template, LDT.path);
+                        throw new SitemapException("Template class '" + template + "' does not have value for '" + LDT.path + "' annotation");
                     }
 
                     UriTemplate uriTemplate = template.getPath();
@@ -109,9 +109,9 @@ public class TemplateMatcher
 
                     if (uriTemplate.match(path, map))
                     {
-                        TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
-                            addProperty(GP.template, template).
-                            addLiteral(GP.priority, new Double(level * -1)). // precedence instead of priority?
+                        TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
+                            addProperty(LDT.template, template).
+                            addLiteral(LDT.priority, new Double(level * -1)). // precedence instead of priority?
                             as(TemplateCall.class);
 
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);

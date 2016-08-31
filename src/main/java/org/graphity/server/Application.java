@@ -58,6 +58,7 @@ import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.model.impl.ArgumentImpl;
 import org.graphity.processor.model.impl.TemplateCallImpl;
 import org.graphity.processor.model.impl.TemplateImpl;
+import org.graphity.processor.vocabulary.AP;
 import org.graphity.server.provider.GraphStoreOriginProvider;
 import org.graphity.server.provider.GraphStoreProvider;
 import org.graphity.server.provider.OntologyProvider;
@@ -65,7 +66,6 @@ import org.graphity.server.provider.TemplateCallProvider;
 import org.graphity.server.provider.SPARQLEndpointOriginProvider;
 import org.graphity.server.provider.SPARQLEndpointProvider;
 import org.graphity.server.provider.SkolemizingModelProvider;
-import org.graphity.processor.vocabulary.GP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.arq.ARQFactory;
@@ -141,8 +141,8 @@ public class Application extends org.graphity.core.Application
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
 
         boolean cacheSitemap = true;
-        if (getServletConfig().getInitParameter(GP.cacheSitemap.getURI()) != null)
-            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(GP.cacheSitemap.getURI()));
+        if (getServletConfig().getInitParameter(AP.cacheSitemap.getURI()) != null)
+            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(AP.cacheSitemap.getURI()));
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
     }
 

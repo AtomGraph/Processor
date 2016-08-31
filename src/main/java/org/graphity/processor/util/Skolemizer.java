@@ -41,7 +41,7 @@ import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.graphity.processor.vocabulary.SIOC;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -229,7 +229,7 @@ public class Skolemizer
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         SortedSet<TemplateCall> templateCalls = new TreeSet<>();
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(GP.skolemTemplate);
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.skolemTemplate);
         try
         {
             while (it.hasNext())
@@ -240,9 +240,9 @@ public class Skolemizer
                 if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology) &&
                         resource.hasProperty(property, template))
                 {
-                    TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
-                        addProperty(GP.template, template).
-                        addLiteral(GP.priority, new Double(level * -1)).
+                    TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
+                        addProperty(LDT.template, template).
+                        addLiteral(LDT.priority, new Double(level * -1)).
                         as(TemplateCall.class);
                     
                     if (log.isTraceEnabled()) log.trace("Resource {} matched Template {}", resource, template);

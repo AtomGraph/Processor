@@ -30,7 +30,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.apache.jena.riot.RDFDataMgr;
 import org.graphity.core.exception.ConfigurationException;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.AP;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,11 +75,11 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
      */
     public Dataset getDataset()
     {
-        String datasetLocation = getDatasetLocation(GP.dataset);
+        String datasetLocation = getDatasetLocation(AP.dataset);
         if (datasetLocation == null)
         {
-            if (log.isErrorEnabled()) log.error("Application dataset (gp:dataset) is not configured in web.xml");
-            throw new ConfigurationException("Application dataset (gp:dataset) is not configured in web.xml");
+            if (log.isErrorEnabled()) log.error("Application dataset ({}) is not configured in web.xml", AP.dataset.getURI());
+            throw new ConfigurationException("Application dataset (" + AP.dataset.getURI() + ") is not configured in web.xml");
         }
 
         return getDataset(datasetLocation, getUriInfo().getBaseUri());

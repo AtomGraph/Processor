@@ -48,7 +48,7 @@ import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RDFNodeFactory;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.SPINFactory;
@@ -93,7 +93,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             return (profile != null)  &&  profile.isSupported( node, eg, TemplateCall.class );
             */
             
-            return eg.asGraph().contains(node, RDF.type.asNode(), GP.TemplateCall.asNode());            
+            return eg.asGraph().contains(node, RDF.type.asNode(), LDT.TemplateCall.asNode());            
         }
     };
 
@@ -107,13 +107,16 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
     {
         // SPIN uses Template registry instead:
         // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
-        return getPropertyResourceValue(GP.template).as(Template.class);
+        return getPropertyResourceValue(LDT.template).as(Template.class);
     }
 
     @Override
     public final Double getPrecedence()
     {
-        return getProperty(GP.priority).getDouble();
+        Statement precedence = getProperty(LDT.priority);
+        if (precedence != null) return precedence.getDouble();
+        
+        return null;
     }
 
     @Override

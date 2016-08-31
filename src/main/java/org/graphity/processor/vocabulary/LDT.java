@@ -24,19 +24,20 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import static org.graphity.processor.vocabulary.AP.NS;
 
 /**
- * Graphity Processor vocabulary.
+ * Linked Data Templates vocabulary.
  * 
  * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public final class GP
+public final class LDT
 {
     /** <p>The RDF model that holds the vocabulary terms</p> */
     private static OntModel m_model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, null);
     
     /** <p>The namespace of the vocabulary as a string</p> */
-    public static final String NS = "http://graphity.org/gp#";
+    public static final String NS = "http://www.w3.org/ns/ldt#";
     
     /** <p>The namespace of the vocabulary as a string</p>
      *  @see #NS */
@@ -55,18 +56,8 @@ public final class GP
     public static final OntClass TemplateCall = m_model.createClass( NS + "TemplateCall" );
 
     public static final OntClass Argument = m_model.createClass( NS + "Argument" );
-
-    public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
-
-    public static final OntClass GraphStore = m_model.createClass( NS + "GraphStore" );
-        
-    public static final OntClass Container = m_model.createClass( NS + "Container" );
-
-    public static final OntClass Document = m_model.createClass( NS + "Document" );
-
-    public static final OntClass Page = m_model.createClass( NS + "Page" );
     
-    public static final OntClass View = m_model.createClass( NS + "View" );    
+    public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
 
     public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
     
@@ -91,29 +82,5 @@ public final class GP
     public static final AnnotationProperty cacheControl = m_model.createAnnotationProperty( NS + "cacheControl" );
     
     public static final AnnotationProperty lang = m_model.createAnnotationProperty( NS + "lang" );
-
-    public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
-    
-    public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
-    
-    public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
-
-    public static final DatatypeProperty dataset = m_model.createDatatypeProperty( NS + "dataset" );
-    
-    public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
-    
-    public static final DatatypeProperty limit = m_model.createDatatypeProperty( NS + "limit" );
-
-    public static final DatatypeProperty orderBy = m_model.createDatatypeProperty( NS + "orderBy" );
-
-    public static final DatatypeProperty desc = m_model.createDatatypeProperty( NS + "desc" );
-
-    public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
-
-    public static final DatatypeProperty cacheSitemap = m_model.createDatatypeProperty( NS + "cacheSitemap" );
-
-    public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
-
-    public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
     
 }

@@ -42,7 +42,8 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import org.graphity.core.exception.ConfigurationException;
 import org.graphity.processor.exception.SitemapException;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.AP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -65,7 +66,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         super(Ontology.class);
         this.servletConfig = servletConfig;
         if (servletConfig != null)
-            this.ontModelSpec = getOntModelSpec(servletConfig, GP.sitemapRules);
+            this.ontModelSpec = getOntModelSpec(servletConfig, AP.sitemapRules);
         else this.ontModelSpec = null;
     }
     
@@ -141,12 +142,12 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
     public String getOntologyURI()
     {
-        String ontologyURI = getOntologyURI(getServletConfig(), GP.ontology);
+        String ontologyURI = getOntologyURI(getServletConfig(), LDT.ontology);
         
         if (ontologyURI == null)
         {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + GP.ontology.getURI() + ") not configured");
-            throw new ConfigurationException("Sitemap ontology URI (" + GP.ontology.getURI() + ") not configured");
+            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
+            throw new ConfigurationException("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
         }
 
         return ontologyURI;

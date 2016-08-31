@@ -39,7 +39,7 @@ import org.graphity.core.exception.NotFoundException;
 import org.graphity.processor.query.QueryBuilder;
 import org.graphity.processor.update.InsertDataBuilder;
 import org.graphity.core.util.Link;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.graphity.core.model.GraphStore;
 import org.graphity.core.model.impl.QueriedResourceBase;
 import org.graphity.core.model.SPARQLEndpoint;
@@ -50,6 +50,8 @@ import org.graphity.processor.model.TemplateCall;
 import org.graphity.processor.query.SelectBuilder;
 import org.graphity.processor.update.ModifyBuilder;
 import org.graphity.processor.util.RulePrinter;
+import org.graphity.processor.vocabulary.LDTC;
+import org.graphity.processor.vocabulary.LDTDH;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.NamedGraph;
@@ -140,7 +142,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.se
         else
         {
             queryBuilder = getTemplateCall().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
-            if (getTemplateCall().getTemplate().equals(GP.Container) || hasSuperClass(getTemplateCall().getTemplate(), GP.Container))
+            if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
                 queryBuilder = getPageQueryBuilder(queryBuilder, getTemplateCall());
         }        
     }
@@ -201,10 +203,10 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.se
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", model, graphURI);
 
-	Resource created = getURIResource(model, RDF.type, GP.Document);
+	Resource created = getURIResource(model, RDF.type, LDTC.Document);
 	if (created == null)
 	{
-	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", GP.Document.getURI());
+	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", LDTC.Document.getURI());
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
 	}
 
@@ -343,7 +345,7 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.se
         Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
         rb.header("Link", classLink.toString());
         
-        Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
+        Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
 
         Link baseLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
@@ -438,16 +440,16 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.se
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        if (templateCall.hasProperty(GP.offset))
+        if (templateCall.hasProperty(LDTDH.offset))
         {
-            Long offset = templateCall.getProperty(GP.offset).getLong();
+            Long offset = templateCall.getProperty(LDTDH.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
         }
 
-        if (templateCall.hasProperty(GP.limit))
+        if (templateCall.hasProperty(LDTDH.limit))
         {
-            Long limit = templateCall.getProperty(GP.limit).getLong();
+            Long limit = templateCall.getProperty(LDTDH.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
         }
@@ -456,14 +458,14 @@ public class ResourceBase extends QueriedResourceBase implements org.graphity.se
         try
         {
         */
-            if (templateCall.hasProperty(GP.orderBy))
+            if (templateCall.hasProperty(LDTDH.orderBy))
             {
                 try
                 {
-                    String orderBy = templateCall.getProperty(GP.orderBy).getString();
+                    String orderBy = templateCall.getProperty(LDTDH.orderBy).getString();
                     
                     Boolean desc = false; // ORDERY BY is ASC() by default
-                    if (templateCall.hasProperty(GP.desc)) desc = templateCall.getProperty(GP.desc).getBoolean();
+                    if (templateCall.hasProperty(LDTDH.desc)) desc = templateCall.getProperty(LDTDH.desc).getBoolean();
                         
                     if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                     subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first

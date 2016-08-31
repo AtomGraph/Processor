@@ -31,7 +31,7 @@ import org.graphity.core.util.Link;
 import org.graphity.core.vocabulary.G;
 import org.graphity.processor.exception.ModelException;
 import org.graphity.processor.util.RulePrinter;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +51,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
         ex.getModel().add(exception.getModel());
         
         Link classLink = new Link(URI.create(getMatchedOntClass().getURI()), RDF.type.getLocalName(), null);
-        Link ontologyLink = new Link(URI.create(getOntology().getURI()), GP.ontology.getURI(), null);
+        Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
         Link baseUriLink = new Link(getUriInfo().getBaseUri(), G.baseUri.getURI(), null);
         
         ResponseBuilder builder = org.graphity.core.model.impl.Response.fromRequest(getRequest()).

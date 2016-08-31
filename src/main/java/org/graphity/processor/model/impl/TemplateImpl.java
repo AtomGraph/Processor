@@ -37,7 +37,7 @@ import org.apache.jena.vocabulary.RDF;
 import org.graphity.processor.exception.SitemapException;
 import org.graphity.processor.model.Argument;
 import org.graphity.processor.model.Template;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +76,7 @@ public class TemplateImpl extends OntClassImpl implements Template
             return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
             */
 
-            return eg.asGraph().contains(node, RDF.type.asNode(), GP.Template.asNode());
+            return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Template.asNode());
         }
     };
     
@@ -88,37 +88,41 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public UriTemplate getPath()
     {
-        return new UriTemplate(getProperty(GP.path).getString());
+        Statement path = getProperty(LDT.path);
+        if (path != null) return new UriTemplate(path.getString());
+        
+        return null;
     }
 
     @Override
     public String getSkolemTemplate()
     {
-        return getStringValue(GP.skolemTemplate);
+        return getStringValue(LDT.skolemTemplate);
     }
 
     @Override
     public String getFragmentTemplate()
     {
-        return getStringValue(GP.fragmentTemplate);
+        return getStringValue(LDT.fragmentTemplate);
     }
     
     @Override
     public Resource getQuery()
     {
-        return getPropertyResourceValue(GP.query);
+        return getPropertyResourceValue(LDT.query);
     }
 
     @Override
     public Resource getUpdate()
     {
-        return getPropertyResourceValue(GP.update);
+        return getPropertyResourceValue(LDT.update);
     }
 
     @Override
     public Double getPriority()
     {
-        if (getProperty(GP.priority) != null) return getProperty(GP.priority).getDouble();
+        Statement priority = getProperty(LDT.priority);
+        if (priority != null) return priority.getDouble();
         
         return Double.valueOf(0);
     }
@@ -128,7 +132,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     {
         List<Argument> args = new ArrayList<>();
 
-        StmtIterator it = listProperties(GP.param);
+        StmtIterator it = listProperties(LDT.param);
         try
         {
             while(it.hasNext())
@@ -183,7 +187,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public List<Locale> getLanguages()
     {
-        return getLanguages(GP.lang);
+        return getLanguages(LDT.lang);
     }
 
     protected List<Locale> getLanguages(Property property)
@@ -218,7 +222,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public Resource getLoadClass()
     {
-        return getPropertyResourceValue(GP.loadClass);
+        return getPropertyResourceValue(LDT.loadClass);
     }
     
     /**
@@ -229,8 +233,8 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public CacheControl getCacheControl()
     {
-        if (hasProperty(GP.cacheControl))
-            return CacheControl.valueOf(getPropertyValue(GP.cacheControl).asLiteral().getString()); // will fail on bad config
+        if (hasProperty(LDT.cacheControl))
+            return CacheControl.valueOf(getPropertyValue(LDT.cacheControl).asLiteral().getString()); // will fail on bad config
 
 	return null;
     }

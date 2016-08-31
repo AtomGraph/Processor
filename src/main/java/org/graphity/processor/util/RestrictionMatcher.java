@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 
 /**
  *
@@ -76,9 +76,9 @@ public class RestrictionMatcher
             while (templates.hasNext())
             {
                 QuerySolution solution = templates.next();
-                if (solution.contains(GP.Template.getLocalName())) // solution.contains(OWL.onProperty.getLocalName()
+                if (solution.contains(LDT.Template.getLocalName())) // solution.contains(OWL.onProperty.getLocalName()
                 {
-                    OntClass template = solution.getResource(GP.Template.getLocalName()).as(OntClass.class);
+                    OntClass template = solution.getResource(LDT.Template.getLocalName()).as(OntClass.class);
 
                     if (!matchedClasses.containsKey(onProperty))
                         matchedClasses.put(onProperty, new ArrayList<OntClass>());

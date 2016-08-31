@@ -2,94 +2,95 @@
 
 # @prefix :	<#> .
 @prefix gc:     <http://graphity.org/gc#> .
-@prefix gp:	<http://graphity.org/gp#> .
 @prefix rdf:	<http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:	<http://www.w3.org/2002/07/owl#> .
+@prefix ldt:    <http://www.w3.org/ns/ldt#> .
+@prefix ldtc:   <http://www.w3.org/ns/ldt/core#> .
+@prefix ldtdh:  <http://www.w3.org/ns/ldt/document-hierarchy#> .
 @prefix dc:	<http://purl.org/dc/elements/1.1/> .
 @prefix dct:	<http://purl.org/dc/terms/> .
 @prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
 @prefix spl:    <http://spinrdf.org/spl#> .
-@prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
 <#> a owl:Ontology ;
-    owl:imports gp:, sp:, spin:, foaf:, sioc: ;
+    owl:imports ldtdh:, ldtc:, sp:, spin:, foaf: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Graphity Processor sitemap" ;
     rdfs:comment "Ontology of Graphity Client domain resource templates" .
 
-gp:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:MapMode .
+ldtc:SPARQLEndpoint gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode, gc:MapMode .
 
 # TEMPLATES
 
-<#Document> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Document ;
+<#Document> a rdfs:Class, owl:Class, ldt:Template ;
+    rdfs:subClassOf ldtc:Document ;
     gc:supportedMode gc:ReadMode, gc:EditMode ;
     gc:defaultMode gc:ReadMode ;
     rdfs:label "Document" ;
     rdfs:isDefinedBy <#> .
 
-<#Container> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:Container ;
-    gp:param [ a gp:Argument ;
-        spl:predicate gp:limit ;
+<#Container> a rdfs:Class, owl:Class, ldt:Template ;
+    rdfs:subClassOf ldtdh:Container ;
+    ldt:param [ a ldt:Argument ;
+        spl:predicate ldtdh:limit ;
         spl:valueType xsd:long ;
         spl:defaultValue 20 ;
         spl:optional true ;
-        gp:tunnel true
+        ldt:tunnel true
     ] ;
     gc:supportedMode gc:ReadMode, gc:ListMode, gc:TableMode ;
     gc:defaultMode gc:ListMode ;
     rdfs:label "Container" ;
     rdfs:isDefinedBy <#> .
 
-<#SPARQLEndpoint> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:SPARQLEndpoint ;
+<#SPARQLEndpoint> a rdfs:Class, owl:Class, ldt:Template ;
+    rdfs:subClassOf ldtc:SPARQLEndpoint ;
     rdfs:label "SPARQL endpoint" ;
     rdfs:isDefinedBy <#> .
 
-<#GraphStore> a rdfs:Class, owl:Class, gp:Template ;
-    rdfs:subClassOf gp:GraphStore ;
+<#GraphStore> a rdfs:Class, owl:Class, ldt:Template ;
+    rdfs:subClassOf ldtc:GraphStore ;
     rdfs:label "Graph Store" ;
     rdfs:isDefinedBy <#> .
 
 # CLASSES
 
 <#Template> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:Template ,
+    rdfs:subClassOf ldt:Template ,
         [ a owl:Restriction ;
             owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom gp:Document
+            owl:allValuesFrom ldtc:Document
 	] ;
     rdfs:label "Template" ;
     rdfs:isDefinedBy <#> .
 
 <#Query> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:Query ,
+    rdfs:subClassOf ldt:Query ,
         [ a owl:Restriction ;
             owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom gp:Document
+            owl:allValuesFrom ldtc:Document
 	] ;
     rdfs:label "Query" ;
     rdfs:isDefinedBy <#> .
 
 <#Constraint> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:Constraint ,
+    rdfs:subClassOf ldt:Constraint ,
         [ a owl:Restriction ;
             owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom gp:Document
+            owl:allValuesFrom ldtc:Document
 	] ;
     rdfs:label "Constraint" ;
     rdfs:isDefinedBy <#> .
 
 <#CommandTemplate> a rdfs:Class, owl:Class ;
-    rdfs:subClassOf gp:CommandTemplate ,
+    rdfs:subClassOf ldt:CommandTemplate ,
         [ a owl:Restriction ;
             owl:onProperty foaf:isPrimaryTopicOf ;
-            owl:allValuesFrom gp:Document
+            owl:allValuesFrom ldtc:Document
 	] ;
     rdfs:label "Command template" ;
     rdfs:isDefinedBy <#> .

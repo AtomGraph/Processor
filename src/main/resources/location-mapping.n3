@@ -3,8 +3,10 @@
 [] lm:mapping
 
    [ lm:name "http://graphity.org/gps#" ;                           lm:altName "org/graphity/processor/gps.ttl" ] ,
-   [ lm:name "http://graphity.org/gp#" ;                            lm:altName "org/graphity/processor/gp.ttl" ] ,
-   [ lm:name "http://graphity.org/g#" ;                             lm:altName "org/graphity/processor/g.ttl" ] ,   
+   [ lm:name "http://www.w3.org/ns/ldt#" ;                          lm:altName "org/graphity/processor/ldt.ttl" ] ,
+   [ lm:name "http://www.w3.org/ns/ldt/core#" ;                     lm:altName "org/graphity/processor/core.ttl" ] ,
+   [ lm:name "http://www.w3.org/ns/ldt/document-hierarchy#" ;       lm:altName "org/graphity/processor/dh.ttl" ] ,
+   [ lm:name "http://www.w3.org/ns/ldt/topic-hierarchy#" ;          lm:altName "org/graphity/processor/th.ttl" ] ,
    [ lm:name "http://rdfs.org/sioc/ns#" ;			    lm:altName "org/graphity/processor/sioc.owl" ] ,
    [ lm:name "http://rdfs.org/ns/void#" ;			    lm:altName "org/graphity/processor/void.owl" ] ,
    [ lm:name "http://www.w3.org/2011/http#" ;			    lm:altName "org/graphity/processor/http.owl" ] ,

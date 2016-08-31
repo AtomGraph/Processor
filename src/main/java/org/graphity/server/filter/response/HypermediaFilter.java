@@ -49,7 +49,9 @@ import org.graphity.processor.model.Template;
 import org.graphity.processor.model.TemplateCall;
 import org.graphity.server.provider.OntologyProvider;
 import org.graphity.processor.util.RDFNodeFactory;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
+import org.graphity.processor.vocabulary.LDTC;
+import org.graphity.processor.vocabulary.LDTDH;
 import org.graphity.processor.vocabulary.XHV;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,8 +94,8 @@ public class HypermediaFilter implements ContainerResponseFilter
             Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
             
             List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());
-            TemplateCall templateCall = ontology.getOntModel().createIndividual(GP.TemplateCall).
-                addProperty(GP.template, template).
+            TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
+                addProperty(LDT.template, template).
                 as(TemplateCall.class).applyArguments(queryParams);
 
             Model model = ModelFactory.createDefaultModel();
@@ -113,14 +115,14 @@ public class HypermediaFilter implements ContainerResponseFilter
             Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();
             if (!view.equals(absolutePath)) // add hypermedia if there are query parameters
             {
-                view.addProperty(GP.viewOf, absolutePath).
-                    addProperty(RDF.type, GP.View);
+                view.addProperty(LDTC.viewOf, absolutePath).
+                    addProperty(RDF.type, LDTC.View);
 
-                if (templateCall.hasProperty(GP.limit)) // pages must have limits
+                if (templateCall.hasProperty(LDTDH.limit)) // pages must have limits
                 {
                     if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", view, absolutePath);
-                    view.addProperty(GP.pageOf, absolutePath).
-                    addProperty(RDF.type, GP.Page); // do we still need gp:Page now that we have gp:View?
+                    view.addProperty(LDTDH.pageOf, absolutePath).
+                    addProperty(RDF.type, LDTDH.Page); // do we still need gp:Page now that we have gp:View?
 
                     addPrevNextPage(absolutePath, viewBuilder, templateCall);
                 }
@@ -171,7 +173,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             {
                 Statement stmt = it.next();
                 // ignore system properties on TemplateCall. TO-DO: find a better solution to this
-                if (!stmt.getPredicate().equals(RDF.type) && !stmt.getPredicate().equals(GP.template))
+                if (!stmt.getPredicate().equals(RDF.type) && !stmt.getPredicate().equals(LDT.template))
                     sb.replaceProperty(stmt.getPredicate(), stmt.getObject());
             }
         }
@@ -189,33 +191,33 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (pageBuilder == null) throw new IllegalArgumentException("StateBuilder cannot be null");
         if (pageCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
         
-        //if (pageCall.hasProperty(GP.limit))
+        //if (pageCall.hasProperty(LDT.limit))
         {
             Resource page = pageBuilder.build();
-            Long limit = pageCall.getProperty(GP.limit).getLong();            
+            Long limit = pageCall.getProperty(LDTDH.limit).getLong();            
             Long offset = Long.valueOf(0);
-            if (pageCall.hasProperty(GP.offset)) offset = pageCall.getProperty(GP.offset).getLong();
+            if (pageCall.hasProperty(LDTDH.offset)) offset = pageCall.getProperty(LDTDH.offset).getLong();
             
             if (offset >= limit)
             {
-                TemplateCall prevCall = pageCall.removeAll(GP.offset).
-                    addLiteral(GP.offset, offset - limit).
+                TemplateCall prevCall = pageCall.removeAll(LDTDH.offset).
+                    addLiteral(LDTDH.offset, offset - limit).
                     as(TemplateCall.class);
                 Resource prev = applyTemplateCall(pageBuilder, prevCall).build().
-                    addProperty(GP.pageOf, absolutePath).
-                    addProperty(RDF.type, GP.Page).
+                    addProperty(LDTDH.pageOf, absolutePath).
+                    addProperty(RDF.type, LDTDH.Page).
                     addProperty(XHV.next, page);
 
                 if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", page, prev);
                 page.addProperty(XHV.prev, prev);
             }
 
-            TemplateCall nextCall = pageCall.removeAll(GP.offset).
-                addLiteral(GP.offset, offset + limit).
+            TemplateCall nextCall = pageCall.removeAll(LDTDH.offset).
+                addLiteral(LDTDH.offset, offset + limit).
                 as(TemplateCall.class);
             Resource next = applyTemplateCall(pageBuilder, nextCall).build().
-                addProperty(GP.pageOf, absolutePath).
-                addProperty(RDF.type, GP.Page).
+                addProperty(LDTDH.pageOf, absolutePath).
+                addProperty(RDF.type, LDTDH.Page).
                 addProperty(XHV.prev, page);
 
             if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", page, next);
@@ -232,7 +234,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 
     public URI getOntologyURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
     {
-        return getLinkHref(headerMap, "Link", GP.ontology.getURI());
+        return getLinkHref(headerMap, "Link", LDT.ontology.getURI());
     }
 
     public URI getLinkHref(MultivaluedMap<String, Object> headerMap, String headerName, String rel) throws URISyntaxException

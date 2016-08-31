@@ -7,7 +7,7 @@
     <display-name>Graphity Processor</display-name>
     <description>Generic Linked Data processor</description>
     <context-param>
-        <param-name>http://graphity.org/gp#restrictionsQuery</param-name>
+        <param-name>http://atomgraph.com/processor/ns#restrictionsQuery</param-name>
         <param-value><![CDATA[
 PREFIX gp:	<http://graphity.org/gp#>
 PREFIX rdf:     <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
@@ -40,11 +40,11 @@ SELECT *
         <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
         <init-param>
             <param-name>javax.ws.rs.Application</param-name>
-            <param-value>org.graphity.processor.Application</param-value>
+            <param-value>org.graphity.server.Application</param-value>
         </init-param>
         <init-param>
 	    <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
-            <param-value>org.graphity.processor.filter.response.HypermediaFilter</param-value>
+            <param-value>org.graphity.server.filter.response.HypermediaFilter</param-value>
 	</init-param>
         <!--
         <init-param>
@@ -69,25 +69,25 @@ SELECT *
         </init-param>
         -->
         <init-param>
-            <param-name>http://graphity.org/gp#dataset</param-name>
+            <param-name>http://atomgraph.com/processor/ns#dataset</param-name>
             <param-value>/org/graphity/processor/dataset.trig</param-value>
         </init-param>
         <init-param>
-            <param-name>http://graphity.org/gp#ontology</param-name>
+            <param-name>http://www.w3.org/ns/ldt#ontology</param-name>
             <param-value>http://graphity.org/gps#</param-value>
         </init-param>
         <init-param>
-            <param-name>http://graphity.org/gp#sitemapRules</param-name>
+            <param-name>http://atomgraph.com/processor/ns#sitemapRules</param-name>
             <param-value><![CDATA[
-[inh:   (?class rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), (?class ?p ?o), (?p rdf:type <http://graphity.org/gp#InheritedProperty>), (?p rdfs:isDefinedBy <http://graphity.org/gp#>), (?subClass rdfs:subClassOf ?class), (?subClass rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
-[arg1:  (?template rdf:type <http://graphity.org/gp#Template>), (?template <http://graphity.org/gp#param> ?arg), (?arg rdf:type <http://graphity.org/gp#Argument>), (?arg <http://graphity.org/gp#tunnel> 'true'^^xsd:boolean), (?subTemplate rdfs:subClassOf ?template), (?subTemplate rdf:type <http://graphity.org/gp#Template>), noValue(?subTemplate <http://graphity.org/gp#param>) -> (?subTemplate <http://graphity.org/gp#param> ?arg)]
-[arg2:  (?template rdf:type <http://graphity.org/gp#Template>), (?template <http://graphity.org/gp#param> ?arg), (?arg rdf:type <http://graphity.org/gp#Argument>), (?arg <http://graphity.org/gp#tunnel> 'true'^^xsd:boolean), (?subTemplate rdfs:subClassOf ?template), (?subTemplate rdf:type <http://graphity.org/gp#Template>), (?arg <http://spinrdf.org/spl#predicate> ?predicate), (?subTemplate <http://graphity.org/gp#param> ?subArg), noValue(?template <http://graphity.org/gp#param> ?subArg), noValue(?subArg <http://spinrdf.org/spl#predicate> ?predicate) -> (?subTemplate <http://graphity.org/gp#param> ?arg), print(?template, ?subTemplate, ?arg, ?subArg, ?predicate)]
+[inh:   (?class rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), (?class ?p ?o), (?p rdf:type <http://www.w3.org/ns/ldt#InheritedProperty>), (?p rdfs:isDefinedBy <http://www.w3.org/ns/ldt#>), (?subClass rdfs:subClassOf ?class), (?subClass rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
+[arg1:  (?template rdf:type <http://www.w3.org/ns/ldt#Template>), (?template <http://www.w3.org/ns/ldt#param> ?arg), (?arg rdf:type <http://www.w3.org/ns/ldt#Argument>), (?arg <http://www.w3.org/ns/ldt#tunnel> 'true'^^xsd:boolean), (?subTemplate rdfs:subClassOf ?template), (?subTemplate rdf:type <http://www.w3.org/ns/ldt#Template>), noValue(?subTemplate <http://www.w3.org/ns/ldt#param>) -> (?subTemplate <http://www.w3.org/ns/ldt#param> ?arg)]
+[arg2:  (?template rdf:type <http://www.w3.org/ns/ldt#Template>), (?template <http://www.w3.org/ns/ldt#param> ?arg), (?arg rdf:type <http://www.w3.org/ns/ldt#Argument>), (?arg <http://www.w3.org/ns/ldt#tunnel> 'true'^^xsd:boolean), (?subTemplate rdfs:subClassOf ?template), (?subTemplate rdf:type <http://www.w3.org/ns/ldt#Template>), (?arg <http://spinrdf.org/spl#predicate> ?predicate), (?subTemplate <http://www.w3.org/ns/ldt#param> ?subArg), noValue(?template <http://www.w3.org/ns/ldt#param> ?subArg), noValue(?subArg <http://spinrdf.org/spl#predicate> ?predicate) -> (?subTemplate <http://www.w3.org/ns/ldt#param> ?arg), print(?template, ?subTemplate, ?arg, ?subArg, ?predicate)]
 [rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
 ]]></param-value>
         </init-param>
         <!--
         <init-param>
-            <param-name>http://graphity.org/gp#cacheSitemap</param-name>
+            <param-name>http://atomgraph.com/processor/ns#cacheSitemap</param-name>
             <param-value>false</param-value>
         </init-param>
         -->

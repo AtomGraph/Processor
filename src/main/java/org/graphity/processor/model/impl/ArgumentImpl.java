@@ -22,7 +22,7 @@ import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.vocabulary.RDF;
 import org.graphity.processor.model.Argument;
-import org.graphity.processor.vocabulary.GP;
+import org.graphity.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -61,7 +61,7 @@ public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl impl
             return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
             */
 
-            return eg.asGraph().contains(node, RDF.type.asNode(), GP.Argument.asNode());
+            return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Argument.asNode());
         }
     };
     
@@ -73,7 +73,7 @@ public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl impl
     @Override
     public Boolean isTunnelled()
     {
-        if (getProperty(GP.tunnel) != null) return getProperty(GP.tunnel).getBoolean();
+        if (getProperty(LDT.tunnel) != null) return getProperty(LDT.tunnel).getBoolean();
         
         return null;
     }
