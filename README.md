@@ -33,7 +33,7 @@ well as server applications. However, if you do not need XSLT and dependency on 
 can choose `graphity-processor`. Dependencies to other AtomGraph artifacts will be resolved automagically during the Maven build processs. 
 
         <dependency>
-            <groupId>org.graphity</groupId>
+            <groupId>com.atomgraph</groupId>
             <artifactId>processor</artifactId>
             <version>1.1.3</version>
         </dependency>        
@@ -57,32 +57,31 @@ brevity, all URIs are relativized against the webapp's base URI):
 ```
 @prefix sioc:  <http://rdfs.org/sioc/ns#> .
 @prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix gps:   <http://graphity.org/gps#> .
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix gc:    <http://graphity.org/gc#> .
+@prefix gc:    <http://atomgraph.com/client/ns#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void:  <http://rdfs.org/ns/void#> .
-@prefix gp:    <http://graphity.org/gp#> .
+@prefix ldt:   <http://www.w3.org/ns/ldt#> .
 
 # services
 
 <sparql>
-        a                   gp:SPARQLEndpoint ;
+        a                   ldt:SPARQLEndpoint ;
         dct:title           "SPARQL endpoint" ;
         sioc:has_space      <> .
 
 <service>
-        a                   gp:GraphStore ;
+        a                   ldt:GraphStore ;
         dct:title           "Graph Store Protocol endpoint" ;
         sioc:has_space      <> .
 
 # root container
 
 <>
-        a                   gp:Container ;
-        rdfs:seeAlso        <sparql> , gps: , <http://atomgraph.com> ;
+        a                   ldt:Container ;
+        rdfs:seeAlso        <sparql> , <http://atomgraph.com> ;
         dct:description     "Generic Linked Data processor" ;
         dct:title           "AtomGraph Processor" ;
         foaf:maker          <http://atomgraph.com/#company> .
@@ -90,30 +89,30 @@ brevity, all URIs are relativized against the webapp's base URI):
 # child containers
 
 <ontologies/>
-        a                   gp:Container ;
-        gp:slug             "ontologies" ;
+        a                   ldt:Container ;
+        ldt:slug            "ontologies" ;
         dct:title           "Ontologies" ;
         sioc:has_parent     <> .
 
 <queries/>
-        a                   gp:Container ;
-        gp:slug             "queries" ;
+        a                   ldt:Container ;
+        ldt:slug            "queries" ;
         dct:title           "Queries" ;
         sioc:has_parent     <> .
 
 <templates/>
-        a                   gp:Container ;
-        gp:slug             "templates" ;
+        a                   ldt:Container ;
+        ldt:slug            "templates" ;
         dct:title           "Templates" ;
         sioc:has_parent     <> .
 
 # page
 
 <?offset=0&limit=20>
-        a                   gp:Page ;
-        gp:limit            "20"^^xsd:long ;
-        gp:offset           "0"^^xsd:long ;
-        gp:pageOf           <> ;
+        a                   ldt:Page ;
+        ldt:limit            "20"^^xsd:long ;
+        ldt:offset           "0"^^xsd:long ;
+        ldt:pageOf           <> ;
         <http://www.w3.org/1999/xhtml/vocab#next>
                             <?offset=20&limit=20> .
 ```
