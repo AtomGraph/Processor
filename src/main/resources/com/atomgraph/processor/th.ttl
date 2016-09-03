@@ -8,9 +8,9 @@
 @prefix http:   <http://www.w3.org/2011/http#> .
 @prefix ldt:	<http://www.w3.org/ns/ldt#> .
 @prefix core:	<http://www.w3.org/ns/ldt/core#> .
-@prefix dh:		<http://www.w3.org/ns/ldt/document-hierarchy#> .
-@prefix sd:		<http://www.w3.org/ns/sparql-service-description#> .
-@prefix sp:		<http://spinrdf.org/sp#> .
+@prefix dh:	<http://www.w3.org/ns/ldt/document-hierarchy#> .
+@prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
+@prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
 @prefix spl:    <http://spinrdf.org/spl#> .
 @prefix dct:	<http://purl.org/dc/terms/> .
@@ -24,7 +24,7 @@
     rdfs:label "Document hierarchy with topic resources" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
     vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/hierarchy#" ;
-    vann:preferredNamespacePrefix "ldth";
+    vann:preferredNamespacePrefix "th";
     dct:license <http://www.opendatacommons.org/licenses/pddl/1.0/> .
 
 # TEMPLATES
@@ -37,11 +37,11 @@
     rdfs:isDefinedBy <#> .
 
 <#Document> a rdfs:Class, ldt:Template ;
-    rdfs:subClassOf core:Document ;
+    rdfs:subClassOf dh:Document ;
     ldt:query <#DescribeWithTopic> ;
     ldt:update <#DeleteWithTopic> ;
     rdfs:label "Document" ;
-    rdfs:comment "Generic document resource" ;
+    rdfs:comment "Leaf-child of a container" ;
     rdfs:isDefinedBy <#> .
 
 # QUERIES

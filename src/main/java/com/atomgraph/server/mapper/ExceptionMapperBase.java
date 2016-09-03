@@ -16,14 +16,12 @@
 
 package com.atomgraph.server.mapper;
 
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.api.core.ResourceContext;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,6 +35,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
+import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.HTTP;
 
 /**
@@ -117,10 +116,10 @@ abstract public class ExceptionMapperBase
         return providers;
     }
     
-    public OntClass getMatchedOntClass()
+    public TemplateCall getTemplateCall()
     {
-	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
-	return cr.getContext(OntClass.class);
+	ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
+	return cr.getContext(TemplateCall.class);
     }
 
     public Ontology getOntology()

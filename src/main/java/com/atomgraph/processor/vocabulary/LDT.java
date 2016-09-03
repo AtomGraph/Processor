@@ -17,14 +17,12 @@
 package com.atomgraph.processor.vocabulary;
 
 import org.apache.jena.ontology.AnnotationProperty;
-import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
-import static com.atomgraph.processor.vocabulary.AP.NS;
 
 /**
  * Linked Data Templates vocabulary.

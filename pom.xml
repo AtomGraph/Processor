@@ -124,7 +124,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.graphity</includeGroupIds>
+                            <includeGroupIds>com.atomgraph</includeGroupIds>
                             <includes>**\/*.ttl,**\/*.rdf,**\/*.owl</includes>
                             <outputDirectory>${project.build.directory}/classes</outputDirectory>
                         </configuration>
