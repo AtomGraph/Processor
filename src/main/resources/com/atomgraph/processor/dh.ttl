@@ -6,7 +6,7 @@
 @prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:	<http://www.w3.org/2002/07/owl#> .
 @prefix http:   <http://www.w3.org/2011/http#> .
-@prefix ldtc:	<http://www.w3.org/ns/ldt/core#> .
+@prefix core:	<http://www.w3.org/ns/ldt/core#> .
 @prefix ldt:	<http://www.w3.org/ns/ldt#> .
 @prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
 @prefix sp:	<http://spinrdf.org/sp#> .
@@ -18,7 +18,7 @@
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
 <#> a owl:Ontology, ldt:Ontology ;
-    owl:imports ldtc:, sioc: ;
+    owl:imports core:, sioc: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Document hierarchy ontology" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
@@ -36,7 +36,7 @@
     rdfs:isDefinedBy <#> .
 
 <#pageOf> a owl:ObjectProperty ;
-    rdfs:subPropertyOf ldtc:viewOf ;
+    rdfs:subPropertyOf core:viewOf ;
     rdfs:domain <#Page> ;
     rdfs:range <#Container> ;
     rdfs:label "Page of container" ;
@@ -70,7 +70,7 @@
 # CLASSES
 
 <#Page> a rdfs:Class ;
-    rdfs:subClassOf ldtc:View ;
+    rdfs:subClassOf core:View ;
     rdfs:label "Page resource" ;
     rdfs:comment "A class of RDF resources that are container pages" ;
     rdfs:isDefinedBy <#> .
@@ -78,7 +78,7 @@
 # TEMPLATES
 
 <#Container> a rdfs:Class, owl:Class, ldt:Template ;
-    rdfs:subClassOf ldtc:Document, sioc:Container ;
+    rdfs:subClassOf core:Document, sioc:Container ;
     ldt:path "{path: .*}/" ;
     ldt:skolemTemplate "{slug}/" ;
     ldt:query <#DescribeWithChildren> ;
