@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.util.Link;
-import com.atomgraph.core.vocabulary.AC;
+import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.processor.exception.ModelException;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -52,7 +52,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
         
         Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
-        Link baseUriLink = new Link(getUriInfo().getBaseUri(), AC.baseUri.getURI(), null); // LDT.baseUri?
+        Link baseUriLink = new Link(getUriInfo().getBaseUri(), A.baseUri.getURI(), null); // LDT.baseUri?
         
         ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(ex.getModel(), getVariants()).

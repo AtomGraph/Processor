@@ -18,7 +18,7 @@ package com.atomgraph.server.provider;
 
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.core.model.GraphStoreOrigin;
-import com.atomgraph.core.vocabulary.AC;
+import com.atomgraph.core.vocabulary.A;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +44,7 @@ public class GraphStoreOriginProvider extends com.atomgraph.core.provider.GraphS
     @Override
     public GraphStoreOrigin getGraphStoreOrigin()
     {
-        return getGraphStoreOrigin(AC.graphStore); // do not throw WebApplicationException is origin is not configured
+        return getGraphStoreOrigin(A.graphStore); // do not throw WebApplicationException is origin is not configured
     }
 
 }

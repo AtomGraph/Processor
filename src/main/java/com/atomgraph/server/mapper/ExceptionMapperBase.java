@@ -36,7 +36,7 @@ import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.vocabulary.HTTP;
+import com.atomgraph.server.vocabulary.HTTP;
 
 /**
  * Abstract base class for ExceptionMappers that build responses with exceptions as RDF resources.

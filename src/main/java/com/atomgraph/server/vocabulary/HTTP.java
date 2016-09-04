@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atomgraph.processor.vocabulary;
+package com.atomgraph.server.vocabulary;
 
 import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.ObjectProperty;

@@ -61,9 +61,7 @@ public class ValidatingModelProvider extends ModelProvider
     
     public Model validate(Model model)
     {
-        // annotation inheritance requires an inferencing model (mostly for rdfs:subClassOf)
-        InfModel infModel = ModelFactory.createInfModel(getOntology().getOntModel().getReasoner(), getOntology().getOntModel(), model);
-        List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(infModel);
+        List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(model);
         
 	if (!cvs.isEmpty())
         {

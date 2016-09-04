@@ -12,7 +12,7 @@
 	$Id$
 */
 
-package com.atomgraph.processor.vocabulary;
+package com.atomgraph.server.vocabulary;
 
 import org.apache.jena.rdf.model.*;
 

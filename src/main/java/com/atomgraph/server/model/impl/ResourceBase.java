@@ -44,14 +44,14 @@ import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.util.ModelUtils;
-import com.atomgraph.core.vocabulary.AC;
+import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.processor.exception.SitemapException;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.vocabulary.LDTC;
-import com.atomgraph.processor.vocabulary.LDTDH;
+import com.atomgraph.server.vocabulary.LDTC;
+import com.atomgraph.server.vocabulary.LDTDH;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.NamedGraph;
@@ -348,7 +348,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
 
-        Link baseLink = new Link(getUriInfo().getBaseUri(), AC.baseUri.getURI(), null); // LDT.baseUri?
+        Link baseLink = new Link(getUriInfo().getBaseUri(), A.baseUri.getURI(), null); // LDT.baseUri?
         rb.header("Link", baseLink.toString());
         
         Reasoner reasoner = getTemplateCall().getOntModel().getSpecification().getReasoner();

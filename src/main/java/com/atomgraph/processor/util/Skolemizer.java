@@ -39,10 +39,9 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
-import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
+import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -109,14 +108,14 @@ public class Skolemizer
         UriBuilder builder;
         Map<String, String> nameValueMap;
         
-        SortedSet<TemplateCall> templateCalls = match(getOntology(), resource, RDF.type, 0);
-        if (!templateCalls.isEmpty())
+        SortedSet<ClassTemplate> matchedClasses = match(getOntology(), resource, RDF.type, 0);
+        if (!matchedClasses.isEmpty())
         {
-            Template template = templateCalls.first().getTemplate();
-            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, template);
+            OntClass typeClass = matchedClasses.first().getOntClass();
+            if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
 
             // skolemization template builds with absolute path builder (e.g. "{slug}")
-            String skolemTemplate = template.getSkolemTemplate();
+            String skolemTemplate = getStringValue(typeClass, LDT.skolemTemplate);
             if (skolemTemplate != null)
             {
                 builder = getAbsolutePathBuilder().clone();
@@ -128,13 +127,14 @@ public class Skolemizer
             }
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
             {
-                String uriTemplate = template.getPath().getTemplate();
+                String uriTemplate = getStringValue(typeClass, LDT.path);
                 builder = getBaseUriBuilder().clone().path(uriTemplate);
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
             }
 
             // add fragment identifier
-            return builder.fragment(template.getFragmentTemplate()).buildFromMap(nameValueMap);
+            String fragmentTemplate = getStringValue(typeClass, LDT.fragmentTemplate);            
+            return builder.fragment(fragmentTemplate).buildFromMap(nameValueMap);
         }
         
         return null;
@@ -222,31 +222,27 @@ public class Skolemizer
 	return null;
     }
     
-    public SortedSet<TemplateCall> match(Ontology ontology, Resource resource, Property property, int level)
+    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-        SortedSet<TemplateCall> templateCalls = new TreeSet<>();
+        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.skolemTemplate);
         try
         {
             while (it.hasNext())
             {
-                Resource templateRes = it.next();
-                Template template = ontology.getOntModel().getOntResource(templateRes).as(Template.class);
+                Resource ontClassRes = it.next();
+                OntClass ontClass = ontology.getOntModel().getOntResource(ontClassRes).asClass();
                 // only match templates defined in this ontology - maybe reverse loops?
-                if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology) &&
-                        resource.hasProperty(property, template))
+                if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
+                        resource.hasProperty(property, ontClass))
                 {
-                    TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
-                        addProperty(LDT.template, template).
-                        addLiteral(LDT.priority, new Double(level * -1)).
-                        as(TemplateCall.class);
-                    
-                    if (log.isTraceEnabled()) log.trace("Resource {} matched Template {}", resource, template);
-                    templateCalls.add(templateCall);
+                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
+                    if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
+                    matchedClasses.add(template);
                 } 
             }            
         }
@@ -265,8 +261,8 @@ public class Skolemizer
                 {
                     Ontology importedOntology = importRes.asOntology();
                     // traverse imports recursively
-                    Set<TemplateCall> importCalls = match(importedOntology, resource, property, level + 1);
-                    templateCalls.addAll(importCalls);
+                    Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
+                    matchedClasses.addAll(matchedImportClasses);
                 }
             }
         }
@@ -275,7 +271,18 @@ public class Skolemizer
             imports.close();
         }
         
-        return templateCalls;
+        return matchedClasses;
+    }
+
+    protected String getStringValue(OntClass ontClass, Property property)
+    {
+	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+            return ontClass.getPropertyValue(property).asLiteral().getString();
+        
+        return null;
     }
     
     public Ontology getOntology()
