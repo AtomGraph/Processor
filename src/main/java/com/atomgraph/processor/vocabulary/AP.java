@@ -50,6 +50,4 @@ public class AP
 
     public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
 
-    public static final DatatypeProperty restrictionsQuery = m_model.createDatatypeProperty( NS + "restrictionsQuery" );
-
 }
