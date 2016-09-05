@@ -42,10 +42,9 @@
 <#Document> a rdfs:Class, owl:Class, ldt:Template ;
     rdfs:subClassOf foaf:Document ;
     ldt:path "{path: .*}" ;
-    <#skolemTemplate> "{slug}" ;
+    ldt:skolemTemplate "{slug}" ;
     ldt:query <#Describe> ;
-    <#update> <#Delete> ;
-    # spin:constructor <#DocumentConstructor> ;
+    ldt:update <#Delete> ;
     rdfs:label "Document" ;
     rdfs:comment "Generic document resource" ;
     rdfs:isDefinedBy <#> .
