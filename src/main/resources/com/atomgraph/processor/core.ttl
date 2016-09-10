@@ -42,7 +42,7 @@
 <#Document> a rdfs:Class, owl:Class, ldt:Template ;
     rdfs:subClassOf foaf:Document ;
     ldt:path "{path: .*}" ;
-    ldt:skolemTemplate "{slug}" ;
+    # ldt:skolemTemplate "{slug}" ;
     ldt:query <#Describe> ;
     ldt:update <#Delete> ;
     rdfs:label "Document" ;
