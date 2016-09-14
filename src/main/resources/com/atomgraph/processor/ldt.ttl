@@ -24,6 +24,12 @@
 
 # SYSTEM PROPERTIES
 
+<#baseUri> a owl:ObjectProperty ;
+    rdfs:label "Application base URI" ;
+    rdfs:domain <#Application> ;
+    rdfs:comment "Base URI of the application" ;
+    rdfs:isDefinedBy <#> .
+
 <#ontology> a owl:ObjectProperty ;
     rdfs:domain <#Application> ;
     rdfs:range <#Ontology> ;

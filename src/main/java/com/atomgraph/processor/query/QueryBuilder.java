@@ -325,6 +325,32 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	return filter(SPINFactory.createVariable(getModel(), varName), locale);
     }
 
+    public QueryBuilder filter(Variable var, List<RDFNode> values)
+    {
+        return filter(SPINFactory.createFilter(getModel(), createFilterExpression(var, values)));
+    }
+
+    public QueryBuilder filter(String varName, List<RDFNode> values)
+    {
+	return filter(SPINFactory.createVariable(getModel(), varName), values);
+    }
+    
+    private Resource createFilterExpression(Variable var, List<RDFNode> values)
+    {
+	if (var == null) throw new IllegalArgumentException("Variable name cannot be null");
+	if (values == null) throw new IllegalArgumentException("List<String> cannot be null");
+
+        Resource expression = getModel().createResource().
+            addProperty(RDF.type, getModel().createResource(SP.NS + "in")).
+            addProperty(SP.arg1, var);
+
+        for (int i = 0; i < values.size(); i++)
+            expression.addProperty(SP.getArgProperty(i + 2), values.get(i));
+        
+        return expression;
+    }
+        
+    @Deprecated
     public QueryBuilder filter(Variable var, RDFList resources)
     {
 	if (var == null) throw new IllegalArgumentException("FILTER variable cannot be null");
@@ -335,6 +361,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	return filter(SPINFactory.createFilter(getModel(), createFilterExpression(var, resources)));
     }
 
+    @Deprecated
     private Resource createFilterExpression(Variable var, RDFList resources)
     {
 	Resource eqExpr = getModel().createResource().
@@ -352,6 +379,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 		addProperty(SP.arg2, createFilterExpression(var, resources.getTail()));
     }
     
+    @Deprecated
     public QueryBuilder filter(String varName, RDFList resources)
     {
 	if (varName == null) throw new IllegalArgumentException("FILTER variable name cannot be null");

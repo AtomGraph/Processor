@@ -60,7 +60,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 @prefix foaf:  <http://xmlns.com/foaf/0.1/> .
 @prefix dct:   <http://purl.org/dc/terms/> .
 @prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix gc:    <http://atomgraph.com/client/ns#> .
+@prefix gc:    <http://atomgraph.com/ns/client#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void:  <http://rdfs.org/ns/void#> .
 @prefix ldt:   <http://www.w3.org/ns/ldt#> .

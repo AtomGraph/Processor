@@ -44,7 +44,6 @@ import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.util.ModelUtils;
-import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.processor.exception.SitemapException;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.SelectBuilder;
@@ -348,7 +347,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
 
-        Link baseLink = new Link(getUriInfo().getBaseUri(), A.baseUri.getURI(), null); // LDT.baseUri?
+        Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null);
         rb.header("Link", baseLink.toString());
         
         Reasoner reasoner = getTemplateCall().getOntModel().getSpecification().getReasoner();
