@@ -453,35 +453,24 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             subSelectBuilder.replaceLimit(limit);
         }
 
-        /*
-        try
+        if (templateCall.hasProperty(LDTDH.orderBy))
         {
-        */
-            if (templateCall.hasProperty(LDTDH.orderBy))
+            try
             {
-                try
-                {
-                    String orderBy = templateCall.getProperty(LDTDH.orderBy).getString();
-                    
-                    Boolean desc = false; // ORDERY BY is ASC() by default
-                    if (templateCall.hasProperty(LDTDH.desc)) desc = templateCall.getProperty(LDTDH.desc).getBoolean();
-                        
-                    if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                    subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                        orderBy(orderBy, desc);
-                }
-                catch (IllegalArgumentException ex)
-                {
-                    if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
-                }
+                String orderBy = templateCall.getProperty(LDTDH.orderBy).getString();
+
+                Boolean desc = false; // ORDERY BY is ASC() by default
+                if (templateCall.hasProperty(LDTDH.desc)) desc = templateCall.getProperty(LDTDH.desc).getBoolean();
+
+                if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                    orderBy(orderBy, desc);
             }
-        /*
+            catch (IllegalArgumentException ex)
+            {
+                if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
+            }
         }
-        catch (NumberFormatException ex)
-        {
-            throw new WebApplicationException(ex);
-        }
-        */
         
         return builder;
     }

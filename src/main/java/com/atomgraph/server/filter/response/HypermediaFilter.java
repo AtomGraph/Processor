@@ -53,6 +53,7 @@ import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import com.atomgraph.server.vocabulary.XHV;
+import static javax.ws.rs.core.Response.Status.CREATED;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.Argument;
@@ -74,8 +75,8 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        // do not process hypermedia if the response is a redirect or returns the body of bad request
-        if (response.getStatusType().getFamily().equals(REDIRECTION) || // response.getStatusType().equals(Response.Status.BAD_REQUEST) ||
+        // do not process hypermedia if the response is a redirect or 201 Created
+        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(CREATED) ||
                 response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         
@@ -109,7 +110,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", pageState.getURI());
                 response.setResponse(Response.seeOther(URI.create(pageState.getURI())).build());
                 return response;
-            }                    
+            }
 
             StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);
             Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();
