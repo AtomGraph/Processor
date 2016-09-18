@@ -86,7 +86,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * Public JAX-RS constructor. Suitable for subclassing.
      * If the request URI does not match any URI template in the sitemap ontology, 404 Not Found is returned.
      * 
-     * If the matching ontology class is a subclass of <code>gp:Page</code>, this resource becomes a page resource and
+     * If the matching ontology class is a subclass of <code>ldt:Document</code>, this resource becomes a page resource and
      * HATEOS metadata is added (relations to the container and previous/next page resources).
      * 
      * @param uriInfo URI information of the current request
@@ -160,8 +160,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             Resource javaClass = getTemplateCall().getTemplate().getLoadClass();
             if (!javaClass.isURIResource())
             {
-                if (log.isErrorEnabled()) log.error("gp:loadClass value of class '{}' is not a URI resource", getTemplateCall().getURI());
-                throw new SitemapException("gp:loadClass value of class '" + getTemplateCall().getURI() + "' is not a URI resource");
+                if (log.isErrorEnabled()) log.error("ldt:loadClass value of class '{}' is not a URI resource", getTemplateCall().getURI());
+                throw new SitemapException("ldt:loadClass value of class '" + getTemplateCall().getURI() + "' is not a URI resource");
             }
 
             Class clazz = Loader.loadClass(javaClass.getURI());
@@ -401,7 +401,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
     /**
      * Returns the cache control of this resource, if specified.
-     * The control value can be specified as a <code>gp:cacheControl</code> value restriction on an ontology class in
+     * The control value can be specified as a <code>ldt:cacheControl</code> value restriction on an ontology class in
      * the sitemap ontology.
      * 
      * @return cache control object or null, if not specified

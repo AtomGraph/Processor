@@ -140,8 +140,8 @@ public class TemplateImpl extends OntClassImpl implements Template
                 Statement stmt = it.next();
                 if (!stmt.getObject().canAs(Argument.class))
                 {
-                    if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type gp:Argument missing)", stmt.getObject(), getURI());
-                    throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type gp:Argument missing)");
+                    if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type ldt:Argument missing)", stmt.getObject(), getURI());
+                    throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
                 }
 
                 args.add(stmt.getObject().as(Argument.class));
@@ -204,8 +204,8 @@ public class TemplateImpl extends OntClassImpl implements Template
                 Statement stmt = it.next();
                 if (!stmt.getObject().isLiteral())
                 {
-                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (gp:language is not literal)", getURI());
-                    throw new SitemapException("Illegal non-literal gp:language value for template '" + getURI() +"'");
+                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (ldt:language is not literal)", getURI());
+                    throw new SitemapException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
                 }
                 
                 languages.add(Locale.forLanguageTag(stmt.getString()));

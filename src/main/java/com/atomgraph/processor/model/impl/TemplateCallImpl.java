@@ -155,7 +155,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         Resource queryOrTemplateCall = getTemplate().getQuery();
         if (queryOrTemplateCall == null)
         {
-            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (gp:query missing)", getTemplate().getURI());
+            if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (ldt:query missing)", getTemplate().getURI());
             throw new SitemapException("Query not defined for template '" + getTemplate().getURI() +"'");
         }
         
@@ -175,8 +175,8 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             org.topbraid.spin.model.Query query = SPINFactory.asQuery(queryOrTemplateCall);
             if (query == null)
             {
-                if (log.isErrorEnabled()) log.error("Class '{}' gp:query value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), queryOrTemplateCall);
-                throw new SitemapException("Class '" + getTemplate().getURI() + "' gp:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                if (log.isErrorEnabled()) log.error("Class '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), queryOrTemplateCall);
+                throw new SitemapException("Class '" + getTemplate().getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
             return QueryBuilder.fromQuery(getQuery(query, base), commandModel);
@@ -218,7 +218,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         Resource updateOrTemplateCall = getTemplate().getUpdate();
         if (updateOrTemplateCall == null)
         {
-            if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (gp:update missing)", getTemplate().getURI());
+            if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (ldt:update missing)", getTemplate().getURI());
             throw new SitemapException("Update not defined for template '" + getTemplate().getURI() +"'");
         }
 
@@ -238,8 +238,8 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             org.topbraid.spin.model.update.Update update = SPINFactory.asUpdate(updateOrTemplateCall);
             if (update == null)
             {
-                if (log.isErrorEnabled()) log.error("Class '{}' gp:update value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), updateOrTemplateCall);
-                throw new SitemapException("Class '" + getTemplate().getURI() + "' gp:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                if (log.isErrorEnabled()) log.error("Class '{}' ldt:update value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), updateOrTemplateCall);
+                throw new SitemapException("Class '" + getTemplate().getURI() + "' ldt:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
             return ModifyBuilder.fromUpdate(getUpdateRequest(update, base).getOperations().get(0), commandModel);

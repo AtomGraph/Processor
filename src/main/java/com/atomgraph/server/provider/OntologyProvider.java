@@ -205,7 +205,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     /**
      * Returns configured sitemap ontology.
-     * Uses <code>gp:ontology</code> context parameter value from web.xml as dataset location.
+     * Uses <code>ldt:ontology</code> context parameter value from web.xml as dataset location.
      * 
      * @param ontModel
      * @param ontologyURI

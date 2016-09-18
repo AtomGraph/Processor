@@ -69,7 +69,7 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
     
     /**
      * Returns configured dataset instance.
-     * Uses <code>gp:dataset</code> context parameter value from web.xml as dataset location.
+     * Uses <code>ap:dataset</code> context parameter value from web.xml as dataset location.
      * 
      * @return dataset instance
      */

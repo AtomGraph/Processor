@@ -121,9 +121,9 @@ public class HypermediaFilter implements ContainerResponseFilter
 
                 if (templateCall.hasProperty(LDTDH.limit)) // pages must have limits
                 {
-                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} gp:pageOf {}", view, absolutePath);
+                    if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", view, absolutePath);
                     view.addProperty(LDTDH.pageOf, absolutePath).
-                    addProperty(RDF.type, LDTDH.Page); // do we still need gp:Page now that we have gp:View?
+                    addProperty(RDF.type, LDTDH.Page); // do we still need dh:Page now that we have core:View?
 
                     addPrevNextPage(absolutePath, viewBuilder, templateCall);
                 }
