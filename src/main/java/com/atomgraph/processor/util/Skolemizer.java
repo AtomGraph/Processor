@@ -28,7 +28,6 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.api.uri.UriComponent;
 import com.sun.jersey.api.uri.UriTemplateParser;
 import java.net.URI;
 import java.util.HashMap;
@@ -148,13 +147,7 @@ public class Skolemizer
 	{
 	    Literal literal = getLiteral(resource, name);
 	    if (literal != null)
-	    {
-                // %-encode the parameter value as UriBuilder.buildFromMap() in Jersey 1.x fails to do that
-                // https://java.net/jira/browse/JAX_RS_SPEC-70
-                String value = UriComponent.contextualEncode(literal.getString(), UriComponent.Type.PATH_SEGMENT);
-                if (log.isDebugEnabled()) log.debug("UriTemplate variable name: {} has value: {}", name, value);
-		nameValueMap.put(name, value);
-	    }
+		nameValueMap.put(name, literal.getString());
 	}
 
         return nameValueMap;
