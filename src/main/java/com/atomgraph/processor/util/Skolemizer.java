@@ -40,7 +40,6 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
-import com.atomgraph.processor.vocabulary.SIOC;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -120,9 +119,6 @@ public class Skolemizer
             {
                 builder = getAbsolutePathBuilder().clone();
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
-                // container specified in resource description can override the default one (absolute path)
-                if (resource.hasProperty(SIOC.HAS_PARENT)) builder = UriBuilder.fromUri(resource.getPropertyResourceValue(SIOC.HAS_PARENT).getURI());
-                if (resource.hasProperty(SIOC.HAS_CONTAINER)) builder = UriBuilder.fromUri(resource.getPropertyResourceValue(SIOC.HAS_CONTAINER).getURI());
                 builder.path(skolemTemplate);
             }
             else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")

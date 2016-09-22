@@ -33,7 +33,6 @@ import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
-import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import javax.ws.rs.ext.Provider;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
@@ -54,6 +53,7 @@ import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import com.atomgraph.server.vocabulary.XHV;
 import static javax.ws.rs.core.Response.Status.CREATED;
+import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.Argument;
@@ -103,13 +103,16 @@ public class HypermediaFilter implements ContainerResponseFilter
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
             Resource requestUri = model.createResource(request.getRequestUri().toString());
 
-            // transition to a URI of another application state (HATEOAS)
-            Resource pageState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
-            if (!pageState.getURI().equals(request.getRequestUri().toString()))
+            if (request.getMethod().equals("GET"))
             {
-                if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", pageState.getURI());
-                response.setResponse(Response.seeOther(URI.create(pageState.getURI())).build());
-                return response;
+                // transition to a URI of another application state (HATEOAS)
+                Resource defaultState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
+                if (!defaultState.getURI().equals(request.getRequestUri().toString()))
+                {
+                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
+                    response.setResponse(Response.seeOther(URI.create(defaultState.getURI())).build());
+                    return response;
+                }
             }
 
             StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);

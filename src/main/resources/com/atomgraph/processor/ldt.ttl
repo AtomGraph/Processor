@@ -24,10 +24,10 @@
 
 # SYSTEM PROPERTIES
 
-<#baseUri> a owl:ObjectProperty ;
-    rdfs:label "Application base URI" ;
+<#baseUri> a owl:ObjectProperty, owl:InverseFunctionalProperty ;
     rdfs:domain <#Application> ;
-    rdfs:comment "Base URI of the application" ;
+    rdfs:label "Application base URI" ;
+    rdfs:comment "Base URI uniquely identifies the application" ;
     rdfs:isDefinedBy <#> .
 
 <#ontology> a owl:ObjectProperty ;
