@@ -85,7 +85,7 @@
     ldt:param [ a ldt:Argument ;
         rdfs:label "Default graph" ;
         spl:predicate <#default> ;
-        spl:valueType rdfs:Resource ;
+        spl:valueType xsd:boolean ;
         spl:optional true ;
         ldt:tunnel true
     ] , [ a ldt:Argument ;
