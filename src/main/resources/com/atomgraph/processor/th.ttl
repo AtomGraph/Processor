@@ -23,7 +23,7 @@
     owl:versionInfo "1.1.4" ;
     rdfs:label "Document hierarchy with topic resources" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
-    vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/hierarchy#" ;
+    vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/topic-hierarchy#" ;
     vann:preferredNamespacePrefix "th";
     dct:license <http://www.opendatacommons.org/licenses/pddl/1.0/> .
 
@@ -32,6 +32,7 @@
 <#Container> a rdfs:Class, ldt:Template ;
     rdfs:subClassOf dh:Container ;
     ldt:query <#DescribeWithChildrenTopics> ;
+    ldt:update <#DeleteWithTopic> ;
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;
     rdfs:isDefinedBy <#> .
@@ -70,7 +71,7 @@ WHERE
     # rdfs:label "Describe with children" ;
     # rdfs:isDefinedBy <#> .
 
-<#DescribeWithTopic> a sp:Describe, sp:Query ; # gp:Query  ;
+<#DescribeWithTopic> a sp:Describe, sp:Query ; # ldt:Query  ;
     sp:text """PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
 
 DESCRIBE ?this ?primaryTopic

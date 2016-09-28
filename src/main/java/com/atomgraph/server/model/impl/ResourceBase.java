@@ -563,10 +563,4 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return resourceContext;
     }
     
-    @Override
-    public Model getCommandModel()
-    {
-        return getQueryBuilder().getModel();
-    }
-    
 }

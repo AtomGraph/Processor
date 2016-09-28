@@ -21,7 +21,7 @@
     owl:versionInfo "1.1.4" ;
     rdfs:label "Document hierarchy ontology" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
-    vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/resource-hierarchy#" ;
+    vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/document-hierarchy#" ;
     vann:preferredNamespacePrefix "dh";
     dct:license <http://www.opendatacommons.org/licenses/pddl/1.0/> .
 

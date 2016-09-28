@@ -17,7 +17,6 @@
 package com.atomgraph.server.model;
 
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.Model;
 import com.atomgraph.processor.model.TemplateCall;
 
 /**
@@ -30,7 +29,5 @@ public interface Resource extends QueriedResource
     public Ontology getOntology();
     
     public TemplateCall getTemplateCall();
-    
-    public Model getCommandModel();
     
 }

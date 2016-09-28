@@ -100,7 +100,7 @@ public class DatasetProvider extends PerRequestTypeInjectableProvider<Context, D
         if (location == null) throw new IllegalArgumentException("Location String cannot be null");
         if (baseURI == null) throw new IllegalArgumentException("Base URI cannot be null");
 	
-        Dataset dataset = DatasetFactory.createMem();
+        Dataset dataset = DatasetFactory.create();
         RDFDataMgr.read(dataset, location, baseURI.toString(), null); // Lang.TURTLE
         return dataset;
     }
