@@ -123,16 +123,6 @@
     rdfs:seeAlso <http://www.w3.org/TR/rdf11-concepts/#section-Graph-Literal> ;
     rdfs:isDefinedBy <#> .
 
-# Argument
-
-<#tunnel> a owl:AnnotationProperty ;
-    rdfs:domain <#Argument> ;
-    rdfs:range xsd:boolean ;
-    rdfs:label "Tunnel argument" ;
-    rdfs:comment "Template subclasses inherit tunnel parameters" ;
-    rdfs:seeAlso <https://www.w3.org/TR/xslt20/#tunnel-params> ;
-    rdfs:isDefinedBy <#> .
-
 # CLASSES
 
 <#InheritedProperty> a rdfs:Class ;
@@ -283,7 +273,6 @@
               spl:predicate [ a rdf:Property ] ;
               spl:valueType [ a rdfs:Resource ] ;
               spl:optional [ a xsd:boolean ] ;
-              ldt:tunnel [ a xsd:boolean ] ;
               rdfs:isDefinedBy [ a ldt:Ontology ] .
       }
       WHERE {}""" .

@@ -85,26 +85,22 @@
         rdfs:label "Limit" ;
         spl:predicate <#limit> ;
         spl:valueType xsd:long ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Offset" ;
         spl:predicate <#offset> ;
         spl:valueType xsd:long ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Order by" ;
         spl:predicate <#orderBy> ;
         spl:valueType xsd:string ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Descending order?" ;
         spl:predicate <#desc> ;
         spl:valueType xsd:boolean ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] ;
     rdfs:label "Container" ;
     rdfs:comment "Container that can have other containers and items as children" ;

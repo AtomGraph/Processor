@@ -57,20 +57,17 @@
         rdfs:label "Query string" ;
         spl:predicate <#query> ;
         spl:valueType xsd:string ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Default graph URI" ;
         spl:predicate <#default-graph-uri> ;
         spl:valueType rdfs:Resource ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Named graph URI" ;
         spl:predicate <#named-graph-uri> ;
         spl:valueType rdfs:Resource ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] ;
     # using-graph-uri - POST only
     # using-named-graph-uri - POST only
@@ -86,14 +83,12 @@
         rdfs:label "Default graph" ;
         spl:predicate <#default> ;
         spl:valueType xsd:boolean ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] , [ a ldt:Argument ;
         rdfs:label "Graph URI" ;
         spl:predicate <#graph> ;
         spl:valueType rdfs:Resource ;
-        spl:optional true ;
-        ldt:tunnel true
+        spl:optional true
     ] ;
     rdfs:label "Graph Store" ;
     rdfs:isDefinedBy <#> .
