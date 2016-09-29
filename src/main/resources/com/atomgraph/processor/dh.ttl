@@ -19,7 +19,7 @@
 <#> a owl:Ontology, ldt:Ontology ;
     owl:imports core:, sioc:, sp:, spin: ;
     owl:versionInfo "1.1.4" ;
-    rdfs:label "Document hierarchy ontology" ;
+    rdfs:label "Document hierarchy" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
     vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/document-hierarchy#" ;
     vann:preferredNamespacePrefix "dh";

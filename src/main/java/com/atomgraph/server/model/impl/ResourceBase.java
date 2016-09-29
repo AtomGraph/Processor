@@ -469,6 +469,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             catch (IllegalArgumentException ex)
             {
                 if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
+                // TO-DO: throw custom Exception with query and orderBy value
             }
         }
         

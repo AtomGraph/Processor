@@ -21,7 +21,8 @@
 <#> a owl:Ontology, ldt:Ontology ;
     owl:imports dh: ;
     owl:versionInfo "1.1.4" ;
-    rdfs:label "Document hierarchy with topic resources" ;
+    rdfs:label "Topic hierarchy" ;
+    rdfs:comment "Document hierarchy with topic resources" ;
     dct:created "2016-08-31T21:54:00+02:00"^^xsd:dateTime ;
     vann:preferredNamespaceUri "http://www.w3.org/ns/ldt/topic-hierarchy#" ;
     vann:preferredNamespacePrefix "th";

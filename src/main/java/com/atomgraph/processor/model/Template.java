@@ -43,7 +43,9 @@ public interface Template extends OntClass
     
     Double getPriority();
     
-    List<Argument> getArguments();
+    Map<Property, Argument> getArguments();
+    
+    Map<Property, Argument> getLocalArguments();
    
     Map<String, Argument> getArgumentsMap();
 

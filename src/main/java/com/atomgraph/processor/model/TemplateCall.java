@@ -19,12 +19,10 @@ import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import javax.ws.rs.core.MultivaluedMap;
 import org.apache.http.NameValuePair;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.RDFNode;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 
@@ -57,12 +55,6 @@ public interface TemplateCall extends OntResource, Comparable
     Template getTemplate();
  
     Double getPrecedence();
-
-    /**
-     * Gets a Map from ArgumentDescriptors to RDFNodes.
-     * @return a Map from ArgumentDescriptors to RDFNodes
-     */
-    Map<Argument, RDFNode> getArgumentsMap();
 
     QueryBuilder getQueryBuilder(URI base);
         

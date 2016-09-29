@@ -38,6 +38,11 @@ import com.atomgraph.processor.exception.SitemapException;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map.Entry;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -128,10 +133,16 @@ public class TemplateImpl extends OntClassImpl implements Template
     }
 
     @Override
-    public List<Argument> getArguments()
+    public Map<Property, Argument> getArguments()
     {
-        List<Argument> args = new ArrayList<>();
-
+        return addSuperArguments(this, getLocalArguments());
+    }
+    
+    @Override
+    public Map<Property, Argument> getLocalArguments()
+    {
+        Map<Property, Argument> args = new HashMap<>();
+        
         StmtIterator it = listProperties(LDT.param);
         try
         {
@@ -144,7 +155,14 @@ public class TemplateImpl extends OntClassImpl implements Template
                     throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
                 }
 
-                args.add(stmt.getObject().as(Argument.class));
+                Argument arg = stmt.getObject().as(Argument.class);
+                if (args.containsKey(arg.getPredicate()))
+                {
+                    if (log.isErrorEnabled()) log.error("Multiple Arguments with the same predicate '{}' for Template '{}' ", arg.getPredicate(), getURI());
+                    throw new SitemapException("Multiple Arguments with the same predicate '" + arg.getPredicate() + "' for Template '" + getURI() + "'");
+                }
+                
+                args.put(arg.getPredicate(), arg);
             }
         }
         finally
@@ -154,27 +172,67 @@ public class TemplateImpl extends OntClassImpl implements Template
         
         return args;
     }
+    
+    protected Map<Property, Argument> addSuperArguments(Template template, Map<Property, Argument> args)
+    {
+        if (template == null) throw new IllegalArgumentException("Template Set cannot be null");        
+        if (args == null) throw new IllegalArgumentException("Argument Map cannot be null");        
+        
+        ExtendedIterator<OntClass> superIt = template.listSuperClasses();
+        try
+        {
+            while (superIt.hasNext())
+            {
+                OntClass superClass = superIt.next();
+                if (superClass.canAs(Template.class))
+                {
+                    Template superTemplate = superClass.as(Template.class);
+                    Map<Property, Argument> superArgs = superTemplate.getLocalArguments();
+                    Iterator<Entry<Property, Argument>> entryIt = superArgs.entrySet().iterator();
+                    while (entryIt.hasNext())
+                    {
+                        Entry<Property, Argument> entry = entryIt.next();
+                        args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Arguments for existing predicates
+                    }
+                    
+                    addSuperArguments(superTemplate, args);  // recursion to super class
+                }
+            }
+        }
+        finally
+        {
+            superIt.close();
+        }
 
+        return args;
+    }
+    
     @Override
     public Map<String, Argument> getArgumentsMap()
     {
-        Map<String,Argument> entry = new HashMap<>();
+        Map<String,Argument> map = new HashMap<>();
 
-        for (Argument argument : getArguments())
+        for (Argument argument : getArguments().values())
         {
             Property property = argument.getPredicate();
-            if (property != null) entry.put(property.getLocalName(), argument);
+            if (property != null) map.put(property.getLocalName(), argument);
         }
 
-        return entry;
+        return map;
     }
 
-    @Override
+    @Override    
     public Map<Property, RDFNode> getDefaultValues()
     {
+        return getDefaultValues(getArguments().values());
+    }
+    
+    public Map<Property, RDFNode> getDefaultValues(Collection<Argument> args)
+    {
+        if (args == null) throw new IllegalArgumentException("Argument Set cannot be null");
+        
         Map<Property, RDFNode> defaultValues = new HashMap<>();
         
-        List<Argument> args = getArguments();
         for (Argument arg : args)
         {
             RDFNode defaultValue = arg.getDefaultValue();

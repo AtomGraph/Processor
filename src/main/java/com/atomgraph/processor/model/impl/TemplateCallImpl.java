@@ -17,7 +17,6 @@
 package com.atomgraph.processor.model.impl;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -118,31 +117,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         
         return null;
     }
-
-    @Override
-    public Map<Argument, RDFNode> getArgumentsMap()
-    {
-        Map<Argument, RDFNode> map = new HashMap<>();
-        Template template = getTemplate();
-        if (template != null)
-        {
-            for (Argument ad : template.getArguments())
-            {
-                Property argProperty = ad.getPredicate();
-                if (argProperty == null)
-                {
-                    if (log.isErrorEnabled()) log.error("Parameter of template '{}' does not have a predicate", template.getURI());
-                    throw new SitemapException("Parameter of template '" + template.getURI() +"' does not have a predicate");
-                }
-
-                Statement valueS = getProperty(argProperty);
-                if (valueS != null) map.put(ad, valueS.getObject());
-            }
-        }
-
-        return map;
-    }
-
+    
     @Override
     public QueryBuilder getQueryBuilder(URI base)
     {
@@ -271,6 +246,8 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
 
     public TemplateCall applyArguments(Map<Property, RDFNode> values)
     {
+	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
+        
         Iterator<Entry<Property, RDFNode>> entryIt = values.entrySet().iterator();
         
         while (entryIt.hasNext())
