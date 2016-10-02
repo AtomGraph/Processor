@@ -17,9 +17,7 @@
 package com.atomgraph.server.provider;
 
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.InfModel;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;

@@ -61,7 +61,7 @@ abstract public class ExceptionMapperBase
                 addProperty(RDF.type, HTTP.Response).
                 addLiteral(HTTP.statusCodeValue, status.getStatusCode()).
                 addLiteral(HTTP.reasonPhrase, status.getReasonPhrase());
-                //addLiteral(ResourceFactory.createProperty("http://atomgraph.com/processor/ns#message"), ex.getStackTrace());
+                //addLiteral(ResourceFactory.createProperty("http://atomgraph.com/ns/processor#message"), ex.getStackTrace());
 
         if (statusResource != null) resource.addProperty(HTTP.sc, statusResource);
         if (ex.getMessage() != null) resource.addLiteral(DCTerms.title, ex.getMessage());

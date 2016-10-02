@@ -50,6 +50,10 @@ public class LDTDH
 
     public static final OntClass Page = m_model.createClass( NS + "Page" );
 
+    public static final ObjectProperty forClass = m_model.createObjectProperty( NS + "forClass" );
+
+    public static final ObjectProperty constructor = m_model.createObjectProperty( NS + "constructor" );
+
     public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
 
     public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );

@@ -51,9 +51,17 @@ import com.atomgraph.processor.util.RDFNodeFactory;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
+import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
+import org.apache.jena.ontology.OntClass;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QuerySolutionMap;
+import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.Argument;
@@ -131,7 +139,19 @@ public class HypermediaFilter implements ContainerResponseFilter
                     addPrevNextPage(absolutePath, viewBuilder, templateCall);
                 }
             }
+        
+            if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
+                    templateCall.getPropertyResourceValue(LDTDH.forClass) != null)
+            {
+                String forClassURI = templateCall.getPropertyResourceValue(LDTDH.forClass).getURI();
+                OntClass forClass = templateCall.getOntModel().getOntClass(forClassURI);
+                if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
+                // TO-DO: check if Rules still necessary or does SPIN handle spin:constructor inheritance
+                requestUri.addProperty(LDTDH.constructor, addInstance(model, forClass)); // connects constructor state to CONSTRUCTed template
+            }
+
+            
             if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", model.size());
             response.setEntity(model.add((Model)response.getEntity()));
         }
@@ -231,6 +251,44 @@ public class HypermediaFilter implements ContainerResponseFilter
         //return container;
     }
     
+    public Resource addInstance(Model targetModel, OntClass forClass)
+    {
+        if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
+        addClass(forClass, targetModel); // TO-DO: remove when classes and constraints are cached/dereferencable
+        return new ConstructorBase().construct(forClass, targetModel);
+    }
+
+    // TO-DO: this method should not be necessary when system ontologies/classes are dereferencable! -->
+    public void addClass(OntClass forClass, Model targetModel)
+    {
+        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");    
+
+        String queryString = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
+"PREFIX  spin: <http://spinrdf.org/spin#>\n" +
+"\n" +
+"DESCRIBE ?Class ?Constraint\n" +
+"WHERE\n" +
+"  { ?Class rdfs:isDefinedBy ?Ontology\n" +
+"    OPTIONAL\n" +
+"      { ?Class spin:constraint ?Constraint }\n" +
+"  }";
+        
+        // the client needs at least labels and constraints
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        qsm.add(RDFS.Class.getLocalName(), forClass);
+        Query query = new ParameterizedSparqlString(queryString, qsm).asQuery();
+        QueryExecution qex = QueryExecutionFactory.create(query, forClass.getOntModel());
+        try
+        {
+            targetModel.add(qex.execDescribe());
+        }
+        finally
+        {
+            qex.close();
+        }
+    }
+
     public URI getTypeURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
     {
         return getLinkHref(headerMap, "Link", RDF.type.getLocalName());

@@ -51,6 +51,7 @@ import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
+import com.atomgraph.server.exception.OntClassNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.NamedGraph;
@@ -143,7 +144,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             queryBuilder = getTemplateCall().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
                 queryBuilder = getPageQueryBuilder(queryBuilder, getTemplateCall());
-        }        
+        }
     }
     
     /**
