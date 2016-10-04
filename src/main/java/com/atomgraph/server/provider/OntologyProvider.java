@@ -163,8 +163,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         Ontology ontology = getOntology(ontologyURI, getOntModelSpec());
         if (ontology == null)
         {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology resource not found; processing aborted");
-            throw new ConfigurationException("Sitemap ontology resource not found; processing aborted");
+            if (log.isErrorEnabled()) log.error("Sitemap ontology resource '{}' not found; processing aborted", ontologyURI);
+            throw new ConfigurationException("Sitemap ontology resource '" + ontologyURI + "' not found; processing aborted");
         }
 
         ImportCycleChecker checker = new ImportCycleChecker();
