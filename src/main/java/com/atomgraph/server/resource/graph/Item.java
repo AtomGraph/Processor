@@ -16,8 +16,6 @@
 
 package com.atomgraph.server.resource.graph;
 
-import org.apache.jena.ontology.OntClass;
-import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.servlet.ServletConfig;
@@ -29,11 +27,12 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import com.atomgraph.core.MediaTypes;
+import com.atomgraph.core.client.GraphStoreClient;
 import com.atomgraph.server.model.impl.ResourceBase;
-import com.atomgraph.core.model.GraphStore;
-import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.util.ModelUtils;
+import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.model.TemplateCall;
+import com.sun.jersey.api.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -50,35 +49,38 @@ public class Item extends ResourceBase
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
 
+    private final GraphStoreClient graphStoreClient;
+    
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
-            @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context Client client, @Context Application application, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, endpoint, graphStore,
-                ontology, templateCall,
+	super(uriInfo, request, servletConfig, mediaTypes,
+                client, application, templateCall,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
+        graphStoreClient = GraphStoreClient.create(application.getService().getSPARQLEndpointOrigin(client));
     }
     
     @Override
     public Response get()
     {
-	if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());        
-        return getResponse(getGraphStore().getModel(getURI().toString()));
+	if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getApplication().getService().getGraphStore().getURI());
+        return getResponse(getGraphStoreClient().getModel(getURI().toString()));
     }
 
     @Override
     public Response post(Model model)
     {
-	if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        return getGraphStore().post(model, Boolean.FALSE, getURI());
+	if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getApplication().getService().getGraphStore().getURI());
+        getGraphStoreClient().add(model);
+        return Response.ok().build();
     }
 
     @Override
     public Response put(Model model)
     {
-	Model existing = getGraphStore().getModel(getURI().toString());
+	Model existing = getGraphStoreClient().getModel(getURI().toString());
 
 	if (!existing.isEmpty()) // remove existing representation
 	{
@@ -91,8 +93,8 @@ public class Item extends ResourceBase
 	    }
         }
         
-        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        getGraphStore().put(model, Boolean.FALSE, getURI());
+        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getURI(), getApplication().getService().getGraphStore().getURI());
+        getGraphStoreClient().putModel(getURI().toString(), model);
         
 	if (existing.isEmpty()) return Response.created(getURI()).build();        
         else return Response.ok(model).build();
@@ -101,8 +103,14 @@ public class Item extends ResourceBase
     @Override
     public Response delete()
     {
-	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
-        return getGraphStore().delete(Boolean.FALSE, getURI());
+	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getApplication().getService().getGraphStore().getURI());
+        getGraphStoreClient().deleteModel(getURI().toString());
+        return Response.noContent().build();
+    }
+    
+    public GraphStoreClient getGraphStoreClient()
+    {
+        return graphStoreClient;
     }
     
 }

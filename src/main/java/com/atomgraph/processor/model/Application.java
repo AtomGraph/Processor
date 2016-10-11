@@ -1,5 +1,5 @@
 /*
- * Copyright 2014 Martynas Jusevičius <martynas@atomgraph.com>.
+ * Copyright 2016 Martynas Jusevičius <martynas@graphity.org>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,23 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.atomgraph.processor.model;
 
-package com.atomgraph.server.model;
-
-import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.model.TemplateCall;
+import org.apache.jena.ontology.Ontology;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius <martynas@graphity.org>
  */
-public interface Resource extends QueriedResource
+public interface Application extends com.atomgraph.core.model.Application
 {
     
-    // public Ontology getOntology();
-    
-    public Application getApplication();
-    
-    public TemplateCall getTemplateCall();
+    Ontology getOntology();
     
 }

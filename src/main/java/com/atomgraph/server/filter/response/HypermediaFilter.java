@@ -97,8 +97,8 @@ public class HypermediaFilter implements ContainerResponseFilter
             Object rulesString = response.getHttpHeaders().getFirst("Rules");
             if (rulesString == null) return response;
 
-            OntologyProvider provider = new OntologyProvider(null);
-            Ontology ontology = provider.getOntology(ontologyHref.toString(), provider.getOntModelSpec(Rule.parseRules(rulesString.toString())));
+            Ontology ontology = new OntologyProvider(ontologyHref.toString(), Rule.parseRules(rulesString.toString())).
+                    getOntology();
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
             

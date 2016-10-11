@@ -36,11 +36,11 @@ import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.util.LocationMapper;
 import com.atomgraph.core.exception.ConfigurationException;
+import com.atomgraph.core.provider.ApplicationProvider;
 import com.atomgraph.core.provider.ClientProvider;
 import com.atomgraph.core.provider.DataManagerProvider;
 import com.atomgraph.core.provider.MediaTypesProvider;
 import com.atomgraph.server.model.impl.ResourceBase;
-import com.atomgraph.server.provider.DatasetProvider;
 import com.atomgraph.core.provider.QueryParamProvider;
 import com.atomgraph.core.provider.ResultSetProvider;
 import com.atomgraph.core.provider.UpdateRequestReader;
@@ -59,12 +59,7 @@ import com.atomgraph.processor.model.impl.ArgumentImpl;
 import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
-import com.atomgraph.server.provider.GraphStoreOriginProvider;
-import com.atomgraph.server.provider.GraphStoreProvider;
-import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
-import com.atomgraph.server.provider.SPARQLEndpointOriginProvider;
-import com.atomgraph.server.provider.SPARQLEndpointProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,14 +93,10 @@ public class Application extends com.atomgraph.core.Application
 	singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider());
         singletons.add(new DataManagerProvider());
-        singletons.add(new DatasetProvider());
         singletons.add(new ClientProvider());
-        singletons.add(new OntologyProvider(servletConfig));
+        //singletons.add(new OntologyProvider(servletConfig)); // called by ApplicationProvider
         singletons.add(new TemplateCallProvider());
-	singletons.add(new SPARQLEndpointProvider());
-	singletons.add(new SPARQLEndpointOriginProvider());
-        singletons.add(new GraphStoreProvider());
-        singletons.add(new GraphStoreOriginProvider());
+        singletons.add(new ApplicationProvider(servletConfig));
         singletons.add(new RiotExceptionMapper());
 	singletons.add(new ModelExceptionMapper());
 	singletons.add(new DatatypeFormatExceptionMapper());
@@ -211,7 +202,7 @@ public class Application extends com.atomgraph.core.Application
         if (query == null)
         {
             if (log.isErrorEnabled()) log.error("Query property '{}' not configured", property);
-            throw new ConfigurationException("Sitemap query '" + property + "' not configured");
+            throw new ConfigurationException(property);
         }
         
         ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());

@@ -29,5 +29,10 @@ public class ArgumentException extends RuntimeException
     {
         super("Parameter '" + paramName + "' not supported by Template '" + template.toString() + "'");
     }
+
+    public ArgumentException(String paramName, Template template, boolean notOptional)
+    {
+        super("Parameter '" + paramName + "' is not optional in Template '" + template.toString() + "' but no value supplied");
+    }
     
 }

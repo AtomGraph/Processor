@@ -16,20 +16,19 @@
 package com.atomgraph.server.model.impl;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.core.model.GraphStore;
-import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.vocabulary.LDTDH;
+import com.sun.jersey.api.client.Client;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
-import org.apache.jena.ontology.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,13 +44,12 @@ public class ContainerBase extends ResourceBase
     private QueryBuilder queryBuilder;
     
     public ContainerBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context MediaTypes mediaTypes, @Context Client client, @Context Application application,
+            @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         super(uriInfo, request, servletConfig,
-            mediaTypes, endpoint, graphStore,
-            ontology, templateCall,
+            mediaTypes, client, application, templateCall,
             httpHeaders, resourceContext);
     }
     

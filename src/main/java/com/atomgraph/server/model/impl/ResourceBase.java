@@ -40,9 +40,7 @@ import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.InsertDataBuilder;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
-import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
-import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.exception.SitemapException;
 import com.atomgraph.processor.model.TemplateCall;
@@ -51,7 +49,7 @@ import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
-import com.atomgraph.server.exception.OntClassNotFoundException;
+import com.sun.jersey.api.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.NamedGraph;
@@ -73,8 +71,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 {
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
         
-    private final GraphStore graphStore;
-    private final Ontology ontology;
+    private final com.atomgraph.processor.model.Application application;
     private final TemplateCall templateCall;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
@@ -94,35 +91,31 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param request current request
      * @param servletConfig webapp context
      * @param mediaTypes supported media types
-     * @param endpoint SPARQL endpoint of this resource
-     * @param graphStore Graph Store of this resource
-     * @param ontology principal ontology
+     * @param client HTTP client
+     * @param application LDT application
      * @param templateCall templateCall
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLEndpoint endpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context TemplateCall templateCall,
-            @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
+            @Context MediaTypes mediaTypes, @Context Client client, @Context com.atomgraph.processor.model.Application application,
+            @Context TemplateCall templateCall, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, endpoint);
+	super(uriInfo, request, servletConfig, mediaTypes, client, application);
 
         if (templateCall == null)
         {
             if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template Template, returning 404 Not Found", getURI());
             throw new NotFoundException("Resource has not matched any template");
         }
-	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
-	if (graphStore == null) throw new IllegalArgumentException("GraphStore cannot be null");
+        if (application == null) throw new IllegalArgumentException("Application cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         // we are not making permanent changes to base ontology because OntologyProvider always makes a copy
-        this.ontResource = ontology.getOntModel().createOntResource(getURI().toString());
-        this.ontology = ontology;
+        this.application = application;
+        this.ontResource = application.getOntology().getOntModel().createOntResource(getURI().toString());
         this.templateCall = templateCall.applyArguments(uriInfo.getQueryParameters());
-        this.graphStore = graphStore;
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
         this.querySolutionMap = new QuerySolutionMap();
@@ -217,7 +210,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
 
-	getSPARQLEndpoint().post(insertDataRequest, null, null);
+        getSPARQLClient().post(insertDataRequest, null);
 	
 	URI createdURI = UriBuilder.fromUri(created.getURI()).build();
 	if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
@@ -285,7 +278,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         UpdateRequest deleteInsertRequest = getUpdateRequest(model);
         if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
-	getSPARQLEndpoint().post(deleteInsertRequest, null, null);
+        getSPARQLClient().post(deleteInsertRequest, null);
+        
 	if (description.isEmpty()) return Response.created(getURI()).build();
 	else return getResponse(model);
     }
@@ -301,7 +295,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {	
         UpdateRequest request = getUpdateRequest((Model)null);
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-	getSPARQLEndpoint().post(request, null, null);
+        getSPARQLClient().post(request, null);
 	
 	return Response.noContent().build();
     }
@@ -345,7 +339,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
         rb.header("Link", classLink.toString());
         
-        Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
+        Link ontologyLink = new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
 
         Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null);
@@ -387,17 +381,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     public TemplateCall getTemplateCall()
     {
 	return templateCall;
-    }
-
-    /**
-     * Returns the principal ontology.
-     * 
-     * @return ontology
-     */
-    @Override
-    public Ontology getOntology()
-    {
-        return ontology;
     }
 
     /**
@@ -493,16 +476,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Returns Graph Store of this resource.
-     * 
-     * @return graph store object
-     */
-    public GraphStore getGraphStore()
-    {
-        return graphStore;
-    }
-
-    /**
      * Returns query builder, which is used to build SPARQL query to retrieve RDF description of this resource.
      * 
      * @return query builder
@@ -563,6 +536,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     public ResourceContext getResourceContext()
     {
         return resourceContext;
+    }
+ 
+    @Override
+    public com.atomgraph.processor.model.Application getApplication()
+    {
+        return application;
     }
     
 }
