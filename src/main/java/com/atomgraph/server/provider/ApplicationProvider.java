@@ -21,21 +21,17 @@ import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.core.vocabulary.SD;
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
-import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import com.sun.jersey.spi.resource.Singleton;
-import java.util.List;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.sparql.engine.http.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -62,17 +58,7 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
         {
             if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
             throw new ConfigurationException(LDT.ontology);
-        }
-        Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
-        if (rulesParam == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + AP.sitemapRules.getURI() + ") not configured");
-            throw new ConfigurationException(AP.sitemapRules);
         }        
-        List<Rule> rules = Rule.parseRules(rulesParam.toString());
-        
-        Ontology ontology = new OntologyProvider(ontologyURI.toString(), rules).getOntology();
-        
         Object endpointURI = servletConfig.getInitParameter(SD.endpoint.getURI());
         if (endpointURI == null)
         {
@@ -87,12 +73,12 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
         }        
         Object authUser = servletConfig.getInitParameter(Service.queryAuthUser.getSymbol());
         Object authPwd = servletConfig.getInitParameter(Service.queryAuthPwd.getSymbol());
-        
+
         Model model = ModelFactory.createDefaultModel();        
         application = new ApplicationImpl(new ServiceImpl(model.createResource(endpointURI.toString()),
                 model.createResource(graphStoreURI.toString()),
                 authUser == null ? null : authUser.toString(), authPwd == null ? null : authPwd.toString()),
-            ontology);        
+            model.createResource(ontologyURI.toString()));
     }
     
     @Override

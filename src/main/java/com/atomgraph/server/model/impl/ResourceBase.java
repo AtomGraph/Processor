@@ -35,6 +35,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.MediaTypes;
+import com.atomgraph.core.client.SPARQLClient;
 import com.atomgraph.core.exception.NotFoundException;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.InsertDataBuilder;
@@ -49,7 +50,6 @@ import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
-import com.sun.jersey.api.client.Client;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.model.NamedGraph;
@@ -72,6 +72,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
         
     private final com.atomgraph.processor.model.Application application;
+    private final Ontology ontology;    
     private final TemplateCall templateCall;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
@@ -91,17 +92,19 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param request current request
      * @param servletConfig webapp context
      * @param mediaTypes supported media types
-     * @param client HTTP client
+     * @param sparqlClient SPARQL client
      * @param application LDT application
+     * @param ontology LDT ontology
      * @param templateCall templateCall
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context Client client, @Context com.atomgraph.processor.model.Application application,
-            @Context TemplateCall templateCall, @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
+            @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient,
+            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, client, application);
+	super(uriInfo, request, servletConfig, mediaTypes, sparqlClient);
 
         if (templateCall == null)
         {
@@ -109,12 +112,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             throw new NotFoundException("Resource has not matched any template");
         }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");
+	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
 	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         // we are not making permanent changes to base ontology because OntologyProvider always makes a copy
         this.application = application;
-        this.ontResource = application.getOntology().getOntModel().createOntResource(getURI().toString());
+        this.ontology = ontology;
+        this.ontResource = ontology.getOntModel().createOntResource(getURI().toString());
         this.templateCall = templateCall.applyArguments(uriInfo.getQueryParameters());
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
@@ -542,6 +547,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     public com.atomgraph.processor.model.Application getApplication()
     {
         return application;
+    }
+ 
+    public Ontology getOntology()
+    {
+        return ontology;
     }
     
 }

@@ -17,32 +17,27 @@
 package com.atomgraph.server;
 
 import java.io.InputStream;
-import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.OntDocumentManager;
-import org.apache.jena.query.ParameterizedSparqlString;
-import org.apache.jena.query.Query;
 import org.apache.jena.util.FileManager;
 import java.util.HashSet;
 import java.util.Set;
 import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
-import javax.servlet.ServletContext;
 import javax.ws.rs.core.Context;
 import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.enhanced.Personality;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.util.FileUtils;
 import org.apache.jena.util.LocationMapper;
-import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.core.provider.ApplicationProvider;
 import com.atomgraph.core.provider.ClientProvider;
 import com.atomgraph.core.provider.DataManagerProvider;
+import com.atomgraph.core.provider.GraphStoreClientProvider;
 import com.atomgraph.core.provider.MediaTypesProvider;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.provider.QueryParamProvider;
 import com.atomgraph.core.provider.ResultSetProvider;
+import com.atomgraph.core.provider.SPARQLClientProvider;
 import com.atomgraph.core.provider.UpdateRequestReader;
 import com.atomgraph.server.mapper.ClientExceptionMapper;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
@@ -59,6 +54,9 @@ import com.atomgraph.processor.model.impl.ArgumentImpl;
 import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
+import com.atomgraph.server.provider.GraphStoreProvider;
+import com.atomgraph.server.provider.OntologyProvider;
+import com.atomgraph.server.provider.SPARQLEndpointProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
 import org.slf4j.Logger;
@@ -84,27 +82,19 @@ public class Application extends com.atomgraph.core.Application
     public Application(@Context ServletConfig servletConfig)
     {
         super(servletConfig);
-        
-	classes.add(ResourceBase.class); // handles /
 
-	singletons.add(new SkolemizingModelProvider());
-	singletons.add(new ResultSetProvider());
-	singletons.add(new QueryParamProvider());
-	singletons.add(new UpdateRequestReader());
-        singletons.add(new MediaTypesProvider());
-        singletons.add(new DataManagerProvider());
-        singletons.add(new ClientProvider());
-        //singletons.add(new OntologyProvider(servletConfig)); // called by ApplicationProvider
-        singletons.add(new TemplateCallProvider());
-        singletons.add(new ApplicationProvider(servletConfig));
-        singletons.add(new RiotExceptionMapper());
-	singletons.add(new ModelExceptionMapper());
-	singletons.add(new DatatypeFormatExceptionMapper());
-        singletons.add(new NotFoundExceptionMapper());
-        singletons.add(new ClientExceptionMapper());        
-        singletons.add(new ConfigurationExceptionMapper());
-        singletons.add(new SPINArgumentExceptionMapper());
-	singletons.add(new QueryParseExceptionMapper());
+        BuiltinPersonalities.model.add(Argument.class, ArgumentImpl.factory);
+        BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
+        BuiltinPersonalities.model.add(TemplateCall.class, TemplateCallImpl.factory);
+
+        SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
+        ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
+        
+        boolean cacheSitemap = true;
+        if (servletConfig.getInitParameter(AP.cacheSitemap.getURI()) != null)
+            cacheSitemap = Boolean.valueOf(servletConfig.getInitParameter(AP.cacheSitemap.getURI()));
+        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
+        
     }
     
     /**
@@ -118,25 +108,48 @@ public class Application extends com.atomgraph.core.Application
      * @see <a href="http://jena.apache.org/documentation/javadoc/arq/com/hp/hpl/jena/sparql/util/Context.html">Context</a>
      */
     @PostConstruct
+    @Override
     public void init()
     {
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", getClasses(), getSingletons());
 
-        initPersonalities(BuiltinPersonalities.model); // map model interfaces to implementations
-	SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
-        ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
-        
+        /*
         FileManager fileManager = getFileManager();
 	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
         initOntDocumentManager(fileManager);
+        */
+        OntDocumentManager.getInstance().setFileManager(getFileManager(getServletConfig()));        
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
+        
+	classes.add(ResourceBase.class); // handles /
 
-        boolean cacheSitemap = true;
-        if (getServletConfig().getInitParameter(AP.cacheSitemap.getURI()) != null)
-            cacheSitemap = Boolean.valueOf(getServletConfig().getInitParameter(AP.cacheSitemap.getURI()));
-        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
+        singletons.add(new ApplicationProvider(getServletConfig()));
+        singletons.add(new OntologyProvider(getServletConfig()));
+        singletons.add(new TemplateCallProvider());
+        singletons.add(new SPARQLClientProvider(getServletConfig()));
+        singletons.add(new SPARQLEndpointProvider(getServletConfig()));
+        singletons.add(new GraphStoreClientProvider());
+        singletons.add(new GraphStoreProvider(getServletConfig()));
+	singletons.add(new SkolemizingModelProvider());
+	singletons.add(new ResultSetProvider());
+	singletons.add(new QueryParamProvider());
+	singletons.add(new UpdateRequestReader());
+        singletons.add(new MediaTypesProvider());
+        singletons.add(new DataManagerProvider());
+        singletons.add(new ClientProvider());
+        
+        singletons.add(new RiotExceptionMapper());
+	singletons.add(new ModelExceptionMapper());
+	singletons.add(new DatatypeFormatExceptionMapper());
+        singletons.add(new NotFoundExceptionMapper());
+        singletons.add(new ClientExceptionMapper());        
+        singletons.add(new ConfigurationExceptionMapper());
+        singletons.add(new SPINArgumentExceptionMapper());
+	singletons.add(new QueryParseExceptionMapper());
+        
     }
 
+    /*
     private static void initPersonalities(Personality<RDFNode> personality)
     {
         if (personality == null) throw new IllegalArgumentException("Personality<RDFNode> cannot be null");
@@ -150,13 +163,14 @@ public class Application extends com.atomgraph.core.Application
     {
         OntDocumentManager.getInstance().setFileManager(fileManager);
     }
+    */
     
-    public FileManager getFileManager()
+    public FileManager getFileManager(ServletConfig servletConfig)
     {
         String uriConfig = "/WEB-INF/classes/location-mapping.n3"; // TO-DO: make configurable (in web.xml)
         String syntax = FileUtils.guessLang(uriConfig);
         Model mapping = ModelFactory.createDefaultModel();
-        InputStream in = getServletConfig().getServletContext().getResourceAsStream(uriConfig);
+        InputStream in = servletConfig.getServletContext().getResourceAsStream(uriConfig);
         mapping.read(in, uriConfig, syntax) ;
         FileManager fileManager = FileManager.get();
         fileManager.setLocationMapper(new LocationMapper(mapping));
@@ -188,6 +202,7 @@ public class Application extends com.atomgraph.core.Application
 	return singletons;
     }
     
+    /*
     public Query getQuery(DatatypeProperty property)
     {
         return getQuery(getServletConfig().getServletContext(), property);
@@ -208,5 +223,6 @@ public class Application extends com.atomgraph.core.Application
         ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
         return queryString.asQuery();
     }
+    */
     
 }

@@ -21,55 +21,62 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.util.iterator.ExtendedIterator;
+import com.sun.jersey.core.spi.component.ComponentContext;
+import com.sun.jersey.spi.inject.Injectable;
+import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import javax.servlet.ServletConfig;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
+import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.processor.exception.SitemapException;
-import java.util.List;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
+import com.atomgraph.processor.vocabulary.AP;
+import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Ontology loader.
+ * Application ontology provider.
  * 
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
 @Provider
-public class OntologyProvider
+public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, Ontology> implements ContextResolver<Ontology>
 {
     private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
 
-    private final String ontologyURI;
-    private final OntModelSpec ontModelSpec;
-        
-    public OntologyProvider(String ontologyURI, List<Rule> rules)
-    {
-        if (ontologyURI == null) throw new IllegalArgumentException("URI String cannot be null");
-        if (rules == null) throw new IllegalArgumentException("List<Rule> cannot be null");
-        
-        this.ontologyURI = ontologyURI;
-        this.ontModelSpec = getOntModelSpec(rules);
-    }
+    @Context Providers providers;
     
-    public final OntModelSpec getOntModelSpec(List<Rule> rules)
+    private final OntModelSpec ontModelSpec;
+    
+    public OntologyProvider(@Context ServletConfig servletConfig)
     {
-        if (rules == null) throw new IllegalArgumentException("List<Rule> cannot be null");
-
-        OntModelSpec rulesSpec = new OntModelSpec(OntModelSpec.OWL_MEM);        
+        super(Ontology.class);
+            
+        Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
+        if (rulesParam == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap Rules (" + AP.sitemapRules.getURI() + ") not configured");
+            throw new ConfigurationException(AP.sitemapRules);
+        }
+        List<Rule> rules = Rule.parseRules(rulesParam.toString());
+        this.ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
         Reasoner reasoner = new GenericRuleReasoner(rules);
         //reasoner.setDerivationLogging(true);
         //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        rulesSpec.setReasoner(reasoner);
-        return rulesSpec;
+        this.ontModelSpec.setReasoner(reasoner);
     }
-    
+        
     public class ImportCycleChecker
     {
         private final Map<Ontology, Boolean> marked = new HashMap<>(), onStack = new HashMap<>();
@@ -113,16 +120,42 @@ public class OntologyProvider
         }
         
     }
-        
-    public String getOntologyURI()
-    {
-        return ontologyURI;
-    }
     
+    @Override
+    public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
+    {
+	//if (log.isDebugEnabled()) log.debug("OntologyProvider UriInfo: {} ResourceConfig.getProperties(): {}", uriInfo, resourceConfig.getProperties());
+	
+	return new Injectable<Ontology>()
+	{
+	    @Override
+	    public Ontology getValue()
+	    {
+                return getOntology();
+	    }
+	};
+    }
+
+    @Override
+    public Ontology getContext(Class<?> type)
+    {
+        return getOntology();
+    }
+
+    public com.atomgraph.processor.model.Application getApplication()
+    {
+	return getProviders().getContextResolver(com.atomgraph.processor.model.Application.class, null).getContext(com.atomgraph.processor.model.Application.class);
+    }
+
     public Ontology getOntology()
     {
-        Ontology ontology = getOntModel(getOntologyURI(), getOntModelSpec()).getOntology(getOntologyURI());
-
+        return getOntology(getApplication().getOntology().getURI());
+    }
+        
+    public Ontology getOntology(String ontologyURI)
+    {
+        Ontology ontology = getOntModel(ontologyURI, getOntModelSpec()).getOntology(ontologyURI);
+        
         if (ontology != null)
         {
             ImportCycleChecker checker = new ImportCycleChecker();
@@ -133,7 +166,7 @@ public class OntologyProvider
                 throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
             }
         }
-        
+    
         return ontology;
     }
 
@@ -181,6 +214,11 @@ public class OntologyProvider
     public OntModelSpec getOntModelSpec()
     {
         return ontModelSpec;
+    }
+ 
+    public Providers getProviders()
+    {
+        return providers;
     }
     
 }

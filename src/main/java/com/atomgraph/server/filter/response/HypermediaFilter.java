@@ -53,8 +53,11 @@ import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
+import javax.servlet.ServletConfig;
+import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
+import javax.ws.rs.ext.Providers;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
@@ -77,6 +80,9 @@ public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
             
+    @Context ServletConfig servletConfig;
+    @Context Providers providers;
+    
     @Override
     public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
     {
@@ -97,8 +103,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             Object rulesString = response.getHttpHeaders().getFirst("Rules");
             if (rulesString == null) return response;
 
-            Ontology ontology = new OntologyProvider(ontologyHref.toString(), Rule.parseRules(rulesString.toString())).
-                    getOntology();
+            Ontology ontology = new OntologyProvider(getServletConfig()).getOntology(ontologyHref.toString());
             if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
             
@@ -320,6 +325,12 @@ public class HypermediaFilter implements ContainerResponseFilter
         return null;
     }
     
+    public ServletConfig getServletConfig()
+    {
+        return servletConfig;
+    }
+    
+    /*
     public OntModelSpec getOntModelSpec(List<Rule> rules)
     {
         OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
@@ -334,5 +345,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         return ontModelSpec;
     }
+    */
     
 }
