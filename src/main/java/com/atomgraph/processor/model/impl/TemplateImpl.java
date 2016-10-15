@@ -34,7 +34,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -152,14 +152,14 @@ public class TemplateImpl extends OntClassImpl implements Template
                 if (!stmt.getObject().canAs(Argument.class))
                 {
                     if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type ldt:Argument missing)", stmt.getObject(), getURI());
-                    throw new SitemapException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
+                    throw new OntologyException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
                 }
 
                 Argument arg = stmt.getObject().as(Argument.class);
                 if (args.containsKey(arg.getPredicate()))
                 {
                     if (log.isErrorEnabled()) log.error("Multiple Arguments with the same predicate '{}' for Template '{}' ", arg.getPredicate(), getURI());
-                    throw new SitemapException("Multiple Arguments with the same predicate '" + arg.getPredicate() + "' for Template '" + getURI() + "'");
+                    throw new OntologyException("Multiple Arguments with the same predicate '" + arg.getPredicate() + "' for Template '" + getURI() + "'");
                 }
                 
                 args.put(arg.getPredicate(), arg);
@@ -263,7 +263,7 @@ public class TemplateImpl extends OntClassImpl implements Template
                 if (!stmt.getObject().isLiteral())
                 {
                     if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (ldt:language is not literal)", getURI());
-                    throw new SitemapException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
+                    throw new OntologyException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
                 }
                 
                 languages.add(Locale.forLanguageTag(stmt.getString()));

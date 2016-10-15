@@ -54,6 +54,7 @@ import com.atomgraph.processor.model.impl.ArgumentImpl;
 import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
+import com.atomgraph.server.mapper.OntologyExceptionMapper;
 import com.atomgraph.server.provider.GraphStoreProvider;
 import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.SPARQLEndpointProvider;
@@ -74,6 +75,7 @@ public class Application extends com.atomgraph.core.Application
 
     private final Set<Class<?>> classes = new HashSet<>();
     private final Set<Object> singletons = new HashSet<>();
+    private final boolean cacheSitemap;
     
     /**
      * Initializes root resource classes and provider singletons
@@ -90,11 +92,10 @@ public class Application extends com.atomgraph.core.Application
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
-        boolean cacheSitemap = true;
         if (servletConfig.getInitParameter(AP.cacheSitemap.getURI()) != null)
             cacheSitemap = Boolean.valueOf(servletConfig.getInitParameter(AP.cacheSitemap.getURI()));
-        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
-        
+        else cacheSitemap = true;
+        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!        
     }
     
     /**
@@ -144,6 +145,7 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new NotFoundExceptionMapper());
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());
+        singletons.add(new OntologyExceptionMapper());
         singletons.add(new SPINArgumentExceptionMapper());
 	singletons.add(new QueryParseExceptionMapper());
         
@@ -200,6 +202,11 @@ public class Application extends com.atomgraph.core.Application
     public Set<Object> getSingletons()
     {
 	return singletons;
+    }
+    
+    public boolean getCacheSitemap()
+    {
+        return cacheSitemap;
     }
     
     /*

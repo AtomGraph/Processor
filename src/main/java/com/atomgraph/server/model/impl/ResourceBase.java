@@ -43,7 +43,7 @@ import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.core.util.ModelUtils;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
@@ -160,14 +160,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             if (!javaClass.isURIResource())
             {
                 if (log.isErrorEnabled()) log.error("ldt:loadClass value of class '{}' is not a URI resource", getTemplateCall().getURI());
-                throw new SitemapException("ldt:loadClass value of class '" + getTemplateCall().getURI() + "' is not a URI resource");
+                throw new OntologyException("ldt:loadClass value of class '" + getTemplateCall().getURI() + "' is not a URI resource");
             }
 
             Class clazz = Loader.loadClass(javaClass.getURI());
             if (clazz == null)
             {
                 if (log.isErrorEnabled()) log.error("Java class with URI '{}' could not be loaded", javaClass.getURI());
-                throw new SitemapException("Java class with URI '" + javaClass.getURI() + "' not found");
+                throw new OntologyException("Java class with URI '" + javaClass.getURI() + "' not found");
             }
 
             if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
@@ -422,7 +422,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         if (builder.getSubSelectBuilders().isEmpty())
         {
             if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
-            throw new SitemapException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
+            throw new OntologyException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
         }
 
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);

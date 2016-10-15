@@ -16,7 +16,7 @@
 
 package com.atomgraph.server.filter.response;
 
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
@@ -57,7 +57,7 @@ public class ConstructorBase
         if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        return addInstance(forClass, SPIN.constructor, targetModel.createResource(), targetModel);
+        return addInstance(forClass, SPIN.constructor, targetModel.createResource(), targetModel, new HashSet<OntClass>());
     }
 
     // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
@@ -102,18 +102,19 @@ public class ConstructorBase
         return fixedModel;
     }
     
-    public Resource addInstance(OntClass forClass, Property property, Resource instance, Model targetModel)
+    public Resource addInstance(OntClass forClass, Property property, Resource instance, Model targetModel, Set<OntClass> reachedClasses)
     {
         if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         if (instance == null) throw new IllegalArgumentException("Resource cannot be null");
         if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (reachedClasses == null) throw new IllegalArgumentException("Set<OntClass> cannot be null");
         
         Statement stmt = getConstructorStmt(forClass, property);
         if (stmt == null || !stmt.getObject().isResource())
         {
             if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
-            throw new SitemapException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
+            throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
         }
 
         List<Resource> newResources = new ArrayList<>();
@@ -122,6 +123,7 @@ public class ConstructorBase
         Map<Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
         SPINConstructors.constructInstance(fixedModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
         instance.addProperty(RDF.type, forClass);
+        reachedClasses.add(forClass);
         
         // evaluate AllValuesFromRestriction to construct related instances
         ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
@@ -136,28 +138,31 @@ public class ConstructorBase
                     if (avfr.getAllValuesFrom().canAs(OntClass.class))
                     {
                         OntClass valueClass = avfr.getAllValuesFrom().as(OntClass.class);
-                        if (!valueClass.equals(forClass)) // avoid circular restrictions
+                        if (reachedClasses.contains(valueClass))
                         {
-                            Resource value = targetModel.createResource().
-                                addProperty(RDF.type, valueClass);
-                            instance.addProperty(avfr.getOnProperty(), value);
-                        
-                            // add inverse properties
-                            ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
-                            try
-                            {
-                                while (it.hasNext())
-                                {
-                                    value.addProperty(it.next(), instance);
-                                }
-                            }
-                            finally
-                            {
-                                it.close();
-                            }
-
-                            addInstance(valueClass, property, value, targetModel);
+                            if (log.isErrorEnabled()) log.error("Circular template restriction between '{}' and '{}' is not allowed", forClass.getURI(), valueClass.getURI());
+                            throw new OntologyException("Circular template restriction between '" + forClass.getURI() + "' and '" + valueClass.getURI() + "' is not allowed");
                         }
+                        
+                        Resource value = targetModel.createResource().
+                            addProperty(RDF.type, valueClass);
+                        instance.addProperty(avfr.getOnProperty(), value);
+
+                        // add inverse properties
+                        ExtendedIterator<? extends OntProperty> it = avfr.getOnProperty().listInverseOf();
+                        try
+                        {
+                            while (it.hasNext())
+                            {
+                                value.addProperty(it.next(), instance);
+                            }
+                        }
+                        finally
+                        {
+                            it.close();
+                        }
+
+                        addInstance(valueClass, property, value, targetModel, reachedClasses);
                     }
                 }
             }

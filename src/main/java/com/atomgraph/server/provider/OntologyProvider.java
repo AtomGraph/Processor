@@ -39,7 +39,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import com.atomgraph.core.exception.ConfigurationException;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.vocabulary.AP;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
@@ -155,16 +155,19 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     public Ontology getOntology(String ontologyURI)
     {
         Ontology ontology = getOntModel(ontologyURI, getOntModelSpec()).getOntology(ontologyURI);
-        
-        if (ontology != null)
+
+        if (ontology == null)
         {
-            ImportCycleChecker checker = new ImportCycleChecker();
-            checker.check(ontology);
-            if (checker.getCycleOntology() != null)
-            {
-                if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
-                throw new SitemapException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
-            }
+            if (log.isErrorEnabled()) log.error("Sitemap ontology resource '{}' not found; processing aborted", ontologyURI);
+            throw new OntologyException("Sitemap ontology resource '" + ontologyURI + "' not found; processing aborted");
+        }
+
+        ImportCycleChecker checker = new ImportCycleChecker();
+        checker.check(ontology);
+        if (checker.getCycleOntology() != null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
+            throw new OntologyException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
         }
     
         return ontology;

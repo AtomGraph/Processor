@@ -16,13 +16,9 @@
 
 package com.atomgraph.server.filter.response;
 
-import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
@@ -43,7 +39,7 @@ import org.apache.jena.rdf.model.StmtIterator;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.core.util.StateBuilder;
 import com.atomgraph.processor.exception.ArgumentException;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.server.provider.OntologyProvider;
@@ -104,7 +100,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             if (rulesString == null) return response;
 
             Ontology ontology = new OntologyProvider(getServletConfig()).getOntology(ontologyHref.toString());
-            if (ontology == null) throw new SitemapException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
+            if (ontology == null) throw new OntologyException("Ontology resource '" + ontologyHref.toString() + "'not found in ontology graph");
             Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
             
             List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());

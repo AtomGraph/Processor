@@ -20,29 +20,29 @@ package com.atomgraph.processor.exception;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class SitemapException extends RuntimeException
+public class OntologyException extends RuntimeException
 {
 
-    public SitemapException()
+    public OntologyException()
     {
     }
 
-    public SitemapException(String message)
+    public OntologyException(String message)
     {
         super(message);
     }
 
-    public SitemapException(String message, Throwable cause)
+    public OntologyException(String message, Throwable cause)
     {
         super(message, cause);
     }
 
-    public SitemapException(Throwable cause)
+    public OntologyException(Throwable cause)
     {
         super(cause);
     }
 
-    public SitemapException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
+    public OntologyException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace)
     {
         super(message, cause, enableSuppression, writableStackTrace);
     }

@@ -17,7 +17,7 @@ package com.atomgraph.server.model.impl;
 
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.client.SPARQLClient;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.QueryBuilder;
@@ -74,7 +74,7 @@ public class ContainerBase extends ResourceBase
         if (builder.getSubSelectBuilders().isEmpty())
         {
             if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
-            throw new SitemapException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
+            throw new OntologyException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
         }
 
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);

@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -101,7 +101,7 @@ public class TemplateMatcher
                     if (template.getPath() == null)
                     {
                         if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", template, LDT.path);
-                        throw new SitemapException("Template class '" + template + "' does not have value for '" + LDT.path + "' annotation");
+                        throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.path + "' annotation");
                     }
 
                     UriTemplate uriTemplate = template.getPath();

@@ -40,7 +40,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.processor.exception.ArgumentException;
-import com.atomgraph.processor.exception.SitemapException;
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
@@ -131,7 +131,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         if (queryOrTemplateCall == null)
         {
             if (log.isErrorEnabled()) log.error("Query not defined for template '{}' (ldt:query missing)", getTemplate().getURI());
-            throw new SitemapException("Query not defined for template '" + getTemplate().getURI() +"'");
+            throw new OntologyException("Query not defined for template '" + getTemplate().getURI() +"'");
         }
         
         return getQueryBuilder(queryOrTemplateCall, base, commandModel);
@@ -151,7 +151,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             if (query == null)
             {
                 if (log.isErrorEnabled()) log.error("Class '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), queryOrTemplateCall);
-                throw new SitemapException("Class '" + getTemplate().getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                throw new OntologyException("Class '" + getTemplate().getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
             return QueryBuilder.fromQuery(getQuery(query, base), commandModel);
@@ -175,7 +175,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         if (textStmt == null || !textStmt.getObject().isLiteral())
         {
             if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", query);
-            throw new SitemapException("SPARQL string not defined for query '" + query + "'");                
+            throw new OntologyException("SPARQL string not defined for query '" + query + "'");                
         }
 
         return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asQuery();
@@ -194,7 +194,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         if (updateOrTemplateCall == null)
         {
             if (log.isErrorEnabled()) log.error("Update not defined for template '{}' (ldt:update missing)", getTemplate().getURI());
-            throw new SitemapException("Update not defined for template '" + getTemplate().getURI() +"'");
+            throw new OntologyException("Update not defined for template '" + getTemplate().getURI() +"'");
         }
 
         return getModifyBuilder(updateOrTemplateCall, base, commandModel);
@@ -214,7 +214,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
             if (update == null)
             {
                 if (log.isErrorEnabled()) log.error("Class '{}' ldt:update value '{}' is not a SPIN Query or TemplateCall", getTemplate().getURI(), updateOrTemplateCall);
-                throw new SitemapException("Class '" + getTemplate().getURI() + "' ldt:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                throw new OntologyException("Class '" + getTemplate().getURI() + "' ldt:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
             return ModifyBuilder.fromUpdate(getUpdateRequest(update, base).getOperations().get(0), commandModel);
@@ -230,7 +230,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         if (textStmt == null || !textStmt.getObject().isLiteral())
         {
             if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", update);
-            throw new SitemapException("SPARQL string not defined for update '" + update + "'");                
+            throw new OntologyException("SPARQL string not defined for update '" + update + "'");                
         }
 
         return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asUpdate();
