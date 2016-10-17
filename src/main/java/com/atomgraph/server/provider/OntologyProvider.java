@@ -35,7 +35,6 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import com.atomgraph.core.exception.ConfigurationException;
@@ -202,11 +201,9 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         // lock and clone the model to avoid ConcurrentModificationExceptions
         ontModel.enterCriticalSection(Lock.READ);
         try
-        {
-            Model baseModel = ModelFactory.createDefaultModel().add(ontModel.getBaseModel());
-            OntModel clonedModel = ModelFactory.createOntologyModel(ontModelSpec, baseModel);
-            if (log.isDebugEnabled()) log.debug("Sitemap model size: {}", clonedModel.size());
-            return clonedModel;
+        {            
+            return ModelFactory.createOntologyModel(ontModelSpec,
+                    ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
         }
         finally
         {

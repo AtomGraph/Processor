@@ -136,7 +136,7 @@ public class Application extends com.atomgraph.core.Application
 	singletons.add(new QueryParamProvider());
 	singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider());
-        singletons.add(new DataManagerProvider());
+        singletons.add(new DataManagerProvider(getServletConfig()));
         singletons.add(new ClientProvider());
         
         singletons.add(new RiotExceptionMapper());
