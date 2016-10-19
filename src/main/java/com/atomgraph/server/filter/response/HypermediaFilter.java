@@ -35,12 +35,10 @@ import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.jena.ext.com.google.common.base.Charsets;
 import org.apache.jena.rdf.model.ModelFactory;
 import com.atomgraph.core.util.Link;
-import com.atomgraph.processor.exception.ArgumentException;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.server.provider.OntologyProvider;
-import com.atomgraph.processor.util.RDFNodeFactory;
 import com.atomgraph.processor.util.StateBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.LDTC;
@@ -61,7 +59,6 @@ import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.Argument;
 
 /**
  * A filter that adds HATEOAS transitions to the RDF query result.
@@ -109,11 +106,8 @@ public class HypermediaFilter implements ContainerResponseFilter
 
             Model model = ModelFactory.createDefaultModel();
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
-            Resource requestUri = model.createResource(request.getRequestUri().toString());
-
-
             StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);
-            Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();
+            Resource view = viewBuilder.apply(templateCall).build();
             if (!view.equals(absolutePath)) // add hypermedia if there are query parameters
             {
                 view.addProperty(LDTC.viewOf, absolutePath).
@@ -136,6 +130,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 OntClass forClass = templateCall.getOntModel().getOntClass(forClassURI);
                 if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
+                Resource requestUri = model.createResource(request.getRequestUri().toString());
                 // TO-DO: check if Rules still necessary or does SPIN handle spin:constructor inheritance
                 requestUri.addProperty(LDTDH.constructor, addInstance(model, forClass)); // connects constructor state to CONSTRUCTed template
             }
@@ -151,29 +146,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         return response;
     }
-    
-    public StateBuilder applyArguments(StateBuilder stateBuilder, TemplateCall templateCall, List<NameValuePair> params)
-    {
-        if (stateBuilder == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (templateCall == null) throw new IllegalArgumentException("Templatecall cannot be null");
-        if (params == null) throw new IllegalArgumentException("Param List cannot be null");
         
-        Iterator <NameValuePair> it = params.iterator();
-        while (it.hasNext())
-        {
-            NameValuePair pair = it.next();
-            String paramName = pair.getName();
-            String paramValue = pair.getValue();
-
-            Argument arg = templateCall.getTemplate().getArgumentsMap().get(paramName);
-            if (arg == null) throw new ArgumentException(paramName, templateCall.getTemplate());
-
-            stateBuilder.property(arg.getPredicate(), RDFNodeFactory.createTyped(paramValue, arg.getValueType()));
-        }
-        
-        return stateBuilder;
-    }
-    
     public void addPrevNextPage(Resource absolutePath, StateBuilder pageBuilder, TemplateCall pageCall)
     {
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");

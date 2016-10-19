@@ -285,7 +285,6 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
 	if (queryParams == null) throw new IllegalArgumentException("Query parameter list cannot be null");
 
         // iterate query params to find unrecognized ones
-        //Set<String> paramNames = queryParams.keySet();
         for (NameValuePair param : queryParams)
         {
             Argument arg = getTemplate().getArgumentsMap().get(param.getName());
