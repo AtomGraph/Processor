@@ -16,7 +16,6 @@
 
 package com.atomgraph.processor.util;
 
-import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ResIterator;
@@ -30,8 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
+import java.util.Comparator;
+import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +46,78 @@ public class TemplateMatcher
 
     private final Ontology ontology;
     
+    public static class TemplatePrecedence
+    {
+        
+        static public final Comparator<TemplatePrecedence> COMPARATOR = new Comparator<TemplatePrecedence>()
+        {
+
+            @Override
+            public int compare(TemplatePrecedence template1, TemplatePrecedence template2)
+            {
+                int diff = template2.getPrecedence() - template1.getPrecedence();
+                if (diff != 0) return diff;
+                
+                return Template.COMPARATOR.compare(template1.getTemplate(), template2.getTemplate());
+            }
+
+        };
+        
+        private final Template template;
+        private final int precedence;
+        
+        public TemplatePrecedence(Template template, int precedence)
+        {
+            this.template = template;
+            this.precedence = precedence;
+        }
+        
+        public Template getTemplate()
+        {
+            return template;
+        }
+        
+        public int getPrecedence()
+        {
+            return precedence;
+        }
+        
+        @Override
+        public int hashCode()
+        {
+            int hash = 7;
+            hash = 59 * hash + Objects.hashCode(getPrecedence());
+            hash = 59 * hash + Objects.hashCode(getTemplate().getPriority());
+            hash = 59 * hash + Objects.hashCode(getTemplate().getPath());
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj)
+        {
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            final TemplatePrecedence other = (TemplatePrecedence) obj;
+            if (!Objects.equals(getPrecedence(), other.getPrecedence())) return false;
+            if (!Objects.equals(getTemplate().getPriority(), other.getTemplate().getPriority())) return false;
+            if (!Objects.equals(getTemplate().getPath(), other.getTemplate().getPath())) return false;
+            return true;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return new StringBuilder().
+            append("[<").
+            append(getTemplate().getURI()).
+            append(">, ").
+            append(getPrecedence()).
+            append("]").
+            toString();
+        }
+        
+    }
+    
     public TemplateMatcher(Ontology ontology)
     {
         this.ontology = ontology;
@@ -58,7 +130,7 @@ public class TemplateMatcher
      * @param base base URI
      * @return matching ontology class or null, if none
      */
-    public TemplateCall match(URI uri, URI base)
+    public Template match(URI uri, URI base)
     {
 	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
 	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
@@ -80,14 +152,14 @@ public class TemplateMatcher
      * @param level
      * @return URI template/class mapping
      */    
-    public List<TemplateCall> match(Ontology ontology, CharSequence path, int level)
+    public List<TemplatePrecedence> match(Ontology ontology, CharSequence path, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (path == null) throw new IllegalArgumentException("CharSequence cannot be null");
         
         if (log.isTraceEnabled()) log.trace("Matching path '{}' against resource templates in sitemap: {}", path, ontology);
         if (log.isTraceEnabled()) log.trace("Ontology import level: {}", level);
-        List<TemplateCall> templateCalls = new ArrayList<>();
+        List<TemplatePrecedence> matches = new ArrayList<>();
 
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(RDF.type, LDT.Template);
         try
@@ -109,14 +181,11 @@ public class TemplateMatcher
 
                     if (uriTemplate.match(path, map))
                     {
-                        TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
-                            addProperty(LDT.template, template).
-                            addLiteral(LDT.priority, new Double(level * -1)). // precedence instead of priority?
-                            as(TemplateCall.class);
-
                         if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
                         if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, template);
-                        templateCalls.add(templateCall);
+                        
+                        TemplatePrecedence precedence = new TemplatePrecedence(template, level * -1);
+                        matches.add(precedence);
                     }
                     else
                         if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
@@ -140,14 +209,14 @@ public class TemplateMatcher
             
             //traverse imports recursively, safely make changes to OntModel outside the iterator
             for (Ontology importedOntology : importedOntologies)
-                templateCalls.addAll(match(importedOntology, path, level + 1));            
+                matches.addAll(match(importedOntology, path, level + 1));            
         }
         finally
         {
             it.close();
         }
 
-        return templateCalls;
+        return matches;
     }
     
     /**
@@ -161,36 +230,31 @@ public class TemplateMatcher
      * @see <a href="https://jsr311.java.net/nonav/releases/1.1/spec/spec3.html#x3-340003.7">3.7 Matching Requests to Resource Methods (JAX-RS 1.1)</a>
      * @see <a href="https://jersey.java.net/nonav/apidocs/1.16/jersey/com/sun/jersey/api/uri/UriTemplate.html">Jersey UriTemplate</a>
      */
-    public TemplateCall match(Ontology ontology, CharSequence path)
+    public Template match(Ontology ontology, CharSequence path)
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        List<TemplateCall> templateCalls = match(ontology, path, 0);
-        if (!templateCalls.isEmpty())
+        List<TemplatePrecedence> matches = match(ontology, path, 0);
+        if (!matches.isEmpty())
         {
-            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, templateCalls);
-            Collections.sort(templateCalls, TemplateCall.COMPARATOR);
+            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matches);
+            Collections.sort(matches, TemplatePrecedence.COMPARATOR);
 
-            TemplateCall match = templateCalls.get(0);            
-            if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match);
+            TemplatePrecedence match = matches.get(0);
+            if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match.getTemplate());
             
             // Check for conflicts: Templates with identical UriTemplate and precedence
-            for (TemplateCall templateCall : templateCalls)
-                if (!templateCall.getTemplate().equals(match.getTemplate()) && templateCall.equals(match))
-                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, templateCall);
+            for (TemplatePrecedence precedence : matches)
+                if (precedence != match && precedence.equals(match))
+                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, precedence.getTemplate());
 
-            return match;
+            return match.getTemplate();
         }
         
         if (log.isDebugEnabled()) log.debug("Path {} has no Template match in this OntModel", path);
         return null;
     }
     
-    public OntModel getOntModel()
-    {
-        return getOntology().getOntModel();
-    }
-
     public Ontology getOntology()
     {
         return ontology;

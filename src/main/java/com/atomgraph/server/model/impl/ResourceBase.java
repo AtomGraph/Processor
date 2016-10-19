@@ -48,6 +48,7 @@ import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
+import com.atomgraph.processor.util.StateBuilder;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import org.slf4j.Logger;
@@ -176,7 +177,22 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
         return this;
     }
+
+    @Override
+    public Response get()
+    {
+        // transition to a URI of another application state (HATEOAS)
+        Resource defaultState = StateBuilder.fromResource(getOntResource()).apply(getTemplateCall()).build();
+        if (!defaultState.equals(getOntResource()))
+        {
+            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
+            Response redirect = Response.seeOther(URI.create(defaultState.getURI())).build();
+            return redirect;
+        }
         
+        return super.get();
+    }
+    
     /**
      * Handles POST method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.
      * 

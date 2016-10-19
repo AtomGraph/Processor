@@ -70,10 +70,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         {
             if (canWrap(node, enhGraph))
             {
-                TemplateCallImpl impl = new TemplateCallImpl(node, enhGraph);
-                // apply spl:defaultValues on all new TemplateCall instances
-                impl.applyArguments(impl.getTemplate().getDefaultValues());
-                return impl;
+                return new TemplateCallImpl(node, enhGraph);
             }
             else
             {
@@ -107,15 +104,6 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         // SPIN uses Template registry instead:
         // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
         return getPropertyResourceValue(LDT.template).as(Template.class);
-    }
-
-    @Override
-    public final Double getPrecedence()
-    {
-        Statement precedence = getProperty(LDT.priority);
-        if (precedence != null) return precedence.getDouble();
-        
-        return null;
     }
     
     @Override
@@ -244,6 +232,7 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asUpdate();
     }
 
+    @Override
     public TemplateCall applyArguments(Map<Property, RDFNode> values)
     {
 	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
@@ -325,28 +314,6 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         
         return this;
     }
-
-    /*
-    @Override
-    public int hashCode()
-    {
-        int hash = 7;
-        hash = 59 * hash + Objects.hashCode(getTemplate().getPath());
-        hash = 59 * hash + Objects.hashCode(getPrecedence());
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj)
-    {
-        if (obj == null) return false;
-        if (getClass() != obj.getClass()) return false;
-        final TemplateCall other = (TemplateCall) obj;
-        if (!Objects.equals(getTemplate().getPath(), other.getTemplate().getPath())) return false;
-        if (!Objects.equals(getPrecedence(), other.getPrecedence())) return false;
-        return true;
-    }
-    */
     
     @Override
     public String toString()
@@ -354,18 +321,9 @@ public class TemplateCallImpl extends OntResourceImpl implements TemplateCall
         return new StringBuilder().
         append("[<").
         append(getTemplate().getURI()).
-        append(">, ").
-        append(Double.toString(getPrecedence())).
+        append(">").
         append("]").
         toString();
     }
 
-    @Override
-    public int compareTo(Object obj)
-    {
-        TemplateCall templateCall = (TemplateCall)obj;
-        Double diff = templateCall.getPrecedence() - getPrecedence();
-        return diff.intValue();
-    }
-    
 }

@@ -15,9 +15,7 @@
  */
 package com.atomgraph.processor.model;
 
-import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
-import java.util.Comparator;
 import java.util.List;
 import javax.ws.rs.core.MultivaluedMap;
 import org.apache.http.NameValuePair;
@@ -25,37 +23,19 @@ import org.apache.jena.ontology.OntResource;
 import org.apache.jena.rdf.model.Model;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
+import java.util.Map;
+import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.RDFNode;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public interface TemplateCall extends OntResource, Comparable
+public interface TemplateCall extends OntResource //, Comparable
 {
-    
-    static public final Comparator<TemplateCall> COMPARATOR = new Comparator<TemplateCall>()
-    {
-
-        @Override
-        public int compare(TemplateCall templateCall1, TemplateCall templateCall2)
-        {
-            Double diff = templateCall2.getPrecedence() - templateCall1.getPrecedence();
-            if (diff != 0) return diff.intValue();
-    
-            Double priority1 = templateCall1.getTemplate().getPriority();
-            Double priority2 = templateCall2.getTemplate().getPriority();
-            diff = priority2 - priority1;
-            if (diff != 0) return diff.intValue();                
-            
-            return UriTemplate.COMPARATOR.compare(templateCall1.getTemplate().getPath(), templateCall2.getTemplate().getPath());
-        }
-
-    };
     
     Template getTemplate();
  
-    Double getPrecedence();
-
     QueryBuilder getQueryBuilder(URI base);
         
     QueryBuilder getQueryBuilder(URI base, Model commandModel);
@@ -63,11 +43,11 @@ public interface TemplateCall extends OntResource, Comparable
     ModifyBuilder getModifyBuilder(URI base);
     
     ModifyBuilder getModifyBuilder(URI base, Model commandModel);
- 
+
+    TemplateCall applyArguments(Map<Property, RDFNode> values);
+    
     TemplateCall applyArguments(MultivaluedMap<String, String> queryParams);
 
     TemplateCall applyArguments(List<NameValuePair> queryParams);
-    
-    // StateBuilder applyTemplateCall(StateBuilder sb);
     
 }

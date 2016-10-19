@@ -58,8 +58,9 @@ import com.atomgraph.server.mapper.OntologyExceptionMapper;
 import com.atomgraph.server.provider.GraphStoreProvider;
 import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.SPARQLEndpointProvider;
-import com.atomgraph.server.provider.TemplateCallProvider;
+import com.atomgraph.server.provider.TemplateProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
+import com.atomgraph.server.provider.TemplateCallProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.arq.ARQFactory;
@@ -126,6 +127,7 @@ public class Application extends com.atomgraph.core.Application
 
         singletons.add(new ApplicationProvider(getServletConfig()));
         singletons.add(new OntologyProvider(getServletConfig()));
+        singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
         singletons.add(new SPARQLClientProvider(getServletConfig()));
         singletons.add(new SPARQLEndpointProvider(getServletConfig()));

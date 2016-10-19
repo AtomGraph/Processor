@@ -34,16 +34,14 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URLEncodedUtils;
 import org.apache.jena.ext.com.google.common.base.Charsets;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import com.atomgraph.core.util.Link;
-import com.atomgraph.core.util.StateBuilder;
 import com.atomgraph.processor.exception.ArgumentException;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.processor.util.RDFNodeFactory;
+import com.atomgraph.processor.util.StateBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
@@ -104,6 +102,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             Template template = ontology.getOntModel().getOntClass(typeHref.toString()).as(Template.class);
             
             List<NameValuePair> queryParams = URLEncodedUtils.parse(request.getRequestUri(), Charsets.UTF_8.name());
+            // TO-DO: inject TemplateCall?
             TemplateCall templateCall = ontology.getOntModel().createIndividual(LDT.TemplateCall).
                 addProperty(LDT.template, template).
                 as(TemplateCall.class).applyArguments(queryParams);
@@ -112,17 +111,6 @@ public class HypermediaFilter implements ContainerResponseFilter
             Resource absolutePath = model.createResource(request.getAbsolutePath().toString());
             Resource requestUri = model.createResource(request.getRequestUri().toString());
 
-            if (request.getMethod().equals("GET"))
-            {
-                // transition to a URI of another application state (HATEOAS)
-                Resource defaultState = applyTemplateCall(StateBuilder.fromResource(requestUri), templateCall).build();
-                if (!defaultState.getURI().equals(request.getRequestUri().toString()))
-                {
-                    if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
-                    response.setResponse(Response.seeOther(URI.create(defaultState.getURI())).build());
-                    return response;
-                }
-            }
 
             StateBuilder viewBuilder = StateBuilder.fromResource(absolutePath);
             Resource view = applyArguments(viewBuilder, templateCall, queryParams).build();
@@ -186,30 +174,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         return stateBuilder;
     }
     
-    public StateBuilder applyTemplateCall(StateBuilder sb, TemplateCall templateCall)
-    {
-        if (sb == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-        
-        StmtIterator it = templateCall.listProperties();
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                // ignore system properties on TemplateCall. TO-DO: find a better solution to this
-                if (!stmt.getPredicate().equals(RDF.type) && !stmt.getPredicate().equals(LDT.template))
-                    sb.replaceProperty(stmt.getPredicate(), stmt.getObject());
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        return sb;
-    }
-
     public void addPrevNextPage(Resource absolutePath, StateBuilder pageBuilder, TemplateCall pageCall)
     {
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -228,7 +192,7 @@ public class HypermediaFilter implements ContainerResponseFilter
                 TemplateCall prevCall = pageCall.removeAll(LDTDH.offset).
                     addLiteral(LDTDH.offset, offset - limit).
                     as(TemplateCall.class);
-                Resource prev = applyTemplateCall(pageBuilder, prevCall).build().
+                Resource prev = pageBuilder.apply(prevCall).build().
                     addProperty(LDTDH.pageOf, absolutePath).
                     addProperty(RDF.type, LDTDH.Page).
                     addProperty(XHV.next, page);
@@ -240,7 +204,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             TemplateCall nextCall = pageCall.removeAll(LDTDH.offset).
                 addLiteral(LDTDH.offset, offset + limit).
                 as(TemplateCall.class);
-            Resource next = applyTemplateCall(pageBuilder, nextCall).build().
+            Resource next = pageBuilder.apply(nextCall).build().
                 addProperty(LDTDH.pageOf, absolutePath).
                 addProperty(RDF.type, LDTDH.Page).
                 addProperty(XHV.prev, page);
@@ -325,22 +289,5 @@ public class HypermediaFilter implements ContainerResponseFilter
     {
         return servletConfig;
     }
-    
-    /*
-    public OntModelSpec getOntModelSpec(List<Rule> rules)
-    {
-        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-        
-        if (rules != null)
-        {
-            Reasoner reasoner = new GenericRuleReasoner(rules);
-            //reasoner.setDerivationLogging(true);
-            //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-            ontModelSpec.setReasoner(reasoner);
-        }
-        
-        return ontModelSpec;
-    }
-    */
     
 }

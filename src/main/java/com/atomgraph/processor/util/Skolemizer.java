@@ -56,6 +56,51 @@ public class Skolemizer
     private final Ontology ontology;
     private final UriBuilder baseUriBuilder, absolutePathBuilder;
     
+    public class ClassPrecedence implements Comparable
+    {
+
+        final private OntClass ontClass;
+        final private int precedence;
+
+        public ClassPrecedence(OntClass ontClass, int precedence)
+        {
+            if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+
+            this.ontClass = ontClass;
+            this.precedence = precedence;
+        }
+
+        public final OntClass getOntClass()
+        {
+            return ontClass;
+        }
+
+        public final int getPrecedence()
+        {
+            return precedence;
+        }
+
+        @Override
+        public String toString()
+        {
+            return new StringBuilder().
+            append("[<").
+            append(getOntClass().getURI()).
+            append(">, ").
+            append(getPrecedence()).
+            append("]").
+            toString();
+        }
+
+        @Override
+        public int compareTo(Object obj)
+        {
+            ClassPrecedence template = (ClassPrecedence)obj;
+            return template.getPrecedence() - getPrecedence();
+        }
+
+    }
+
     public Skolemizer(Ontology ontology, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder)
     {
 	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
@@ -106,7 +151,7 @@ public class Skolemizer
         UriBuilder builder;
         Map<String, String> nameValueMap;
         
-        SortedSet<ClassTemplate> matchedClasses = match(getOntology(), resource, RDF.type, 0);
+        SortedSet<ClassPrecedence> matchedClasses = match(getOntology(), resource, RDF.type, 0);
         if (!matchedClasses.isEmpty())
         {
             OntClass typeClass = matchedClasses.first().getOntClass();
@@ -211,13 +256,13 @@ public class Skolemizer
 	return null;
     }
     
-    public SortedSet<ClassTemplate> match(Ontology ontology, Resource resource, Property property, int level)
+    public SortedSet<ClassPrecedence> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-        SortedSet<ClassTemplate> matchedClasses = new TreeSet<>();
+        SortedSet<ClassPrecedence> matchedClasses = new TreeSet<>();
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.skolemTemplate);
         try
         {
@@ -229,7 +274,7 @@ public class Skolemizer
                 if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
                         resource.hasProperty(property, ontClass))
                 {
-                    ClassTemplate template = new ClassTemplate(ontClass, new Double(level * -1));
+                    ClassPrecedence template = new ClassPrecedence(ontClass, level * -1);
                     if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
                     matchedClasses.add(template);
                 } 
@@ -250,7 +295,7 @@ public class Skolemizer
                 {
                     Ontology importedOntology = importRes.asOntology();
                     // traverse imports recursively
-                    Set<ClassTemplate> matchedImportClasses = match(importedOntology, resource, property, level + 1);
+                    Set<ClassPrecedence> matchedImportClasses = match(importedOntology, resource, property, level + 1);
                     matchedClasses.addAll(matchedImportClasses);
                 }
             }

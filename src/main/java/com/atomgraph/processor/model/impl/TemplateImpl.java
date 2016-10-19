@@ -66,7 +66,7 @@ public class TemplateImpl extends OntClassImpl implements Template
                 return new TemplateImpl(node, enhGraph);
             }
             else {
-                throw new ConversionException( "Cannot convert node " + node.toString() + " to OntClass: it does not have rdf:type owl:Class or equivalent");
+                throw new ConversionException( "Cannot convert node " + node.toString() + " to Template: it does not have rdf:type ldt:Template or equivalent");
             }
         }
 

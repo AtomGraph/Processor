@@ -13,73 +13,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.atomgraph.server.provider;
 
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDT;
+import org.apache.jena.ontology.Ontology;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
-import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
-import org.apache.jena.rdf.model.ModelFactory;
+import com.atomgraph.processor.util.TemplateMatcher;
+import javax.ws.rs.ext.Provider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
 @Provider
-public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Context, TemplateCall> implements ContextResolver<TemplateCall>
+public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, Template> implements ContextResolver<Template>
 {
 
+    private static final Logger log = LoggerFactory.getLogger(TemplateProvider.class);
+
+    @Context UriInfo uriInfo;    
     @Context Providers providers;
     
-    public TemplateCallProvider()
+    public TemplateProvider()
     {
-        super(TemplateCall.class);
+        super(Template.class);
     }
     
     @Override
-    public Injectable<TemplateCall> getInjectable(ComponentContext ic, Context a)
+    public Injectable<Template> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<TemplateCall>()
+	return new Injectable<Template>()
 	{
 	    @Override
-	    public TemplateCall getValue()
+	    public Template getValue()
 	    {
-                return getTemplateCall();
+                return getTemplate();
 	    }
 	};
     }
 
     @Override
-    public TemplateCall getContext(Class<?> type)
+    public Template getContext(Class<?> type)
     {
-        return getTemplateCall();
-    }
-    
-    public TemplateCall getTemplateCall()
-    {
-        Template template = getTemplate();
-        
-        return getTemplate().getModel().createResource(LDT.TemplateCall).
-                addProperty(LDT.template, template).
-                as(TemplateCall.class).
-                applyArguments(template.getDefaultValues()); // apply spl:defaultValues on all new TemplateCall instances
-        
+        return getTemplate();
     }
     
     public Template getTemplate()
     {
-	return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
+        return new TemplateMatcher(getOntology()).match(getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
     }
-
+    
+    public UriInfo getUriInfo()
+    {
+        return uriInfo;
+    }
+    
+    public Ontology getOntology()
+    {
+	return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
+    }
+    
     public Providers getProviders()
     {
         return providers;
     }
-
+    
 }

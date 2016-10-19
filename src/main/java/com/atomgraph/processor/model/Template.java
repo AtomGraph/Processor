@@ -16,6 +16,7 @@
 package com.atomgraph.processor.model;
 
 import com.sun.jersey.api.uri.UriTemplate;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -30,7 +31,23 @@ import org.apache.jena.rdf.model.RDFNode;
  */
 public interface Template extends OntClass
 {
-    
+
+    static public final Comparator<Template> COMPARATOR = new Comparator<Template>()
+    {
+
+        @Override
+        public int compare(Template template1, Template template2)
+        {
+            double priority1 = template1.getPriority();
+            double priority2 = template2.getPriority();
+            if (priority2 > priority1) return -1;
+            if (priority2 < priority1) return 1;
+            
+            return UriTemplate.COMPARATOR.compare(template1.getPath(), template2.getPath());
+        }
+
+    };
+        
     UriTemplate getPath();
     
     String getSkolemTemplate();
@@ -42,7 +59,7 @@ public interface Template extends OntClass
     org.apache.jena.rdf.model.Resource getUpdate();
     
     Double getPriority();
-    
+        
     Map<Property, Argument> getArguments();
     
     Map<Property, Argument> getLocalArguments();
