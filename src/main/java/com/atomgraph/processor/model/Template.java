@@ -15,13 +15,17 @@
  */
 package com.atomgraph.processor.model;
 
+import com.atomgraph.processor.query.QueryBuilder;
+import com.atomgraph.processor.update.ModifyBuilder;
 import com.sun.jersey.api.uri.UriTemplate;
+import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 
@@ -73,5 +77,13 @@ public interface Template extends OntClass
     org.apache.jena.rdf.model.Resource getLoadClass();
     
     CacheControl getCacheControl();
+
+    QueryBuilder getQueryBuilder(URI base);
+        
+    QueryBuilder getQueryBuilder(URI base, Model commandModel);
+
+    ModifyBuilder getModifyBuilder(URI base);
     
+    ModifyBuilder getModifyBuilder(URI base, Model commandModel);
+
 }

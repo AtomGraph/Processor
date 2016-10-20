@@ -33,7 +33,7 @@ import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.model.TemplateCall;
+import com.atomgraph.processor.util.TemplateCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,11 +54,11 @@ public class Item extends ResourceBase
     
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient, @Context GraphStore graphStore,
-            @Context Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context Application application, @Context Ontology ontology, @Context TemplateCall stateBuilder,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, servletConfig, mediaTypes, sparqlClient,
-                application, ontology, templateCall,
+                application, ontology, stateBuilder,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
         this.graphStore = graphStore;

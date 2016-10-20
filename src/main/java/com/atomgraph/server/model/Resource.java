@@ -17,7 +17,7 @@
 package com.atomgraph.server.model;
 
 import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.model.TemplateCall;
+import com.atomgraph.processor.util.TemplateCall;
 
 /**
  *
@@ -25,9 +25,7 @@ import com.atomgraph.processor.model.TemplateCall;
  */
 public interface Resource extends QueriedResource
 {
-    
-    // public Ontology getOntology();
-    
+        
     public Application getApplication();
     
     public TemplateCall getTemplateCall();

@@ -35,7 +35,7 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.processor.model.TemplateCall;
+import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.server.vocabulary.HTTP;
 
 /**
@@ -116,7 +116,7 @@ abstract public class ExceptionMapperBase
         return providers;
     }
     
-    public TemplateCall getTemplateCall()
+    public TemplateCall getStateBuilder()
     {
 	ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
 	return cr.getContext(TemplateCall.class);

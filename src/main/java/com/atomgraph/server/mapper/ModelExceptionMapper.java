@@ -49,7 +49,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         ex.getModel().add(exception.getModel());
         
-        Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
+        Link classLink = new Link(URI.create(getStateBuilder().getTemplate().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
         Link baseUriLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null); // LDT.baseUri?
         

@@ -16,12 +16,14 @@
 package com.atomgraph.server.provider;
 
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDT;
+import com.atomgraph.processor.util.TemplateCall;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
+import java.net.URI;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
@@ -36,6 +38,7 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
 {
 
     @Context Providers providers;
+    @Context UriInfo uriInfo;
     
     public TemplateCallProvider()
     {
@@ -50,7 +53,7 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
 	    @Override
 	    public TemplateCall getValue()
 	    {
-                return getTemplateCall();
+                return TemplateCallProvider.this.getTemplateCall();
 	    }
 	};
     }
@@ -63,13 +66,22 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
     
     public TemplateCall getTemplateCall()
     {
-        Template template = getTemplate();
+        if (getTemplate() != null)
+            return getTemplateCall(getTemplate(), getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
         
-        return getTemplate().getModel().createResource(LDT.TemplateCall).
-                addProperty(LDT.template, template).
-                as(TemplateCall.class).
-                applyArguments(template.getDefaultValues()); // apply spl:defaultValues on all new TemplateCall instances
-        
+        return null;
+    }
+    
+    public TemplateCall getTemplateCall(Template template, URI absolutePath, MultivaluedMap<String, String> queryParams)
+    {
+        if (template == null) throw new IllegalArgumentException("Template cannot be null");
+        if (absolutePath == null) throw new IllegalArgumentException("URI cannot be null");
+        if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
+
+        return TemplateCall.fromResource(ModelFactory.createDefaultModel().
+                createResource(absolutePath.toString()), template).
+                applyArguments(template.getDefaultValues()). // apply spl:defaultValues
+                applyArguments(queryParams);
     }
     
     public Template getTemplate()
@@ -82,4 +94,9 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
         return providers;
     }
 
+    public UriInfo getUriInfo()
+    {
+        return uriInfo;
+    }
+    
 }

@@ -66,10 +66,15 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         return getTemplate();
     }
-    
+
     public Template getTemplate()
     {
-        return new TemplateMatcher(getOntology()).match(getUriInfo().getAbsolutePath(), getUriInfo().getBaseUri());
+        return getTemplate(getOntology(), getUriInfo());
+    }
+
+    public Template getTemplate(Ontology ontology, UriInfo uriInfo)
+    {
+        return new TemplateMatcher(ontology).match(uriInfo.getAbsolutePath(), uriInfo.getBaseUri());
     }
     
     public UriInfo getUriInfo()

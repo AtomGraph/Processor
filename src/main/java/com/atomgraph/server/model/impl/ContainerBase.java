@@ -19,9 +19,9 @@ import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.client.SPARQLClient;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.query.SelectBuilder;
+import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import com.sun.jersey.api.core.ResourceContext;
 import javax.servlet.ServletConfig;
@@ -30,6 +30,7 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,12 +47,12 @@ public class ContainerBase extends ResourceBase
     
     public ContainerBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
             @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient,
-            @Context Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context Application application, @Context Ontology ontology, @Context TemplateCall stateBuilder,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         super(uriInfo, request, servletConfig,
             mediaTypes, sparqlClient,
-            application, ontology, templateCall,
+            application, ontology, stateBuilder,
             httpHeaders, resourceContext);
     }
     
@@ -61,15 +62,15 @@ public class ContainerBase extends ResourceBase
         super.init();
         
         if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
-            queryBuilder = getPageQueryBuilder(super.getQueryBuilder(), getTemplateCall());
+            queryBuilder = getPageQueryBuilder(super.getQueryBuilder(), getTemplateCall().build());
         else queryBuilder = super.getQueryBuilder();
     }
     
     @Override
-    public QueryBuilder getPageQueryBuilder(QueryBuilder builder, TemplateCall templateCall)
+    public QueryBuilder getPageQueryBuilder(QueryBuilder builder, Resource stateBuilder)
     {
 	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
-	if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+	if (stateBuilder == null) throw new IllegalArgumentException("StateBuilder cannot be null");
                 
         if (builder.getSubSelectBuilders().isEmpty())
         {
@@ -80,28 +81,28 @@ public class ContainerBase extends ResourceBase
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        if (templateCall.hasProperty(LDTDH.offset))
+        if (stateBuilder.hasProperty(LDTDH.offset))
         {
-            Long offset = templateCall.getProperty(LDTDH.offset).getLong();
+            Long offset = stateBuilder.getProperty(LDTDH.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
         }
 
-        if (templateCall.hasProperty(LDTDH.limit))
+        if (stateBuilder.hasProperty(LDTDH.limit))
         {
-            Long limit = templateCall.getProperty(LDTDH.limit).getLong();
+            Long limit = stateBuilder.getProperty(LDTDH.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
         }
 
-        if (templateCall.hasProperty(LDTDH.orderBy))
+        if (stateBuilder.hasProperty(LDTDH.orderBy))
         {
             try
             {
-                String orderBy = templateCall.getProperty(LDTDH.orderBy).getString();
+                String orderBy = stateBuilder.getProperty(LDTDH.orderBy).getString();
 
                 Boolean desc = false; // ORDERY BY is ASC() by default
-                if (templateCall.hasProperty(LDTDH.desc)) desc = templateCall.getProperty(LDTDH.desc).getBoolean();
+                if (stateBuilder.hasProperty(LDTDH.desc)) desc = stateBuilder.getProperty(LDTDH.desc).getBoolean();
 
                 if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                 subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first

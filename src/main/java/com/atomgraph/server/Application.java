@@ -49,9 +49,7 @@ import com.atomgraph.server.mapper.jena.QueryParseExceptionMapper;
 import com.atomgraph.server.mapper.jena.RiotExceptionMapper;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ArgumentImpl;
-import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.server.mapper.OntologyExceptionMapper;
@@ -88,7 +86,6 @@ public class Application extends com.atomgraph.core.Application
 
         BuiltinPersonalities.model.add(Argument.class, ArgumentImpl.factory);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
-        BuiltinPersonalities.model.add(TemplateCall.class, TemplateCallImpl.factory);
 
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour

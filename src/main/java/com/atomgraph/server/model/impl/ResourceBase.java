@@ -44,11 +44,10 @@ import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.util.StateBuilder;
+import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import org.slf4j.Logger;
@@ -75,6 +74,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final com.atomgraph.processor.model.Application application;
     private final Ontology ontology;    
     private final TemplateCall templateCall;
+    private final Resource state;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
@@ -121,7 +121,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.application = application;
         this.ontology = ontology;
         this.ontResource = ontology.getOntModel().createOntResource(getURI().toString());
-        this.templateCall = templateCall.applyArguments(uriInfo.getQueryParameters());
+        this.templateCall = templateCall;
+        this.state = templateCall.build();
 	this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
         this.querySolutionMap = new QuerySolutionMap();
@@ -135,14 +136,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     @Override
     public void init()
-    {        
+    {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
-            modifyBuilder = getTemplateCall().getModifyBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
+            modifyBuilder = getTemplateCall().getTemplate().getModifyBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
         else
         {
-            queryBuilder = getTemplateCall().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
+            queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
-                queryBuilder = getPageQueryBuilder(queryBuilder, getTemplateCall());
+                queryBuilder = getPageQueryBuilder(queryBuilder, getState());
         }
     }
     
@@ -160,8 +161,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             Resource javaClass = getTemplateCall().getTemplate().getLoadClass();
             if (!javaClass.isURIResource())
             {
-                if (log.isErrorEnabled()) log.error("ldt:loadClass value of class '{}' is not a URI resource", getTemplateCall().getURI());
-                throw new OntologyException("ldt:loadClass value of class '" + getTemplateCall().getURI() + "' is not a URI resource");
+                if (log.isErrorEnabled()) log.error("ldt:loadClass value of template '{}' is not a URI resource", getTemplateCall().getTemplate());
+                throw new OntologyException("ldt:loadClass value of template '" + getTemplateCall().getTemplate() + "' is not a URI resource");
             }
 
             Class clazz = Loader.loadClass(javaClass.getURI());
@@ -182,12 +183,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS)
-        Resource defaultState = StateBuilder.fromResource(getOntResource()).apply(getTemplateCall()).build();
-        if (!defaultState.equals(getOntResource()))
+        if (!getState().getURI().equals(getUriInfo().getRequestUri().toString()))
         {
-            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", defaultState.getURI());
-            Response redirect = Response.seeOther(URI.create(defaultState.getURI())).build();
-            return redirect;
+            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", getState().getURI());
+            return Response.seeOther(URI.create(getState().getURI())).build();
         }
         
         return super.get();
@@ -366,7 +365,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null);
         rb.header("Link", baseLink.toString());
         
-        Reasoner reasoner = getTemplateCall().getOntModel().getSpecification().getReasoner();
+        Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
@@ -404,6 +403,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return templateCall;
     }
 
+    public Resource getState()
+    {
+        return state;
+    }
+    
     /**
      * Returns the cache control of this resource, if specified.
      * The control value can be specified as a <code>ldt:cacheControl</code> value restriction on an ontology class in
@@ -430,10 +434,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
-    public QueryBuilder getPageQueryBuilder(QueryBuilder builder, TemplateCall templateCall)
+    public QueryBuilder getPageQueryBuilder(QueryBuilder builder, Resource state)
     {
 	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
-	if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+	if (state == null) throw new IllegalArgumentException("Resource cannot be null");
                 
         if (builder.getSubSelectBuilders().isEmpty())
         {
@@ -444,28 +448,28 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        if (templateCall.hasProperty(LDTDH.offset))
+        if (state.hasProperty(LDTDH.offset))
         {
-            Long offset = templateCall.getProperty(LDTDH.offset).getLong();
+            Long offset = state.getProperty(LDTDH.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
         }
 
-        if (templateCall.hasProperty(LDTDH.limit))
+        if (state.hasProperty(LDTDH.limit))
         {
-            Long limit = templateCall.getProperty(LDTDH.limit).getLong();
+            Long limit = state.getProperty(LDTDH.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
         }
 
-        if (templateCall.hasProperty(LDTDH.orderBy))
+        if (state.hasProperty(LDTDH.orderBy))
         {
             try
             {
-                String orderBy = templateCall.getProperty(LDTDH.orderBy).getString();
+                String orderBy = state.getProperty(LDTDH.orderBy).getString();
 
                 Boolean desc = false; // ORDERY BY is ASC() by default
-                if (templateCall.hasProperty(LDTDH.desc)) desc = templateCall.getProperty(LDTDH.desc).getBoolean();
+                if (state.hasProperty(LDTDH.desc)) desc = state.getProperty(LDTDH.desc).getBoolean();
 
                 if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                 subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
