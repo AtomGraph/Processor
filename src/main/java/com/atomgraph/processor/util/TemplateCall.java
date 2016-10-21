@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
+import javax.ws.rs.core.UriBuilder;
 import org.apache.http.NameValuePair;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -40,7 +41,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder // implem
     
     protected TemplateCall(Resource resource, Template template)
     {
-        super(resource);
+        super(UriBuilder.fromUri(resource.getURI()), resource.getModel());
         if (template == null) throw new IllegalArgumentException("Template cannot be null");
         this.template = template;        
     }
