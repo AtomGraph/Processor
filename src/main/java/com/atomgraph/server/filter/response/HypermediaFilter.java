@@ -22,21 +22,13 @@ import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Iterator;
-import java.util.List;
-import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
-import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.util.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
@@ -64,7 +56,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
             
-    @Context ServletConfig servletConfig;
+    // @Context ServletConfig servletConfig;
     @Context Providers providers;
     @Context UriInfo uriInfo;
     
@@ -187,42 +179,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         }
     }
 
-    public URI getTypeURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
-    {
-        return getLinkHref(headerMap, "Link", RDF.type.getLocalName());
-    }
-
-    public URI getOntologyURI(MultivaluedMap<String, Object> headerMap) throws URISyntaxException
-    {
-        return getLinkHref(headerMap, "Link", LDT.ontology.getURI());
-    }
-
-    public URI getLinkHref(MultivaluedMap<String, Object> headerMap, String headerName, String rel) throws URISyntaxException
-    {
-	if (headerMap == null) throw new IllegalArgumentException("Header Map cannot be null");
-	if (headerName == null) throw new IllegalArgumentException("String header name cannot be null");
-        if (rel == null) throw new IllegalArgumentException("Property Map cannot be null");
-        
-        List<Object> links = headerMap.get(headerName);
-        if (links != null)
-        {
-            Iterator<Object> it = links.iterator();
-            while (it.hasNext())
-            {
-                String linkHeader = it.next().toString();
-                Link link = Link.valueOf(linkHeader);
-                if (link.getRel().equals(rel)) return link.getHref();
-            }
-        }
-        
-        return null;
-    }
-    
-    public ServletConfig getServletConfig()
-    {
-        return servletConfig;
-    }
-    
     public TemplateCall getTemplateCall()
     {
         if (!getUriInfo().getMatchedResources().isEmpty())

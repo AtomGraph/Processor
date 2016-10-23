@@ -172,7 +172,7 @@ public class TemplateMatcher
                 {
                     if (template.getPath() == null)
                     {
-                        if (log.isDebugEnabled()) log.debug("Template class {} does not have value for {} annotation", template, LDT.path);
+                        if (log.isErrorEnabled()) log.error("Template class {} does not have value for {} annotation", template, LDT.path);
                         throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.path + "' annotation");
                     }
 

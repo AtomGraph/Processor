@@ -16,6 +16,7 @@
 
 package com.atomgraph.processor.util;
 
+import com.atomgraph.processor.exception.OntologyException;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Literal;
@@ -39,6 +40,8 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
+import com.atomgraph.processor.vocabulary.SIOC;
+import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -161,7 +164,7 @@ public class Skolemizer
             String skolemTemplate = getStringValue(typeClass, LDT.skolemTemplate);
             if (skolemTemplate != null)
             {
-                builder = getAbsolutePathBuilder().clone();
+                builder = getAbsolutePathBuilder(typeClass).clone();
                 nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
                 builder.path(skolemTemplate);
             }
@@ -323,12 +326,47 @@ public class Skolemizer
     {
         return ontology;
     }
-
+    
     public UriBuilder getBaseUriBuilder()
     {
         return baseUriBuilder;
     }
 
+    public UriBuilder getAbsolutePathBuilder(OntClass ontClass)
+    {
+        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+
+        ExtendedIterator<OntClass> superClassIt = ontClass.listSuperClasses();
+        try
+        {
+            while (superClassIt.hasNext())
+            {
+                OntClass superClass = superClassIt.next();
+                if (superClass.canAs(HasValueRestriction.class))
+                {
+                    HasValueRestriction hvr = superClass.as(HasValueRestriction.class);
+                    if (hvr.getOnProperty().equals(SIOC.HAS_PARENT) || hvr.getOnProperty().equals(SIOC.HAS_CONTAINER))
+                    {
+                        if (!hvr.getHasValue().isURIResource())
+                        {
+                            if (log.isErrorEnabled()) log.error("Value restriction on class {} for property {} is not a URI resource", ontClass, hvr.getOnProperty());
+                            throw new OntologyException("Value restriction on class '" + ontClass + "' for property '" + hvr.getOnProperty() + "' is not a URI resource");
+                        }
+                        
+                        Resource absolutePath = hvr.getHasValue().asResource();
+                        return UriBuilder.fromUri(absolutePath.getURI());
+                    }
+                }
+            }
+        }
+        finally
+        {
+            superClassIt.close();
+        }
+
+        return getAbsolutePathBuilder();
+    }
+        
     public UriBuilder getAbsolutePathBuilder()
     {
         return absolutePathBuilder;
