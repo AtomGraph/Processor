@@ -75,14 +75,9 @@ public class Validator
 "  FILTER (!(?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> && ?o = <http://www.w3.org/ns/ldt#Constraint>))\n" +
 "}");
         
-        QueryExecution qex = QueryExecutionFactory.create(fix, ontModel);
-        try
+        try (QueryExecution qex = QueryExecutionFactory.create(fix, ontModel))
         {
             fixedModel.add(qex.execConstruct());
-        }
-        finally
-        {
-            qex.close();
         }
         
         return fixedModel;

@@ -35,13 +35,7 @@ import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.apache.jena.ontology.OntClass;
-import org.apache.jena.query.ParameterizedSparqlString;
-import org.apache.jena.query.Query;
-import org.apache.jena.query.QueryExecution;
-import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.vocabulary.RDFS;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -144,39 +138,7 @@ public class HypermediaFilter implements ContainerResponseFilter
     public Resource addInstance(Model targetModel, OntClass forClass)
     {
         if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
-        addClass(forClass, targetModel); // TO-DO: remove when classes and constraints are cached/dereferencable
         return new ConstructorBase().construct(forClass, targetModel);
-    }
-
-    // TO-DO: this method should not be necessary when system ontologies/classes are dereferencable! -->
-    public void addClass(OntClass forClass, Model targetModel)
-    {
-        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");    
-
-        String queryString = "PREFIX  rdfs: <http://www.w3.org/2000/01/rdf-schema#>\n" +
-"PREFIX  spin: <http://spinrdf.org/spin#>\n" +
-"\n" +
-"DESCRIBE ?Class ?Constraint\n" +
-"WHERE\n" +
-"  { ?Class rdfs:isDefinedBy ?Ontology\n" +
-"    OPTIONAL\n" +
-"      { ?Class spin:constraint ?Constraint }\n" +
-"  }";
-        
-        // the client needs at least labels and constraints
-        QuerySolutionMap qsm = new QuerySolutionMap();
-        qsm.add(RDFS.Class.getLocalName(), forClass);
-        Query query = new ParameterizedSparqlString(queryString, qsm).asQuery();
-        QueryExecution qex = QueryExecutionFactory.create(query, forClass.getOntModel());
-        try
-        {
-            targetModel.add(qex.execDescribe());
-        }
-        finally
-        {
-            qex.close();
-        }
     }
 
     public TemplateCall getTemplateCall()
