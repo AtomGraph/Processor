@@ -5,6 +5,7 @@
 @prefix rdfs:	<http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:	<http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:	<http://www.w3.org/2002/07/owl#> .
+@prefix sd:	<http://www.w3.org/ns/sparql-service-description#> .
 @prefix sp:	<http://spinrdf.org/sp#> .
 @prefix spin:	<http://spinrdf.org/spin#> .
 @prefix spl:    <http://spinrdf.org/spl#> .
@@ -12,7 +13,7 @@
 @prefix vann:	<http://purl.org/vocab/vann/> .
 
 <#> a owl:Ontology ;
-    owl:imports sp:, spin: ;
+    owl:imports sp:, spin:, sd: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Linked Data Templates ontology" ;
     rdfs:comment "Must be imported and reused by LDT applications" ;
@@ -35,6 +36,13 @@
     rdfs:range <#Ontology> ;
     rdfs:label "Application ontology" ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
+    rdfs:isDefinedBy <#> .
+
+<#service> a owl:ObjectProperty ;
+    rdfs:domain <#Application> ;
+    rdfs:range sd:Service ;
+    rdfs:label "SPARQL service" ;
+    rdfs:comment "Service implementing SPARQL Protocol and Graph Store Protocol" ;
     rdfs:isDefinedBy <#> .
 
 # ANNOTATION PROPERTIES
@@ -133,7 +141,7 @@
 
 <#Application> a rdfs:Class ;
     rdfs:label "LDT application" ;
-    rdfs:comment "Declarative Linked Data application" ;
+    rdfs:comment "Declarative Linked Data application which structure is defined by its ontology and data is access via its SPARQL service" ;
     rdfs:isDefinedBy <#> .
 
 <#Ontology> a rdfs:Class ;
