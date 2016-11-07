@@ -179,6 +179,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return this;
     }
 
+    /*
     @Override
     public Response get()
     {
@@ -191,6 +192,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         return super.get();
     }
+    */
     
     /**
      * Handles POST method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.
@@ -403,6 +405,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return templateCall;
     }
 
+    @Override
     public Resource getState()
     {
         return state;

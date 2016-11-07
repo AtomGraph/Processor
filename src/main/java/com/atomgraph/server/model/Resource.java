@@ -26,8 +26,10 @@ import com.atomgraph.processor.util.TemplateCall;
 public interface Resource extends QueriedResource
 {
         
-    public Application getApplication();
+    Application getApplication();
     
-    public TemplateCall getTemplateCall();
+    TemplateCall getTemplateCall();
+    
+    org.apache.jena.rdf.model.Resource getState();
     
 }
