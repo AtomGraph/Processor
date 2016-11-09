@@ -232,7 +232,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
 
-        getSPARQLClient().post(insertDataRequest, null);
+        getSPARQLClient().update(insertDataRequest);
 	
 	URI createdURI = UriBuilder.fromUri(created.getURI()).build();
 	if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
@@ -300,7 +300,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         UpdateRequest deleteInsertRequest = getUpdateRequest(model);
         if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
-        getSPARQLClient().post(deleteInsertRequest, null);
+        getSPARQLClient().update(deleteInsertRequest);
         
 	if (description.isEmpty()) return Response.created(getURI()).build();
 	else return getResponse(model);
@@ -317,7 +317,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {	
         UpdateRequest request = getUpdateRequest((Model)null);
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-        getSPARQLClient().post(request, null);
+        getSPARQLClient().update(request);
 	
 	return Response.noContent().build();
     }
