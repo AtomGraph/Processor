@@ -15,7 +15,7 @@
  */
 package com.atomgraph.processor.model;
 
-import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -24,6 +24,6 @@ import org.apache.jena.rdf.model.Resource;
 public interface Application extends com.atomgraph.core.model.Application
 {
     
-    Resource getOntology();
+    Ontology getOntology();
     
 }

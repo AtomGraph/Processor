@@ -43,8 +43,6 @@ public class AP
     
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
-
-    public static final DatatypeProperty dataset = m_model.createDatatypeProperty( NS + "dataset" );
     
     public static final DatatypeProperty cacheSitemap = m_model.createDatatypeProperty( NS + "cacheSitemap" );
 

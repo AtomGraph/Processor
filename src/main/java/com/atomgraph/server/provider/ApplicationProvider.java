@@ -15,13 +15,9 @@
  */
 package com.atomgraph.server.provider;
 
-import com.atomgraph.core.exception.ConfigurationException;
-import com.atomgraph.core.model.impl.ServiceImpl;
-import com.atomgraph.core.vocabulary.A;
-import com.atomgraph.core.vocabulary.SD;
+import com.atomgraph.core.model.Service;
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
-import com.atomgraph.processor.vocabulary.LDT;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -30,9 +26,8 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.sparql.engine.http.Service;
+import javax.ws.rs.ext.Providers;
+import org.apache.jena.ontology.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,38 +42,11 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationProvider.class);
     
-    private final Application application;
+    @Context Providers providers;
     
     public ApplicationProvider(@Context ServletConfig servletConfig)
     {
         super(Application.class);
-        
-        Object ontologyURI = servletConfig.getInitParameter(LDT.ontology.getURI());
-        if (ontologyURI == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
-            throw new ConfigurationException(LDT.ontology);
-        }        
-        Object endpointURI = servletConfig.getInitParameter(SD.endpoint.getURI());
-        if (endpointURI == null)
-        {
-            if (log.isErrorEnabled()) log.error("SPARQL endpoint not configured ('{}' not set in web.xml)", SD.endpoint.getURI());
-            throw new ConfigurationException(SD.endpoint);
-        }
-        Object graphStoreURI = servletConfig.getInitParameter(A.graphStore.getURI());
-        if (graphStoreURI == null)
-        {
-            if (log.isErrorEnabled()) log.error("SPARQL Graph Store not configured ('{}' not set)", A.graphStore);
-            throw new ConfigurationException(A.graphStore);
-        }        
-        Object authUser = servletConfig.getInitParameter(Service.queryAuthUser.getSymbol());
-        Object authPwd = servletConfig.getInitParameter(Service.queryAuthPwd.getSymbol());
-
-        Model model = ModelFactory.createDefaultModel();        
-        application = new ApplicationImpl(new ServiceImpl(model.createResource(endpointURI.toString()),
-                model.createResource(graphStoreURI.toString()),
-                authUser == null ? null : authUser.toString(), authPwd == null ? null : authPwd.toString()),
-            model.createResource(ontologyURI.toString()));
     }
     
     @Override
@@ -102,7 +70,27 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
     
     public Application getApplication()
     {
-        return application;
+        return getApplication(getService(), getOntology());
+    }
+    
+    public Application getApplication(Service service, Ontology ontology)
+    {
+        return new ApplicationImpl(service, ontology);
+    }
+    
+    public Service getService()
+    {
+	return getProviders().getContextResolver(Service.class, null).getContext(Service.class);
+    }
+    
+    public Ontology getOntology()
+    {
+	return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
+    }
+    
+    public Providers getProviders()
+    {
+        return providers;
     }
     
 }

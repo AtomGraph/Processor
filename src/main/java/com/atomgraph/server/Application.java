@@ -36,9 +36,9 @@ import com.atomgraph.core.provider.GraphStoreClientProvider;
 import com.atomgraph.core.provider.MediaTypesProvider;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.provider.QueryParamProvider;
-import com.atomgraph.core.provider.ResultSetProvider;
+import com.atomgraph.core.io.ResultSetProvider;
 import com.atomgraph.core.provider.SPARQLClientProvider;
-import com.atomgraph.core.provider.UpdateRequestReader;
+import com.atomgraph.core.io.UpdateRequestReader;
 import com.atomgraph.server.mapper.ClientExceptionMapper;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
 import com.atomgraph.server.mapper.ModelExceptionMapper;
@@ -53,9 +53,7 @@ import com.atomgraph.processor.model.impl.ArgumentImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.server.mapper.OntologyExceptionMapper;
-import com.atomgraph.server.provider.GraphStoreProvider;
 import com.atomgraph.server.provider.OntologyProvider;
-import com.atomgraph.server.provider.SPARQLEndpointProvider;
 import com.atomgraph.server.provider.TemplateProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
@@ -110,13 +108,6 @@ public class Application extends com.atomgraph.core.Application
     @Override
     public void init()
     {
-        if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", getClasses(), getSingletons());
-
-        /*
-        FileManager fileManager = getFileManager();
-	if (log.isDebugEnabled()) log.debug("getFileManager(): {}", fileManager);
-        initOntDocumentManager(fileManager);
-        */
         OntDocumentManager.getInstance().setFileManager(getFileManager(getServletConfig()));        
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         
@@ -127,9 +118,7 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
         singletons.add(new SPARQLClientProvider(getServletConfig()));
-        singletons.add(new SPARQLEndpointProvider(getServletConfig()));
-        singletons.add(new GraphStoreClientProvider());
-        singletons.add(new GraphStoreProvider(getServletConfig()));
+        singletons.add(new GraphStoreClientProvider(getServletConfig()));
 	singletons.add(new SkolemizingModelProvider());
 	singletons.add(new ResultSetProvider());
 	singletons.add(new QueryParamProvider());
@@ -137,7 +126,6 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new MediaTypesProvider());
         singletons.add(new DataManagerProvider(getServletConfig()));
         singletons.add(new ClientProvider());
-        
         singletons.add(new RiotExceptionMapper());
 	singletons.add(new ModelExceptionMapper());
 	singletons.add(new DatatypeFormatExceptionMapper());
@@ -147,7 +135,8 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new OntologyExceptionMapper());
         singletons.add(new SPINArgumentExceptionMapper());
 	singletons.add(new QueryParseExceptionMapper());
-        
+     
+        if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
 
     /*

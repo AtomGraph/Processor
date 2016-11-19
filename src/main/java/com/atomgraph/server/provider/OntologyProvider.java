@@ -40,7 +40,7 @@ import org.apache.jena.shared.Lock;
 import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.vocabulary.AP;
-import javax.ws.rs.ext.Providers;
+import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,15 +53,23 @@ import org.slf4j.LoggerFactory;
 public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, Ontology> implements ContextResolver<Ontology>
 {
     private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
-
-    @Context Providers providers;
     
+    private final String ontologyURI;
     private final OntModelSpec ontModelSpec;
     
     public OntologyProvider(@Context ServletConfig servletConfig)
     {
         super(Ontology.class);
-            
+
+        
+        Object ontologyURIParam = servletConfig.getInitParameter(LDT.ontology.getURI());
+        if (ontologyURIParam == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
+            throw new ConfigurationException(LDT.ontology);
+        }
+        ontologyURI = ontologyURIParam.toString();
+        
         Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
         if (rulesParam == null)
         {
@@ -141,14 +149,9 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return getOntology();
     }
 
-    public com.atomgraph.processor.model.Application getApplication()
-    {
-	return getProviders().getContextResolver(com.atomgraph.processor.model.Application.class, null).getContext(com.atomgraph.processor.model.Application.class);
-    }
-
     public Ontology getOntology()
     {
-        return getOntology(getApplication().getOntology().getURI());
+        return getOntology(getOntologyURI());
     }
         
     public Ontology getOntology(String ontologyURI)
@@ -211,14 +214,14 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         }
     }
 
+    public String getOntologyURI()
+    {
+        return ontologyURI;
+    }
+
     public OntModelSpec getOntModelSpec()
     {
         return ontModelSpec;
     }
- 
-    public Providers getProviders()
-    {
-        return providers;
-    }
-    
+
 }
