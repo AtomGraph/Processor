@@ -184,7 +184,7 @@ public class Application extends com.atomgraph.core.Application
 	return singletons;
     }
     
-    public boolean getCacheSitemap()
+    public final boolean getCacheSitemap()
     {
         return cacheSitemap;
     }

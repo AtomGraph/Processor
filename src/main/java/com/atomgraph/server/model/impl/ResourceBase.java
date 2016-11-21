@@ -182,12 +182,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return this;
     }
 
-    /*
     @Override
     public Response get()
     {
         // transition to a URI of another application state (HATEOAS)
-        if (!getState().getURI().equals(getUriInfo().getRequestUri().toString()))
+        if (!isDefaultState())
         {
             if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", getState().getURI());
             return Response.seeOther(URI.create(getState().getURI())).build();
@@ -195,7 +194,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         return super.get();
     }
-    */
+    
+    public boolean isDefaultState()
+    {
+        return getState().getURI().equals(getUriInfo().getRequestUri().toString());
+    }
     
     /**
      * Handles POST method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.

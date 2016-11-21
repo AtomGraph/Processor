@@ -215,7 +215,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
      * @param ontModelSpec ontology model specification
      * @return ontology model
      */
-    public OntModel getOntModel(String ontologyURI, OntModelSpec ontModelSpec)
+    public static OntModel getOntModel(String ontologyURI, OntModelSpec ontModelSpec)
     {
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        

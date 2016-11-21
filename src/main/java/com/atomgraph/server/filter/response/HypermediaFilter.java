@@ -95,7 +95,6 @@ public class HypermediaFilter implements ContainerResponseFilter
             state.addProperty(LDTDH.constructor, addInstance(state.getModel(), forClass)); // connects constructor state to CONSTRUCTed template
         }
 
-
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
         response.setEntity(state.getModel().add((Model)response.getEntity()));
         
