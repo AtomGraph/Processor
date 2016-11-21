@@ -35,8 +35,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.core.client.SPARQLClient;
 import com.atomgraph.core.exception.NotFoundException;
+import com.atomgraph.core.model.GraphStore;
+import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.InsertDataBuilder;
 import com.atomgraph.core.util.Link;
@@ -93,19 +94,20 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param request current request
      * @param servletConfig webapp context
      * @param mediaTypes supported media types
-     * @param sparqlClient SPARQL client
      * @param application LDT application
+     * @param sparqlEndpoint SPARQL endpoint
+     * @param graphStore Graph Store
      * @param ontology LDT ontology
      * @param templateCall templateCall
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
-    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient,
-            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
+            @Context com.atomgraph.processor.model.Application application, @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
+            @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, sparqlClient);
+	super(uriInfo, request, servletConfig, mediaTypes, application, sparqlEndpoint, graphStore);
 
         if (templateCall == null)
         {
@@ -154,6 +156,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @return resource object
      */
     @Path("{path: .+}")
+    @Override
     public Object getSubResource()
     {
         if (getTemplateCall().getTemplate().getLoadClass() != null)
@@ -232,7 +235,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
 
-        getSPARQLClient().update(insertDataRequest);
+        getSPARQLEndpoint().post(insertDataRequest, null, null);
 	
 	URI createdURI = UriBuilder.fromUri(created.getURI()).build();
 	if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
@@ -300,7 +303,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         UpdateRequest deleteInsertRequest = getUpdateRequest(model);
         if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
-        getSPARQLClient().update(deleteInsertRequest);
+        getSPARQLEndpoint().post(deleteInsertRequest, null, null);
         
 	if (description.isEmpty()) return Response.created(getURI()).build();
 	else return getResponse(model);
@@ -317,7 +320,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {	
         UpdateRequest request = getUpdateRequest((Model)null);
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-        getSPARQLClient().update(request);
+        getSPARQLEndpoint().post(request, null, null);
 	
 	return Response.noContent().build();
     }

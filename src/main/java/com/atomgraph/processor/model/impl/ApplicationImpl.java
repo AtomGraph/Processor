@@ -17,7 +17,7 @@ package com.atomgraph.processor.model.impl;
 
 import com.atomgraph.core.model.Service;
 import com.atomgraph.processor.model.Application;
-import org.apache.jena.ontology.Ontology;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  *
@@ -25,9 +25,9 @@ import org.apache.jena.ontology.Ontology;
  */
 public class ApplicationImpl extends com.atomgraph.core.model.impl.ApplicationImpl implements Application
 {
-    private final Ontology ontology;
+    private final Resource ontology;
 
-    public ApplicationImpl(Service service, Ontology ontology)
+    public ApplicationImpl(Service service, Resource ontology)
     {
         super(service);
         if (ontology == null) throw new IllegalArgumentException("Resource cannot be null");        
@@ -35,7 +35,7 @@ public class ApplicationImpl extends com.atomgraph.core.model.impl.ApplicationIm
     }
     
     @Override
-    public Ontology getOntology()
+    public Resource getOntology()
     {
         return ontology;
     }

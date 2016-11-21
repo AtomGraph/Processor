@@ -41,6 +41,7 @@ import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.processor.vocabulary.LDT;
+import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,13 +55,30 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 {
     private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
     
-    private final String ontologyURI;
+    @Context Providers providers;
+
     private final OntModelSpec ontModelSpec;
+    private final String ontologyURI;
     
     public OntologyProvider(@Context ServletConfig servletConfig)
     {
+        this(getOntologyURI(servletConfig), getOntModelSpec(servletConfig));
+    }
+    
+    public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec)
+    {
         super(Ontology.class);
-
+        
+        if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
+        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
+        
+        this.ontologyURI = ontologyURI;
+        this.ontModelSpec = ontModelSpec;
+    }
+    
+    public static String getOntologyURI(ServletConfig servletConfig)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
         
         Object ontologyURIParam = servletConfig.getInitParameter(LDT.ontology.getURI());
         if (ontologyURIParam == null)
@@ -68,8 +86,13 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
             throw new ConfigurationException(LDT.ontology);
         }
-        ontologyURI = ontologyURIParam.toString();
-        
+        return ontologyURIParam.toString();
+    }
+    
+    public static OntModelSpec getOntModelSpec(ServletConfig servletConfig)
+    {
+        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
+
         Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
         if (rulesParam == null)
         {
@@ -77,13 +100,14 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             throw new ConfigurationException(AP.sitemapRules);
         }
         List<Rule> rules = Rule.parseRules(rulesParam.toString());
-        this.ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
+        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
         Reasoner reasoner = new GenericRuleReasoner(rules);
         //reasoner.setDerivationLogging(true);
         //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        this.ontModelSpec.setReasoner(reasoner);
+        ontModelSpec.setReasoner(reasoner);
+        return ontModelSpec;
     }
-        
+    
     public class ImportCycleChecker
     {
         private final Map<Ontology, Boolean> marked = new HashMap<>(), onStack = new HashMap<>();
@@ -148,16 +172,20 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         return getOntology();
     }
-
+    
     public Ontology getOntology()
     {
-        return getOntology(getOntologyURI());
+        return getOntology(getOntologyURI(), getOntModelSpec());
+    }
+    
+    public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
+    {
+        return getOntology(getOntModel(ontologyURI, ontModelSpec), ontologyURI);
     }
         
-    public Ontology getOntology(String ontologyURI)
+    public Ontology getOntology(OntModel ontModel, String ontologyURI) // String ontologyURI, OntModelSpec ontModelSpec)
     {
-        Ontology ontology = getOntModel(ontologyURI, getOntModelSpec()).getOntology(ontologyURI);
-
+        Ontology ontology = ontModel.getOntology(ontologyURI);
         if (ontology == null)
         {
             if (log.isErrorEnabled()) log.error("Sitemap ontology resource '{}' not found; processing aborted", ontologyURI);
@@ -175,6 +203,11 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return ontology;
     }
 
+    public OntModel getOntModel()
+    {
+        return getOntModel(getOntologyURI(), getOntModelSpec());
+    }
+    
     /**
      * Loads ontology by URI.
      * 
@@ -218,10 +251,15 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         return ontologyURI;
     }
-
+    
     public OntModelSpec getOntModelSpec()
     {
         return ontModelSpec;
     }
 
+    public Providers getProviders()
+    {
+        return providers;
+    }
+    
 }

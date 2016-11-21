@@ -32,13 +32,17 @@ import org.apache.jena.util.LocationMapper;
 import com.atomgraph.core.provider.ApplicationProvider;
 import com.atomgraph.core.provider.ClientProvider;
 import com.atomgraph.core.provider.DataManagerProvider;
-import com.atomgraph.core.provider.GraphStoreClientProvider;
 import com.atomgraph.core.provider.MediaTypesProvider;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.provider.QueryParamProvider;
 import com.atomgraph.core.io.ResultSetProvider;
-import com.atomgraph.core.provider.SPARQLClientProvider;
 import com.atomgraph.core.io.UpdateRequestReader;
+import com.atomgraph.core.provider.DatasetProvider;
+import com.atomgraph.core.provider.GraphStoreClientProvider;
+import com.atomgraph.core.provider.GraphStoreProvider;
+import com.atomgraph.core.provider.SPARQLClientProvider;
+import com.atomgraph.core.provider.SPARQLEndpointProvider;
+import com.atomgraph.core.provider.ServiceProvider;
 import com.atomgraph.server.mapper.ClientExceptionMapper;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
 import com.atomgraph.server.mapper.ModelExceptionMapper;
@@ -114,11 +118,15 @@ public class Application extends com.atomgraph.core.Application
 	classes.add(ResourceBase.class); // handles /
 
         singletons.add(new ApplicationProvider(getServletConfig()));
+	singletons.add(new ServiceProvider(getServletConfig()));
         singletons.add(new OntologyProvider(getServletConfig()));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
-        singletons.add(new SPARQLClientProvider(getServletConfig()));
-        singletons.add(new GraphStoreClientProvider(getServletConfig()));
+        singletons.add(new SPARQLEndpointProvider(getServletConfig()));
+        singletons.add(new GraphStoreProvider(getServletConfig()));
+        singletons.add(new DatasetProvider());
+	singletons.add(new SPARQLClientProvider());
+	singletons.add(new GraphStoreClientProvider());
 	singletons.add(new SkolemizingModelProvider());
 	singletons.add(new ResultSetProvider());
 	singletons.add(new QueryParamProvider());
@@ -138,22 +146,6 @@ public class Application extends com.atomgraph.core.Application
      
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
-
-    /*
-    private static void initPersonalities(Personality<RDFNode> personality)
-    {
-        if (personality == null) throw new IllegalArgumentException("Personality<RDFNode> cannot be null");
-        
-        personality.add(Argument.class, ArgumentImpl.factory);
-        personality.add(Template.class, TemplateImpl.factory);
-        personality.add(TemplateCall.class, TemplateCallImpl.factory);
-    }
-    
-    public void initOntDocumentManager(FileManager fileManager)
-    {
-        OntDocumentManager.getInstance().setFileManager(fileManager);
-    }
-    */
     
     public FileManager getFileManager(ServletConfig servletConfig)
     {
@@ -196,28 +188,5 @@ public class Application extends com.atomgraph.core.Application
     {
         return cacheSitemap;
     }
-    
-    /*
-    public Query getQuery(DatatypeProperty property)
-    {
-        return getQuery(getServletConfig().getServletContext(), property);
-    }
-        
-    public final Query getQuery(ServletContext servletContext, DatatypeProperty property)
-    {
-        if (servletContext == null) throw new IllegalArgumentException("ServletContext cannot be null");
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        Object query = servletContext.getInitParameter(property.getURI());
-        if (query == null)
-        {
-            if (log.isErrorEnabled()) log.error("Query property '{}' not configured", property);
-            throw new ConfigurationException(property);
-        }
-        
-        ParameterizedSparqlString queryString = new ParameterizedSparqlString(query.toString());
-        return queryString.asQuery();
-    }
-    */
     
 }

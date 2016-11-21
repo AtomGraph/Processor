@@ -28,9 +28,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.core.client.SPARQLClient;
-import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.model.GraphStore;
+import com.atomgraph.core.model.SPARQLEndpoint;
+import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.util.TemplateCall;
@@ -49,19 +49,17 @@ public class Item extends ResourceBase
 {
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
-
-    private final GraphStore graphStore;
     
-    public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient, @Context GraphStore graphStore,
-            @Context Application application, @Context Ontology ontology, @Context TemplateCall stateBuilder,
+    public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
+            @Context Application application, @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
+            @Context Ontology ontology, @Context TemplateCall stateBuilder,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, sparqlClient,
-                application, ontology, stateBuilder,
+	super(uriInfo, request, servletConfig, mediaTypes,
+                application, sparqlEndpoint, graphStore,
+                ontology, stateBuilder,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
-        this.graphStore = graphStore;
     }
     
     @Override
@@ -106,11 +104,6 @@ public class Item extends ResourceBase
     {
 	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
         return getGraphStore().delete(Boolean.FALSE, getURI());
-    }
-    
-    public GraphStore getGraphStore()
-    {
-        return graphStore;
     }
     
 }

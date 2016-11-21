@@ -16,7 +16,8 @@
 package com.atomgraph.server.model.impl;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.core.client.SPARQLClient;
+import com.atomgraph.core.model.GraphStore;
+import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.query.QueryBuilder;
@@ -46,13 +47,14 @@ public class ContainerBase extends ResourceBase
     private QueryBuilder queryBuilder;
     
     public ContainerBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig,
-            @Context MediaTypes mediaTypes, @Context SPARQLClient sparqlClient,
-            @Context Application application, @Context Ontology ontology, @Context TemplateCall stateBuilder,
+            @Context MediaTypes mediaTypes,
+            @Context Application application, @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
+            @Context Ontology ontology, @Context TemplateCall stateBuilder,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-        super(uriInfo, request, servletConfig,
-            mediaTypes, sparqlClient,
-            application, ontology, stateBuilder,
+        super(uriInfo, request, servletConfig, mediaTypes,
+            application, sparqlEndpoint, graphStore,
+            ontology, stateBuilder,
             httpHeaders, resourceContext);
     }
     
