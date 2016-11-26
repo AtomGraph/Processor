@@ -61,6 +61,8 @@ import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.TemplateProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
+import java.io.IOException;
+import javax.ws.rs.WebApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.topbraid.spin.arq.ARQFactory;
@@ -152,11 +154,18 @@ public class Application extends com.atomgraph.core.Application
         String uriConfig = "/WEB-INF/classes/location-mapping.n3"; // TO-DO: make configurable (in web.xml)
         String syntax = FileUtils.guessLang(uriConfig);
         Model mapping = ModelFactory.createDefaultModel();
-        InputStream in = servletConfig.getServletContext().getResourceAsStream(uriConfig);
-        mapping.read(in, uriConfig, syntax) ;
-        FileManager fileManager = FileManager.get();
-        fileManager.setLocationMapper(new LocationMapper(mapping));
-        return fileManager;
+        try (InputStream in = servletConfig.getServletContext().getResourceAsStream(uriConfig))
+        {
+            mapping.read(in, uriConfig, syntax) ;
+            FileManager fileManager = FileManager.get();
+            fileManager.setLocationMapper(new LocationMapper(mapping));
+            return fileManager;
+        }
+        catch (IOException ex)
+        {
+            if (log.isDebugEnabled()) log.debug("Error reading location mapping: {}", uriConfig);
+            throw new WebApplicationException(ex);
+        }
     }
     
     /**
