@@ -18,18 +18,13 @@ package com.atomgraph.server.mapper;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.vocabulary.RDF;
 import java.net.URI;
-import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.exception.ModelException;
-import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,12 +55,14 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
                 header("Link", ontologyLink.toString()).
                 header("Link", baseUriLink.toString());
 
+        /*
         Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
             List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
             builder.header("Rules", RulePrinter.print(rules));
         }
+        */
         
         return builder.build();
     }

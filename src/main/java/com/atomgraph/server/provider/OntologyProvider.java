@@ -21,15 +21,11 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
@@ -39,7 +35,6 @@ import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.processor.vocabulary.LDT;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
@@ -62,7 +57,12 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public OntologyProvider(@Context ServletConfig servletConfig)
     {
-        this(getOntologyURI(servletConfig), getOntModelSpec(servletConfig));
+        this(getOntologyURI(servletConfig), OntModelSpec.OWL_MEM);
+    }
+
+    public OntologyProvider(String ontologyURI)
+    {
+        this(ontologyURI, OntModelSpec.OWL_MEM);
     }
     
     public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec)
@@ -89,6 +89,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         return ontologyURIParam.toString();
     }
     
+    /*
     public static OntModelSpec getOntModelSpec(ServletConfig servletConfig)
     {
         if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
@@ -107,6 +108,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         ontModelSpec.setReasoner(reasoner);
         return ontModelSpec;
     }
+    */
     
     public class ImportCycleChecker
     {
@@ -219,8 +221,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
-        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
-
+        
+        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {} using OntModelSpec: {}", ontologyURI, ontModelSpec);
         OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
         
         // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210

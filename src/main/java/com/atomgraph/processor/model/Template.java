@@ -51,7 +51,9 @@ public interface Template extends OntClass
         }
 
     };
-        
+    
+    Template getSuper();
+    
     UriTemplate getPath();
     
     String getSkolemTemplate();

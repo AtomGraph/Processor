@@ -46,6 +46,6 @@ public class AP
     
     public static final DatatypeProperty cacheSitemap = m_model.createDatatypeProperty( NS + "cacheSitemap" );
 
-    public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
+    // public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
 
 }

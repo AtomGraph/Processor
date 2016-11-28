@@ -100,10 +100,36 @@ public class TemplateImpl extends OntClassImpl implements Template
     }
 
     @Override
+    public Template getSuper()
+    {
+        ExtendedIterator<OntClass> superIt = listSuperClasses(true); // only direct superclasses
+        try
+        {
+            while (superIt.hasNext())
+            {
+                OntClass superClass = superIt.next();
+                if (superClass.canAs(Template.class))
+                {
+                    return superClass.as(Template.class);
+                }
+            }
+        }
+        finally
+        {
+            superIt.close();
+        }
+        
+        return null;
+    }
+    
+    @Override
     public UriTemplate getPath()
     {
         Statement path = getProperty(LDT.path);
         if (path != null) return new UriTemplate(path.getString());
+
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getPath();
         
         return null;
     }
@@ -111,36 +137,143 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public String getSkolemTemplate()
     {
-        return getStringValue(LDT.skolemTemplate);
+        String skolemTemplate = getStringValue(LDT.skolemTemplate);
+        if (skolemTemplate != null) return skolemTemplate;
+        
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getSkolemTemplate();
+
+        return null;
     }
 
     @Override
     public String getFragmentTemplate()
     {
-        return getStringValue(LDT.fragmentTemplate);
+        String fragmentTemplate = getStringValue(LDT.fragmentTemplate);
+        if (fragmentTemplate != null) return fragmentTemplate;
+        
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getFragmentTemplate();
+
+        return null;
     }
     
     @Override
     public Resource getQuery()
     {
-        return getPropertyResourceValue(LDT.query);
+        Resource query = getPropertyResourceValue(LDT.query);
+        if (query != null) return query;
+        
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getQuery();
+        
+        return null;
     }
 
     @Override
     public Resource getUpdate()
     {
-        return getPropertyResourceValue(LDT.update);
+        Resource update = getPropertyResourceValue(LDT.update);
+        if (update != null) return update;
+        
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getUpdate();
+        
+        return null;
     }
 
+    @Override
+    public List<Locale> getLanguages()
+    {
+        List<Locale> languages = getLanguages(LDT.lang);
+        if (!languages.isEmpty()) return languages;
+
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getLanguages();
+
+        return new ArrayList<>();
+    }
+
+    protected List<Locale> getLanguages(Property property)
+    {
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        
+        List<Locale> languages = new ArrayList<>();
+        StmtIterator it = listProperties(property);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                if (!stmt.getObject().isLiteral())
+                {
+                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (ldt:language is not literal)", getURI());
+                    throw new OntologyException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
+                }
+                
+                languages.add(Locale.forLanguageTag(stmt.getString()));
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return languages;
+    }
+        
+    @Override
+    public Resource getLoadClass()
+    {
+        Resource loadClass = getPropertyResourceValue(LDT.loadClass);
+        if (loadClass != null) return loadClass;
+        
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getLoadClass();
+
+        return null;
+    }
+    
+    /**
+     * Returns <code>Cache-Control</code> HTTP header value, specified on an ontology class with given property.
+     * 
+     * @return CacheControl instance or null
+     */
+    @Override
+    public CacheControl getCacheControl()
+    {
+        if (hasProperty(LDT.cacheControl))
+            return CacheControl.valueOf(getPropertyValue(LDT.cacheControl).asLiteral().getString()); // will fail on bad config
+
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getCacheControl(); 
+        
+	return null;
+    }
+    
     @Override
     public Double getPriority()
     {
         Statement priority = getProperty(LDT.priority);
         if (priority != null) return priority.getDouble();
         
+        Template superTemplate = getSuper();
+        if (superTemplate != null) return superTemplate.getPriority();
+        
         return Double.valueOf(0);
     }
 
+    protected String getStringValue(Property property)
+    {
+	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+
+        if (hasProperty(property) && getPropertyValue(property).isLiteral())
+            return getPropertyValue(property).asLiteral().getString();
+        
+        return null;
+    }
+        
     @Override
     public Map<Property, Argument> getArguments()
     {
@@ -251,71 +384,6 @@ public class TemplateImpl extends OntClassImpl implements Template
         return defaultValues;
     }
     
-    @Override
-    public List<Locale> getLanguages()
-    {
-        return getLanguages(LDT.lang);
-    }
-
-    protected List<Locale> getLanguages(Property property)
-    {
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-        
-        List<Locale> languages = new ArrayList<>();
-        StmtIterator it = listProperties(property);
-        
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                if (!stmt.getObject().isLiteral())
-                {
-                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (ldt:language is not literal)", getURI());
-                    throw new OntologyException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
-                }
-                
-                languages.add(Locale.forLanguageTag(stmt.getString()));
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        return languages;
-    }
-        
-    @Override
-    public Resource getLoadClass()
-    {
-        return getPropertyResourceValue(LDT.loadClass);
-    }
-    
-    /**
-     * Returns <code>Cache-Control</code> HTTP header value, specified on an ontology class with given property.
-     * 
-     * @return CacheControl instance or null
-     */
-    @Override
-    public CacheControl getCacheControl()
-    {
-        if (hasProperty(LDT.cacheControl))
-            return CacheControl.valueOf(getPropertyValue(LDT.cacheControl).asLiteral().getString()); // will fail on bad config
-
-	return null;
-    }
-    
-    protected String getStringValue(Property property)
-    {
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        if (hasProperty(property) && getPropertyValue(property).isLiteral())
-            return getPropertyValue(property).asLiteral().getString();
-        
-        return null;
-    }
-
     @Override
     public QueryBuilder getQueryBuilder(URI base)
     {

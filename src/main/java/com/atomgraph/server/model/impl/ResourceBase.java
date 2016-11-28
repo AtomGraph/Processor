@@ -19,8 +19,6 @@ package com.atomgraph.server.model.impl;
 import org.apache.jena.ontology.*;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.sparql.util.Loader;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.util.iterator.ExtendedIterator;
@@ -47,7 +45,6 @@ import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
-import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
@@ -373,12 +370,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null);
         rb.header("Link", baseLink.toString());
         
+        /*
         Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
             rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
         }
+        */
         
         return rb;
     }
