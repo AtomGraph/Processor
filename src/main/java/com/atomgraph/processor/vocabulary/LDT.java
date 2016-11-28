@@ -73,8 +73,6 @@ public final class LDT
 
     public static final AnnotationProperty priority = m_model.createAnnotationProperty( NS + "priority" );
 
-    public static final AnnotationProperty tunnel = m_model.createAnnotationProperty( NS + "tunnel" );
-
     public static final AnnotationProperty skolemTemplate = m_model.createAnnotationProperty( NS + "skolemTemplate" );
 
     public static final AnnotationProperty fragmentTemplate = m_model.createAnnotationProperty( NS + "fragmentTemplate" );

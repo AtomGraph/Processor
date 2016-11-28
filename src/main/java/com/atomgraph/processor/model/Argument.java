@@ -21,9 +21,5 @@ package com.atomgraph.processor.model;
  */
 public interface Argument extends org.topbraid.spin.model.Argument
 {
-
-    // Template getTemplate()?
-    
-    Boolean isTunnelled();
     
 }

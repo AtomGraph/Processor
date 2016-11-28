@@ -15,13 +15,13 @@
  */
 package com.atomgraph.processor.model.impl;
 
+import com.atomgraph.processor.model.Argument;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
 import org.apache.jena.enhanced.Implementation;
 import org.apache.jena.graph.Node;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.vocabulary.RDF;
-import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,14 +68,6 @@ public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl impl
     public ArgumentImpl(Node node, EnhGraph enhGraph)
     {
         super(node, enhGraph);
-    }
-    
-    @Override
-    public Boolean isTunnelled()
-    {
-        if (getProperty(LDT.tunnel) != null) return getProperty(LDT.tunnel).getBoolean();
-        
-        return null;
     }
     
     @Override

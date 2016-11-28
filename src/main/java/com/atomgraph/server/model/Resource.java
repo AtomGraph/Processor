@@ -18,6 +18,7 @@ package com.atomgraph.server.model;
 
 import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.util.TemplateCall;
+import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -27,6 +28,8 @@ public interface Resource extends QueriedResource
 {
         
     Application getApplication();
+    
+    Ontology getOntology();
     
     TemplateCall getTemplateCall();
     
