@@ -74,6 +74,15 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         
         this.ontologyURI = ontologyURI;
         this.ontModelSpec = ontModelSpec;
+        
+        // materialize OntModel inferences to avoid invoking rules engine on every request
+        if (ontModelSpec.getReasoner() != null)
+        {
+            OntModel infModel = getOntModel(ontologyURI, ontModelSpec);
+            OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
+            materializedModel.add(infModel);
+            OntDocumentManager.getInstance().addModel(ontologyURI, materializedModel, true);
+        }
     }
     
     public static String getOntologyURI(ServletConfig servletConfig)
@@ -107,7 +116,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         ontModelSpec.setReasoner(reasoner);
         return ontModelSpec;
     }
-    
+        
     public class ImportCycleChecker
     {
         private final Map<Ontology, Boolean> marked = new HashMap<>(), onStack = new HashMap<>();
@@ -174,8 +183,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     }
     
     public Ontology getOntology()
-    {
-        return getOntology(getOntologyURI(), getOntModelSpec());
+    {        
+        return getOntology(getOntologyURI(), OntModelSpec.OWL_MEM);
     }
     
     public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
@@ -201,11 +210,6 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         }
     
         return ontology;
-    }
-
-    public OntModel getOntModel()
-    {
-        return getOntModel(getOntologyURI(), getOntModelSpec());
     }
     
     /**
@@ -256,7 +260,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         return ontModelSpec;
     }
-
+    
     public Providers getProviders()
     {
         return providers;
