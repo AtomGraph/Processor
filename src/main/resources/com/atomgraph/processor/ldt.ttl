@@ -25,20 +25,20 @@
 
 # SYSTEM PROPERTIES
 
-<#baseUri> a owl:ObjectProperty, owl:InverseFunctionalProperty ;
+<#baseUri> a owl:ObjectProperty, owl:FunctionalProperty, owl:InverseFunctionalProperty ;
     rdfs:domain <#Application> ;
     rdfs:label "Application base URI" ;
     rdfs:comment "Base URI uniquely identifies the application" ;
     rdfs:isDefinedBy <#> .
 
-<#ontology> a owl:ObjectProperty ;
+<#ontology> a owl:ObjectProperty, owl:FunctionalProperty ;
     rdfs:domain <#Application> ;
     rdfs:range <#Ontology> ;
     rdfs:label "Application ontology" ;
     rdfs:comment "OWL ontology with resource classes (templates)" ;
     rdfs:isDefinedBy <#> .
 
-<#service> a owl:ObjectProperty ;
+<#service> a owl:ObjectProperty, owl:FunctionalProperty ;
     rdfs:domain <#Application> ;
     rdfs:range sd:Service ;
     rdfs:label "SPARQL service" ;
