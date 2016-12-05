@@ -25,7 +25,7 @@ import com.atomgraph.processor.exception.ArgumentException;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class SPINArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ArgumentException>
+public class ArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ArgumentException>
 {
     
     @Override
