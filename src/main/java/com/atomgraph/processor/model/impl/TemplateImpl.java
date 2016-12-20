@@ -48,6 +48,7 @@ import org.apache.jena.ontology.OntClass;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
+import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
@@ -262,25 +263,36 @@ public class TemplateImpl extends OntClassImpl implements Template
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
         List<Locale> languages = new ArrayList<>();
-        StmtIterator it = listProperties(property);
-        
-        try
+        Resource langs = getPropertyResourceValue(property);
+        if (langs != null)
         {
-            while (it.hasNext())
+            if (!langs.canAs(RDFList.class))
             {
-                Statement stmt = it.next();
-                if (!stmt.getObject().isLiteral())
-                {
-                    if (log.isErrorEnabled()) log.error("Illegal language value for template '{}' (ldt:language is not literal)", getURI());
-                    throw new OntologyException("Illegal non-literal ldt:language value for template '" + getURI() +"'");
-                }
-                
-                languages.add(Locale.forLanguageTag(stmt.getString()));
+                if (log.isErrorEnabled()) log.error("ldt:lang value is not an rdf:List on template '{}'", getURI());
+                throw new OntologyException("ldt:lang value is not an rdf:List on template  '" + getURI() +"'");
             }
-        }
-        finally
-        {
-            it.close();
+
+            // could use list order as priority (quality value q=)
+            RDFList list = langs.as(RDFList.class);
+            ExtendedIterator<RDFNode> it = list.iterator();
+            try
+            {
+                while (it.hasNext())
+                {
+                    RDFNode langTag = it.next();
+                    if (!langTag.isLiteral())
+                    {
+                        if (log.isErrorEnabled()) log.error("Non-literal language tag (ldt:lang member) on template '{}'", getURI());
+                        throw new OntologyException("Non-literal language tag (ldt:lang member) on template '" + getURI() +"'");
+                    }
+
+                    languages.add(Locale.forLanguageTag(langTag.asLiteral().getString()));
+                }
+            }
+            finally
+            {
+                it.close();
+            }
         }
         
         return languages;

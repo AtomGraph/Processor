@@ -332,6 +332,7 @@ public class Skolemizer
         return baseUriBuilder;
     }
 
+    // TO-DO: move to a LDTDH (document hierarchy) specific Skolemizer subclass
     public UriBuilder getAbsolutePathBuilder(OntClass ontClass)
     {
         if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
