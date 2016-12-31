@@ -16,6 +16,7 @@
 
 package com.atomgraph.processor.exception;
 
+import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
 
 /**
@@ -30,9 +31,9 @@ public class ArgumentException extends RuntimeException
         super("Parameter '" + paramName + "' not supported by Template '" + template.toString() + "'");
     }
 
-    public ArgumentException(String paramName, Template template, boolean required)
+    public ArgumentException(Argument argument, Template template)
     {
-        super("Parameter '" + paramName + "' is not optional in Template '" + template.toString() + "' but no value is supplied");
+        super("Argument '" + argument.getURI() + "' is not optional in Template '" + template.toString() + "' but no value is supplied");
     }
     
 }

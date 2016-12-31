@@ -18,13 +18,12 @@ package com.atomgraph.processor.util;
 import com.atomgraph.processor.exception.ArgumentException;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
-import org.apache.http.NameValuePair;
+import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
@@ -70,13 +69,9 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     {
 	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
         
-        Iterator<Map.Entry<Property, RDFNode>> entryIt = values.entrySet().iterator();
-        
-        while (entryIt.hasNext())
-        {
-            Map.Entry<Property, RDFNode> entry = entryIt.next();
+        Set<Entry<Property, RDFNode>> entries = values.entrySet();        
+        for (Entry<Property, RDFNode> entry : entries)
             replaceProperty(entry.getKey(), entry.getValue());
-        }
         
         return this;
     }
@@ -93,7 +88,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             if (arg == null) throw new ArgumentException(paramName, getTemplate());
         }
         
-        // iterate arguments to find required (non-optional) ones
+        // iterate arguments to find those that match query param names
         Set<String> argNames = getTemplate().getArgumentsMap().keySet();
         for (String argName : argNames)
         {
@@ -101,45 +96,39 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             if (queryParams.containsKey(argName))
             {            
                 String argValue = queryParams.getFirst(argName);
+                // TO-DO: allow multiple query param values?
                 replaceProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
             }
-            else
-                if (!arg.isOptional())
-                    throw new ArgumentException(argName, getTemplate(), true);
         }
         
         return this;
     }
-
-    public TemplateCall applyArguments(List<NameValuePair> queryParams)
+    
+    public TemplateCall validateOptionals()
     {
-	if (queryParams == null) throw new IllegalArgumentException("Query parameter list cannot be null");
-
-        // iterate query params to find unrecognized ones
-        for (NameValuePair param : queryParams)
+        Set<Entry<Property, Argument>> argEntries = getTemplate().getArguments().entrySet();
+        for (Entry<Property, Argument> entry : argEntries)
         {
-            Argument arg = getTemplate().getArgumentsMap().get(param.getName());
-            if (arg == null) throw new ArgumentException(param.getName(), getTemplate());
-        }
-        
-        // iterate arguments to find required (non-optional) ones
-        Set<String> argNames = getTemplate().getArgumentsMap().keySet();
-        for (String argName : argNames)
-        {
-            Argument arg = getTemplate().getArgumentsMap().get(argName);
-            String argValue = null;
-            
-            for (NameValuePair param : queryParams)
-                if (param.getName().equals(argName))
-                    argValue = param.getValue();
-
-            if (argValue != null)
-                replaceProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
-            else if (!arg.isOptional())
-                throw new ArgumentException(argName, getTemplate(), true);
+            if (!getResource().hasProperty(entry.getKey()) && !entry.getValue().isOptional())
+                throw new ArgumentException(entry.getValue(), getTemplate());
         }
         
         return this;
+    }
+    
+    public QuerySolutionMap getQuerySolutionMap()
+    {
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        
+        Set<Entry<String, Argument>> argEntries = getTemplate().getArgumentsMap().entrySet();
+        for (Entry<String, Argument> entry : argEntries)
+            if (getResource().hasProperty(entry.getValue().getPredicate()))
+            {
+                RDFNode value = getResource().getProperty(entry.getValue().getPredicate()).getObject();
+                qsm.add(entry.getKey(), value);
+            }
+        
+        return qsm;
     }
     
     /*

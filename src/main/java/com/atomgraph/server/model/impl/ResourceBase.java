@@ -79,7 +79,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
-    private QuerySolutionMap querySolutionMap;
+    private final QuerySolutionMap querySolutionMap;
     private QueryBuilder queryBuilder;
     private ModifyBuilder modifyBuilder;
 
@@ -115,20 +115,20 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             throw new NotFoundException("Resource has not matched any template");
         }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");
-	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
-	if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
+        if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
         // we are not making permanent changes to base ontology because OntologyProvider always makes a copy
         this.application = application;
         this.ontology = ontology;
         this.ontResource = ontology.getOntModel().createOntResource(getURI().toString());
         this.templateCall = templateCall;
-        this.state = templateCall.build();
-	this.httpHeaders = httpHeaders;
+        this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-        this.querySolutionMap = new QuerySolutionMap();
-	this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+        this.querySolutionMap = templateCall.getQuerySolutionMap();
+        this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+        this.state = templateCall.build(); // this goes last as resource changes after build()
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
@@ -578,6 +578,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return application;
     }
  
+    @Override
     public Ontology getOntology()
     {
         return ontology;
