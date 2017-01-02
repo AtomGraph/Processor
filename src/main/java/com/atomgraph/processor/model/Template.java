@@ -42,10 +42,10 @@ public interface Template extends OntClass
         @Override
         public int compare(Template template1, Template template2)
         {
-            double priority1 = template1.getPriority();
-            double priority2 = template2.getPriority();
-            if (priority2 > priority1) return -1;
-            if (priority2 < priority1) return 1;
+            // Template always has default priority
+            double diff = template2.getPriority() - template1.getPriority();
+            if (diff > 0) return 1;
+            if (diff < 0) return -1;
             
             return UriTemplate.COMPARATOR.compare(template1.getPath(), template2.getPath());
         }

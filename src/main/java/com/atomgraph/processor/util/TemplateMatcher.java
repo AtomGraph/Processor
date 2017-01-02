@@ -55,10 +55,7 @@ public class TemplateMatcher
             @Override
             public int compare(TemplatePrecedence template1, TemplatePrecedence template2)
             {
-                int diff = template2.getPrecedence() - template1.getPrecedence();
-                if (diff != 0) return diff;
-                
-                return Template.COMPARATOR.compare(template1.getTemplate(), template2.getTemplate());
+                return template2.getPrecedence() - template1.getPrecedence();
             }
 
         };
@@ -98,10 +95,7 @@ public class TemplateMatcher
             if (obj == null) return false;
             if (getClass() != obj.getClass()) return false;
             final TemplatePrecedence other = (TemplatePrecedence) obj;
-            if (!Objects.equals(getPrecedence(), other.getPrecedence())) return false;
-            if (!Objects.equals(getTemplate().getPriority(), other.getTemplate().getPriority())) return false;
-            if (!Objects.equals(getTemplate().getPath(), other.getTemplate().getPath())) return false;
-            return true;
+            return Objects.equals(getPrecedence(), other.getPrecedence());
         }
         
         @Override
@@ -234,21 +228,28 @@ public class TemplateMatcher
     {
 	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
-        List<TemplatePrecedence> matches = match(ontology, path, 0);
-        if (!matches.isEmpty())
+        List<TemplatePrecedence> precedences = match(ontology, path, 0);
+        if (!precedences.isEmpty())
         {
-            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, matches);
-            Collections.sort(matches, TemplatePrecedence.COMPARATOR);
+            // step 1: collect matching Templates with highest import precedence
+            List<Template> topMatches = new ArrayList<>();
+            Collections.sort(precedences, TemplatePrecedence.COMPARATOR);
+            TemplatePrecedence maxPrecedence = precedences.get(0);
+            for (TemplatePrecedence precedence : precedences)
+                if (precedence.equals(maxPrecedence)) topMatches.add(precedence.getTemplate());
 
-            TemplatePrecedence match = matches.get(0);
-            if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match.getTemplate());
+            // step 2: Template with the highest priority is the match
+            if (log.isTraceEnabled()) log.trace("{} path matched these Templates: {} (selecting the first UriTemplate)", path, precedences);
+            Collections.sort(topMatches, Template.COMPARATOR);
+            Template match = topMatches.get(0);
+            if (log.isDebugEnabled()) log.debug("Path: {} matched Template: {}", path, match);
             
-            // Check for conflicts: Templates with identical UriTemplate and precedence
-            for (TemplatePrecedence precedence : matches)
-                if (precedence != match && precedence.equals(match))
-                    if (log.isErrorEnabled()) log.error("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, precedence.getTemplate());
+            // step3: check for conflicts (Templates with equal priority and UriTemplate)
+            for (Template template : topMatches)
+                if (template != match && template.equals(match))
+                    if (log.isWarnEnabled()) log.warn("Path: {} has conflicting Template: {} (it is equal to the matched one)", path, template);
 
-            return match.getTemplate();
+            return match;
         }
         
         if (log.isDebugEnabled()) log.debug("Path {} has no Template match in this OntModel", path);
