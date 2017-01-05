@@ -20,13 +20,13 @@ import org.apache.jena.datatypes.RDFDatatype;
 import org.apache.jena.graph.Node;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.update.UpdateRequest;
-import org.topbraid.spin.arq.ARQ2SPIN;
-import org.topbraid.spin.arq.ARQFactory;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.print.PrintContext;
-import org.topbraid.spin.model.update.Update;
-import org.topbraid.spin.system.SPINModuleRegistry;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.arq.ARQ2SPIN;
+import org.spinrdf.arq.ARQFactory;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.print.PrintContext;
+import org.spinrdf.model.update.Update;
+import org.spinrdf.system.SPINModuleRegistry;
+import org.spinrdf.vocabulary.SP;
 
 /**
  * SPARQL update builder based on SPIN RDF syntax

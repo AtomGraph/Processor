@@ -30,7 +30,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ArgumentImpl extends org.topbraid.spin.model.impl.ArgumentImpl implements Argument
+public class ArgumentImpl extends org.spinrdf.model.impl.ArgumentImpl implements Argument
 {
     
     private static final Logger log = LoggerFactory.getLogger(ArgumentImpl.class);

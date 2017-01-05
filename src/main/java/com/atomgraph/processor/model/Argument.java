@@ -19,7 +19,7 @@ package com.atomgraph.processor.model;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public interface Argument extends org.topbraid.spin.model.Argument
+public interface Argument extends org.spinrdf.model.Argument
 {
     
 }

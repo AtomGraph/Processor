@@ -29,15 +29,15 @@ import java.util.List;
 import java.util.Locale;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.arq.ARQ2SPIN;
-import org.topbraid.spin.arq.ARQFactory;
-import org.topbraid.spin.model.*;
-import org.topbraid.spin.model.print.PrintContext;
-import org.topbraid.spin.model.visitor.AbstractElementVisitor;
-import org.topbraid.spin.model.visitor.ElementVisitor;
-import org.topbraid.spin.model.visitor.ElementWalker;
-import org.topbraid.spin.system.SPINModuleRegistry;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.arq.ARQ2SPIN;
+import org.spinrdf.arq.ARQFactory;
+import org.spinrdf.model.*;
+import org.spinrdf.model.print.PrintContext;
+import org.spinrdf.model.visitor.AbstractElementVisitor;
+import org.spinrdf.model.visitor.ElementVisitor;
+import org.spinrdf.model.visitor.ElementWalker;
+import org.spinrdf.system.SPINModuleRegistry;
+import org.spinrdf.vocabulary.SP;
 
 /**
  * SPARQL query builder based on SPIN RDF syntax
@@ -47,10 +47,10 @@ import org.topbraid.spin.vocabulary.SP;
  * @see <a href="http://spinrdf.org/sp.html">SPIN - SPARQL Syntax</a>
  * @see <a href="http://topbraid.org/spin/api/">SPIN API</a>
  */
-public class QueryBuilder implements org.topbraid.spin.model.Query
+public class QueryBuilder implements org.spinrdf.model.Query
 {
     private static final Logger log = LoggerFactory.getLogger(QueryBuilder.class);
-    private final org.topbraid.spin.model.Query query;
+    private final org.spinrdf.model.Query query;
     private final List<SelectBuilder> subSelectBuilders = new ArrayList<>();
 
     private final ElementVisitor elementVisitor = new AbstractElementVisitor()
@@ -59,7 +59,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
 	@Override
 	public void visit(SubQuery subQuery)
 	{
-            org.topbraid.spin.model.Query sub = subQuery.getQuery();
+            org.spinrdf.model.Query sub = subQuery.getQuery();
             // only SELECTs can be subqueries??
             if (sub.canAs(Select.class))
             {
@@ -76,7 +76,7 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
      * 
      * @param query SPIN query resource
      */
-    protected QueryBuilder(org.topbraid.spin.model.Query query)
+    protected QueryBuilder(org.spinrdf.model.Query query)
     {
 	if (query == null) throw new IllegalArgumentException("SPIN Query cannot be null");
 
@@ -91,12 +91,12 @@ public class QueryBuilder implements org.topbraid.spin.model.Query
      * 
      * @return the query resource of this builder
      */
-    protected org.topbraid.spin.model.Query getQuery()
+    protected org.spinrdf.model.Query getQuery()
     {
 	return query;
     }
     
-    public static QueryBuilder fromQuery(org.topbraid.spin.model.Query query)
+    public static QueryBuilder fromQuery(org.spinrdf.model.Query query)
     {
 	return new QueryBuilder(query);
     }

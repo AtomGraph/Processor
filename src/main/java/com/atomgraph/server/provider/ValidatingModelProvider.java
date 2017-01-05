@@ -33,7 +33,7 @@ import com.atomgraph.processor.exception.ConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.constraints.ConstraintViolation;
+import org.spinrdf.constraints.ConstraintViolation;
 
 /**
  *

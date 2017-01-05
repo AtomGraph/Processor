@@ -53,10 +53,10 @@ import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.NamedGraph;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.vocabulary.SP;
-import org.topbraid.spin.vocabulary.SPIN;
+import org.spinrdf.model.NamedGraph;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.vocabulary.SP;
+import org.spinrdf.vocabulary.SPIN;
 
 /**
  * Base class of generic read-write Linked Data resources.

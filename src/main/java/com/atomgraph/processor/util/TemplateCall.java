@@ -29,7 +29,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.topbraid.spin.model.SPINFactory;
+import org.spinrdf.model.SPINFactory;
 
 /**
  *
@@ -122,14 +122,14 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     {
         QuerySolutionMap qsm = new QuerySolutionMap();
         
-        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(getTemplate().getQuery());
+        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(getTemplate().getQuery());
         if (spinTemplateCall != null)
         {
             qsm = spinTemplateCall.getInitialBinding();
             
-            List<org.topbraid.spin.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
+            List<org.spinrdf.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
             // add SPIN Arguments that match LDT Arguments (by predicate)
-            for (org.topbraid.spin.model.Argument spinArg : spinArgs)
+            for (org.spinrdf.model.Argument spinArg : spinArgs)
                 if (getTemplate().getArguments().containsKey(spinArg.getPredicate()) &&
                         getResource().hasProperty(spinArg.getPredicate()))
                 {

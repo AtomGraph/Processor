@@ -65,8 +65,8 @@ import java.io.IOException;
 import javax.ws.rs.WebApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.arq.ARQFactory;
-import org.topbraid.spin.system.SPINModuleRegistry;
+import org.spinrdf.arq.ARQFactory;
+import org.spinrdf.system.SPINModuleRegistry;
 
 /**
  *

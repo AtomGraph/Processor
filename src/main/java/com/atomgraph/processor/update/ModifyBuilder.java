@@ -19,15 +19,15 @@ package com.atomgraph.processor.update;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.vocabulary.RDF;
 import java.net.URI;
-import org.topbraid.spin.arq.ARQ2SPIN;
-import org.topbraid.spin.model.Element;
-import org.topbraid.spin.model.ElementList;
-import org.topbraid.spin.model.NamedGraph;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.Variable;
-import org.topbraid.spin.model.update.Modify;
-import org.topbraid.spin.model.update.Update;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.arq.ARQ2SPIN;
+import org.spinrdf.model.Element;
+import org.spinrdf.model.ElementList;
+import org.spinrdf.model.NamedGraph;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.Variable;
+import org.spinrdf.model.update.Modify;
+import org.spinrdf.model.update.Update;
+import org.spinrdf.vocabulary.SP;
 
 /**
  * SPARQL DELETE/INSERT builder based on SPIN RDF syntax

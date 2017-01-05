@@ -46,15 +46,13 @@ import java.util.Iterator;
 import java.util.Map.Entry;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.query.ParameterizedSparqlString;
-import org.apache.jena.query.Query;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFList;
-import org.apache.jena.update.UpdateRequest;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.vocabulary.SP;
 
 /**
  *
@@ -352,43 +350,54 @@ public class TemplateImpl extends OntClassImpl implements Template
 	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
         
-        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
+        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
         if (spinTemplateCall != null)
-            return QueryBuilder.fromQuery(getQuery(spinTemplateCall, base), commandModel);
+            return QueryBuilder.fromQuery(getParameterizedSparqlString(spinTemplateCall, base).asQuery(), commandModel);
         else
         {
-            org.topbraid.spin.model.Query query = SPINFactory.asQuery(queryOrTemplateCall);
+            org.spinrdf.model.Query query = SPINFactory.asQuery(queryOrTemplateCall);
             if (query == null)
             {
                 if (log.isErrorEnabled()) log.error("Class '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getURI(), queryOrTemplateCall);
                 throw new OntologyException("Class '" + getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
-            return QueryBuilder.fromQuery(getQuery(query, base), commandModel);
+            return QueryBuilder.fromQuery(getParameterizedSparqlString(query, base).asQuery(), commandModel);
         }
     }
 
-    public Query getQuery(org.topbraid.spin.model.TemplateCall spinTemplateCall, URI base)
+    public ParameterizedSparqlString getParameterizedSparqlString(org.spinrdf.model.TemplateCall spinTemplateCall, URI base)
     {
 	if (spinTemplateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-	if (base == null) throw new IllegalArgumentException("URI cannot be null");
+	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
 
-        return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asQuery();
-    }
-
-    public Query getQuery(org.topbraid.spin.model.Query query, URI base)
-    {
-	if (query == null) throw new IllegalArgumentException("Query cannot be null");
-	if (base == null) throw new IllegalArgumentException("URI cannot be null");
-
-        Statement textStmt = query.getRequiredProperty(SP.text);
-        if (textStmt == null || !textStmt.getObject().isLiteral())
+        if (spinTemplateCall.getTemplate() == null)
         {
-            if (log.isErrorEnabled()) log.error("SPARQL string not defined for query '{}' (sp:text missing or not a string)", query);
-            throw new OntologyException("SPARQL string not defined for query '" + query + "'");                
+            if (log.isErrorEnabled()) log.error("SPIN Template of TemplateCall '{}' not found", spinTemplateCall);
+            throw new OntologyException("SPIN Template of TemplateCall '" + spinTemplateCall + "' not found");
+        }
+        if (spinTemplateCall.getTemplate().getBody() == null)
+        {
+            if (log.isErrorEnabled()) log.error("Body Command of SPIN Template '{}' not found (spin:body missing)", spinTemplateCall.getTemplate());
+            throw new OntologyException("Body Command of SPIN Template '" + spinTemplateCall.getTemplate() + "' not found (spin:body missing)");
         }
 
-        return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asQuery();
+        return new ParameterizedSparqlString(spinTemplateCall.getTemplate().getBody().toString(), null, base.toString());
+    }
+
+    public ParameterizedSparqlString getParameterizedSparqlString(org.spinrdf.model.Command command, URI base)
+    {
+	if (command == null) throw new IllegalArgumentException("Command cannot be null");
+	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
+
+        Statement textStmt = command.getRequiredProperty(SP.text);
+        if (textStmt == null || !textStmt.getObject().isLiteral())
+        {
+            if (log.isErrorEnabled()) log.error("SPARQL string not defined for Command '{}' (sp:text missing or not a string)", command);
+            throw new OntologyException("SPARQL string not defined for Command '" + command + "'");
+        }
+
+        return new ParameterizedSparqlString(textStmt.getString(), null, base.toString());
     }
     
     @Override
@@ -415,45 +424,24 @@ public class TemplateImpl extends OntClassImpl implements Template
 	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
+        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
         if (spinTemplateCall != null)
-            return ModifyBuilder.fromUpdate(getUpdateRequest(spinTemplateCall, base).getOperations().get(0), commandModel);
+            return ModifyBuilder.fromUpdate(getParameterizedSparqlString(spinTemplateCall, base).asUpdate().
+                    getOperations().get(0), commandModel);
         else
         {
-            org.topbraid.spin.model.update.Update update = SPINFactory.asUpdate(updateOrTemplateCall);
+            org.spinrdf.model.update.Update update = SPINFactory.asUpdate(updateOrTemplateCall);
             if (update == null)
             {
                 if (log.isErrorEnabled()) log.error("Class '{}' ldt:update value '{}' is not a SPIN Query or TemplateCall", getURI(), updateOrTemplateCall);
                 throw new OntologyException("Class '" + getURI() + "' ldt:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
-            return ModifyBuilder.fromUpdate(getUpdateRequest(update, base).getOperations().get(0), commandModel);
+            return ModifyBuilder.fromUpdate(getParameterizedSparqlString(update, base).asUpdate().
+                    getOperations().get(0), commandModel);
         }
     }
-
-    public UpdateRequest getUpdateRequest(org.topbraid.spin.model.update.Update update, URI base)
-    {
-	if (update == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (base == null) throw new IllegalArgumentException("URI cannot be null");
-
-        Statement textStmt = update.getRequiredProperty(SP.text);
-        if (textStmt == null || !textStmt.getObject().isLiteral())
-        {
-            if (log.isErrorEnabled()) log.error("SPARQL string not defined for update '{}' (sp:text missing or not a string)", update);
-            throw new OntologyException("SPARQL string not defined for update '" + update + "'");                
-        }
-
-        return new ParameterizedSparqlString(textStmt.getString(), null, base.toString()).asUpdate();
-    }
-
-    public UpdateRequest getUpdateRequest(org.topbraid.spin.model.TemplateCall spinTemplateCall, URI base)
-    {
-	if (spinTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (base == null) throw new IllegalArgumentException("URI cannot be null");
-
-        return new ParameterizedSparqlString(spinTemplateCall.getQueryString(), null, base.toString()).asUpdate();
-    }
-
+    
     @Override
     public String toString()
     {

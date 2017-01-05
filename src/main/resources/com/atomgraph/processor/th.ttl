@@ -68,9 +68,9 @@ WHERE
             }
         }
       }
-  }""" .
-    # rdfs:label "Describe with children" ;
-    # rdfs:isDefinedBy <#> .
+  }""" ;
+    rdfs:label "Describe with children" ;
+    rdfs:isDefinedBy <#> .
 
 <#DescribeWithTopic> a sp:Describe, sp:Query ; # ldt:Query  ;
     sp:text """PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
@@ -80,9 +80,9 @@ WHERE
   { ?this ?p ?o
     OPTIONAL
       { ?this foaf:primaryTopic ?primaryTopic }
-  }""" .
-    # rdfs:label "Describe with topic" ;
-    # rdfs:isDefinedBy <#> .
+  }""" ;
+    rdfs:label "Describe with topic" ;
+    rdfs:isDefinedBy <#> .
 
 <#DeleteWithTopic> a sp:DeleteWhere, sp:Update ; # <#Update> ;
       sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
@@ -99,6 +99,6 @@ WHERE {
         ?primaryTopic foaf:isPrimaryTopicOf ?this .
         ?primaryTopic ?p ?o .
     }
-}""" .
-    # rdfs:label "Delete with topic" ;
-    # rdfs:isDefinedBy <#> .
+}""" ;
+    rdfs:label "Delete with topic" ;
+    rdfs:isDefinedBy <#> .

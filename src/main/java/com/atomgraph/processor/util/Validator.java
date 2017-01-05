@@ -27,9 +27,9 @@ import org.apache.jena.rdf.model.ModelFactory;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.constraints.ConstraintViolation;
-import org.topbraid.spin.constraints.SPINConstraints;
-import org.topbraid.spin.system.SPINModuleRegistry;
+import org.spinrdf.constraints.ConstraintViolation;
+import org.spinrdf.constraints.SPINConstraints;
+import org.spinrdf.system.SPINModuleRegistry;
 
 /**
  *

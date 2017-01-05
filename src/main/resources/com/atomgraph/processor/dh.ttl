@@ -152,9 +152,9 @@ WHERE
             }
         }
       }
-  }""" .
-    # rdfs:label "Describe with children" ;
-    # rdfs:isDefinedBy <#> .
+  }""" ;
+    rdfs:label "Describe with children" ;
+    rdfs:isDefinedBy <#> .
 
 <#DocumentConstructor> a sp:Construct, sp:Query ; # ldt:Query ;
   sp:text """
@@ -165,6 +165,6 @@ WHERE
       }
       WHERE {
         BIND (STRUUID() AS ?slug)
-}""" .
-    # rdfs:label "Document constructor" ;
-    # rdfs:isDefinedBy <#> .
+}""" ;
+    rdfs:label "Document constructor" ;
+    rdfs:isDefinedBy <#> .

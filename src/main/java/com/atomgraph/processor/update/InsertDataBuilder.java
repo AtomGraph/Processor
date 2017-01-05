@@ -22,11 +22,11 @@ import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import java.net.URI;
-import org.topbraid.spin.model.NamedGraph;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.update.InsertData;
-import org.topbraid.spin.model.update.Update;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.model.NamedGraph;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.update.InsertData;
+import org.spinrdf.model.update.Update;
+import org.spinrdf.vocabulary.SP;
 
 /**
  * SPARQL INSERT DATA builder based on SPIN RDF syntax

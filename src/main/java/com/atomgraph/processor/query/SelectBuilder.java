@@ -25,12 +25,12 @@ import org.apache.jena.vocabulary.RDF;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.arq.ARQ2SPIN;
-import org.topbraid.spin.model.Query;
-import org.topbraid.spin.model.SPINFactory;
-import org.topbraid.spin.model.Select;
-import org.topbraid.spin.model.Variable;
-import org.topbraid.spin.vocabulary.SP;
+import org.spinrdf.arq.ARQ2SPIN;
+import org.spinrdf.model.Query;
+import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.Select;
+import org.spinrdf.model.Variable;
+import org.spinrdf.vocabulary.SP;
 
 /**
  * SPARQL SELECT query builder based on SPIN RDF syntax
@@ -62,7 +62,7 @@ public class SelectBuilder extends QueryBuilder implements Select
 	return new SelectBuilder(select);
     }
 
-    public static SelectBuilder fromQuery(org.topbraid.spin.model.Query query)
+    public static SelectBuilder fromQuery(org.spinrdf.model.Query query)
     {
 	return fromSelect((Select)query);
     }

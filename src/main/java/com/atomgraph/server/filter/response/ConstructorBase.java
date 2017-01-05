@@ -37,12 +37,12 @@ import java.util.Map;
 import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.topbraid.spin.inference.SPINConstructors;
-import org.topbraid.spin.util.CommandWrapper;
-import org.topbraid.spin.util.JenaUtil;
-import org.topbraid.spin.util.SPINQueryFinder;
-import org.topbraid.spin.vocabulary.SP;
-import org.topbraid.spin.vocabulary.SPIN;
+import org.spinrdf.inference.SPINConstructors;
+import org.spinrdf.util.CommandWrapper;
+import org.spinrdf.util.JenaUtil;
+import org.spinrdf.util.SPINQueryFinder;
+import org.spinrdf.vocabulary.SP;
+import org.spinrdf.vocabulary.SPIN;
 
 /**
  *
@@ -60,7 +60,8 @@ public class ConstructorBase
         return addInstance(forClass, SPIN.constructor, targetModel.createResource(), targetModel, new HashSet<OntClass>());
     }
 
-    // workaround for SPIN API limitation: https://groups.google.com/d/msg/topbraid-users/AVXXEJdbQzk/w5NrJFs35-0J
+    @Deprecated
+    // workaround for SPIN API limitation: https://github.com/spinrdf/spinrdf/issues/2
     public OntModel fixOntModel(OntModel ontModel)
     {
         if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");

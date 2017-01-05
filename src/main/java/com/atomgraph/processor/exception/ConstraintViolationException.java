@@ -18,8 +18,8 @@ package com.atomgraph.processor.exception;
 
 import org.apache.jena.rdf.model.Model;
 import java.util.List;
-import org.topbraid.spin.constraints.ConstraintViolation;
-import org.topbraid.spin.constraints.SPINConstraints;
+import org.spinrdf.constraints.ConstraintViolation;
+import org.spinrdf.constraints.SPINConstraints;
 
 /**
  *
