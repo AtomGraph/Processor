@@ -18,6 +18,7 @@ package com.atomgraph.processor.util;
 import com.atomgraph.processor.exception.ArgumentException;
 import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -28,6 +29,7 @@ import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
+import org.topbraid.spin.model.SPINFactory;
 
 /**
  *
@@ -120,6 +122,30 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     {
         QuerySolutionMap qsm = new QuerySolutionMap();
         
+        org.topbraid.spin.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(getTemplate().getQuery());
+        if (spinTemplateCall != null)
+        {
+            qsm = spinTemplateCall.getInitialBinding();
+            
+            List<org.topbraid.spin.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
+            // add SPIN Arguments that match LDT Arguments (by predicate)
+            for (org.topbraid.spin.model.Argument spinArg : spinArgs)
+                if (getTemplate().getArguments().containsKey(spinArg.getPredicate()) &&
+                        getResource().hasProperty(spinArg.getPredicate()))
+                {
+                    Argument arg = getTemplate().getArguments().get(spinArg.getPredicate());
+                    qsm.add(arg.getVarName(), getResource().getProperty(arg.getPredicate()).getObject());
+                }
+        }
+                
+        return qsm;
+    }
+    
+    /*
+    public QuerySolutionMap getQuerySolutionMap()
+    {
+        QuerySolutionMap qsm = new QuerySolutionMap();
+        
         Set<Entry<String, Argument>> argEntries = getTemplate().getArgumentsMap().entrySet();
         for (Entry<String, Argument> entry : argEntries)
             if (getResource().hasProperty(entry.getValue().getPredicate()))
@@ -130,6 +156,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         
         return qsm;
     }
+    */
     
     /*
     @Override
