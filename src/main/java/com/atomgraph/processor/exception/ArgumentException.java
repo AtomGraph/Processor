@@ -33,7 +33,7 @@ public class ArgumentException extends RuntimeException
 
     public ArgumentException(Argument argument, Template template)
     {
-        super("Argument '" + argument.getURI() + "' is not optional in Template '" + template.toString() + "' but no value is supplied");
+        super("Argument with predicate '" + argument.getPredicate() + "' is not optional in Template '" + template.toString() + "' but no value is supplied");
     }
     
 }
