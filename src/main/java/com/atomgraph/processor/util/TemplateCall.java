@@ -142,23 +142,6 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     }
     
     /*
-    public QuerySolutionMap getQuerySolutionMap()
-    {
-        QuerySolutionMap qsm = new QuerySolutionMap();
-        
-        Set<Entry<String, Argument>> argEntries = getTemplate().getArgumentsMap().entrySet();
-        for (Entry<String, Argument> entry : argEntries)
-            if (getResource().hasProperty(entry.getValue().getPredicate()))
-            {
-                RDFNode value = getResource().getProperty(entry.getValue().getPredicate()).getObject();
-                qsm.add(entry.getKey(), value);
-            }
-        
-        return qsm;
-    }
-    */
-    
-    /*
     @Override
     public String toString()
     {
