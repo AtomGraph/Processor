@@ -66,17 +66,6 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
         return template;
     }
-
-    public TemplateCall applyArguments(Map<Property, RDFNode> values)
-    {
-	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
-        
-        Set<Entry<Property, RDFNode>> entries = values.entrySet();        
-        for (Entry<Property, RDFNode> entry : entries)
-            replaceProperty(entry.getKey(), entry.getValue());
-        
-        return this;
-    }
     
     public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
     {
@@ -96,12 +85,24 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         {
             Argument arg = getTemplate().getArgumentsMap().get(argName);
             if (queryParams.containsKey(argName))
-            {            
-                String argValue = queryParams.getFirst(argName);
-                // TO-DO: allow multiple query param values?
-                replaceProperty(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
+            {
+                List<String> argValues = queryParams.get(argName);
+                for (String argValue : argValues)
+                    property(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
             }
         }
+        
+        return this;
+    }
+    
+    public TemplateCall applyDefaults(Map<Property, RDFNode> values)
+    {
+	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
+        
+        Set<Entry<Property, RDFNode>> entries = values.entrySet();
+        for (Entry<Property, RDFNode> entry : entries)
+            if (!getResource().hasProperty(entry.getKey())) // only set default property if there is none beforehand
+                property(entry.getKey(), entry.getValue());
         
         return this;
     }

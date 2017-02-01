@@ -80,8 +80,8 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
 
         return TemplateCall.fromResource(ModelFactory.createDefaultModel().
                     createResource(absolutePath.toString()), template).
-                applyArguments(template.getDefaultValues()). // apply spl:defaultValues
                 applyArguments(queryParams). // apply URL query parameters
+                applyDefaults(template.getDefaultValues()). // apply spl:defaultValues
                 validateOptionals(); // validate (non-)optional arguments
     }
     
