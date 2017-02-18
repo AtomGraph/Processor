@@ -78,11 +78,13 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
         if (absolutePath == null) throw new IllegalArgumentException("URI cannot be null");
         if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
 
-        return TemplateCall.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
-                applyArguments(queryParams). // apply URL query parameters
-                //applyDefaults(template.getDefaultValues()). // apply spl:defaultValues
-                applyDefaults().
-                validateOptionals(); // validate (non-)optional arguments
+        TemplateCall templateCall = TemplateCall.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
+            applyArguments(queryParams). // apply URL query parameters
+            applyDefaults().
+            validateOptionals(); // validate (non-)optional arguments
+        templateCall.build(); // build state URI
+        
+        return templateCall;
     }
     
     public Template getTemplate()

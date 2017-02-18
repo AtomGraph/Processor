@@ -75,20 +75,20 @@ public class HypermediaFilter implements ContainerResponseFilter
             state.addProperty(LDTC.viewOf, absolutePath).
                 addProperty(RDF.type, LDTC.View);
 
-            if (state.hasProperty(LDTDH.limit)) // pages must have limits
+            if (templateCall.hasArgument(LDTDH.limit)) // pages must have limits
             {
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
                 state.addProperty(LDTDH.pageOf, absolutePath).
                     addProperty(RDF.type, LDTDH.Page); // do we still need dh:Page now that we have core:View?
 
-                addPrevNextPage(absolutePath, state);
+                addPrevNextPage(templateCall, absolutePath, state);
             }
         }
 
         if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
-                state.getPropertyResourceValue(LDTDH.forClass) != null)
+                templateCall.hasArgument(LDTDH.forClass))
         {
-            String forClassURI = state.getPropertyResourceValue(LDTDH.forClass).getURI();
+            String forClassURI = templateCall.getArgumentProperty(LDTDH.forClass).getResource().getURI();
             OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
@@ -101,14 +101,15 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
         
-    public void addPrevNextPage(Resource absolutePath, Resource state)
+    public void addPrevNextPage(TemplateCall templateCall, Resource absolutePath, Resource state)
     {
+        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
         if (state == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        Long limit = state.getProperty(LDTDH.limit).getLong();            
+        Long limit = templateCall.getArgumentProperty(LDTDH.limit).getLong();            
         Long offset = Long.valueOf(0);
-        if (state.hasProperty(LDTDH.offset)) offset = state.getProperty(LDTDH.offset).getLong();
+        if (templateCall.hasArgument(LDTDH.offset)) offset = templateCall.getArgumentProperty(LDTDH.offset).getLong();
 
         if (offset >= limit)
         {

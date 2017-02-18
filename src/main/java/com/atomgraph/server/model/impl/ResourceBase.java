@@ -57,7 +57,6 @@ import org.spinrdf.model.NamedGraph;
 import org.spinrdf.model.SPINFactory;
 import org.spinrdf.vocabulary.SP;
 import org.spinrdf.vocabulary.SPIN;
-import org.spinrdf.vocabulary.SPL;
 
 /**
  * Base class of generic read-write Linked Data resources.
@@ -76,7 +75,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final com.atomgraph.processor.model.Application application;
     private final Ontology ontology;    
     private final TemplateCall templateCall;
-    private final Resource state;
+    //private final Resource state;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
@@ -129,7 +128,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.resourceContext = resourceContext;
         this.querySolutionMap = templateCall.getQuerySolutionMap();
         this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-        this.state = templateCall.build(); // this goes last as resource changes after build()
+        //this.state = templateCall.build(); // this goes last as resource changes after build()
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
@@ -146,7 +145,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
-                queryBuilder = getPageQueryBuilder(queryBuilder, getState());
+                queryBuilder = getPageQueryBuilder(queryBuilder);
         }
     }
     
@@ -189,8 +188,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         // transition to a URI of another application state (HATEOAS)
         if (!isDefaultState())
         {
-            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", getState().getURI());
-            return Response.seeOther(URI.create(getState().getURI())).build();
+            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", getTemplateCall().getURI());
+            return Response.seeOther(URI.create(getTemplateCall().getURI())).build();
         }
         
         return super.get();
@@ -198,7 +197,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     
     public boolean isDefaultState()
     {
-        return getState().getURI().equals(getUriInfo().getRequestUri().toString());
+        return getTemplateCall().getURI().equals(getUriInfo().getRequestUri().toString());
     }
     
     /**
@@ -412,11 +411,13 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return templateCall;
     }
 
+    /*
     @Override
     public Resource getState()
     {
         return state;
     }
+    */
     
     /**
      * Returns the cache control of this resource, if specified.
@@ -444,10 +445,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
     }
 
-    public QueryBuilder getPageQueryBuilder(QueryBuilder builder, Resource state)
+    public QueryBuilder getPageQueryBuilder(QueryBuilder builder)
     {
 	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
-	if (state == null) throw new IllegalArgumentException("Resource cannot be null");
                 
         if (builder.getSubSelectBuilders().isEmpty())
         {
@@ -458,53 +458,39 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        StmtIterator it = state.listProperties(LDT.arg);
-        try
+        if (getTemplateCall().hasArgument(LDTDH.offset))
         {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                Resource arg = stmt.getObject().asResource();
-                
-                if (arg.hasProperty(SPL.predicate, LDTDH.offset))
-                {
-                    Long offset = arg.getProperty(RDF.value).getLong();
-                    if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-                    subSelectBuilder.replaceOffset(offset);
-                }
-
-                if (arg.hasProperty(SPL.predicate, LDTDH.limit))
-                {
-                    Long limit = arg.getProperty(RDF.value).getLong();
-                    if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-                    subSelectBuilder.replaceLimit(limit);
-                }
-
-                if (arg.hasProperty(SPL.predicate, LDTDH.orderBy))
-                {
-                    try
-                    {
-                        String orderBy = arg.getProperty(RDF.value).getString();
-
-                        Boolean desc = false; // ORDERY BY is ASC() by default
-                        if (arg.hasProperty(SPL.predicate, LDTDH.desc))
-                            desc = arg.getProperty(RDF.value).getBoolean();
-
-                        if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                        subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                            orderBy(orderBy, desc);
-                    }
-                    catch (IllegalArgumentException ex)
-                    {
-                        if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
-                        // TO-DO: throw custom Exception with query and orderBy value
-                    }
-                }
-            }            
+            Long offset = getTemplateCall().getArgumentProperty(LDTDH.offset).getLong();
+            if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
+            subSelectBuilder.replaceOffset(offset);
         }
-        finally
+
+        if (getTemplateCall().hasArgument(LDTDH.limit))
         {
-            it.close();
+            Long limit = getTemplateCall().getArgumentProperty(LDTDH.limit).getLong();
+            if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
+            subSelectBuilder.replaceLimit(limit);
+        }
+
+        if (getTemplateCall().hasArgument(LDTDH.orderBy))
+        {
+            try
+            {
+                String orderBy = getTemplateCall().getArgumentProperty(LDTDH.orderBy).getString();
+
+                Boolean desc = false; // ORDERY BY is ASC() by default
+                if (getTemplateCall().hasArgument(LDTDH.desc))
+                    desc = getTemplateCall().getArgumentProperty(LDTDH.desc).getBoolean();
+
+                if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+                subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+                    orderBy(orderBy, desc);
+            }
+            catch (IllegalArgumentException ex)
+            {
+                if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
+                // TO-DO: throw custom Exception with query and orderBy value
+            }
         }
         
         return builder;

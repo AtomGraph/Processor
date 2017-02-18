@@ -33,6 +33,6 @@ public interface Resource extends QueriedResource
     
     TemplateCall getTemplateCall();
     
-    org.apache.jena.rdf.model.Resource getState();
+    // org.apache.jena.rdf.model.Resource getState();
     
 }

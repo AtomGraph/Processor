@@ -34,6 +34,7 @@ import com.sun.jersey.api.uri.UriComponent;
 import java.util.Iterator;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.spinrdf.vocabulary.SPL;
 
@@ -71,6 +72,11 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         // SPIN uses Template registry instead:
         // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
         return template;
+    }
+    
+    public String getURI()
+    {
+        return getResource().getURI();
     }
     
     public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
@@ -131,8 +137,18 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         
         return this;
     }
+
+    public StmtIterator listArguments()
+    {
+        return getResource().listProperties(LDT.arg);
+    }
     
     public boolean hasArgument(Property predicate)
+    {
+        return getArgument(predicate) != null;
+    }
+    
+    public Resource getArgument(Property predicate)
     {
 	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
         
@@ -144,7 +160,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             {
                 Statement stmt = it.next();
                 Resource arg = stmt.getObject().asResource();
-                if (arg.getProperty(SPL.predicate).getResource().equals(predicate)) return true;
+                if (arg.getProperty(SPL.predicate).getResource().equals(predicate)) return arg;
             }
         }
         finally
@@ -152,7 +168,45 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             it.close();
         }
         
-        return false;
+        return null;
+    }
+
+    public boolean hasArgument(Property predicate, RDFNode object)
+    {
+        return getArgument(predicate, object) != null;
+    }
+
+    public Resource getArgument(Property predicate, RDFNode object)
+    {
+	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
+	if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
+        
+        StmtIterator it = getResource().listProperties(LDT.arg);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                Resource arg = stmt.getObject().asResource();
+                if (arg.getProperty(SPL.predicate).getResource().equals(predicate) &&
+                        arg.getProperty(RDF.value).getObject().equals(object)) return arg;
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
+    }
+
+    public Statement getArgumentProperty(Property predicate)
+    {
+        Resource arg = getArgument(predicate);
+        if (arg != null) return arg.getRequiredProperty(RDF.value);
+        
+        return null;
     }
     
     public TemplateCall arg(Resource arg)
