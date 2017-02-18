@@ -53,6 +53,8 @@ public final class LDT
 
     public static final OntClass Template = m_model.createClass( NS + "Template" );
 
+    public static final OntClass Parameter = m_model.createClass( NS + "Parameter" );
+
     public static final OntClass TemplateCall = m_model.createClass( NS + "TemplateCall" );
 
     public static final OntClass Argument = m_model.createClass( NS + "Argument" );
@@ -62,7 +64,9 @@ public final class LDT
     public static final ObjectProperty ontology = m_model.createObjectProperty( NS + "ontology" );
 
     public static final ObjectProperty service = m_model.createObjectProperty( NS + "service" );
-    
+
+    public static final ObjectProperty arg = m_model.createObjectProperty( NS + "arg" );
+
     public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
     
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );

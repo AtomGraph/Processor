@@ -15,7 +15,6 @@
  */
 package com.atomgraph.processor.model.impl;
 
-import com.atomgraph.processor.model.Argument;
 import org.apache.jena.enhanced.EnhGraph;
 import org.apache.jena.enhanced.EnhNode;
 import org.apache.jena.enhanced.Implementation;
@@ -25,15 +24,16 @@ import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.atomgraph.processor.model.Parameter;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ArgumentImpl extends org.spinrdf.model.impl.ArgumentImpl implements Argument
+public class ParameterImpl extends org.spinrdf.model.impl.ArgumentImpl implements Parameter
 {
     
-    private static final Logger log = LoggerFactory.getLogger(ArgumentImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(ParameterImpl.class);
 
     public static Implementation factory = new Implementation() 
     {
@@ -43,10 +43,10 @@ public class ArgumentImpl extends org.spinrdf.model.impl.ArgumentImpl implements
         {
             if (canWrap(node, enhGraph))
             {
-                return new ArgumentImpl(node, enhGraph);
+                return new ParameterImpl(node, enhGraph);
             }
             else {
-                throw new ConversionException( "Cannot convert node " + node.toString() + " to OntClass: it does not have rdf:type owl:Class or equivalent");
+                throw new ConversionException( "Cannot convert node " + node.toString() + " to Parameter: it does not have rdf:type ldt:Parameter or equivalent");
             }
         }
 
@@ -61,11 +61,11 @@ public class ArgumentImpl extends org.spinrdf.model.impl.ArgumentImpl implements
             return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
             */
 
-            return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Argument.asNode());
+            return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Parameter.asNode());
         }
     };
     
-    public ArgumentImpl(Node node, EnhGraph enhGraph)
+    public ParameterImpl(Node node, EnhGraph enhGraph)
     {
         super(node, enhGraph);
     }

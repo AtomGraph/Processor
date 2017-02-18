@@ -64,13 +64,13 @@ public interface Template extends OntClass
     
     Double getPriority();
         
-    Map<Property, Argument> getArguments();
+    Map<Property, Parameter> getParameters();
     
-    Map<Property, Argument> getLocalArguments();
+    Map<Property, Parameter> getLocalParameters();
    
-    Map<String, Argument> getArgumentsMap();
+    Map<String, Parameter> getParameterMap();
 
-    Map<Property, RDFNode> getDefaultValues();
+    // Map<Property, RDFNode> getDefaultValues();
 
     List<Locale> getLanguages();
     

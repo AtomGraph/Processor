@@ -35,13 +35,11 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.net.URI;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map.Entry;
 import org.apache.jena.ontology.OntClass;
@@ -53,6 +51,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.model.SPINFactory;
 import org.spinrdf.vocabulary.SP;
+import com.atomgraph.processor.model.Parameter;
 
 /**
  *
@@ -141,15 +140,15 @@ public class TemplateImpl extends OntClassImpl implements Template
     }
 
     @Override
-    public Map<Property, Argument> getArguments()
+    public Map<Property, Parameter> getParameters()
     {
-        return addSuperArguments(this, getLocalArguments());
+        return addSuperArguments(this, getLocalParameters());
     }
     
     @Override
-    public Map<Property, Argument> getLocalArguments()
+    public Map<Property, Parameter> getLocalParameters()
     {
-        Map<Property, Argument> args = new HashMap<>();
+        Map<Property, Parameter> args = new HashMap<>();
         
         StmtIterator it = listProperties(LDT.param);
         try
@@ -157,13 +156,13 @@ public class TemplateImpl extends OntClassImpl implements Template
             while(it.hasNext())
             {
                 Statement stmt = it.next();
-                if (!stmt.getObject().canAs(Argument.class))
+                if (!stmt.getObject().canAs(Parameter.class))
                 {
                     if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type ldt:Argument missing)", stmt.getObject(), getURI());
                     throw new OntologyException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
                 }
 
-                Argument arg = stmt.getObject().as(Argument.class);
+                Parameter arg = stmt.getObject().as(Parameter.class);
                 if (args.containsKey(arg.getPredicate()))
                 {
                     if (log.isErrorEnabled()) log.error("Multiple Arguments with the same predicate '{}' for Template '{}' ", arg.getPredicate(), getURI());
@@ -181,7 +180,7 @@ public class TemplateImpl extends OntClassImpl implements Template
         return args;
     }
     
-    protected Map<Property, Argument> addSuperArguments(Template template, Map<Property, Argument> args)
+    protected Map<Property, Parameter> addSuperArguments(Template template, Map<Property, Parameter> args)
     {
         if (template == null) throw new IllegalArgumentException("Template Set cannot be null");        
         if (args == null) throw new IllegalArgumentException("Argument Map cannot be null");        
@@ -195,11 +194,11 @@ public class TemplateImpl extends OntClassImpl implements Template
                 if (superClass.canAs(Template.class))
                 {
                     Template superTemplate = superClass.as(Template.class);
-                    Map<Property, Argument> superArgs = superTemplate.getLocalArguments();
-                    Iterator<Entry<Property, Argument>> entryIt = superArgs.entrySet().iterator();
+                    Map<Property, Parameter> superArgs = superTemplate.getLocalParameters();
+                    Iterator<Entry<Property, Parameter>> entryIt = superArgs.entrySet().iterator();
                     while (entryIt.hasNext())
                     {
-                        Entry<Property, Argument> entry = entryIt.next();
+                        Entry<Property, Parameter> entry = entryIt.next();
                         args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Arguments for existing predicates
                     }
                     
@@ -216,11 +215,11 @@ public class TemplateImpl extends OntClassImpl implements Template
     }
     
     @Override
-    public Map<String, Argument> getArgumentsMap()
+    public Map<String, Parameter> getParameterMap()
     {
-        Map<String,Argument> map = new HashMap<>();
+        Map<String,Parameter> map = new HashMap<>();
 
-        for (Argument argument : getArguments().values())
+        for (Parameter argument : getParameters().values())
         {
             Property property = argument.getPredicate();
             if (property != null) map.put(property.getLocalName(), argument);
@@ -229,19 +228,20 @@ public class TemplateImpl extends OntClassImpl implements Template
         return map;
     }
 
+    /*
     @Override    
     public Map<Property, RDFNode> getDefaultValues()
     {
-        return getDefaultValues(getArguments().values());
+        return getDefaultValues(getParameters().values());
     }
     
-    public Map<Property, RDFNode> getDefaultValues(Collection<Argument> args)
+    public Map<Property, RDFNode> getDefaultValues(Collection<Parameter> args)
     {
-        if (args == null) throw new IllegalArgumentException("Argument Set cannot be null");
+        if (args == null) throw new IllegalArgumentException("Parameter Set cannot be null");
         
         Map<Property, RDFNode> defaultValues = new HashMap<>();
         
-        for (Argument arg : args)
+        for (Parameter arg : args)
         {
             RDFNode defaultValue = arg.getDefaultValue();
             if (defaultValue != null) defaultValues.put(arg.getPredicate(), defaultValue);
@@ -249,6 +249,7 @@ public class TemplateImpl extends OntClassImpl implements Template
         
         return defaultValues;
     }
+    */
     
     @Override
     public List<Locale> getLanguages()

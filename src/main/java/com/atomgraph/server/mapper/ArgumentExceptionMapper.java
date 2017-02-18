@@ -19,17 +19,17 @@ package com.atomgraph.server.mapper;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import com.atomgraph.processor.exception.ArgumentException;
+import com.atomgraph.processor.exception.ParameterException;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ArgumentException>
+public class ArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ParameterException>
 {
     
     @Override
-    public Response toResponse(ArgumentException ex)
+    public Response toResponse(ParameterException ex)
     {
         return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
                 getResponseBuilder(toResource(ex, Response.Status.BAD_REQUEST,

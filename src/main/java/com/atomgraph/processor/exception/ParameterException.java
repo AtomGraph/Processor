@@ -13,13 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atomgraph.processor.model;
+
+package com.atomgraph.processor.exception;
+
+import com.atomgraph.processor.model.Template;
+import com.atomgraph.processor.model.Parameter;
 
 /**
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public interface Argument extends org.spinrdf.model.Argument
+public class ParameterException extends RuntimeException
 {
+
+    public ParameterException(String paramName, Template template)
+    {
+        super("Parameter '" + paramName + "' not supported by Template '" + template.toString() + "'");
+    }
+
+    public ParameterException(Parameter param, Template template)
+    {
+        super("Argument with predicate '" + param.getPredicate() + "' is not optional in Template '" + template.toString() + "' but no value is supplied");
+    }
     
 }

@@ -15,11 +15,9 @@
  */
 package com.atomgraph.processor.util;
 
-import com.atomgraph.processor.exception.ArgumentException;
-import com.atomgraph.processor.model.Argument;
+import com.atomgraph.processor.exception.ParameterException;
 import com.atomgraph.processor.model.Template;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
@@ -30,6 +28,14 @@ import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.spinrdf.model.SPINFactory;
+import com.atomgraph.processor.model.Parameter;
+import com.atomgraph.processor.vocabulary.LDT;
+import com.sun.jersey.api.uri.UriComponent;
+import java.util.Iterator;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
+import org.apache.jena.vocabulary.RDF;
+import org.spinrdf.vocabulary.SPL;
 
 /**
  *
@@ -72,48 +78,107 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
 	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
 
         // iterate query params to find unrecognized ones
-        Set<String> paramNames = queryParams.keySet();
-        for (String paramName : paramNames)
-        {
-            Argument arg = getTemplate().getArgumentsMap().get(paramName);
-            if (arg == null) throw new ArgumentException(paramName, getTemplate());
-        }
-        
-        // iterate arguments to find those that match query param names
-        Set<String> argNames = getTemplate().getArgumentsMap().keySet();
+        Set<String> argNames = queryParams.keySet();
         for (String argName : argNames)
         {
-            Argument arg = getTemplate().getArgumentsMap().get(argName);
-            if (queryParams.containsKey(argName))
+            Parameter param = getTemplate().getParameterMap().get(argName);
+            if (param == null) throw new ParameterException(argName, getTemplate());
+        }
+        
+        // iterate parameters to find those that match query argument names
+        Set<String> paramNames = getTemplate().getParameterMap().keySet();
+        for (String paramName : paramNames)
+        {
+            Parameter param = getTemplate().getParameterMap().get(paramName);
+            if (queryParams.containsKey(paramName))
             {
-                List<String> argValues = queryParams.get(argName);
+                List<String> argValues = queryParams.get(paramName);
                 for (String argValue : argValues)
-                    property(arg.getPredicate(), RDFNodeFactory.createTyped(argValue, arg.getValueType()));
+                {
+                    //property(param.getPredicate(), RDFNodeFactory.createTyped(argValue, param.getValueType()));
+                    
+                    Resource arg = getResource().getModel().createResource().
+                        addProperty(RDF.type, param).
+                        addProperty(SPL.predicate, param.getPredicate()).
+                        addProperty(RDF.value, RDFNodeFactory.createTyped(argValue, param.getValueType()));
+                    
+                    arg(arg);
+                }
             }
         }
         
         return this;
     }
     
-    public TemplateCall applyDefaults(Map<Property, RDFNode> values)
+    public TemplateCall applyDefaults()
     {
-	if (values == null) throw new IllegalArgumentException("Value Map cannot be null");
+        Iterator<Parameter> paramIt = getTemplate().getParameters().values().iterator();
         
-        Set<Entry<Property, RDFNode>> entries = values.entrySet();
-        for (Entry<Property, RDFNode> entry : entries)
-            if (!getResource().hasProperty(entry.getKey())) // only set default property if there is none beforehand
-                property(entry.getKey(), entry.getValue());
+        while (paramIt.hasNext())
+        {
+            Parameter param = paramIt.next();
+            RDFNode defaultValue = param.getDefaultValue();
+            if (defaultValue != null && !hasArgument(param.getPredicate()))
+            {
+                Resource arg = getResource().getModel().createResource().
+                    addProperty(RDF.type, param).
+                    addProperty(SPL.predicate, param.getPredicate()).
+                    addProperty(RDF.value, defaultValue);
+
+                arg(arg);
+            }            
+        }
         
+        return this;
+    }
+    
+    public boolean hasArgument(Property predicate)
+    {
+	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
+        
+        StmtIterator it = getResource().listProperties(LDT.arg);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                Resource arg = stmt.getObject().asResource();
+                if (arg.getProperty(SPL.predicate).getResource().equals(predicate)) return true;
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return false;
+    }
+    
+    public TemplateCall arg(Resource arg)
+    {
+        if (arg == null) throw new IllegalArgumentException("Resource cannot be null");        
+        
+        getResource().addProperty(LDT.arg, arg);
+
+        String paramName = arg.getPropertyResourceValue(SPL.predicate).getLocalName();
+        RDFNode value = arg.getProperty(RDF.value).getObject();
+        String encodedValue = value.toString(); // not a reliable serialization
+        // we URI-encode values ourselves because Jersey 1.x fails to do so: https://java.net/jira/browse/JERSEY-1717
+        if (value.isURIResource()) encodedValue = UriComponent.encode(value.asResource().getURI(), UriComponent.Type.UNRESERVED);
+        if (value.isLiteral()) encodedValue = UriComponent.encode(value.asLiteral().getString(), UriComponent.Type.UNRESERVED);
+        getUriBuilder().queryParam(paramName, encodedValue);
+
         return this;
     }
     
     public TemplateCall validateOptionals()
     {
-        Set<Entry<Property, Argument>> argEntries = getTemplate().getArguments().entrySet();
-        for (Entry<Property, Argument> entry : argEntries)
+        Set<Entry<Property, Parameter>> paramEntries = getTemplate().getParameters().entrySet();
+        for (Entry<Property, Parameter> entry : paramEntries)
         {
-            if (!getResource().hasProperty(entry.getKey()) && !entry.getValue().isOptional())
-                throw new ArgumentException(entry.getValue(), getTemplate());
+            if (!hasArgument(entry.getKey()) && !entry.getValue().isOptional())
+                throw new ParameterException(entry.getValue(), getTemplate());
         }
         
         return this;
@@ -131,10 +196,9 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             List<org.spinrdf.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
             // add SPIN Arguments that match LDT Arguments (by predicate)
             for (org.spinrdf.model.Argument spinArg : spinArgs)
-                if (getTemplate().getArguments().containsKey(spinArg.getPredicate()) &&
-                        getResource().hasProperty(spinArg.getPredicate()))
+                if (getTemplate().getParameters().containsKey(spinArg.getPredicate()) && hasArgument(spinArg.getPredicate()))
                 {
-                    Argument arg = getTemplate().getArguments().get(spinArg.getPredicate());
+                    Parameter arg = getTemplate().getParameters().get(spinArg.getPredicate());
                     qsm.add(arg.getVarName(), getResource().getProperty(arg.getPredicate()).getObject());
                 }
         }

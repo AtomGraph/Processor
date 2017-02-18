@@ -62,10 +62,10 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public OntologyProvider(@Context ServletConfig servletConfig)
     {
-        this(getOntologyURI(servletConfig), getOntModelSpec(servletConfig));
+        this(getOntologyURI(servletConfig), getOntModelSpec(servletConfig), true);
     }
     
-    public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec)
+    public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec, boolean materialize)
     {
         super(Ontology.class);
         
@@ -76,9 +76,19 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         this.ontModelSpec = ontModelSpec;
         
         // materialize OntModel inferences to avoid invoking rules engine on every request
-        if (ontModelSpec.getReasoner() != null)
+        if (materialize && ontModelSpec.getReasoner() != null)
         {
             OntModel infModel = getOntModel(ontologyURI, ontModelSpec);
+            Ontology ontology = infModel.getOntology(ontologyURI);
+
+            ImportCycleChecker checker = new ImportCycleChecker();
+            checker.check(ontology);
+            if (checker.getCycleOntology() != null)
+            {
+                if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
+                throw new OntologyException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
+            }
+            
             OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
             materializedModel.add(infModel);
             OntDocumentManager.getInstance().addModel(ontologyURI, materializedModel, true);
@@ -184,9 +194,11 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {        
-        return getOntology(getOntologyURI(), OntModelSpec.OWL_MEM);
+        // return getOntology(getOntologyURI(), OntModelSpec.OWL_MEM);
+        return getOntModel(getOntologyURI(), OntModelSpec.OWL_MEM).getOntology(getOntologyURI());
     }
     
+    /*
     public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
     {
         return getOntology(getOntModel(ontologyURI, ontModelSpec), ontologyURI);
@@ -211,6 +223,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
         return ontology;
     }
+*/
     
     /**
      * Loads ontology by URI.

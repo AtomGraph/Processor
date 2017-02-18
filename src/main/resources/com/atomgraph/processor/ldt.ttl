@@ -45,6 +45,12 @@
     rdfs:comment "Service implementing SPARQL Protocol and Graph Store Protocol" ;
     rdfs:isDefinedBy <#> .
 
+<#arg> a owl:ObjectProperty ;
+    rdfs:domain <#View> ;
+    rdfs:label "Argument" ;
+    rdfs:comment "Template call argument" ;
+    rdfs:isDefinedBy <#> .
+
 # ANNOTATION PROPERTIES
 
 # Class

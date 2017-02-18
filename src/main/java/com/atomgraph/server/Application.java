@@ -51,9 +51,8 @@ import com.atomgraph.server.mapper.ArgumentExceptionMapper;
 import com.atomgraph.server.mapper.jena.DatatypeFormatExceptionMapper;
 import com.atomgraph.server.mapper.jena.QueryParseExceptionMapper;
 import com.atomgraph.server.mapper.jena.RiotExceptionMapper;
-import com.atomgraph.processor.model.Argument;
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.impl.ArgumentImpl;
+import com.atomgraph.processor.model.impl.ParameterImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.server.mapper.OntologyExceptionMapper;
@@ -67,6 +66,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQFactory;
 import org.spinrdf.system.SPINModuleRegistry;
+import com.atomgraph.processor.model.Parameter;
 
 /**
  *
@@ -88,7 +88,7 @@ public class Application extends com.atomgraph.core.Application
     {
         super(servletConfig);
 
-        BuiltinPersonalities.model.add(Argument.class, ArgumentImpl.factory);
+        BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
 
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
