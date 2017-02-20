@@ -158,8 +158,8 @@ public class TemplateImpl extends OntClassImpl implements Template
                 Statement stmt = it.next();
                 if (!stmt.getObject().canAs(Parameter.class))
                 {
-                    if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type ldt:Argument missing)", stmt.getObject(), getURI());
-                    throw new OntologyException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Argument missing)");
+                    if (log.isErrorEnabled()) log.error("Unsupported Argument '{}' for Template '{}' (rdf:type ldt:Parameter missing)", stmt.getObject(), getURI());
+                    throw new OntologyException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Parameter missing)");
                 }
 
                 Parameter arg = stmt.getObject().as(Parameter.class);
@@ -227,29 +227,6 @@ public class TemplateImpl extends OntClassImpl implements Template
 
         return map;
     }
-
-    /*
-    @Override    
-    public Map<Property, RDFNode> getDefaultValues()
-    {
-        return getDefaultValues(getParameters().values());
-    }
-    
-    public Map<Property, RDFNode> getDefaultValues(Collection<Parameter> args)
-    {
-        if (args == null) throw new IllegalArgumentException("Parameter Set cannot be null");
-        
-        Map<Property, RDFNode> defaultValues = new HashMap<>();
-        
-        for (Parameter arg : args)
-        {
-            RDFNode defaultValue = arg.getDefaultValue();
-            if (defaultValue != null) defaultValues.put(arg.getPredicate(), defaultValue);
-        }
-        
-        return defaultValues;
-    }
-    */
     
     @Override
     public List<Locale> getLanguages()

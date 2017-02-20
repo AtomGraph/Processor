@@ -17,6 +17,7 @@
 package com.atomgraph.processor.vocabulary;
 
 import org.apache.jena.ontology.AnnotationProperty;
+import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
@@ -66,6 +67,8 @@ public final class LDT
     public static final ObjectProperty service = m_model.createObjectProperty( NS + "service" );
 
     public static final ObjectProperty arg = m_model.createObjectProperty( NS + "arg" );
+    
+    public static final DatatypeProperty paramName = m_model.createDatatypeProperty( NS + "paramName" );    
 
     public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
     

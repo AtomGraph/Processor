@@ -34,7 +34,6 @@ import com.sun.jersey.api.uri.UriComponent;
 import java.util.Iterator;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
-import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.vocabulary.RDF;
 import org.spinrdf.vocabulary.SPL;
 
@@ -105,6 +104,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
                     
                     Resource arg = getResource().getModel().createResource().
                         addProperty(RDF.type, param).
+                        addLiteral(LDT.paramName, paramName).
                         addProperty(SPL.predicate, param.getPredicate()).
                         addProperty(RDF.value, RDFNodeFactory.createTyped(argValue, param.getValueType()));
                     
@@ -128,6 +128,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             {
                 Resource arg = getResource().getModel().createResource().
                     addProperty(RDF.type, param).
+                    addLiteral(LDT.paramName, param.getPredicate().getLocalName()).
                     addProperty(SPL.predicate, param.getPredicate()).
                     addProperty(RDF.value, defaultValue);
 
