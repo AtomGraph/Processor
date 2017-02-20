@@ -253,8 +253,8 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             for (org.spinrdf.model.Argument spinArg : spinArgs)
                 if (getTemplate().getParameters().containsKey(spinArg.getPredicate()) && hasArgument(spinArg.getPredicate()))
                 {
-                    Parameter arg = getTemplate().getParameters().get(spinArg.getPredicate());
-                    qsm.add(arg.getVarName(), getResource().getProperty(arg.getPredicate()).getObject());
+                    Parameter param = getTemplate().getParameters().get(spinArg.getPredicate());
+                    qsm.add(param.getVarName(), getArgumentProperty(param.getPredicate()).getObject());
                 }
         }
                 
