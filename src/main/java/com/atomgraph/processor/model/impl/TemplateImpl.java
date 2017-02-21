@@ -142,7 +142,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public Map<Property, Parameter> getParameters()
     {
-        return addSuperArguments(this, getLocalParameters());
+        return addSuperParameters(this, getLocalParameters());
     }
     
     @Override
@@ -180,10 +180,10 @@ public class TemplateImpl extends OntClassImpl implements Template
         return args;
     }
     
-    protected Map<Property, Parameter> addSuperArguments(Template template, Map<Property, Parameter> args)
+    protected Map<Property, Parameter> addSuperParameters(Template template, Map<Property, Parameter> args)
     {
         if (template == null) throw new IllegalArgumentException("Template Set cannot be null");        
-        if (args == null) throw new IllegalArgumentException("Argument Map cannot be null");        
+        if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");        
         
         ExtendedIterator<OntClass> superIt = template.listSuperClasses();
         try
@@ -199,10 +199,10 @@ public class TemplateImpl extends OntClassImpl implements Template
                     while (entryIt.hasNext())
                     {
                         Entry<Property, Parameter> entry = entryIt.next();
-                        args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Arguments for existing predicates
+                        args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
                     }
                     
-                    addSuperArguments(superTemplate, args);  // recursion to super class
+                    addSuperParameters(superTemplate, args);  // recursion to super class
                 }
             }
         }
@@ -219,10 +219,10 @@ public class TemplateImpl extends OntClassImpl implements Template
     {
         Map<String,Parameter> map = new HashMap<>();
 
-        for (Parameter argument : getParameters().values())
+        for (Parameter param : getParameters().values())
         {
-            Property property = argument.getPredicate();
-            if (property != null) map.put(property.getLocalName(), argument);
+            Property property = param.getPredicate();
+            if (property != null) map.put(property.getLocalName(), param);
         }
 
         return map;
