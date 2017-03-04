@@ -147,7 +147,7 @@ public class Skolemizer
 	return model;
     }
     
-    public URI build(Resource resource) throws IllegalArgumentException
+    public URI build(Resource resource)
     {
 	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
