@@ -22,12 +22,9 @@ import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
-import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
 import java.util.ArrayList;
@@ -41,7 +38,6 @@ import org.spinrdf.inference.SPINConstructors;
 import org.spinrdf.util.CommandWrapper;
 import org.spinrdf.util.JenaUtil;
 import org.spinrdf.util.SPINQueryFinder;
-import org.spinrdf.vocabulary.SP;
 import org.spinrdf.vocabulary.SPIN;
 
 /**
@@ -58,49 +54,6 @@ public class ConstructorBase
         if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
 
         return addInstance(forClass, SPIN.constructor, targetModel.createResource(), targetModel, new HashSet<OntClass>());
-    }
-
-    @Deprecated
-    // workaround for SPIN API limitation: https://github.com/spinrdf/spinrdf/issues/2
-    public OntModel fixOntModel(OntModel ontModel)
-    {
-        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
-
-        OntModel fixedModel = ModelFactory.createOntologyModel(ontModel.getSpecification());
-        fixedModel.add(ontModel);
-        
-        List<Statement> toDelete = new ArrayList<>();
-        StmtIterator it = fixedModel.listStatements(null, SP.text, (RDFNode)null);
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                Resource queryOrTemplateCall = stmt.getSubject();
-                StmtIterator propIt = queryOrTemplateCall.listProperties();
-                try
-                {
-                    while (propIt.hasNext())
-                    {
-                        Statement propStmt = propIt.next();
-                        if (!propStmt.getPredicate().equals(RDF.type) && !propStmt.getPredicate().equals(SP.text))
-                            toDelete.add(propStmt);
-                    }
-                }
-                finally
-                {
-                    propIt.close();
-                }
-            }            
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        fixedModel.remove(toDelete);
-        
-        return fixedModel;
     }
     
     public Resource addInstance(OntClass forClass, Property property, Resource instance, Model targetModel, Set<OntClass> reachedClasses)
@@ -120,9 +73,9 @@ public class ConstructorBase
 
         List<Resource> newResources = new ArrayList<>();
         Set<Resource> reachedTypes = new HashSet<>();
-        OntModel fixedModel = fixOntModel(forClass.getOntModel());
-        Map<Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(fixedModel, fixedModel, property, false, false);
-        SPINConstructors.constructInstance(fixedModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
+        OntModel ontModel = forClass.getOntModel();
+        Map<Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(ontModel, ontModel, property, false, false);
+        SPINConstructors.constructInstance(ontModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
         instance.addProperty(RDF.type, forClass);
         reachedClasses.add(forClass);
         
