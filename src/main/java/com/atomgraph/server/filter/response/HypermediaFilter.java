@@ -32,6 +32,7 @@ import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
+import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.apache.jena.ontology.OntClass;
@@ -60,8 +61,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
-        // do not process hypermedia if the response is a redirect or 201 Created
+        // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
         if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(CREATED) ||
+                response.getStatusType().equals(NOT_FOUND) ||
                 response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         
