@@ -53,15 +53,14 @@ abstract public class ExceptionMapperBase
     
     public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
     {
-	if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
-	if (status == null) throw new IllegalArgumentException("Response.Status cannot be null");
-	//if (statusResource == null) throw new IllegalArgumentException("Status Resource cannot be null");
+        if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
+        if (status == null) throw new IllegalArgumentException("Response.Status cannot be null");
+        //if (statusResource == null) throw new IllegalArgumentException("Status Resource cannot be null");
 
         Resource resource = ModelFactory.createDefaultModel().createResource().
                 addProperty(RDF.type, HTTP.Response).
                 addLiteral(HTTP.statusCodeValue, status.getStatusCode()).
                 addLiteral(HTTP.reasonPhrase, status.getReasonPhrase());
-                //addLiteral(ResourceFactory.createProperty("http://atomgraph.com/ns/processor#message"), ex.getStackTrace());
 
         if (statusResource != null) resource.addProperty(HTTP.sc, statusResource);
         if (ex.getMessage() != null) resource.addLiteral(DCTerms.title, ex.getMessage());
@@ -71,8 +70,8 @@ abstract public class ExceptionMapperBase
     
     public MediaTypes getMediaTypes()
     {
-	ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
-	return cr.getContext(MediaTypes.class);
+        ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
+        return cr.getContext(MediaTypes.class);
     }
 
     public Variant getVariant()
@@ -118,14 +117,14 @@ abstract public class ExceptionMapperBase
     
     public TemplateCall getStateBuilder()
     {
-	ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
-	return cr.getContext(TemplateCall.class);
+        ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
+        return cr.getContext(TemplateCall.class);
     }
 
     public Ontology getOntology()
     {
-	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-	return cr.getContext(Ontology.class);
+        ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+        return cr.getContext(Ontology.class);
     }
     
     public UriInfo getUriInfo()

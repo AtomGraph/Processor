@@ -67,6 +67,7 @@ import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQFactory;
 import org.spinrdf.system.SPINModuleRegistry;
 import com.atomgraph.processor.model.Parameter;
+import com.atomgraph.server.mapper.ConstraintViolationExceptionMapper;
 
 /**
  *
@@ -117,34 +118,35 @@ public class Application extends com.atomgraph.core.Application
         OntDocumentManager.getInstance().setFileManager(getFileManager(getServletConfig()));        
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         
-	classes.add(ResourceBase.class); // handles /
+        classes.add(ResourceBase.class); // handles /
 
         singletons.add(new ApplicationProvider(getServletConfig()));
-	singletons.add(new ServiceProvider(getServletConfig()));
+        singletons.add(new ServiceProvider(getServletConfig()));
         singletons.add(new OntologyProvider(getServletConfig()));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
         singletons.add(new SPARQLEndpointProvider(getServletConfig()));
         singletons.add(new GraphStoreProvider(getServletConfig()));
         singletons.add(new DatasetProvider());
-	singletons.add(new SPARQLClientProvider());
-	singletons.add(new GraphStoreClientProvider());
-	singletons.add(new SkolemizingModelProvider());
-	singletons.add(new ResultSetProvider());
-	singletons.add(new QueryParamProvider());
-	singletons.add(new UpdateRequestReader());
+        singletons.add(new SPARQLClientProvider());
+        singletons.add(new GraphStoreClientProvider());
+        singletons.add(new SkolemizingModelProvider());
+        singletons.add(new ResultSetProvider());
+        singletons.add(new QueryParamProvider());
+        singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider());
         singletons.add(new DataManagerProvider(getServletConfig()));
         singletons.add(new ClientProvider());
         singletons.add(new RiotExceptionMapper());
-	singletons.add(new ModelExceptionMapper());
-	singletons.add(new DatatypeFormatExceptionMapper());
+        singletons.add(new ModelExceptionMapper());
+        singletons.add(new ConstraintViolationExceptionMapper());
+        singletons.add(new DatatypeFormatExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());
         singletons.add(new OntologyExceptionMapper());
         singletons.add(new ArgumentExceptionMapper());
-	singletons.add(new QueryParseExceptionMapper());
+        singletons.add(new QueryParseExceptionMapper());
      
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
@@ -178,7 +180,7 @@ public class Application extends com.atomgraph.core.Application
     @Override
     public Set<Class<?>> getClasses()
     {
-	return classes;
+        return classes;
     }
 
     /**
@@ -190,7 +192,7 @@ public class Application extends com.atomgraph.core.Application
     @Override
     public Set<Object> getSingletons()
     {
-	return singletons;
+        return singletons;
     }
     
     public final boolean getCacheSitemap()

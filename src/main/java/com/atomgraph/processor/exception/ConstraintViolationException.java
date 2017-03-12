@@ -19,7 +19,6 @@ package com.atomgraph.processor.exception;
 import org.apache.jena.rdf.model.Model;
 import java.util.List;
 import org.spinrdf.constraints.ConstraintViolation;
-import org.spinrdf.constraints.SPINConstraints;
 
 /**
  *
@@ -32,13 +31,13 @@ public class ConstraintViolationException extends ModelException
     public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
     {
         super(model);
-	this.cvs = cvs;
-        SPINConstraints.addConstraintViolationsRDF(cvs, model, true);
+        this.cvs = cvs;
+        //SPINConstraints.addConstraintViolationsRDF(cvs, model, true);
     }
 
     public List<ConstraintViolation> getConstraintViolations()
     {
-	return cvs;
+        return cvs;
     }
     
 }

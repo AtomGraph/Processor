@@ -134,6 +134,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
         public void check(Ontology ontology)
         {
+            if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+            
             marked.put(ontology, Boolean.TRUE);
             onStack.put(ontology, Boolean.TRUE);
 
