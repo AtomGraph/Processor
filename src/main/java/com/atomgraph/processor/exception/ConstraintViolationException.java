@@ -32,7 +32,6 @@ public class ConstraintViolationException extends ModelException
     {
         super(model);
         this.cvs = cvs;
-        //SPINConstraints.addConstraintViolationsRDF(cvs, model, true);
     }
 
     public List<ConstraintViolation> getConstraintViolations()

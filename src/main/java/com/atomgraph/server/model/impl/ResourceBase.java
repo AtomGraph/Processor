@@ -106,7 +106,18 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes, application, sparqlEndpoint, graphStore);
+        this(uriInfo, request, servletConfig, mediaTypes, uriInfo.getAbsolutePath(),
+                application, sparqlEndpoint, graphStore,
+                ontology, templateCall,
+                httpHeaders, resourceContext);
+    }
+
+    protected ResourceBase(UriInfo uriInfo, Request request, ServletConfig servletConfig, MediaTypes mediaTypes, URI uri,
+            com.atomgraph.processor.model.Application application, SPARQLEndpoint sparqlEndpoint, GraphStore graphStore,
+            Ontology ontology, TemplateCall templateCall,
+            HttpHeaders httpHeaders, ResourceContext resourceContext)
+    {
+        super(uriInfo, request, servletConfig, mediaTypes, uri, application, sparqlEndpoint, graphStore);
 
         if (templateCall == null)
         {
