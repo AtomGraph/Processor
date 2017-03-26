@@ -24,7 +24,7 @@ import org.apache.jena.ontology.Ontology;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public interface Resource extends QueriedResource
+public interface Resource extends QueriedResource, com.atomgraph.core.model.Resource
 {
         
     Application getApplication();
@@ -32,7 +32,5 @@ public interface Resource extends QueriedResource
     Ontology getOntology();
     
     TemplateCall getTemplateCall();
-    
-    // org.apache.jena.rdf.model.Resource getState();
     
 }
