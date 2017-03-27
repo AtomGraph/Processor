@@ -109,13 +109,13 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public String getSkolemTemplate()
     {
-        return getStringValue(LDT.skolemTemplate);
+        return getStringValue(LDT.segment);
     }
 
     @Override
     public String getFragmentTemplate()
     {
-        return getStringValue(LDT.fragmentTemplate);
+        return getStringValue(LDT.fragment);
     }
     
     @Override

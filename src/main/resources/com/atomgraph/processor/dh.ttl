@@ -85,7 +85,7 @@
 <#Container> a rdfs:Class, owl:Class, ldt:Template ;
     rdfs:subClassOf core:Document, sioc:Container ;
     ldt:path "{path: .*}/" ;
-    ldt:skolemTemplate "{slug}/" ;
+    ldt:segment "{slug}/" ;
     ldt:query <#DescribeWithChildren> ;
     ldt:param <#ForClass>, <#Limit>, <#Offset>, <#OrderBy>, <#Desc> ;
     spin:constructor <#DocumentConstructor> ;
@@ -97,7 +97,7 @@
 <#Item> a rdfs:Class, owl:Class, ldt:Template ;
     rdfs:subClassOf core:Document, sioc:Item ;
     rdfs:label "Document" ;
-    ldt:skolemTemplate "{slug}" ;
+    ldt:segment "{slug}" ;
     spin:constructor <#DocumentConstructor> ;
     spin:constraint <#MissingSlug> ;
     rdfs:isDefinedBy <#> .

@@ -161,7 +161,7 @@ public class Skolemizer
             if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
 
             // skolemization template builds with absolute path builder (e.g. "{slug}")
-            String skolemTemplate = getStringValue(typeClass, LDT.skolemTemplate);
+            String skolemTemplate = getStringValue(typeClass, LDT.segment);
             if (skolemTemplate != null)
             {
                 builder = getAbsolutePathBuilder(typeClass).clone();
@@ -176,7 +176,7 @@ public class Skolemizer
             }
 
             // add fragment identifier
-            String fragmentTemplate = getStringValue(typeClass, LDT.fragmentTemplate);            
+            String fragmentTemplate = getStringValue(typeClass, LDT.fragment);            
             return builder.fragment(fragmentTemplate).buildFromMap(nameValueMap);
         }
         
@@ -266,7 +266,7 @@ public class Skolemizer
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         SortedSet<ClassPrecedence> matchedClasses = new TreeSet<>();
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.skolemTemplate);
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.segment);
         try
         {
             while (it.hasNext())
