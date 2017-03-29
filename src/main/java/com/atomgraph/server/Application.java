@@ -47,7 +47,7 @@ import com.atomgraph.server.mapper.ClientExceptionMapper;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
 import com.atomgraph.server.mapper.ModelExceptionMapper;
 import com.atomgraph.server.mapper.NotFoundExceptionMapper;
-import com.atomgraph.server.mapper.ArgumentExceptionMapper;
+import com.atomgraph.server.mapper.ParameterExceptionMapper;
 import com.atomgraph.server.mapper.jena.DatatypeFormatExceptionMapper;
 import com.atomgraph.server.mapper.jena.QueryParseExceptionMapper;
 import com.atomgraph.server.mapper.jena.RiotExceptionMapper;
@@ -145,7 +145,7 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new ClientExceptionMapper());        
         singletons.add(new ConfigurationExceptionMapper());
         singletons.add(new OntologyExceptionMapper());
-        singletons.add(new ArgumentExceptionMapper());
+        singletons.add(new ParameterExceptionMapper());
         singletons.add(new QueryParseExceptionMapper());
      
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);

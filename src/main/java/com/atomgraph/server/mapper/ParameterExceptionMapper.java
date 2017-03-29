@@ -25,7 +25,7 @@ import com.atomgraph.processor.exception.ParameterException;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ArgumentExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ParameterException>
+public class ParameterExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ParameterException>
 {
     
     @Override
