@@ -22,7 +22,6 @@ import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import com.sun.jersey.spi.resource.Singleton;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
@@ -44,7 +43,7 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
     
     @Context Providers providers;
     
-    public ApplicationProvider(@Context ServletConfig servletConfig)
+    public ApplicationProvider()
     {
         super(Application.class);
     }

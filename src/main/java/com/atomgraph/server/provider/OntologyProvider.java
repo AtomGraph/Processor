@@ -21,26 +21,18 @@ import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.ontology.OntResource;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
-import com.atomgraph.core.exception.ConfigurationException;
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.vocabulary.AP;
-import com.atomgraph.processor.vocabulary.LDT;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,11 +51,6 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
 
     private final OntModelSpec ontModelSpec;
     private final String ontologyURI;
-    
-    public OntologyProvider(@Context ServletConfig servletConfig)
-    {
-        this(getOntologyURI(servletConfig), getOntModelSpec(servletConfig), true);
-    }
     
     public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec, boolean materialize)
     {
@@ -94,39 +81,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             OntDocumentManager.getInstance().addModel(ontologyURI, materializedModel, true);
         }
     }
-    
-    public static String getOntologyURI(ServletConfig servletConfig)
-    {
-        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
-        
-        Object ontologyURIParam = servletConfig.getInitParameter(LDT.ontology.getURI());
-        if (ontologyURIParam == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
-            throw new ConfigurationException(LDT.ontology);
-        }
-        return ontologyURIParam.toString();
-    }
-    
-    public static OntModelSpec getOntModelSpec(ServletConfig servletConfig)
-    {
-        if (servletConfig == null) throw new IllegalArgumentException("ServletConfig cannot be null");
-
-        Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
-        if (rulesParam == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap Rules (" + AP.sitemapRules.getURI() + ") not configured");
-            throw new ConfigurationException(AP.sitemapRules);
-        }
-        List<Rule> rules = Rule.parseRules(rulesParam.toString());
-        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-        Reasoner reasoner = new GenericRuleReasoner(rules);
-        //reasoner.setDerivationLogging(true);
-        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        ontModelSpec.setReasoner(reasoner);
-        return ontModelSpec;
-    }
-        
+                
     public class ImportCycleChecker
     {
         private final Map<Ontology, Boolean> marked = new HashMap<>(), onStack = new HashMap<>();
@@ -175,9 +130,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     @Override
     public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
-    {
-	//if (log.isDebugEnabled()) log.debug("OntologyProvider UriInfo: {} ResourceConfig.getProperties(): {}", uriInfo, resourceConfig.getProperties());
-	
+    {	
 	return new Injectable<Ontology>()
 	{
 	    @Override
@@ -196,36 +149,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {        
-        // return getOntology(getOntologyURI(), OntModelSpec.OWL_MEM);
         return getOntModel(getOntologyURI(), OntModelSpec.OWL_MEM).getOntology(getOntologyURI());
     }
-    
-    /*
-    public Ontology getOntology(String ontologyURI, OntModelSpec ontModelSpec)
-    {
-        return getOntology(getOntModel(ontologyURI, ontModelSpec), ontologyURI);
-    }
-        
-    public Ontology getOntology(OntModel ontModel, String ontologyURI) // String ontologyURI, OntModelSpec ontModelSpec)
-    {
-        Ontology ontology = ontModel.getOntology(ontologyURI);
-        if (ontology == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap ontology resource '{}' not found; processing aborted", ontologyURI);
-            throw new OntologyException("Sitemap ontology resource '" + ontologyURI + "' not found; processing aborted");
-        }
-
-        ImportCycleChecker checker = new ImportCycleChecker();
-        checker.check(ontology);
-        if (checker.getCycleOntology() != null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
-            throw new OntologyException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
-        }
-    
-        return ontology;
-    }
-*/
     
     /**
      * Loads ontology by URI.
