@@ -17,7 +17,6 @@
 package com.atomgraph.server;
 
 import com.atomgraph.core.exception.ConfigurationException;
-import java.io.InputStream;
 import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.util.FileManager;
 import java.util.HashSet;
@@ -62,8 +61,6 @@ import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.TemplateProvider;
 import com.atomgraph.server.provider.SkolemizingModelProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
-import java.io.IOException;
-import javax.ws.rs.WebApplicationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQFactory;
@@ -74,6 +71,7 @@ import com.atomgraph.server.mapper.ConstraintViolationExceptionMapper;
 import com.atomgraph.server.provider.ApplicationProvider;
 import java.util.List;
 import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
@@ -99,38 +97,57 @@ public class Application extends com.atomgraph.core.Application
     public Application(@Context ServletConfig servletConfig)
     {
         this(
-            servletConfig.getInitParameter(A.dataset.getURI()) != null ? servletConfig.getInitParameter(A.dataset.getURI()) : null,
+            servletConfig.getInitParameter(A.dataset.getURI()) != null ? getDataset(servletConfig.getInitParameter(A.dataset.getURI()), null) : null,
             servletConfig.getInitParameter(SD.endpoint.getURI()) != null ? servletConfig.getInitParameter(SD.endpoint.getURI()) : null,
             servletConfig.getInitParameter(A.graphStore.getURI()) != null ? servletConfig.getInitParameter(A.graphStore.getURI()) : null,
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
             servletConfig.getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getInitParameter(A.preemptiveAuth.getURI())) : false,
-            getFileManager(servletConfig, "/WEB-INF/classes/location-mapping.n3"),
+            getFileManager(getLocationMapper(servletConfig, "/WEB-INF/classes/location-mapping.n3")),
             servletConfig.getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getInitParameter(LDT.ontology.getURI()) : null,
-            getOntModelSpec(servletConfig),
+            servletConfig.getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getInitParameter(AP.sitemapRules.getURI()) : null,
             servletConfig.getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getInitParameter(AP.cacheSitemap.getURI())) : true
         );       
     }
     
-    public Application(final String datasetLocation, final String endpointURI, final String graphStoreURI, final String authUser, final String authPwd, final boolean preemptiveAuth,
-            final FileManager fileManager, final String ontologyURI, final OntModelSpec ontModelSpec, boolean cacheSitemap)
+    public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI, final String authUser, final String authPwd, final boolean preemptiveAuth,
+            final FileManager fileManager, final String ontologyURI, final String rulesString, boolean cacheSitemap)
     {
-        super(datasetLocation, endpointURI, graphStoreURI, authUser, authPwd, preemptiveAuth);
+        super(dataset, endpointURI, graphStoreURI, authUser, authPwd, preemptiveAuth);
+        if (fileManager == null) throw new IllegalArgumentException("FileManager be null");
+        
         if (ontologyURI == null)
         {
             if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
             throw new ConfigurationException(LDT.ontology);
         }
+        if (rulesString == null)
+        {
+            if (log.isErrorEnabled()) log.error("Sitemap Rules (" + AP.sitemapRules.getURI() + ") not configured");
+            throw new ConfigurationException(AP.sitemapRules);
+        }
+        
         this.ontologyURI = ontologyURI;
-        this.ontModelSpec = ontModelSpec;
         this.cacheSitemap = cacheSitemap;
 
+        List<Rule> rules = Rule.parseRules(rulesString);
+        OntModelSpec rulesSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
+        Reasoner reasoner = new GenericRuleReasoner(rules);
+        //reasoner.setDerivationLogging(true);
+        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
+        rulesSpec.setReasoner(reasoner);
+        this.ontModelSpec = rulesSpec;
+        
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
 
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
+        FileManager.setStdLocators(fileManager);
+        FileManager.setGlobalFileManager(fileManager);
+        if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
+
         OntDocumentManager.getInstance().setFileManager(fileManager);        
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());        
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!         
@@ -183,42 +200,19 @@ public class Application extends com.atomgraph.core.Application
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
     
-    public static OntModelSpec getOntModelSpec(ServletConfig servletConfig)
+    public static LocationMapper getLocationMapper(final ServletConfig servletConfig, final String path)
     {
-        if (servletConfig == null)  throw new IllegalArgumentException("ServletConfig cannot be null");
-        
-        Object rulesParam = servletConfig.getInitParameter(AP.sitemapRules.getURI());
-        if (rulesParam == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap Rules (" + AP.sitemapRules.getURI() + ") not configured");
-            throw new ConfigurationException(AP.sitemapRules);
-        }
-        
-        List<Rule> rules = Rule.parseRules(rulesParam.toString());
-        OntModelSpec ontModelSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-        Reasoner reasoner = new GenericRuleReasoner(rules);
-        //reasoner.setDerivationLogging(true);
-        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        ontModelSpec.setReasoner(reasoner);
-        return ontModelSpec;
+        String syntax = FileUtils.guessLang(path);            
+        Model mapping = ModelFactory.createDefaultModel();
+        mapping.read(servletConfig.getServletContext().getResourceAsStream(path), path, syntax);
+        return new LocationMapper(mapping);
     }
     
-    public static FileManager getFileManager(ServletConfig servletConfig, String path)
+    public static FileManager getFileManager(LocationMapper locationMapper)
     {
-        String syntax = FileUtils.guessLang(path);
-        Model mapping = ModelFactory.createDefaultModel();
-        try (InputStream in = servletConfig.getServletContext().getResourceAsStream(path))
-        {
-            mapping.read(in, path, syntax) ;
-            FileManager fileManager = FileManager.get();
-            fileManager.setLocationMapper(new LocationMapper(mapping));
-            return fileManager;
-        }
-        catch (IOException ex)
-        {
-            if (log.isDebugEnabled()) log.debug("Error reading location mapping: {}", path);
-            throw new WebApplicationException(ex);
-        }
+        FileManager fileManager = FileManager.get();
+        fileManager.setLocationMapper(locationMapper);
+        return fileManager;
     }
     
     /**
