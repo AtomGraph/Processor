@@ -16,6 +16,8 @@
 
 package com.atomgraph.server;
 
+import static com.atomgraph.core.Application.getClient;
+import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.exception.ConfigurationException;
 import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.util.FileManager;
@@ -69,7 +71,10 @@ import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.mapper.ConstraintViolationExceptionMapper;
 import com.atomgraph.server.provider.ApplicationProvider;
+import com.sun.jersey.api.client.Client;
+import com.sun.jersey.api.client.config.DefaultClientConfig;
 import java.util.List;
+import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
@@ -102,7 +107,10 @@ public class Application extends com.atomgraph.core.Application
             servletConfig.getInitParameter(A.graphStore.getURI()) != null ? servletConfig.getInitParameter(A.graphStore.getURI()) : null,
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
+            new MediaTypes(), getClient(new DefaultClientConfig()),
+            servletConfig.getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getInitParameter(A.maxGetRequestSize.getURI())) : null,            
             servletConfig.getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getInitParameter(A.preemptiveAuth.getURI())) : false,
+            servletConfig.getInitParameter(A.cacheControl.getURI()) != null ? CacheControl.valueOf(servletConfig.getInitParameter(A.cacheControl.getURI())) : null,
             getFileManager(getLocationMapper(servletConfig, "/WEB-INF/classes/location-mapping.n3")),
             servletConfig.getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getInitParameter(LDT.ontology.getURI()) : null,
             servletConfig.getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getInitParameter(AP.sitemapRules.getURI()) : null,
@@ -110,10 +118,14 @@ public class Application extends com.atomgraph.core.Application
         );       
     }
     
-    public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI, final String authUser, final String authPwd, final boolean preemptiveAuth,
+    public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI,
+            final String authUser, final String authPwd,
+            final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize,
+            final boolean preemptiveAuth, final CacheControl cacheControl,
             final FileManager fileManager, final String ontologyURI, final String rulesString, boolean cacheSitemap)
     {
-        super(dataset, endpointURI, graphStoreURI, authUser, authPwd, preemptiveAuth);
+        super(dataset, endpointURI, graphStoreURI, authUser, authPwd,
+                mediaTypes, client, maxGetRequestSize, preemptiveAuth, cacheControl);
         if (fileManager == null) throw new IllegalArgumentException("FileManager be null");
         
         if (ontologyURI == null)
@@ -174,18 +186,18 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new OntologyProvider(getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
-        singletons.add(new SPARQLEndpointProvider());
-        singletons.add(new GraphStoreProvider());
+        singletons.add(new SPARQLEndpointProvider(this));
+        singletons.add(new GraphStoreProvider(this));
         singletons.add(new DatasetProvider(getDataset()));
-        singletons.add(new SPARQLClientProvider());
-        singletons.add(new GraphStoreClientProvider());
+        singletons.add(new SPARQLClientProvider(getSPARQLClient()));
+        singletons.add(new GraphStoreClientProvider(getGraphStoreClient()));
         singletons.add(new SkolemizingModelProvider());
         singletons.add(new ResultSetProvider());
         singletons.add(new QueryParamProvider());
         singletons.add(new UpdateRequestReader());
-        singletons.add(new MediaTypesProvider());
-        singletons.add(new DataManagerProvider(isPreemptiveAuth()));
-        singletons.add(new ClientProvider());
+        singletons.add(new MediaTypesProvider(getMediaTypes()));
+        singletons.add(new DataManagerProvider(getDataManager()));
+        singletons.add(new ClientProvider(getClient()));
         singletons.add(new RiotExceptionMapper());
         singletons.add(new ModelExceptionMapper());
         singletons.add(new ConstraintViolationExceptionMapper());

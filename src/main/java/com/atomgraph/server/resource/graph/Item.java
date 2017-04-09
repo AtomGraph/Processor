@@ -19,7 +19,6 @@ package com.atomgraph.server.resource.graph;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import com.sun.jersey.api.core.ResourceContext;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
@@ -27,12 +26,10 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
-import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
-import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.util.TemplateCall;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,13 +47,14 @@ public class Item extends ResourceBase
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
     
-    public Item(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
-            @Context Application application, @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
+    public Item(@Context javax.ws.rs.core.Application system, @Context com.atomgraph.processor.model.Application application, 
+            @Context UriInfo uriInfo, @Context Request request,
+            @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
             @Context Ontology ontology, @Context TemplateCall stateBuilder,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, servletConfig, mediaTypes,
-                application, sparqlEndpoint, graphStore,
+	super(system, application, uriInfo, request,
+                sparqlEndpoint, graphStore,
                 ontology, stateBuilder,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());

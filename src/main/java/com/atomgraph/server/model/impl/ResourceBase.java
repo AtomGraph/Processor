@@ -29,12 +29,10 @@ import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
-import javax.servlet.ServletConfig;
 import javax.ws.rs.Path;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.exception.NotFoundException;
 import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.SPARQLEndpoint;
@@ -89,11 +87,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * If the matching ontology class is a subclass of <code>ldt:Document</code>, this resource becomes a page resource and
      * HATEOS metadata is added (relations to the container and previous/next page resources).
      * 
+     * @param system system application
+     * @param application LDT application
      * @param uriInfo URI information of the current request
      * @param request current request
-     * @param servletConfig webapp context
-     * @param mediaTypes supported media types
-     * @param application LDT application
      * @param sparqlEndpoint SPARQL endpoint
      * @param graphStore Graph Store
      * @param ontology LDT ontology
@@ -101,23 +98,25 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
-    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context ServletConfig servletConfig, @Context MediaTypes mediaTypes,
-            @Context com.atomgraph.processor.model.Application application, @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
+    public ResourceBase(@Context Application system, @Context com.atomgraph.processor.model.Application application,
+            @Context UriInfo uriInfo, @Context Request request,
+            @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
             @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-        this(uriInfo, request, servletConfig, mediaTypes, uriInfo.getAbsolutePath(),
-                application, sparqlEndpoint, graphStore,
+        this((com.atomgraph.core.Application)system, application, uriInfo, request, uriInfo.getAbsolutePath(),
+                sparqlEndpoint, graphStore,
                 ontology, templateCall,
                 httpHeaders, resourceContext);
     }
 
-    protected ResourceBase(UriInfo uriInfo, Request request, ServletConfig servletConfig, MediaTypes mediaTypes, URI uri,
-            com.atomgraph.processor.model.Application application, SPARQLEndpoint sparqlEndpoint, GraphStore graphStore,
+    protected ResourceBase(final com.atomgraph.core.Application system, final com.atomgraph.processor.model.Application application,
+            final UriInfo uriInfo, final Request request, final URI uri,
+            SPARQLEndpoint sparqlEndpoint, GraphStore graphStore,
             Ontology ontology, TemplateCall templateCall,
             HttpHeaders httpHeaders, ResourceContext resourceContext)
     {
-        super(uriInfo, request, servletConfig, mediaTypes, uri, application, sparqlEndpoint, graphStore);
+        super(system, application, uriInfo, request, uri, sparqlEndpoint, graphStore);
 
         if (templateCall == null)
         {
@@ -145,7 +144,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     /**
      * Post-construct initialization. Subclasses need to call super.init() first, just like with super() constructor.
      */
-    @Override
     public void init()
     {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
