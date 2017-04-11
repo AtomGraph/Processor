@@ -16,6 +16,7 @@
  */
 package com.atomgraph.server.model.impl;
 
+import com.atomgraph.core.MediaTypes;
 import org.apache.jena.ontology.*;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
@@ -87,8 +88,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * If the matching ontology class is a subclass of <code>ldt:Document</code>, this resource becomes a page resource and
      * HATEOS metadata is added (relations to the container and previous/next page resources).
      * 
-     * @param system system application
      * @param application LDT application
+     * @param mediaTypes mediaTypes
      * @param uriInfo URI information of the current request
      * @param request current request
      * @param sparqlEndpoint SPARQL endpoint
@@ -98,25 +99,24 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
-    public ResourceBase(@Context Application system, @Context com.atomgraph.processor.model.Application application,
-            @Context UriInfo uriInfo, @Context Request request,
+    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
             @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-        this((com.atomgraph.core.Application)system, application, uriInfo, request, uriInfo.getAbsolutePath(),
+        this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
                 sparqlEndpoint, graphStore,
-                ontology, templateCall,
+                application, ontology, templateCall,
                 httpHeaders, resourceContext);
     }
 
-    protected ResourceBase(final com.atomgraph.core.Application system, final com.atomgraph.processor.model.Application application,
-            final UriInfo uriInfo, final Request request, final URI uri,
-            SPARQLEndpoint sparqlEndpoint, GraphStore graphStore,
-            Ontology ontology, TemplateCall templateCall,
-            HttpHeaders httpHeaders, ResourceContext resourceContext)
+    protected ResourceBase(final UriInfo uriInfo, final Request request, final MediaTypes mediaTypes, final URI uri,
+            final SPARQLEndpoint sparqlEndpoint, final GraphStore graphStore,
+            final com.atomgraph.processor.model.Application application,
+            final Ontology ontology, final TemplateCall templateCall,
+            final HttpHeaders httpHeaders, final ResourceContext resourceContext)
     {
-        super(system, application, uriInfo, request, uri, sparqlEndpoint, graphStore);
+        super(uriInfo, request, mediaTypes, uri, sparqlEndpoint, graphStore);
 
         if (templateCall == null)
         {
@@ -433,7 +433,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * 
      * @return cache control object or null, if not specified
      */
-    @Override
     public CacheControl getCacheControl()
     {
 	return getTemplateCall().getTemplate().getCacheControl();

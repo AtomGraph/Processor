@@ -16,6 +16,7 @@
 
 package com.atomgraph.server.resource.graph;
 
+import com.atomgraph.core.MediaTypes;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import com.sun.jersey.api.core.ResourceContext;
@@ -47,15 +48,14 @@ public class Item extends ResourceBase
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
     
-    public Item(@Context javax.ws.rs.core.Application system, @Context com.atomgraph.processor.model.Application application, 
-            @Context UriInfo uriInfo, @Context Request request,
+    public Item(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
             @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
-            @Context Ontology ontology, @Context TemplateCall stateBuilder,
+            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(system, application, uriInfo, request,
+	super(uriInfo, request, mediaTypes,
                 sparqlEndpoint, graphStore,
-                ontology, stateBuilder,
+                application, ontology, templateCall,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
     }
