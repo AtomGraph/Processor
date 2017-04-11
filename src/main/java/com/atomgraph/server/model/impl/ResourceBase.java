@@ -50,6 +50,7 @@ import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
+import javax.annotation.PostConstruct;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.model.NamedGraph;
@@ -144,6 +145,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     /**
      * Post-construct initialization. Subclasses need to call super.init() first, just like with super() constructor.
      */
+    @PostConstruct
     public void init()
     {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
