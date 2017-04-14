@@ -27,9 +27,6 @@ import javax.annotation.PostConstruct;
 import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import org.apache.jena.enhanced.BuiltinPersonalities;
-import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.util.FileUtils;
 import org.apache.jena.util.LocationMapper;
 import com.atomgraph.core.provider.ClientProvider;
 import com.atomgraph.core.provider.DataManagerProvider;
@@ -43,7 +40,6 @@ import com.atomgraph.core.provider.GraphStoreClientProvider;
 import com.atomgraph.core.provider.GraphStoreProvider;
 import com.atomgraph.core.provider.SPARQLClientProvider;
 import com.atomgraph.core.provider.SPARQLEndpointProvider;
-import com.atomgraph.core.provider.ServiceProvider;
 import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.core.vocabulary.SD;
 import com.atomgraph.server.mapper.ClientExceptionMapper;
@@ -109,7 +105,7 @@ public class Application extends com.atomgraph.core.Application
             new MediaTypes(), getClient(new DefaultClientConfig()),
             servletConfig.getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getInitParameter(A.maxGetRequestSize.getURI())) : null,            
             servletConfig.getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getInitParameter(A.preemptiveAuth.getURI())) : false,
-            getFileManager(getLocationMapper(servletConfig, "/WEB-INF/classes/location-mapping.n3")),
+            getFileManager(new LocationMapper(servletConfig.getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getInitParameter(AP.locationMapping.getURI()) : null)),
             servletConfig.getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getInitParameter(LDT.ontology.getURI()) : null,
             servletConfig.getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getInitParameter(AP.sitemapRules.getURI()) : null,
             servletConfig.getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getInitParameter(AP.cacheSitemap.getURI())) : true
@@ -179,7 +175,7 @@ public class Application extends com.atomgraph.core.Application
         classes.add(ResourceBase.class); // handles /
 
         singletons.add(new ApplicationProvider());
-        singletons.add(new ServiceProvider(getService()));
+        //singletons.add(new ServiceProvider(getService()));
         singletons.add(new OntologyProvider(getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
@@ -207,14 +203,6 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new QueryParseExceptionMapper());
      
         if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
-    }
-    
-    public static LocationMapper getLocationMapper(final ServletConfig servletConfig, final String path)
-    {
-        String syntax = FileUtils.guessLang(path);            
-        Model mapping = ModelFactory.createDefaultModel();
-        mapping.read(servletConfig.getServletContext().getResourceAsStream(path), path, syntax);
-        return new LocationMapper(mapping);
     }
     
     public static FileManager getFileManager(LocationMapper locationMapper)

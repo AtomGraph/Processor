@@ -48,4 +48,6 @@ public class AP
 
     public static final DatatypeProperty sitemapRules = m_model.createDatatypeProperty( NS + "sitemapRules" );
 
+    public static final DatatypeProperty locationMapping = m_model.createDatatypeProperty( NS + "locationMapping" );
+
 }
