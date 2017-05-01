@@ -33,7 +33,7 @@ public class LDTC
     private static OntModel m_model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, null);
     
     /** <p>The namespace of the vocabulary as a string</p> */
-    public static final String NS = "http://www.w3.org/ns/ldt/core#";
+    public static final String NS = "http://www.w3.org/ns/ldt/core/domain#";
     
     /** <p>The namespace of the vocabulary as a string</p>
      *  @see #NS */
@@ -45,7 +45,7 @@ public class LDTC
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
-    public static final OntClass Document = m_model.createClass( NS + "Document" );
+    // public static final OntClass Document = m_model.createClass( NS + "Document" );
     
     public static final OntClass View = m_model.createClass( NS + "View" );
     

@@ -51,6 +51,7 @@ import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import javax.annotation.PostConstruct;
+import org.apache.jena.sparql.vocabulary.FOAF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.model.NamedGraph;
@@ -83,7 +84,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private ModifyBuilder modifyBuilder;
 
     /**
-     * Public JAX-RS constructor. Suitable for subclassing.
+     * Public JAX-RS instance. Suitable for subclassing.
      * If the request URI does not match any URI template in the sitemap ontology, 404 Not Found is returned.
      * 
      * If the matching ontology class is a subclass of <code>ldt:Document</code>, this resource becomes a page resource and
@@ -143,7 +144,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Post-construct initialization. Subclasses need to call super.init() first, just like with super() constructor.
+     * Post-construct initialization. Subclasses need to call super.init() first, just like with super() instance.
      */
     @PostConstruct
     public void init()
@@ -233,10 +234,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	if (model == null) throw new IllegalArgumentException("Model cannot be null");
 	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", model, graphURI);
 
-	Resource created = getURIResource(model, RDF.type, LDTC.Document);
+	Resource created = getURIResource(model, RDF.type, FOAF.Document);
 	if (created == null)
 	{
-	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", LDTC.Document.getURI());
+	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
 	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
 	}
 

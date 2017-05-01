@@ -94,7 +94,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
-            state.addProperty(LDTDH.constructor, addInstance(state.getModel(), forClass)); // connects constructor state to CONSTRUCTed template
+            state.addProperty(LDTDH.instance, addInstance(state.getModel(), forClass)); // connects instance state to CONSTRUCTed template
         }
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
