@@ -48,7 +48,6 @@ import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDTC;
 import com.atomgraph.processor.vocabulary.LDTDH;
 import javax.annotation.PostConstruct;
 import org.apache.jena.sparql.vocabulary.FOAF;
@@ -211,7 +210,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
     
     /**
-     * Handles POST method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.
+     * Handles POST method: creates inference model over request payload.
      * 
      * @param model the RDF payload
      * @return response
@@ -219,22 +218,22 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response post(Model model)
     {
-	return post(model, null);
+	return post(ModelFactory.createRDFSModel(getOntology().getOntModel(), model), null);
     }
     
     /**
      * Handles POST method, stores the submitted RDF model in the specified named graph of the specified SPARQL endpoint, and returns response.
      * 
-     * @param model the RDF payload
+     * @param infModel the RDF payload
      * @param graphURI target graph name
      * @return response
      */
-    public Response post(Model model, URI graphURI)
+    public Response post(InfModel infModel, URI graphURI)
     {
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", model, graphURI);
+	if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
+	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", infModel.getRawModel(), graphURI);
 
-	Resource created = getURIResource(model, RDF.type, FOAF.Document);
+	Resource created = getURIResource(infModel, RDF.type, FOAF.Document);
 	if (created == null)
 	{
 	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
@@ -242,8 +241,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	}
 
         UpdateRequest insertDataRequest;
-	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, model).build();
-	else insertDataRequest = InsertDataBuilder.fromData(model).build();
+	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, infModel.getRawModel()).build();
+	else insertDataRequest = InsertDataBuilder.fromData(infModel.getRawModel()).build();
 
         insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
