@@ -27,7 +27,6 @@ import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
-import org.apache.jena.rdf.model.RDFNode;
 
 /**
  *
@@ -85,5 +84,7 @@ public interface Template extends OntClass
     ModifyBuilder getModifyBuilder(URI base);
     
     ModifyBuilder getModifyBuilder(URI base, Model commandModel);
+    
+    boolean hasSuperTemplate(Template superTemplate);
 
 }

@@ -434,4 +434,31 @@ public class TemplateImpl extends OntClassImpl implements Template
         toString();
     }
 
+    @Override
+    public final boolean hasSuperTemplate(Template superTemplate)
+    {
+	if (superTemplate == null) throw new IllegalArgumentException("Template cannot be null");
+        
+        ExtendedIterator<OntClass> it = listSuperClasses(false);
+        try
+        {
+            while (it.hasNext())
+            {
+                OntClass nextClass = it.next();
+                if (nextClass.canAs(Template.class))
+                {
+                    Template nextTemplate = nextClass.as(Template.class);
+                    if (nextTemplate.equals(superTemplate) || nextTemplate.hasSuperTemplate(superTemplate))
+                        return true;
+                }
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return false;
+    }
+
 }

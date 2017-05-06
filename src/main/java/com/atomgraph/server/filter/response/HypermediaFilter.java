@@ -25,8 +25,8 @@ import com.sun.jersey.spi.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDTC;
-import com.atomgraph.processor.vocabulary.LDTDH;
+import com.atomgraph.processor.vocabulary.C;
+import com.atomgraph.processor.vocabulary.DH;
 import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
@@ -74,27 +74,27 @@ public class HypermediaFilter implements ContainerResponseFilter
         Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
         if (!state.equals(absolutePath)) // add hypermedia if there are query parameters
         {
-            state.addProperty(LDTC.viewOf, absolutePath).
-                addProperty(RDF.type, LDTC.View);
+            state.addProperty(C.viewOf, absolutePath).
+                addProperty(RDF.type, C.View);
 
-            if (templateCall.hasArgument(LDTDH.limit)) // pages must have limits
+            if (templateCall.hasArgument(DH.limit)) // pages must have limits
             {
                 if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
-                state.addProperty(LDTDH.pageOf, absolutePath).
-                    addProperty(RDF.type, LDTDH.Page); // do we still need dh:Page now that we have core:View?
+                state.addProperty(DH.pageOf, absolutePath).
+                    addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
 
                 addPrevNextPage(templateCall, absolutePath, state);
             }
         }
 
         if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
-                templateCall.hasArgument(LDTDH.forClass))
+                templateCall.hasArgument(DH.forClass))
         {
-            String forClassURI = templateCall.getArgumentProperty(LDTDH.forClass).getResource().getURI();
+            String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
             OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
-            state.addProperty(LDTDH.instance, addInstance(state.getModel(), forClass)); // connects instance state to CONSTRUCTed template
+            state.addProperty(DH.instance, addInstance(state.getModel(), forClass)); // connects instance state to CONSTRUCTed template
         }
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
@@ -109,17 +109,17 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
         if (state == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        Long limit = templateCall.getArgumentProperty(LDTDH.limit).getLong();            
+        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();            
         Long offset = Long.valueOf(0);
-        if (templateCall.hasArgument(LDTDH.offset)) offset = templateCall.getArgumentProperty(LDTDH.offset).getLong();
+        if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
 
         if (offset >= limit)
         {
             com.atomgraph.core.util.StateBuilder prevBuilder = TemplateCall.fromResource(state);
-            Resource prev = prevBuilder.replaceProperty(LDTDH.offset, ResourceFactory.createTypedLiteral(offset - limit)).
+            Resource prev = prevBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset - limit)).
                 build().
-                addProperty(LDTDH.pageOf, absolutePath).
-                addProperty(RDF.type, LDTDH.Page).
+                addProperty(DH.pageOf, absolutePath).
+                addProperty(RDF.type, DH.Page).
                 addProperty(XHV.next, state);
 
             if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", state, prev);
@@ -127,10 +127,10 @@ public class HypermediaFilter implements ContainerResponseFilter
         }
 
         com.atomgraph.core.util.StateBuilder nextBuilder = TemplateCall.fromResource(state);
-        Resource next = nextBuilder.replaceProperty(LDTDH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
+        Resource next = nextBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
                 build().
-                addProperty(LDTDH.pageOf, absolutePath).
-                addProperty(RDF.type, LDTDH.Page).
+                addProperty(DH.pageOf, absolutePath).
+                addProperty(RDF.type, DH.Page).
                 addProperty(XHV.prev, state);
 
         if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", state, next);

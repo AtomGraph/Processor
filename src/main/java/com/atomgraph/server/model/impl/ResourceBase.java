@@ -24,7 +24,6 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.sparql.util.Loader;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
@@ -44,11 +43,13 @@ import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
-import com.atomgraph.processor.vocabulary.LDTDH;
+import com.atomgraph.processor.vocabulary.DH;
+import com.atomgraph.processor.vocabulary.DHT;
 import javax.annotation.PostConstruct;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.slf4j.Logger;
@@ -153,8 +154,15 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         else
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
-            if (getTemplateCall().getTemplate().equals(LDTDH.Container) || hasSuperClass(getTemplateCall().getTemplate(), LDTDH.Container))
-                queryBuilder = getPageQueryBuilder(queryBuilder);
+            
+            if (getTemplateCall().getTemplate().getOntModel().createResource(DHT.Container.getURI()).canAs(Template.class))
+            {
+                // apply LIMIT/OFFSET/ORDER BY pagination if this template is a sub-template of dh:Container
+                Template containerTemplate = getTemplateCall().getTemplate().getOntModel().
+                        createResource(DHT.Container.getURI()).as(Template.class);
+                if (getTemplateCall().getTemplate().hasSuperTemplate(containerTemplate))
+                    queryBuilder = getPageQueryBuilder(queryBuilder);
+            }
         }
     }
     
@@ -337,18 +345,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return Response.noContent().build();
     }
     
-    public final boolean hasSuperClass(OntClass subClass, OntClass superClass)
-    {
-        ExtendedIterator<OntClass> extIt = subClass.listSuperClasses(false);
-        
-        while (extIt.hasNext())
-        {
-            OntClass nextClass = extIt.next();
-            if (nextClass.equals(superClass) || hasSuperClass(nextClass, superClass)) return true;
-        }
-
-        return false;
-    }
 
     /**
      * Returns variable bindings for description query.
@@ -419,14 +415,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
 	return templateCall;
     }
-
-    /*
-    @Override
-    public Resource getState()
-    {
-        return state;
-    }
-    */
     
     /**
      * Returns the cache control of this resource, if specified.
@@ -466,29 +454,29 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        if (getTemplateCall().hasArgument(LDTDH.offset))
+        if (getTemplateCall().hasArgument(DH.offset))
         {
-            Long offset = getTemplateCall().getArgumentProperty(LDTDH.offset).getLong();
+            Long offset = getTemplateCall().getArgumentProperty(DH.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
         }
 
-        if (getTemplateCall().hasArgument(LDTDH.limit))
+        if (getTemplateCall().hasArgument(DH.limit))
         {
-            Long limit = getTemplateCall().getArgumentProperty(LDTDH.limit).getLong();
+            Long limit = getTemplateCall().getArgumentProperty(DH.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
         }
 
-        if (getTemplateCall().hasArgument(LDTDH.orderBy))
+        if (getTemplateCall().hasArgument(DH.orderBy))
         {
             try
             {
-                String orderBy = getTemplateCall().getArgumentProperty(LDTDH.orderBy).getString();
+                String orderBy = getTemplateCall().getArgumentProperty(DH.orderBy).getString();
 
                 Boolean desc = false; // ORDERY BY is ASC() by default
-                if (getTemplateCall().hasArgument(LDTDH.desc))
-                    desc = getTemplateCall().getArgumentProperty(LDTDH.desc).getBoolean();
+                if (getTemplateCall().hasArgument(DH.desc))
+                    desc = getTemplateCall().getArgumentProperty(DH.desc).getBoolean();
 
                 if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                 subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first

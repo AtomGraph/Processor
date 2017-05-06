@@ -15,6 +15,7 @@
  */
 package com.atomgraph.processor.vocabulary;
 
+import org.apache.jena.ontology.DatatypeProperty;
 import org.apache.jena.ontology.ObjectProperty;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
@@ -26,14 +27,14 @@ import org.apache.jena.rdf.model.Resource;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class LDTC
+public class DH
 {
 
     /** <p>The RDF model that holds the vocabulary terms</p> */
     private static OntModel m_model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, null);
     
     /** <p>The namespace of the vocabulary as a string</p> */
-    public static final String NS = "http://www.w3.org/ns/ldt/core/domain#";
+    public static final String NS = "http://www.w3.org/ns/ldt/document-hierarchy/domain#";
     
     /** <p>The namespace of the vocabulary as a string</p>
      *  @see #NS */
@@ -45,14 +46,24 @@ public class LDTC
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
-    // public static final OntClass Document = m_model.createClass( NS + "Document" );
-    
-    public static final OntClass View = m_model.createClass( NS + "View" );
-    
-    public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
+    public static final OntClass Container = m_model.createClass( NS + "Container" );
 
-    public static final OntClass GraphStore = m_model.createClass( NS + "GraphStore" );
+    public static final OntClass Page = m_model.createClass( NS + "Page" );
+
+    public static final ObjectProperty forClass = m_model.createObjectProperty( NS + "forClass" );
+
+    public static final ObjectProperty instance = m_model.createObjectProperty( NS + "instance" );
+
+    public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
+
+    public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
     
-    public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
+    public static final DatatypeProperty limit = m_model.createDatatypeProperty( NS + "limit" );
+
+    public static final DatatypeProperty orderBy = m_model.createDatatypeProperty( NS + "orderBy" );
+
+    public static final DatatypeProperty desc = m_model.createDatatypeProperty( NS + "desc" );
+    
+    public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
 
 }
