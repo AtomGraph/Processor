@@ -52,10 +52,11 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     private final OntModelSpec ontModelSpec;
     private final String ontologyURI;
     
-    public OntologyProvider(String ontologyURI, OntModelSpec ontModelSpec, boolean materialize)
+    public OntologyProvider(OntDocumentManager manager, String ontologyURI, OntModelSpec ontModelSpec, boolean materialize)
     {
         super(Ontology.class);
         
+        if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");        
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         
@@ -65,7 +66,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         // materialize OntModel inferences to avoid invoking rules engine on every request
         if (materialize && ontModelSpec.getReasoner() != null)
         {
-            OntModel infModel = getOntModel(ontologyURI, ontModelSpec);
+            OntModel infModel = getOntModel(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec);
             Ontology ontology = infModel.getOntology(ontologyURI);
 
             ImportCycleChecker checker = new ImportCycleChecker();
@@ -78,7 +79,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             
             OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
             materializedModel.add(infModel);
-            OntDocumentManager.getInstance().addModel(ontologyURI, materializedModel, true);
+            manager.addModel(ontologyURI, materializedModel, true);
         }
     }
                 
@@ -149,23 +150,25 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {        
-        return getOntModel(getOntologyURI(), OntModelSpec.OWL_MEM).getOntology(getOntologyURI());
+        return getOntModel(OntDocumentManager.getInstance(), getOntologyURI(), OntModelSpec.OWL_MEM).getOntology(getOntologyURI());
     }
     
     /**
      * Loads ontology by URI.
      * 
+     * @param manager
      * @param ontologyURI ontology location
      * @param ontModelSpec ontology model specification
      * @return ontology model
      */
-    public static OntModel getOntModel(String ontologyURI, OntModelSpec ontModelSpec)
+    public static OntModel getOntModel(OntDocumentManager manager, String ontologyURI, OntModelSpec ontModelSpec)
     {
+        if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
 
-        OntModel ontModel = OntDocumentManager.getInstance().getOntology(ontologyURI, ontModelSpec);
+        OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
         
         // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
         ontModel.enterCriticalSection(Lock.WRITE);

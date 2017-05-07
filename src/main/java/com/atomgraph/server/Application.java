@@ -176,7 +176,7 @@ public class Application extends com.atomgraph.core.Application
 
         singletons.add(new ApplicationProvider());
         //singletons.add(new ServiceProvider(getService()));
-        singletons.add(new OntologyProvider(getOntologyURI(), getOntModelSpec(), true));
+        singletons.add(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
         singletons.add(new SPARQLEndpointProvider());
