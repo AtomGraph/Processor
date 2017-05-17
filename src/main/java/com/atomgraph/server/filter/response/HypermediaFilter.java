@@ -16,6 +16,7 @@
 
 package com.atomgraph.server.filter.response;
 
+import com.atomgraph.core.util.Link;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -25,20 +26,33 @@ import com.sun.jersey.spi.container.ContainerResponseFilter;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
-import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
+import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.exception.OntClassNotFoundException;
+import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.vocabulary.XHV;
+import java.net.URISyntaxException;
+import java.util.List;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.MultivaluedMap;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
 import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.ontology.OntModel;
+import org.apache.jena.ontology.OntModelSpec;
+import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.apache.jena.rdf.model.Statement;
+import org.apache.jena.rdf.model.StmtIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spinrdf.vocabulary.SPL;
 
 /**
  * A filter that adds HATEOAS transitions to the RDF query result.
@@ -51,7 +65,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
             
-    // @Context ServletConfig servletConfig;
+    //@Context javax.ws.rs.core.Application system;
     @Context Providers providers;
     @Context UriInfo uriInfo;
     
@@ -67,10 +81,11 @@ public class HypermediaFilter implements ContainerResponseFilter
                 response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         
-        TemplateCall templateCall = getTemplateCall();
-        if (templateCall == null) return response;
+        //TemplateCall templateCall = getTemplateCall();
+        //if (templateCall == null) return response;
             
-        Resource state = templateCall.build();
+        //Resource state = templateCall.build();
+        /*
         Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
         if (!state.equals(absolutePath)) // add hypermedia if there are query parameters
         {
@@ -86,12 +101,20 @@ public class HypermediaFilter implements ContainerResponseFilter
                 addPrevNextPage(templateCall, absolutePath, state);
             }
         }
+        */
+        
+        String ontologyURI = getOntologyURI(response.getHttpHeaders());
+        if (ontologyURI == null) return response; // no Link header with type=ontology was present
 
+        OntModel ontModel = new OntologyProvider(OntDocumentManager.getInstance(), ontologyURI, OntModelSpec.OWL_MEM, false).
+                getOntology().getOntModel();
+        
+        Resource state = ModelFactory.createDefaultModel().createResource(request.getAbsolutePath().toString());
         if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
-                templateCall.hasArgument(DH.forClass))
+                getArgument(state, DH.forClass) != null)
         {
-            String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
-            OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
+            String forClassURI = getArgument(state, DH.forClass).getURI();
+            OntClass forClass = ontModel.getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
 
             state.addProperty(DH.instance, addInstance(state.getModel(), forClass)); // connects instance state to CONSTRUCTed template
@@ -103,6 +126,29 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
         
+    public String getOntologyURI(MultivaluedMap<String, Object> headers)
+    {
+        List<Object> links  = headers.get("Link");
+        
+        if (links != null)
+            for (Object obj : links)
+            {
+                try
+                {
+                    Link link = Link.valueOf(obj.toString());
+                    if (link.getRel() != null && link.getRel().equals(LDT.ontology.getURI()) &&
+                            link.getHref() != null)
+                        return link.getHref().toString();
+                }
+                catch (URISyntaxException ex)
+                {
+                    throw new WebApplicationException(ex);
+                }
+            }
+        
+        return null;
+    }
+
     public void addPrevNextPage(TemplateCall templateCall, Resource absolutePath, Resource state)
     {
         if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
@@ -137,12 +183,37 @@ public class HypermediaFilter implements ContainerResponseFilter
         state.addProperty(XHV.next, next);
     }
     
+    public Resource getArgument(Resource resource, Property predicate)
+    {
+	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
+        
+        StmtIterator it = resource.listProperties(LDT.arg);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                Resource arg = stmt.getObject().asResource();
+                if (arg.getProperty(SPL.predicate).getResource().equals(predicate)) return arg;
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
+    }
+    
     public Resource addInstance(Model targetModel, OntClass forClass)
     {
         if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
         return new ConstructorBase().construct(forClass, targetModel);
     }
 
+    /*
     public TemplateCall getTemplateCall()
     {
         if (!getUriInfo().getMatchedResources().isEmpty())
@@ -151,6 +222,12 @@ public class HypermediaFilter implements ContainerResponseFilter
         return null;
     }
     
+    public OntModelSpec getOntModelSpec()
+    {
+        return system instanceof Application ? ((Application)system).getOntModelSpec() : null;
+    }
+    */
+
     public Providers getProviders()
     {
         return providers;
