@@ -199,6 +199,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return this;
     }
 
+    /**
+     * Handles GET method. Redirects to default state if it differs from request URI.
+     * 
+     * @return response
+     */
     @Override
     public Response get()
     {
@@ -212,6 +217,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return super.get();
     }
     
+    /**
+     * Checks whether the URi of the template call matches the request URI.
+     * 
+     * @return true if request matches state
+     */
     public boolean isDefaultState()
     {
         return getTemplateCall().getURI().equals(getUriInfo().getRequestUri().toString());
