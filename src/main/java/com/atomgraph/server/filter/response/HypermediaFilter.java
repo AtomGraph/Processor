@@ -142,10 +142,12 @@ public class HypermediaFilter implements ContainerResponseFilter
         return new ConstructorBase().construct(forClass, targetModel);
     }
 
-    // if TemplateCall could be stored in request context, we wouldn't need to process it once again here
     public TemplateCall getTemplateCall()
     {
-	return getProviders().getContextResolver(TemplateCall.class, null).getContext(TemplateCall.class);
+        if (!getUriInfo().getMatchedResources().isEmpty())
+            return ((com.atomgraph.server.model.Resource)getUriInfo().getMatchedResources().get(0)).getTemplateCall();
+        
+        return null;
     }
     
     public Providers getProviders()

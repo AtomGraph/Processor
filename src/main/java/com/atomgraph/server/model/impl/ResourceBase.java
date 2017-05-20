@@ -69,7 +69,7 @@ import org.spinrdf.vocabulary.SPIN;
  * @see <a href="http://www.w3.org/TR/sparql11-query/#solutionModifiers">15 Solution Sequences and Modifiers</a>
  */
 @Path("/")
-public class ResourceBase extends QueriedResourceBase implements com.atomgraph.server.model.Resource
+public class ResourceBase extends QueriedResourceBase implements com.atomgraph.server.model.Resource, com.atomgraph.server.model.QueriedResource
 {
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
         

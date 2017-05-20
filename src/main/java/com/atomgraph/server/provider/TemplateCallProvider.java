@@ -28,6 +28,8 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -37,9 +39,11 @@ import org.apache.jena.rdf.model.ModelFactory;
 public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Context, TemplateCall> implements ContextResolver<TemplateCall>
 {
 
+    private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
+
     @Context Providers providers;
     @Context UriInfo uriInfo;
-    
+        
     public TemplateCallProvider()
     {
         super(TemplateCall.class);
@@ -78,6 +82,7 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
         if (absolutePath == null) throw new IllegalArgumentException("URI cannot be null");
         if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
 
+        if (log.isDebugEnabled()) log.debug("Building TemplateCall from Template {}", template);
         TemplateCall templateCall = TemplateCall.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
             applyArguments(queryParams). // apply URL query parameters
             applyDefaults().
