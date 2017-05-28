@@ -144,7 +144,8 @@ public class HypermediaFilter implements ContainerResponseFilter
 
     public TemplateCall getTemplateCall()
     {
-        if (!getUriInfo().getMatchedResources().isEmpty())
+        if (!getUriInfo().getMatchedResources().isEmpty() &&
+                getUriInfo().getMatchedResources().get(0) instanceof com.atomgraph.server.model.Resource)
             return ((com.atomgraph.server.model.Resource)getUriInfo().getMatchedResources().get(0)).getTemplateCall();
         
         return null;

@@ -75,6 +75,7 @@ import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
+import static com.atomgraph.core.Application.getClient;
 
 /**
  *

@@ -385,7 +385,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         Link ontologyLink = new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null);
         rb.header("Link", ontologyLink.toString());
 
-        Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.baseUri.getURI(), null);
+        Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null);
         rb.header("Link", baseLink.toString());
         
         Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
