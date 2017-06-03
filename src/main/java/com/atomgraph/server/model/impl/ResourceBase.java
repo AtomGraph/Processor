@@ -377,6 +377,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         ResponseBuilder rb = super.getResponseBuilder(model);
         
+        rb.cacheControl(getCacheControl());
+
         //rb.header("Query", getQuery().toString());
         
         Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
