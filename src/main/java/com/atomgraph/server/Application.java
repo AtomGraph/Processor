@@ -57,7 +57,7 @@ import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.server.mapper.OntologyExceptionMapper;
 import com.atomgraph.server.provider.OntologyProvider;
 import com.atomgraph.server.provider.TemplateProvider;
-import com.atomgraph.server.provider.SkolemizingModelProvider;
+import com.atomgraph.server.io.SkolemizingModelProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

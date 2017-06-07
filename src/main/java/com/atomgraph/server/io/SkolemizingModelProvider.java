@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atomgraph.server.provider;
+package com.atomgraph.server.io;
 
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
@@ -22,7 +22,6 @@ import org.apache.jena.rdf.model.Model;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ContextResolver;
 import com.atomgraph.processor.exception.SkolemizationException;
 import com.atomgraph.processor.util.Skolemizer;
@@ -38,7 +37,6 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     private static final Logger log = LoggerFactory.getLogger(SkolemizingModelProvider.class);
     
     @Context private Request request;
-    @Context private UriInfo uriInfo;
     
     @Override
     public Model process(Model model)
@@ -66,11 +64,6 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     {
 	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
 	return cr.getContext(OntClass.class);
-    }
-    
-    public UriInfo getUriInfo()
-    {
-        return uriInfo;
     }
 
     public Request getRequest()

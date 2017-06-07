@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atomgraph.server.provider;
+package com.atomgraph.server.io;
 
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
@@ -28,7 +28,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-import com.atomgraph.core.io.ModelProvider;
 import com.atomgraph.processor.exception.ConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
 import org.slf4j.Logger;
@@ -39,7 +38,7 @@ import org.spinrdf.constraints.ConstraintViolation;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ValidatingModelProvider extends ModelProvider
+public class ValidatingModelProvider extends BasedModelProvider
 {
     private static final Logger log = LoggerFactory.getLogger(ValidatingModelProvider.class);
     
