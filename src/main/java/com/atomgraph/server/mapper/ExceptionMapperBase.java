@@ -51,7 +51,7 @@ abstract public class ExceptionMapperBase
     @Context private Providers providers;
     @Context private UriInfo uriInfo;
     
-    public Resource toResource(Exception ex, Response.Status status, Resource statusResource)
+    public Resource toResource(Exception ex, Response.StatusType status, Resource statusResource)
     {
         if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
         if (status == null) throw new IllegalArgumentException("Response.Status cannot be null");
