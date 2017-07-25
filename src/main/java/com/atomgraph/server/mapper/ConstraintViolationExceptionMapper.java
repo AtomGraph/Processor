@@ -17,7 +17,7 @@
 package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.util.Link;
-import com.atomgraph.processor.exception.ConstraintViolationException;
+import com.atomgraph.server.exception.ConstraintViolationException;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.net.URI;

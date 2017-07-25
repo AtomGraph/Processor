@@ -23,7 +23,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
 import javax.ws.rs.ext.ContextResolver;
-import com.atomgraph.processor.exception.SkolemizationException;
+import com.atomgraph.server.exception.SkolemizationException;
 import com.atomgraph.processor.util.Skolemizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,7 +57,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         catch (IllegalArgumentException ex)
         {
             throw new SkolemizationException(ex, model);
-        }        
+        }
     }
 
     public OntClass getOntClass()

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atomgraph.processor.exception;
+package com.atomgraph.server.exception;
 
 import org.apache.jena.rdf.model.Model;
 
@@ -30,22 +30,10 @@ public class ModelException extends RuntimeException
     {
         this.model = model;
     }
-    
-    public ModelException(String message, Model model)
-    {
-        super(message);
-        this.model = model;
-    }
 
     public ModelException(Throwable throwable, Model model)
     {
         super(throwable);
-        this.model = model;
-    }
-
-    public ModelException(String message, Throwable throwable, Model model)
-    {
-        super(message, throwable);
         this.model = model;
     }
 

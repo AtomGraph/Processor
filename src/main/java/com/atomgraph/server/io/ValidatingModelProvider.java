@@ -28,7 +28,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-import com.atomgraph.processor.exception.ConstraintViolationException;
+import com.atomgraph.server.exception.ConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

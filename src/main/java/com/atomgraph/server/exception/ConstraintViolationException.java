@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.atomgraph.processor.exception;
+package com.atomgraph.server.exception;
 
 import org.apache.jena.rdf.model.Model;
 import java.util.List;

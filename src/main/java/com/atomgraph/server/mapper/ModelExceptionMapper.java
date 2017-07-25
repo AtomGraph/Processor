@@ -28,7 +28,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.util.Link;
-import com.atomgraph.processor.exception.ModelException;
+import com.atomgraph.server.exception.ModelException;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
