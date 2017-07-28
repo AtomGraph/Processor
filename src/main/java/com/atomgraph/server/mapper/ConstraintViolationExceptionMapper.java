@@ -70,7 +70,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
         
         Link classLink = new Link(URI.create(getStateBuilder().getTemplate().getURI()), RDF.type.getLocalName(), null);
         Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
-        Link baseUriLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null); // LDT.base?
+        Link baseUriLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null);
         
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(ex.getModel(), getVariants()).

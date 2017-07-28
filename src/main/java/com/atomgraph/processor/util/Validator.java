@@ -43,26 +43,26 @@ public class Validator
         
     public Validator(OntModel ontModel)
     {
-	if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
+        if (ontModel == null) throw new IllegalArgumentException("OntModel cannot be null");
         this.ontModel = ontModel;
         SPINModuleRegistry.get().registerAll(ontModel, null);
     }
 
     public List<ConstraintViolation> validate(Model model)
     {
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
         OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM;
         OntModel tempModel = ModelFactory.createOntologyModel(ontModelSpec);
         tempModel.add(fixOntModel(getOntModel())).add(model);
-	return SPINConstraints.check(tempModel, null);
+        return SPINConstraints.check(tempModel, null);
     }
 
     // remove additional types from constraints, otherwise SPIN API will not find their queries :/
     // TO-DO: convert constraints from URI resources to bnodes. Otherwise SPINLabels.getLabel() returns corrupt label
     public OntModel fixOntModel(OntModel ontModel)
     {
-	if (ontModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (ontModel == null) throw new IllegalArgumentException("Model cannot be null");
         
         OntModel fixedModel = ModelFactory.createOntologyModel(ontModel.getSpecification());
         Query fix = QueryFactory.create("CONSTRUCT\n" +
@@ -72,7 +72,7 @@ public class Validator
 "WHERE\n" +
 "{\n" +
 "  ?s ?p ?o\n" +
-"  FILTER (!(?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> && ?o = <http://www.w3.org/ns/ldt#Constraint>))\n" +
+"  FILTER (!(?p = <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> && ?o = <https://www.w3.org/ns/ldt#Constraint>))\n" +
 "}");
         
         try (QueryExecution qex = QueryExecutionFactory.create(fix, ontModel))

@@ -32,7 +32,7 @@ public class DHT
     private static OntModel m_model = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM, null);
     
     /** <p>The namespace of the vocabulary as a string</p> */
-    public static final String NS = "http://www.w3.org/ns/ldt/document-hierarchy/templates#";
+    public static final String NS = "https://www.w3.org/ns/ldt/document-hierarchy/templates#";
     
     /** <p>The namespace of the vocabulary as a string</p>
      *  @see #NS */

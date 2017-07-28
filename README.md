@@ -63,7 +63,7 @@ brevity, all URIs are relativized against the webapp's base URI):
 @prefix gc:    <http://atomgraph.com/ns/client#> .
 @prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix void:  <http://rdfs.org/ns/void#> .
-@prefix ldt:   <http://www.w3.org/ns/ldt#> .
+@prefix ldt:   <https://www.w3.org/ns/ldt#> .
 
 # services
 

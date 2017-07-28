@@ -2,12 +2,12 @@
 
 [] lm:mapping
 
-   [ lm:name "http://www.w3.org/ns/ldt#" ;                              lm:altName "com/atomgraph/processor/ldt.ttl" ] ,
-   [ lm:name "http://www.w3.org/ns/ldt/core/domain#" ;                  lm:altName "com/atomgraph/processor/c.ttl" ] ,
-   [ lm:name "http://www.w3.org/ns/ldt/core/templates#" ;               lm:altName "com/atomgraph/processor/ct.ttl" ] ,
-   [ lm:name "http://www.w3.org/ns/ldt/document-hierarchy/domain#" ;    lm:altName "com/atomgraph/processor/dh.ttl" ] ,
-   [ lm:name "http://www.w3.org/ns/ldt/document-hierarchy/templates#" ; lm:altName "com/atomgraph/processor/dht.ttl" ] ,
-   [ lm:name "http://www.w3.org/ns/ldt/topic-hierarchy/templates#" ;    lm:altName "com/atomgraph/processor/tht.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt#" ;                              lm:altName "com/atomgraph/processor/ldt.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/core/domain#" ;                  lm:altName "com/atomgraph/processor/c.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/core/templates#" ;               lm:altName "com/atomgraph/processor/ct.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy/domain#" ;    lm:altName "com/atomgraph/processor/dh.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy/templates#" ; lm:altName "com/atomgraph/processor/dht.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/topic-hierarchy/templates#" ;    lm:altName "com/atomgraph/processor/tht.ttl" ] ,
    [ lm:name "http://rdfs.org/sioc/ns#" ;                               lm:altName "com/atomgraph/processor/sioc.owl" ] ,
    [ lm:name "http://rdfs.org/ns/void#" ;                               lm:altName "com/atomgraph/processor/void.owl" ] ,
    [ lm:name "http://www.w3.org/2011/http#" ;                           lm:altName "com/atomgraph/processor/http.owl" ] ,
