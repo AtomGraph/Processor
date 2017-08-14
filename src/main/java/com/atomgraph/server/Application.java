@@ -16,7 +16,6 @@
 
 package com.atomgraph.server;
 
-import static com.atomgraph.core.Application.getClient;
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.exception.ConfigurationException;
 import org.apache.jena.ontology.OntDocumentManager;
@@ -104,7 +103,7 @@ public class Application extends com.atomgraph.core.Application
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
             servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
             new MediaTypes(), getClient(new DefaultClientConfig()),
-            servletConfig.getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getInitParameter(A.maxGetRequestSize.getURI())) : null,            
+            servletConfig.getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getInitParameter(A.maxGetRequestSize.getURI())) : null,
             servletConfig.getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getInitParameter(A.preemptiveAuth.getURI())) : false,
             getFileManager(new LocationMapper(servletConfig.getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getInitParameter(AP.locationMapping.getURI()) : null)),
             servletConfig.getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getInitParameter(LDT.ontology.getURI()) : null,
@@ -154,8 +153,8 @@ public class Application extends com.atomgraph.core.Application
         FileManager.setGlobalFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
 
-        OntDocumentManager.getInstance().setFileManager(fileManager);        
-        if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());        
+        OntDocumentManager.getInstance().setFileManager(fileManager);
+        if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!         
     }
     
@@ -164,9 +163,9 @@ public class Application extends com.atomgraph.core.Application
      * 
      * @see com.atomgraph.client.util.DataManager
      * @see com.atomgraph.processor.locator
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/util/FileManager.html">FileManager</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/util/LocationMapper.html">LocationMapper</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/util/Locator.html">Locator</a>
+     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/FileManager.html">FileManager</a>
+     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/LocationMapper.html">LocationMapper</a>
+     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/Locator.html">Locator</a>
      * @see <a href="http://jena.apache.org/documentation/javadoc/arq/com/hp/hpl/jena/sparql/util/Context.html">Context</a>
      */
     @PostConstruct
@@ -176,7 +175,6 @@ public class Application extends com.atomgraph.core.Application
         classes.add(ResourceBase.class); // handles /
 
         singletons.add(new ApplicationProvider());
-        //singletons.add(new ServiceProvider(getService()));
         singletons.add(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
@@ -197,7 +195,7 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new ConstraintViolationExceptionMapper());
         singletons.add(new DatatypeFormatExceptionMapper());
         singletons.add(new NotFoundExceptionMapper());
-        singletons.add(new ClientExceptionMapper());        
+        singletons.add(new ClientExceptionMapper());
         singletons.add(new ConfigurationExceptionMapper());
         singletons.add(new OntologyExceptionMapper());
         singletons.add(new ParameterExceptionMapper());

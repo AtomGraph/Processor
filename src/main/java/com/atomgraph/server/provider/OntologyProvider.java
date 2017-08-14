@@ -16,6 +16,7 @@
  */
 package com.atomgraph.server.provider;
 
+import com.atomgraph.core.util.jena.DataManager;
 import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
@@ -33,6 +34,7 @@ import javax.ws.rs.ext.Provider;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import com.atomgraph.processor.exception.OntologyException;
+import com.sun.jersey.api.client.ClientHandlerException;
 import javax.ws.rs.ext.Providers;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,24 +51,25 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     @Context Providers providers;
 
-    private final OntModelSpec ontModelSpec;
+    private final OntDocumentManager ontDocumentManager;
     private final String ontologyURI;
     
-    public OntologyProvider(OntDocumentManager manager, String ontologyURI, OntModelSpec ontModelSpec, boolean materialize)
+    public OntologyProvider(final OntDocumentManager ontDocumentManager, final String ontologyURI,
+            final OntModelSpec ontModelSpec, final boolean materialize)
     {
         super(Ontology.class);
         
-        if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");        
+        if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");        
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         
+        this.ontDocumentManager = ontDocumentManager;
         this.ontologyURI = ontologyURI;
-        this.ontModelSpec = ontModelSpec;
         
         // materialize OntModel inferences to avoid invoking rules engine on every request
         if (materialize && ontModelSpec.getReasoner() != null)
         {
-            OntModel infModel = getOntModel(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec);
+            OntModel infModel = getOntModel(ontDocumentManager, ontologyURI, ontModelSpec);
             Ontology ontology = infModel.getOntology(ontologyURI);
 
             ImportCycleChecker checker = new ImportCycleChecker();
@@ -79,7 +82,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             
             OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
             materializedModel.add(infModel);
-            manager.addModel(ontologyURI, materializedModel, true);
+            ontDocumentManager.addModel(ontologyURI, materializedModel, true);
         }
     }
                 
@@ -149,8 +152,14 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     }
     
     public Ontology getOntology()
-    {        
-        return getOntModel(OntDocumentManager.getInstance(), getOntologyURI(), OntModelSpec.OWL_MEM).getOntology(getOntologyURI());
+    {
+        OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM;
+        
+        // attempt to use DataManager to retrieve owl:import Models
+        if (getOntDocumentManager().getFileManager() instanceof DataManager)
+            ontModelSpec.setImportModelGetter((DataManager)getOntDocumentManager().getFileManager());
+        
+        return getOntModel(getOntDocumentManager(), getOntologyURI(), ontModelSpec).getOntology(getOntologyURI());
     }
     
     /**
@@ -168,40 +177,48 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
 
-        OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
-        
-        // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
-        ontModel.enterCriticalSection(Lock.WRITE);
         try
         {
-            ontModel.loadImports();
-        }
-        finally
-        {
-            ontModel.leaveCriticalSection();
-        }
+            OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
 
-        // lock and clone the model to avoid ConcurrentModificationExceptions
-        ontModel.enterCriticalSection(Lock.READ);
-        try
-        {            
-            return ModelFactory.createOntologyModel(ontModelSpec,
-                    ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
+            // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
+            ontModel.enterCriticalSection(Lock.WRITE);
+            try
+            {
+                ontModel.loadImports();
+            }
+            finally
+            {
+                ontModel.leaveCriticalSection();
+            }
+
+            // lock and clone the model to avoid ConcurrentModificationExceptions
+            ontModel.enterCriticalSection(Lock.READ);
+            try
+            {            
+                return ModelFactory.createOntologyModel(ontModelSpec,
+                        ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
+            }
+            finally
+            {
+                ontModel.leaveCriticalSection();
+            }
         }
-        finally
+        catch (ClientHandlerException ex) // thrown by DataManager
         {
-            ontModel.leaveCriticalSection();
+            if (log.isErrorEnabled()) log.error("Could not load ontology '{}' or its imports", ontologyURI);
+            throw new OntologyException("Could not load ontology '" + ontologyURI + "' or its imports", ex);
         }
     }
 
+    public OntDocumentManager getOntDocumentManager()
+    {
+        return ontDocumentManager;
+    }
+    
     public String getOntologyURI()
     {
         return ontologyURI;
-    }
-    
-    public OntModelSpec getOntModelSpec()
-    {
-        return ontModelSpec;
     }
     
     public Providers getProviders()

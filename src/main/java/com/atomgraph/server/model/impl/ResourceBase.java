@@ -65,7 +65,7 @@ import org.spinrdf.vocabulary.SPIN;
  * Supports pagination on containers (implemented using SPARQL query solution modifiers).
  * 
  * @author Martynas Jusevičius <martynas@atomgraph.com>
- * @see <a href="http://jena.apache.org/documentation/javadoc/jena/com/hp/hpl/jena/ontology/OntResource.html">OntResource</a>
+ * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/ontology/OntResource.html">OntResource</a>
  * @see <a href="http://www.w3.org/TR/sparql11-query/#solutionModifiers">15 Solution Sequences and Modifiers</a>
  */
 @Path("/")
