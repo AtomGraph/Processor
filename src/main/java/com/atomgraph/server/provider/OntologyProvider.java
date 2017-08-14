@@ -206,6 +206,9 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         }
         catch (ClientHandlerException ex) // thrown by DataManager
         {
+            // remove ontology from cache, so next time it will be reloaded, possibly with fixed imports
+            manager.getFileManager().removeCacheModel(ontologyURI);
+            
             if (log.isErrorEnabled()) log.error("Could not load ontology '{}' or its imports", ontologyURI);
             throw new OntologyException("Could not load ontology '" + ontologyURI + "' or its imports", ex);
         }
