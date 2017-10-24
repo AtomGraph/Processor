@@ -16,13 +16,11 @@
 
 package com.atomgraph.server.io;
 
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
-import javax.ws.rs.ext.ContextResolver;
 import com.atomgraph.server.exception.SkolemizationException;
 import com.atomgraph.processor.util.Skolemizer;
 import org.slf4j.Logger;
@@ -58,12 +56,6 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
         {
             throw new SkolemizationException(ex, model);
         }
-    }
-
-    public OntClass getOntClass()
-    {
-	ContextResolver<OntClass> cr = getProviders().getContextResolver(OntClass.class, null);
-	return cr.getContext(OntClass.class);
     }
 
     public Request getRequest()

@@ -47,6 +47,8 @@ public class DH
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
     public static final OntClass Container = m_model.createClass( NS + "Container" );
+    
+    public static final OntClass Item = m_model.createClass( NS + "Item" );
 
     public static final OntClass Page = m_model.createClass( NS + "Page" );
 
