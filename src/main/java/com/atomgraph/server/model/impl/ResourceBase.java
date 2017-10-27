@@ -218,7 +218,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
     
     /**
-     * Checks whether the URi of the template call matches the request URI.
+     * Checks whether the URI of the template call matches the request URI.
      * 
      * @return true if request matches state
      */
