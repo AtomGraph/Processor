@@ -19,7 +19,6 @@ package com.atomgraph.server.filter.response;
 import com.atomgraph.processor.exception.OntologyException;
 import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.OntClass;
-import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntProperty;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
@@ -27,17 +26,16 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import org.apache.jena.query.ParameterizedSparqlString;
+import org.apache.jena.query.Query;
+import org.apache.jena.query.QueryExecution;
+import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QuerySolutionMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spinrdf.inference.SPINConstructors;
-import org.spinrdf.util.CommandWrapper;
-import org.spinrdf.util.JenaUtil;
-import org.spinrdf.util.SPINQueryFinder;
+import org.spinrdf.vocabulary.SP;
 import org.spinrdf.vocabulary.SPIN;
 
 /**
@@ -48,36 +46,64 @@ public class ConstructorBase
 {
     private static final Logger log = LoggerFactory.getLogger(ConstructorBase.class);
 
-    public Resource construct(OntClass forClass, Model targetModel)
+    public Resource construct(OntClass forClass, Model targetModel, String baseURI)
     {
-        if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        return addInstance(forClass, SPIN.constructor, targetModel.createResource(), targetModel, new HashSet<OntClass>());
+        return addInstance(forClass, SPIN.constructor, targetModel.createResource(), baseURI, new HashSet<OntClass>());
     }
     
-    public Resource addInstance(OntClass forClass, Property property, Resource instance, Model targetModel, Set<OntClass> reachedClasses)
+    public Resource addInstance(OntClass forClass, Property property, Resource instance, String baseURI, Set<OntClass> reachedClasses)
     {
         if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         if (instance == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (targetModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (baseURI == null) throw new IllegalArgumentException("Base URI string cannot be null");
         if (reachedClasses == null) throw new IllegalArgumentException("Set<OntClass> cannot be null");
         
-        Statement stmt = getConstructorStmt(forClass, property);
-        if (stmt == null || !stmt.getObject().isResource())
-        {
-            if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
-            throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
-        }
+//        Statement stmt = getConstructorStmt(forClass, property);
+//        if (stmt == null || !stmt.getObject().isResource())
+//        {
+//            if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
+//            throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
+//        }
 
-        List<Resource> newResources = new ArrayList<>();
-        Set<Resource> reachedTypes = new HashSet<>();
-        OntModel ontModel = forClass.getOntModel();
-        Map<Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(ontModel, ontModel, property, false, false);
-        SPINConstructors.constructInstance(ontModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
-        instance.addProperty(RDF.type, forClass);
-        reachedClasses.add(forClass);
+        if (forClass.hasProperty(property))
+        {
+            Resource constructor = forClass.getPropertyResourceValue(property);
+            if (constructor == null)
+            {
+                if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
+                throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
+            }
+        
+            Statement queryText = constructor.getProperty(SP.text);
+            if (queryText == null || !queryText.getObject().isLiteral())
+            {
+                if (log.isErrorEnabled()) log.error("Constructor resource '{}' does not have sp:text property", constructor);
+                throw new OntologyException("Constructor resource '" + constructor + "' does not have sp:text property");
+            }
+            
+            Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
+            QuerySolutionMap bindings = new QuerySolutionMap();
+            bindings.add(SPIN.THIS_VAR_NAME, instance);
+            // skip SPIN template bindings for now - might support later
+            
+            // execute the constructor on the target model
+            try (QueryExecution qex = QueryExecutionFactory.create(basedQuery))
+            {
+                qex.setInitialBinding(bindings);
+                qex.execConstruct(instance.getModel());
+            }
+            instance.addProperty(RDF.type, forClass);            
+        }
+        
+        //List<Resource> newResources = new ArrayList<>();
+        //Set<Resource> reachedTypes = new HashSet<>();
+        //Map<Resource, List<CommandWrapper>> class2Constructor = SPINQueryFinder.getClass2QueryMap(ontModel, ontModel, property, false, false);
+        // SPINConstructors.constructInstance(ontModel, instance, forClass, targetModel, newResources, reachedTypes, class2Constructor, null, null, null);
+        //instance.addProperty(RDF.type, forClass);
+        //reachedClasses.add(forClass);
         
         // evaluate AllValuesFromRestriction to construct related instances
         ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
@@ -86,6 +112,8 @@ public class ConstructorBase
             while (superClassIt.hasNext())
             {
                 OntClass superClass = superClassIt.next();
+
+                // construct restriction
                 if (superClass.canAs(AllValuesFromRestriction.class))
                 {
                     AllValuesFromRestriction avfr = superClass.as(AllValuesFromRestriction.class);
@@ -98,7 +126,7 @@ public class ConstructorBase
                             throw new OntologyException("Circular template restriction between '" + forClass.getURI() + "' and '" + valueClass.getURI() + "' is not allowed");
                         }
                         
-                        Resource value = targetModel.createResource().
+                        Resource value = instance.getModel().createResource().
                             addProperty(RDF.type, valueClass);
                         instance.addProperty(avfr.getOnProperty(), value);
 
@@ -116,9 +144,12 @@ public class ConstructorBase
                             it.close();
                         }
 
-                        addInstance(valueClass, property, value, targetModel, reachedClasses);
+                        addInstance(valueClass, property, value, baseURI, reachedClasses);
                     }
                 }
+                else
+                    // otherwise, construct superclass
+                    addInstance(superClass, property, instance, baseURI, reachedClasses);
             }
         }
         finally
@@ -129,6 +160,7 @@ public class ConstructorBase
         return instance;
     }
     
+    /*
     public Statement getConstructorStmt(Resource cls, Property property)
     {
         if (cls == null) throw new IllegalArgumentException("Resource cannot be null");
@@ -145,5 +177,6 @@ public class ConstructorBase
         
         return null;
     }
+    */
     
 }
