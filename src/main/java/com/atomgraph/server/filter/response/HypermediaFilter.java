@@ -16,6 +16,7 @@
 
 package com.atomgraph.server.filter.response;
 
+import com.atomgraph.processor.util.Constructor;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
@@ -92,8 +93,8 @@ public class HypermediaFilter implements ContainerResponseFilter
             String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
             OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
-
-            state.addProperty(DH.instance, addInstance(state.getModel(), forClass)); // connects instance state to CONSTRUCTed template
+            // connects instance state to CONSTRUCTed template
+            state.addProperty(DH.instance, addInstance(state.getModel(), forClass, request.getBaseUri().toString()));
         }
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
@@ -136,10 +137,10 @@ public class HypermediaFilter implements ContainerResponseFilter
         state.addProperty(XHV.next, next);
     }
     
-    public Resource addInstance(Model targetModel, OntClass forClass)
+    public Resource addInstance(Model targetModel, OntClass forClass, String baseURI)
     {
         if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
-        return new ConstructorBase().construct(forClass, targetModel);
+        return new Constructor().construct(forClass, targetModel, baseURI);
     }
 
     public TemplateCall getTemplateCall()
