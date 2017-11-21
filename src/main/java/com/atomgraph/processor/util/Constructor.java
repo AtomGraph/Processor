@@ -90,10 +90,10 @@ public class Constructor
             // skip SPIN template bindings for now - might support later
             
             // execute the constructor on the target model
-            try (QueryExecution qex = QueryExecutionFactory.create(basedQuery))
+            try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
             {
                 qex.setInitialBinding(bindings);
-                qex.execConstruct(instance.getModel());
+                qex.execConstruct();
             }
             instance.addProperty(RDF.type, forClass);            
         }
