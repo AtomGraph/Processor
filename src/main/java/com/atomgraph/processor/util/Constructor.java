@@ -55,7 +55,8 @@ public class Constructor
     }
 
     /**
-     * This is our own version of <code>SPINConstructors.constructInstance()</code>.
+     * Constructs new anonymous individual of an ontology class.
+     * It walks up the superclass chains and executes SPIN constructors.
      *
      * @param forClass class for which to construct new instance
      * @param property property that attaches <code>CONSTRUCT</code> query resource to class resource, usually <code>spin:constructor</code>
