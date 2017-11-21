@@ -42,9 +42,9 @@ import org.spinrdf.vocabulary.SPIN;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ConstructorBase
+public class Constructor
 {
-    private static final Logger log = LoggerFactory.getLogger(ConstructorBase.class);
+    private static final Logger log = LoggerFactory.getLogger(Constructor.class);
 
     public Resource construct(OntClass forClass, Model targetModel, String baseURI)
     {
