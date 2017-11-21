@@ -106,7 +106,7 @@ public class Constructor
             while (superClassIt.hasNext())
             {
                 OntClass superClass = superClassIt.next();
-                constructInstance(forClass, property, instance, baseURI);
+                constructInstance(superClass, property, instance, baseURI);
             }
         }
         finally
