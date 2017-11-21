@@ -93,7 +93,7 @@ public class Constructor
             try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
             {
                 qex.setInitialBinding(bindings);
-                qex.execConstruct();
+                instance.getModel().add(qex.execConstruct());
             }
             instance.addProperty(RDF.type, forClass);            
         }
