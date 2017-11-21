@@ -96,8 +96,6 @@ public class Constructor
             {
                 qex.setInitialBinding(bindings);
                 instance.getModel().add(qex.execConstruct());
-                
-                return instance;
             }
         }
 
@@ -114,6 +112,8 @@ public class Constructor
         {
             superClassIt.close();
         }
+
+        return instance;
     }
 
     public Resource addInstance(OntClass forClass, Property property, Resource instance, String baseURI, Set<OntClass> reachedClasses)
