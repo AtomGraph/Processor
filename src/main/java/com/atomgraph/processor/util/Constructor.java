@@ -107,6 +107,7 @@ public class Constructor
                 {
                     qex.setInitialBinding(bindings);
                     instance.getModel().add(qex.execConstruct());
+                    reachedClasses.add(forClass);
                 }
             }
         }
