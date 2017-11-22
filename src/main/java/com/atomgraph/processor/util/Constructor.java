@@ -33,6 +33,8 @@ import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
 import org.apache.jena.query.QuerySolutionMap;
+import org.apache.jena.rdf.model.NodeIterator;
+import org.apache.jena.rdf.model.RDFNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.vocabulary.SP;
@@ -62,51 +64,64 @@ public class Constructor
      * @param property property that attaches <code>CONSTRUCT</code> query resource to class resource, usually <code>spin:constructor</code>
      * @param instance the instance resource
      * @param baseURI base URI of the query
+     * @param reachedClasses classes that were already constructed
      * @see org.spinrdf.inference.SPINConstructors
      * @return the instance resource with constructed properties
      */
-    public Resource constructInstance(OntClass forClass, Property property, Resource instance, String baseURI)
+    public Resource constructInstance(OntClass forClass, Property property, Resource instance, String baseURI, Set<OntClass> reachedClasses)
     {
         if (forClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (instance == null) throw new IllegalArgumentException("Instance Resource cannot be null");
         if (baseURI == null) throw new IllegalArgumentException("Base URI cannot be null");
+        if (reachedClasses == null) throw new IllegalArgumentException("Set<OntClass> cannot be null");
 
-        if (forClass.hasProperty(property))
+        // do not construct instance for the same class more than once
+        if (reachedClasses.contains(forClass)) return instance;
+        
+        NodeIterator constructorIt = forClass.listPropertyValues(property);
+        try
         {
-            Resource constructor = forClass.getPropertyResourceValue(property);
-            if (constructor == null)
+            while (constructorIt.hasNext()) // traverse all constructors
             {
-                if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
-                throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
-            }
+                RDFNode constructor = constructorIt.next();
+                if (!constructor.isResource())
+                {
+                    if (log.isErrorEnabled()) log.error("Constructor is invoked but {} is not defined for class '{}'", property, forClass.getURI());
+                    throw new OntologyException("Constructor is invoked but '" + property.getURI() + "' not defined for class '" + forClass.getURI() +"'");
+                }
 
-            Statement queryText = constructor.getProperty(SP.text);
-            if (queryText == null || !queryText.getObject().isLiteral())
-            {
-                if (log.isErrorEnabled()) log.error("Constructor resource '{}' does not have sp:text property", constructor);
-                throw new OntologyException("Constructor resource '" + constructor + "' does not have sp:text property");
-            }
+                Statement queryText = constructor.asResource().getProperty(SP.text);
+                if (queryText == null || !queryText.getObject().isLiteral())
+                {
+                    if (log.isErrorEnabled()) log.error("Constructor resource '{}' does not have sp:text property", constructor);
+                    throw new OntologyException("Constructor resource '" + constructor + "' does not have sp:text property");
+                }
 
-            Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
-            QuerySolutionMap bindings = new QuerySolutionMap();
-            bindings.add(SPIN.THIS_VAR_NAME, instance);
-            // skip SPIN template bindings for now - might support later
+                Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
+                QuerySolutionMap bindings = new QuerySolutionMap();
+                bindings.add(SPIN.THIS_VAR_NAME, instance);
+                // skip SPIN template bindings for now - might support later
 
-            // execute the constructor on the target model
-            try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
-            {
-                qex.setInitialBinding(bindings);
-                instance.getModel().add(qex.execConstruct());
+                // execute the constructor on the target model
+                try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
+                {
+                    qex.setInitialBinding(bindings);
+                    instance.getModel().add(qex.execConstruct());
+                }
             }
         }
-
+        finally
+        {
+            constructorIt.close();
+        }
+        
         ExtendedIterator<OntClass> superClassIt = forClass.listSuperClasses();
         try
         {
             while (superClassIt.hasNext())
             {
                 OntClass superClass = superClassIt.next();
-                constructInstance(superClass, property, instance, baseURI);
+                constructInstance(superClass, property, instance, baseURI, reachedClasses);
             }
         }
         finally
@@ -125,7 +140,8 @@ public class Constructor
         if (baseURI == null) throw new IllegalArgumentException("Base URI string cannot be null");
         if (reachedClasses == null) throw new IllegalArgumentException("Set<OntClass> cannot be null");
 
-        constructInstance(forClass, property, instance, baseURI).addProperty(RDF.type, forClass);
+        constructInstance(forClass, property, instance, baseURI, new HashSet<OntClass>()).
+                addProperty(RDF.type, forClass);
         reachedClasses.add(forClass);
 
         // evaluate AllValuesFromRestriction to construct related instances
