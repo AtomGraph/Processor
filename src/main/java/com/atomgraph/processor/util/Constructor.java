@@ -17,7 +17,6 @@
 package com.atomgraph.processor.util;
 
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.vocabulary.LDT;
 import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntProperty;
@@ -29,14 +28,13 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
 import java.util.HashSet;
 import java.util.Set;
+import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
-import org.apache.jena.query.QueryFactory;
 import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.vocabulary.SP;
@@ -99,11 +97,9 @@ public class Constructor
                     throw new OntologyException("Constructor resource '" + constructor + "' does not have sp:text property");
                 }
 
-                // should be possible to reuse SPIN Template here instead
-                Query basedQuery = QueryFactory.create(queryText.getString());
+                Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
                 QuerySolutionMap bindings = new QuerySolutionMap();
                 bindings.add(SPIN.THIS_VAR_NAME, instance);
-                bindings.add(LDT.base.getLocalName(), ResourceFactory.createResource(baseURI));
                 // skip SPIN template bindings for now - might support later
 
                 // execute the constructor on the target model
