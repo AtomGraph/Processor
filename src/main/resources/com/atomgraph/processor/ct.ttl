@@ -83,7 +83,7 @@
     spl:optional true ;
     rdfs:isDefinedBy : .
 
-# QUERIES
+# COMMANDS
 
 :Describe a sp:Describe, sp:Query ;
     sp:text """DESCRIBE ?this
@@ -94,8 +94,7 @@ WHERE {
     rdfs:isDefinedBy : .
 
 :Delete a sp:DeleteWhere, sp:Update ;
-      sp:text """PREFIX foaf: <http://xmlns.com/foaf/0.1/>
-DELETE WHERE {
+      sp:text """DELETE WHERE {
     ?this ?p ?o
 }""" ;
     rdfs:label "Delete" ;
