@@ -275,21 +275,21 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return Response.seeOther(createdURI).build();
     }
 
-    public Resource getURIResource(Model model, Property property, Resource object)
+    public Resource getURIResource(InfModel infModel, Property property, Resource object)
     {
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+	if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 	if (object == null) throw new IllegalArgumentException("Object Resource cannot be null");
 
-        ResIterator it = model.listSubjectsWithProperty(property, object);
-
+        ResIterator it = infModel.listSubjectsWithProperty(property, object);
 	try
 	{
 	    while (it.hasNext())
 	    {
 		Resource resource = it.next();
 
-		if (resource.isURIResource()) return resource;
+		if (resource.isURIResource() && infModel.getRawModel().containsResource(resource))
+                    return resource;
 	    }
 	}
 	finally
