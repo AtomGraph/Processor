@@ -172,6 +172,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         return null;
     }
 
+    /*    
     public boolean hasArgument(Property predicate, RDFNode object)
     {
         return getArgument(predicate, object) != null;
@@ -191,6 +192,37 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
                 Statement stmt = it.next();
                 Resource arg = stmt.getObject().asResource();
                 if (arg.getProperty(SPL.predicate).getResource().equals(predicate) &&
+                        arg.getProperty(RDF.value).getObject().equals(object)) return arg;
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
+    }
+    */
+    
+    public boolean hasArgument(String varName, RDFNode object)
+    {
+        return getArgument(varName, object) != null;
+    }
+    
+    public Resource getArgument(String varName, RDFNode object)
+    {
+	if (varName == null) throw new IllegalArgumentException("Var name String cannot be null");
+	if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
+        
+        StmtIterator it = getResource().listProperties(LDT.arg);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                Resource arg = stmt.getObject().asResource();
+                if (arg.getProperty(SPL.predicate).getResource().getLocalName().equals(varName) &&
                         arg.getProperty(RDF.value).getObject().equals(object)) return arg;
             }
         }
