@@ -154,7 +154,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
             updateBuilder = getTemplateCall().getTemplate().getUpdateBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
-        else
+        
+        // PUT needs a query to check for existing description
+        if (getRequest().getMethod().equalsIgnoreCase("GET") || getRequest().getMethod().equalsIgnoreCase("PUT"))
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             
