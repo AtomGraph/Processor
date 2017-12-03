@@ -558,19 +558,22 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {        
         if (model != null && !model.isEmpty())
         {
+            // turn DELETE {} WHERE {} or DELETE WHERE {} into DELETE {} INSERT {} WHERE with request data
             ModifyBuilder builder = ModifyBuilder.fromModify(getUpdateBuilder().getModel());
 
             NamedGraph deleteNamedGraph = null;
             if (getUpdateBuilder().canAs(DeleteWhere.class))
             {
-                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere());
+                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere()).
+                    where(getUpdateBuilder().as(DeleteWhere.class).getWhere());
                 deleteNamedGraph = getNamedGraph(getUpdateBuilder().as(DeleteWhere.class).getWhere());
             }
             if (getUpdateBuilder().canAs(Modify.class))
             {
                 RDFList deletePattern = getUpdateBuilder().as(Modify.class).
                     getPropertyResourceValue(SP.deletePattern).as(RDFList.class);
-                builder.deletePattern(deletePattern);
+                builder.deletePattern(deletePattern).
+                    where(getUpdateBuilder().as(Modify.class).getWhere());
                 deleteNamedGraph = getNamedGraph(deletePattern);
             }
             
