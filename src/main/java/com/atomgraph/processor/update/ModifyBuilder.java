@@ -57,7 +57,7 @@ public class ModifyBuilder extends UpdateBuilder implements Modify
 	
 	Update update = SPINFactory.asUpdate(resource);
 	if (update == null || !(update instanceof Modify))
-	    throw new IllegalArgumentException("ModifyBuilder Resource must be a SPIN INSERT/DELETE Query");
+	    throw new IllegalArgumentException("ModifyBuilder Resource must be a SPIN INSERT/DELETE command");
 
 	return fromModify((Modify)update);
     }

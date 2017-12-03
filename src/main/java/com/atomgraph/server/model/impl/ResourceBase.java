@@ -558,7 +558,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {        
         if (model != null && !model.isEmpty())
         {
-            ModifyBuilder builder = ModifyBuilder.fromResource(getTemplateCall().getTemplate().getOntModel().createResource());
+            ModifyBuilder builder = ModifyBuilder.fromModify(getTemplateCall().getTemplate().getOntModel());
 
             NamedGraph deleteNamedGraph = null;
             if (getUpdateBuilder().canAs(DeleteWhere.class))
