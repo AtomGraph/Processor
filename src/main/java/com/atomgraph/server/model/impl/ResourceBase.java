@@ -57,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.model.NamedGraph;
 import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.update.DeleteWhere;
 import org.spinrdf.model.update.Modify;
 import org.spinrdf.vocabulary.SP;
 import org.spinrdf.vocabulary.SPIN;
@@ -541,32 +542,50 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	return updateBuilder;
     }
 
-    public ModifyBuilder addInsertPattern(ModifyBuilder builder, Model model)
+    public NamedGraph getNamedGraph(RDFList pattern)
     {
-	if (builder == null) throw new IllegalArgumentException("ModifyBuilder cannot be null");
+	if (pattern == null) throw new IllegalArgumentException("RDFList cannot be null");
 
-        // inject ground triples into DELETE named graph, if it is present in the Modify
-        Resource deletePattern = builder.getPropertyResourceValue(SP.deletePattern);
-        if (deletePattern != null)
-        {
-            RDFNode deleteListHead = deletePattern.as(RDFList.class).getHead();
-            if (deleteListHead.canAs(NamedGraph.class))
-            {
-                NamedGraph deleteNamedGraph = deleteListHead.as(NamedGraph.class);
-                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(), deleteNamedGraph.getNameNode(), builder.createDataList(model));
-                return builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
-            }
-        }
-
-        // otherwise, inject ground triples into the default graph
-        return builder.insertPattern(model);
+        // TO-DO: iterate over all List items
+        RDFNode deleteListHead = pattern.getHead();
+        if (deleteListHead.canAs(NamedGraph.class))
+            return deleteListHead.as(NamedGraph.class);
+        
+        return null;
     }
     
     public UpdateRequest getUpdateRequest(Model model)
-    {
-        if (model != null && !model.isEmpty() && getUpdateBuilder().canAs(Modify.class))
-            return new ParameterizedSparqlString(addInsertPattern(ModifyBuilder.fromModify(getUpdateBuilder().as(Modify.class)), model).build().toString(),
+    {        
+        if (model != null && !model.isEmpty())
+        {
+            ModifyBuilder builder = ModifyBuilder.fromResource(getTemplateCall().getTemplate().getOntModel().createResource());
+
+            NamedGraph deleteNamedGraph = null;
+            if (getUpdateBuilder().canAs(DeleteWhere.class))
+            {
+                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere());
+                deleteNamedGraph = getNamedGraph(getUpdateBuilder().as(DeleteWhere.class).getWhere());
+            }
+            if (getUpdateBuilder().canAs(Modify.class))
+            {
+                RDFList deletePattern = getUpdateBuilder().as(Modify.class).
+                    getPropertyResourceValue(SP.deletePattern).as(RDFList.class);
+                builder.deletePattern(deletePattern);
+                deleteNamedGraph = getNamedGraph(deletePattern);
+            }
+            
+            if (deleteNamedGraph != null)
+            {
+                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(),
+                        deleteNamedGraph.getNameNode(), builder.createDataList(model));
+                builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
+            }
+            else
+                builder.insertPattern(model);
+            
+            return new ParameterizedSparqlString(builder.build().toString(),
                     getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
+        }
             
         return new ParameterizedSparqlString(getUpdateBuilder().build().toString(),
                 getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
