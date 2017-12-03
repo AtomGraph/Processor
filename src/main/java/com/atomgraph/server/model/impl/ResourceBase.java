@@ -46,6 +46,7 @@ import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.query.SelectBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
+import com.atomgraph.processor.update.UpdateBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.DH;
@@ -56,6 +57,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.model.NamedGraph;
 import org.spinrdf.model.SPINFactory;
+import org.spinrdf.model.update.Modify;
 import org.spinrdf.vocabulary.SP;
 import org.spinrdf.vocabulary.SPIN;
 
@@ -81,7 +83,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final HttpHeaders httpHeaders;  
     private final QuerySolutionMap querySolutionMap;
     private QueryBuilder queryBuilder;
-    private ModifyBuilder modifyBuilder;
+    private UpdateBuilder updateBuilder;
 
     /**
      * Public JAX-RS instance. Suitable for subclassing.
@@ -144,13 +146,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Post-construct initialization. Subclasses need to call super.init() first, just like with super() instance.
+     * Post-construct initialization.
+     * Subclasses need to call <code>super.init()</code> first, just like with super() instance.
      */
     @PostConstruct
     public void init()
     {
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
-            modifyBuilder = getTemplateCall().getTemplate().getModifyBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
+            updateBuilder = getTemplateCall().getTemplate().getUpdateBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
         else
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
@@ -531,12 +534,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     @Override
-    public ModifyBuilder getModifyBuilder()
+    public UpdateBuilder getUpdateBuilder()
     {        
-	return modifyBuilder;
+	return updateBuilder;
     }
 
-    public ModifyBuilder getModifyBuilderWithData(ModifyBuilder builder, Model model)
+    public ModifyBuilder addInsertPattern(ModifyBuilder builder, Model model)
     {
 	if (builder == null) throw new IllegalArgumentException("ModifyBuilder cannot be null");
 
@@ -559,11 +562,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     
     public UpdateRequest getUpdateRequest(Model model)
     {
-        if (model != null && !model.isEmpty())
-            return new ParameterizedSparqlString(getModifyBuilderWithData(getModifyBuilder(), model).build().toString(),
+        if (model != null && !model.isEmpty() && getUpdateBuilder().canAs(Modify.class))
+            return new ParameterizedSparqlString(addInsertPattern(ModifyBuilder.fromModify(getUpdateBuilder().as(Modify.class)), model).build().toString(),
                     getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
             
-        return new ParameterizedSparqlString(getModifyBuilder().build().toString(),
+        return new ParameterizedSparqlString(getUpdateBuilder().build().toString(),
                 getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
     }
     

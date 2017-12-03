@@ -107,8 +107,8 @@ public class UpdateBuilder implements Update
 	org.apache.jena.update.UpdateRequest request = ARQFactory.get().createUpdateRequest(getUpdate());
 	
 	// generate SPARQL query string
-	removeAll(SP.text)
-	    .addLiteral(SP.text, getModel().createTypedLiteral(request.toString()));
+	removeAll(SP.text).
+                addLiteral(SP.text, getModel().createTypedLiteral(request.toString()));
 	
 	return request;
     }

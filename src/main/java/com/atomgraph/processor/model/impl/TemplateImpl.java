@@ -37,7 +37,6 @@ import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.query.QueryBuilder;
-import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.net.URI;
 import java.util.Iterator;
@@ -52,6 +51,7 @@ import org.slf4j.LoggerFactory;
 import org.spinrdf.model.SPINFactory;
 import org.spinrdf.vocabulary.SP;
 import com.atomgraph.processor.model.Parameter;
+import com.atomgraph.processor.update.UpdateBuilder;
 
 /**
  *
@@ -379,13 +379,13 @@ public class TemplateImpl extends OntClassImpl implements Template
     }
     
     @Override
-    public ModifyBuilder getModifyBuilder(URI base)
+    public UpdateBuilder getUpdateBuilder(URI base)
     {
-        return getModifyBuilder(base, getUpdate().getModel());
+        return getUpdateBuilder(base, getUpdate().getModel());
     }
      
     @Override
-    public ModifyBuilder getModifyBuilder(URI base, Model commandModel)
+    public UpdateBuilder getUpdateBuilder(URI base, Model commandModel)
     {
         Resource updateOrTemplateCall = getUpdate();
         if (updateOrTemplateCall == null)
@@ -394,17 +394,17 @@ public class TemplateImpl extends OntClassImpl implements Template
             throw new OntologyException("Update not defined for template '" + getURI() +"'");
         }
 
-        return getModifyBuilder(updateOrTemplateCall, base, commandModel);
+        return getUpdateBuilder(updateOrTemplateCall, base, commandModel);
     }
     
-    public ModifyBuilder getModifyBuilder(Resource updateOrTemplateCall, URI base, Model commandModel)
+    public UpdateBuilder getUpdateBuilder(Resource updateOrTemplateCall, URI base, Model commandModel)
     {
 	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
 
         org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
         if (spinTemplateCall != null)
-            return ModifyBuilder.fromUpdate(getParameterizedSparqlString(spinTemplateCall, base).asUpdate().
+            return UpdateBuilder.fromUpdate(getParameterizedSparqlString(spinTemplateCall, base).asUpdate().
                     getOperations().get(0), commandModel);
         else
         {
@@ -415,7 +415,7 @@ public class TemplateImpl extends OntClassImpl implements Template
                 throw new OntologyException("Class '" + getURI() + "' ldt:query value '" + updateOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
-            return ModifyBuilder.fromUpdate(getParameterizedSparqlString(update, base).asUpdate().
+            return UpdateBuilder.fromUpdate(getParameterizedSparqlString(update, base).asUpdate().
                     getOperations().get(0), commandModel);
         }
     }

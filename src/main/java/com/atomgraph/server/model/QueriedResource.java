@@ -18,6 +18,7 @@ package com.atomgraph.server.model;
 
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.ModifyBuilder;
+import com.atomgraph.processor.update.UpdateBuilder;
 
 /**
  * RDF resource, representation of which was queried from a SPARQL endpoint.
@@ -35,6 +36,6 @@ public interface QueriedResource extends com.atomgraph.core.model.QueriedResourc
      */
     public QueryBuilder getQueryBuilder();
 
-    public ModifyBuilder getModifyBuilder();
+    public UpdateBuilder getUpdateBuilder();
     
 }

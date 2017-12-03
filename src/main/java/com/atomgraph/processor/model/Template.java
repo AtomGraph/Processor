@@ -16,7 +16,7 @@
 package com.atomgraph.processor.model;
 
 import com.atomgraph.processor.query.QueryBuilder;
-import com.atomgraph.processor.update.ModifyBuilder;
+import com.atomgraph.processor.update.UpdateBuilder;
 import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
 import java.util.Comparator;
@@ -81,9 +81,9 @@ public interface Template extends OntClass
         
     QueryBuilder getQueryBuilder(URI base, Model commandModel);
 
-    ModifyBuilder getModifyBuilder(URI base);
+    UpdateBuilder getUpdateBuilder(URI base);
     
-    ModifyBuilder getModifyBuilder(URI base, Model commandModel);
+    UpdateBuilder getUpdateBuilder(URI base, Model commandModel);
     
     boolean hasSuperTemplate(Template superTemplate);
 
