@@ -157,7 +157,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             updateBuilder = getTemplateCall().getTemplate().getUpdateBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
         
         // PUT needs a query to check for existing description
-        if (getRequest().getMethod().equalsIgnoreCase("GET") || getRequest().getMethod().equalsIgnoreCase("PUT"))
+        if (getRequest().getMethod().equalsIgnoreCase("GET") || getRequest().getMethod().equalsIgnoreCase("PUT") ||
+                getRequest().getMethod().equalsIgnoreCase("POST"))
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             
@@ -326,7 +327,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 	
 	Model description = describe();	
 	
-	if (!description.isEmpty()) // remove existing representation
+	if (!description.isEmpty()) // check existing representation
 	{
 	    EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(model)));
 	    Response.ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
