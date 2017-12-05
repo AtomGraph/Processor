@@ -156,9 +156,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
             updateBuilder = getTemplateCall().getTemplate().getUpdateBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
         
-        // PUT needs a query to check for existing description
+        // PUT needs a query to check for existing description; MATCH_RESOURCE is Jersey-specific, set by ResourceContext.matchResource()
         if (getRequest().getMethod().equalsIgnoreCase("GET") || getRequest().getMethod().equalsIgnoreCase("PUT") ||
-                getRequest().getMethod().equalsIgnoreCase("POST"))
+                getRequest().getMethod().equalsIgnoreCase("POST") || getRequest().getMethod().equalsIgnoreCase("com.sun.jersey.MATCH_RESOURCE"))
         {
             queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
             
