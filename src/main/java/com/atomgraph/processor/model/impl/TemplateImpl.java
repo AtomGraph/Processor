@@ -52,6 +52,7 @@ import org.spinrdf.model.SPINFactory;
 import org.spinrdf.vocabulary.SP;
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.update.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 
 /**
  *
@@ -72,7 +73,8 @@ public class TemplateImpl extends OntClassImpl implements Template
             {
                 return new TemplateImpl(node, enhGraph);
             }
-            else {
+            else
+            {
                 throw new ConversionException("Cannot convert node " + node.toString() + " to Template: it does not have rdf:type ldt:Template or equivalent");
             }
         }
@@ -81,12 +83,6 @@ public class TemplateImpl extends OntClassImpl implements Template
         public boolean canWrap(Node node, EnhGraph eg)
         {
             if (eg == null) throw new IllegalArgumentException("EnhGraph cannot be null");
-            
-            /*
-            // node will support being an OntClass facet if it has rdf:type owl:Class or equivalent
-            Profile profile = (eg instanceof OntModel) ? ((OntModel) eg).getProfile() : null;
-            return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
-            */
 
             return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Template.asNode());
         }
@@ -101,16 +97,27 @@ public class TemplateImpl extends OntClassImpl implements Template
     public UriTemplate getPath()
     {
         Statement path = getProperty(LDT.path);
-        if (path != null) return new UriTemplate(path.getString());
+        if (path != null)
+        {
+            if (!path.getObject().isLiteral() ||
+                    path.getObject().asLiteral().getDatatype() == null ||
+                    !path.getObject().asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
+            {
+                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", getURI(), LDT.path);
+                throw new OntologyException("Class '" + getURI() + "' property '" + LDT.path + "' is not an xsd:string literal");                        
+            }
+            
+            return new UriTemplate(path.getString());
+        }
         
         return null;
     }
 
-    @Override
-    public String getSkolemTemplate()
-    {
-        return getStringValue(LDT.segment);
-    }
+//    @Override
+//    public String getSkolemTemplate()
+//    {
+//        return getStringValue(LDT.segment);
+//    }
 
     @Override
     public String getFragmentTemplate()
