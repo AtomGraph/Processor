@@ -32,6 +32,7 @@ import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.query.Query;
 import org.apache.jena.query.QueryExecution;
 import org.apache.jena.query.QueryExecutionFactory;
+import org.apache.jena.query.QueryParseException;
 import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.NodeIterator;
 import org.apache.jena.rdf.model.RDFNode;
@@ -97,17 +98,25 @@ public class Constructor
                     throw new OntologyException("Constructor resource '" + constructor + "' does not have sp:text property");
                 }
 
-                Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
-                QuerySolutionMap bindings = new QuerySolutionMap();
-                bindings.add(SPIN.THIS_VAR_NAME, instance);
-                // skip SPIN template bindings for now - might support later
-
-                // execute the constructor on the target model
-                try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
+                try
                 {
-                    qex.setInitialBinding(bindings);
-                    instance.getModel().add(qex.execConstruct());
-                    reachedClasses.add(forClass);
+                    Query basedQuery = new ParameterizedSparqlString(queryText.getString(), baseURI).asQuery();
+                    QuerySolutionMap bindings = new QuerySolutionMap();
+                    bindings.add(SPIN.THIS_VAR_NAME, instance);
+                    // skip SPIN template bindings for now - might support later
+
+                    // execute the constructor on the target model
+                    try (QueryExecution qex = QueryExecutionFactory.create(basedQuery, instance.getModel()))
+                    {
+                        qex.setInitialBinding(bindings);
+                        instance.getModel().add(qex.execConstruct());
+                        reachedClasses.add(forClass);
+                    }
+                }
+                catch (QueryParseException ex)
+                {
+                    if (log.isErrorEnabled()) log.error("Constructor resource '{}' sp:text property contains an invalid SPARQL CONSTRUCT", constructor);
+                    throw new OntologyException("Constructor resource '" + constructor + "' sp:text property contains an invalid SPARQL CONSTRUCT", ex);
                 }
             }
         }
