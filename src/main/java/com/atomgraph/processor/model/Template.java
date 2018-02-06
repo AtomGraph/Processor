@@ -53,7 +53,7 @@ public interface Template extends OntClass
         
     UriTemplate getMatch();
     
-    String getSkolemTemplate();
+    //String getSkolemTemplate();
 
     String getFragmentTemplate();
     

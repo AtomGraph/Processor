@@ -42,6 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
 import org.apache.jena.ontology.AllValuesFromRestriction;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
@@ -60,7 +61,7 @@ public class Skolemizer
     private final Ontology ontology;
     private final UriBuilder baseUriBuilder, absolutePathBuilder;
     
-    public class ClassPrecedence implements Comparable
+    public static class ClassPrecedence implements Comparable
     {
 
         final private OntClass ontClass;
@@ -150,38 +151,46 @@ public class Skolemizer
     
     public URI build(Resource resource)
     {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        
-        UriBuilder builder;
-        Map<String, String> nameValueMap;
-        
         SortedSet<ClassPrecedence> matchedClasses = match(getOntology(), resource, RDF.type, 0);
         if (!matchedClasses.isEmpty())
         {
             OntClass typeClass = matchedClasses.first().getOntClass();
             if (log.isDebugEnabled()) log.debug("Skolemizing resource {} using ontology class {}", resource, typeClass);
-
-            // skolemization template builds with absolute path builder (e.g. "{slug}")
-            String skolemTemplate = getStringValue(typeClass, LDT.segment);
-            if (skolemTemplate != null)
-            {
-                builder = getAbsolutePathBuilder(typeClass).clone();
-                nameValueMap = getNameValueMap(resource, new UriTemplateParser(skolemTemplate));
-                builder.path(skolemTemplate);
-            }
-            else // by default, URI match template builds with base URI builder (e.g. ", "{path: .*}", /files/{slug}")
-            {
-                String uriTemplate = getStringValue(typeClass, LDT.path);
-                builder = getBaseUriBuilder().clone().path(uriTemplate);
-                nameValueMap = getNameValueMap(resource, new UriTemplateParser(uriTemplate));
-            }
-
-            // add fragment identifier
-            String fragmentTemplate = getStringValue(typeClass, LDT.fragment);            
-            return builder.fragment(fragmentTemplate).buildFromMap(nameValueMap);
+            
+            return build(resource, typeClass);
         }
         
         return null;
+    }
+    
+    public URI build(Resource resource, OntClass typeClass)
+    {
+	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+	if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+
+        // skolemization template builds with absolute path builder (e.g. "{slug}")
+        String path = getStringValue(typeClass, LDT.path);
+        if (path == null)
+            throw new IllegalStateException("Cannot skolemize resource of class " + typeClass + " which does not have ldt:path annotation");
+
+        final UriBuilder builder;
+        // treat paths starting with / as absolute, others as relative (to the current absolute path)
+        // JAX-RS URI templates do not have this distinction (leading slash is irrelevant)
+        if (path.startsWith("/"))
+            builder = getBaseUriBuilder().clone();
+        else
+        {
+            Resource parent = getParent(typeClass);
+            if (parent != null) builder = UriBuilder.fromUri(parent.getURI());
+            else builder = getAbsolutePathBuilder().clone();
+        }
+
+        Map<String, String> nameValueMap = getNameValueMap(resource, new UriTemplateParser(path));
+        builder.path(path);
+
+        // add fragment identifier
+        String fragment = getStringValue(typeClass, LDT.fragment);            
+        return builder.fragment(fragment).buildFromMap(nameValueMap);
     }
 
     protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
@@ -195,8 +204,7 @@ public class Skolemizer
 	for (String name : names)
 	{
 	    Literal literal = getLiteral(resource, name);
-	    if (literal != null)
-		nameValueMap.put(name, literal.getString());
+	    if (literal != null) nameValueMap.put(name, literal.getString());
 	}
 
         return nameValueMap;
@@ -267,7 +275,7 @@ public class Skolemizer
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         SortedSet<ClassPrecedence> matchedClasses = new TreeSet<>();
-        ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.segment);
+        ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.path);
         try
         {
             while (it.hasNext())
@@ -317,8 +325,18 @@ public class Skolemizer
 	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 	if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
-        if (ontClass.hasProperty(property) && ontClass.getPropertyValue(property).isLiteral())
+        if (ontClass.hasProperty(property))
+        {
+            if (!ontClass.getPropertyValue(property).isLiteral() ||
+                    ontClass.getPropertyValue(property).asLiteral().getDatatype() == null ||
+                    !ontClass.getPropertyValue(property).asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
+            {
+                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", ontClass, property);
+                throw new OntologyException("Class '" + ontClass + "' property '" + property + "' is not an xsd:string literal");                        
+            }
+            
             return ontClass.getPropertyValue(property).asLiteral().getString();
+        }
         
         return null;
     }
@@ -334,7 +352,7 @@ public class Skolemizer
     }
 
     // TO-DO: move to a LDTDH (document hierarchy) specific Skolemizer subclass
-    public UriBuilder getAbsolutePathBuilder(OntClass ontClass)
+    public Resource getParent(OntClass ontClass)
     {
         if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 
@@ -356,8 +374,7 @@ public class Skolemizer
                             throw new OntologyException("HasValue restriction on class '" + ontClass + "' for property '" + hvr.getOnProperty() + "' is not a URI resource");
                         }
                         
-                        Resource absolutePath = hvr.getHasValue().asResource();
-                        return UriBuilder.fromUri(absolutePath.getURI());
+                        return hvr.getHasValue().asResource();
                     }
                 }
             }
@@ -366,34 +383,8 @@ public class Skolemizer
         {
             hasValueIt.close();
         }
-
-        ExtendedIterator<OntClass> allValuesFromIt = ontClass.listSuperClasses();
-        try
-        {
-            while (allValuesFromIt.hasNext())
-            {
-                OntClass superClass = allValuesFromIt.next();
-                
-                if (superClass.canAs(AllValuesFromRestriction.class))
-                {
-                    AllValuesFromRestriction avr = superClass.as(AllValuesFromRestriction.class);
-                    if (!avr.getAllValuesFrom().canAs(OntClass.class))
-                    {
-                        if (log.isErrorEnabled()) log.error("AllValuesFrom restriction on class {} for property {} is not an OntClass resource", ontClass, avr.getOnProperty());
-                        throw new OntologyException("AllValuesFrom restriction on class '" + ontClass + "' for property '" + avr.getOnProperty() + "' is not an OntClass resource");
-                    }
-
-                    OntClass valueClass = avr.getAllValuesFrom().as(OntClass.class);
-                    return getAbsolutePathBuilder(valueClass);
-                }
-            }
-        }
-        finally
-        {
-            allValuesFromIt.close();
-        }
         
-        return getAbsolutePathBuilder();
+        return null;
     }
         
     public UriBuilder getAbsolutePathBuilder()

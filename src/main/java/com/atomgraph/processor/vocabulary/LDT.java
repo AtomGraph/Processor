@@ -82,7 +82,7 @@ public final class LDT
 
     public static final DatatypeProperty priority = m_model.createDatatypeProperty( NS + "priority" );
 
-    public static final DatatypeProperty segment = m_model.createDatatypeProperty( NS + "segment" );
+    // public static final DatatypeProperty segment = m_model.createDatatypeProperty( NS + "segment" );
 
     public static final DatatypeProperty fragment = m_model.createDatatypeProperty( NS + "fragment" );
 

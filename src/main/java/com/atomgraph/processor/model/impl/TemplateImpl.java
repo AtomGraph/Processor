@@ -72,7 +72,8 @@ public class TemplateImpl extends OntClassImpl implements Template
             {
                 return new TemplateImpl(node, enhGraph);
             }
-            else {
+            else
+            {
                 throw new ConversionException("Cannot convert node " + node.toString() + " to Template: it does not have rdf:type ldt:Template or equivalent");
             }
         }
@@ -118,11 +119,11 @@ public class TemplateImpl extends OntClassImpl implements Template
         return null;
     }
 
-    @Override
-    public String getSkolemTemplate()
-    {
-        return getStringValue(LDT.segment);
-    }
+//    @Override
+//    public String getSkolemTemplate()
+//    {
+//        return getStringValue(LDT.segment);
+//    }
 
     @Override
     public String getFragmentTemplate()
