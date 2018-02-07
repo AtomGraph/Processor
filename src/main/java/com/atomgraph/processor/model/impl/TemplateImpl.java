@@ -52,6 +52,7 @@ import org.spinrdf.model.SPINFactory;
 import org.spinrdf.vocabulary.SP;
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.update.UpdateBuilder;
+import org.apache.jena.datatypes.xsd.XSDDatatype;
 
 /**
  *
@@ -97,11 +98,23 @@ public class TemplateImpl extends OntClassImpl implements Template
         super(n, g);
     }
 
+
     @Override
     public UriTemplate getPath()
     {
         Statement path = getProperty(LDT.path);
-        if (path != null) return new UriTemplate(path.getString());
+        if (path != null)
+        {
+            if (!path.getObject().isLiteral() ||
+                    path.getObject().asLiteral().getDatatype() == null ||
+                    !path.getObject().asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
+            {
+                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", getURI(), LDT.path);
+                throw new OntologyException("Class '" + getURI() + "' property '" + LDT.path + "' is not an xsd:string literal");                        
+            }
+            
+            return new UriTemplate(path.getString());
+        }
         
         return null;
     }
