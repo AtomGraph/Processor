@@ -41,6 +41,7 @@ import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
+import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
@@ -350,13 +351,26 @@ public class Skolemizer
                     {
                         if (!hvr.getHasValue().isURIResource())
                         {
-                            if (log.isErrorEnabled()) log.error("Value restriction on class {} for property {} is not a URI resource", ontClass, hvr.getOnProperty());
-                            throw new OntologyException("Value restriction on class '" + ontClass + "' for property '" + hvr.getOnProperty() + "' is not a URI resource");
+                            if (log.isErrorEnabled()) log.error("HasValue restriction on class {} for property {} is not a URI resource", ontClass, hvr.getOnProperty());
+                            throw new OntologyException("HasValue restriction on class '" + ontClass + "' for property '" + hvr.getOnProperty() + "' is not a URI resource");
                         }
                         
                         Resource absolutePath = hvr.getHasValue().asResource();
                         return UriBuilder.fromUri(absolutePath.getURI());
                     }
+                }
+                
+                if (superClass.canAs(AllValuesFromRestriction.class))
+                {
+                    AllValuesFromRestriction avr = superClass.as(AllValuesFromRestriction.class);
+                    if (!avr.getAllValuesFrom().canAs(OntClass.class))
+                    {
+                        if (log.isErrorEnabled()) log.error("AllValuesFrom restriction on class {} for property {} is not an OntClass resource", ontClass, avr.getOnProperty());
+                        throw new OntologyException("AllValuesFrom restriction on class '" + ontClass + "' for property '" + avr.getOnProperty() + "' is not an OntClass resource");
+                    }
+
+                    OntClass valueClass = avr.getAllValuesFrom().as(OntClass.class);
+                    return getAbsolutePathBuilder(valueClass);
                 }
             }
         }
