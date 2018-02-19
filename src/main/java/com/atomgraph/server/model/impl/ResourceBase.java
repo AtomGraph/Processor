@@ -36,6 +36,7 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.exception.NotFoundException;
 import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.SPARQLEndpoint;
+import com.atomgraph.core.model.Service;
 import com.atomgraph.processor.query.QueryBuilder;
 import com.atomgraph.processor.update.InsertDataBuilder;
 import com.atomgraph.core.util.Link;
@@ -97,31 +98,26 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param mediaTypes mediaTypes
      * @param uriInfo URI information of the current request
      * @param request current request
-     * @param sparqlEndpoint SPARQL endpoint
-     * @param graphStore Graph Store
+     * @param service SPARQL service
      * @param ontology LDT ontology
      * @param templateCall templateCall
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
-            @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
-            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context Service service, @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
-                sparqlEndpoint, graphStore,
-                application, ontology, templateCall,
+                service, application, ontology, templateCall,
                 httpHeaders, resourceContext);
     }
 
     protected ResourceBase(final UriInfo uriInfo, final Request request, final MediaTypes mediaTypes, final URI uri,
-            final SPARQLEndpoint sparqlEndpoint, final GraphStore graphStore,
-            final com.atomgraph.processor.model.Application application,
-            final Ontology ontology, final TemplateCall templateCall,
+            final Service service, final com.atomgraph.processor.model.Application application, final Ontology ontology, final TemplateCall templateCall,
             final HttpHeaders httpHeaders, final ResourceContext resourceContext)
     {
-        super(uriInfo, request, mediaTypes, uri, sparqlEndpoint, graphStore);
+        super(uriInfo, request, mediaTypes, uri, service);
 
         if (templateCall == null)
         {
@@ -620,6 +616,16 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     public Ontology getOntology()
     {
         return ontology;
+    }
+ 
+    public SPARQLEndpoint getSPARQLEndpoint()
+    {
+        return getService().getSPARQLEndpoint(getRequest(), getMediaTypes());
+    }
+    
+    public GraphStore getGraphStore()
+    {
+        return getService().getGraphStore(getRequest(), getMediaTypes());
     }
     
 }

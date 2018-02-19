@@ -27,8 +27,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
-import com.atomgraph.core.model.GraphStore;
-import com.atomgraph.core.model.SPARQLEndpoint;
+import com.atomgraph.core.model.Service;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.util.TemplateCall;
@@ -49,13 +48,11 @@ public class Item extends ResourceBase
     private static final Logger log = LoggerFactory.getLogger(Item.class);
     
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
-            @Context SPARQLEndpoint sparqlEndpoint, @Context GraphStore graphStore,
-            @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            @Context Service service, @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
 	super(uriInfo, request, mediaTypes,
-                sparqlEndpoint, graphStore,
-                application, ontology, templateCall,
+                service, application, ontology, templateCall,
                 httpHeaders, resourceContext);
 	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
     }
