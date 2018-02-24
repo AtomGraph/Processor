@@ -620,12 +620,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
  
     public SPARQLEndpoint getSPARQLEndpoint()
     {
-        return getService().getSPARQLEndpoint(getRequest(), getMediaTypes());
+        return getService().getSPARQLEndpoint(getRequest());
     }
     
     public GraphStore getGraphStore()
     {
-        return getService().getGraphStore(getRequest(), getMediaTypes());
+        return getService().getGraphStore(getRequest());
     }
     
 }
