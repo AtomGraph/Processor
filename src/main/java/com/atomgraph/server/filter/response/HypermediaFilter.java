@@ -33,6 +33,7 @@ import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
+import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
@@ -63,7 +64,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
         if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(CREATED) ||
-                response.getStatusType().equals(NOT_FOUND) ||
+                response.getStatusType().equals(NOT_FOUND) || response.getStatusType().equals(INTERNAL_SERVER_ERROR) || 
                 response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return response;
         
