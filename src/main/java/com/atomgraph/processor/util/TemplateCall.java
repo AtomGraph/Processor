@@ -100,8 +100,6 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
                 List<String> argValues = queryParams.get(paramName);
                 for (String argValue : argValues)
                 {
-                    //property(param.getPredicate(), RDFNodeFactory.createTyped(argValue, param.getValueType()));
-                    
                     Resource arg = getResource().getModel().createResource().
                         addProperty(RDF.type, param).
                         addLiteral(LDT.paramName, paramName).
