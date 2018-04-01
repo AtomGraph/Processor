@@ -27,7 +27,6 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.util.LocationMapper;
-import com.atomgraph.core.provider.ClientProvider;
 import com.atomgraph.core.provider.DataManagerProvider;
 import com.atomgraph.core.provider.MediaTypesProvider;
 import com.atomgraph.server.model.impl.ResourceBase;
@@ -150,7 +149,7 @@ public class Application extends com.atomgraph.core.Application
 
         OntDocumentManager.getInstance().setFileManager(fileManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
-        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!         
+        OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
     }
     
     /**
@@ -173,18 +172,12 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
-//        singletons.add(new SPARQLEndpointProvider());
-//        singletons.add(new GraphStoreProvider());
-//        singletons.add(new DatasetProvider(getDataset()));
-//        singletons.add(new SPARQLClientProvider(getSPARQLClient()));
-//        singletons.add(new GraphStoreClientProvider(getGraphStoreClient()));
         singletons.add(new SkolemizingModelProvider());
         singletons.add(new ResultSetProvider());
         singletons.add(new QueryParamProvider());
         singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider(getMediaTypes()));
         singletons.add(new DataManagerProvider(getDataManager()));
-//        singletons.add(new ClientProvider(getClient()));
         singletons.add(new RiotExceptionMapper());
         singletons.add(new ModelExceptionMapper());
         singletons.add(new ConstraintViolationExceptionMapper());

@@ -59,7 +59,7 @@ public class ValidatingModelProvider extends BasedModelProvider
     {
         List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(model);
         
-	if (!cvs.isEmpty())
+        if (!cvs.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
             throw new ConstraintViolationException(cvs, model);
@@ -70,8 +70,8 @@ public class ValidatingModelProvider extends BasedModelProvider
         
     public Ontology getOntology()
     {
-	ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-	return cr.getContext(Ontology.class);
+        ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
+        return cr.getContext(Ontology.class);
     }
 
     public Providers getProviders()

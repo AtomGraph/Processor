@@ -55,21 +55,21 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     private final String ontologyURI;
     
     public OntologyProvider(final OntDocumentManager ontDocumentManager, final String ontologyURI,
-            final OntModelSpec ontModelSpec, final boolean materialize)
+            final OntModelSpec materializationSpec, final boolean materialize)
     {
         super(Ontology.class);
         
         if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");        
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
-        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
+        if (materializationSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         
         this.ontDocumentManager = ontDocumentManager;
         this.ontologyURI = ontologyURI;
         
         // materialize OntModel inferences to avoid invoking rules engine on every request
-        if (materialize && ontModelSpec.getReasoner() != null)
+        if (materialize && materializationSpec.getReasoner() != null)
         {
-            OntModel infModel = getOntModel(ontDocumentManager, ontologyURI, ontModelSpec);
+            OntModel infModel = getOntModel(ontDocumentManager, ontologyURI, materializationSpec);
             Ontology ontology = infModel.getOntology(ontologyURI);
 
             ImportCycleChecker checker = new ImportCycleChecker();
@@ -85,7 +85,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             ontDocumentManager.addModel(ontologyURI, materializedModel, true);
         }
     }
-                
+
     public class ImportCycleChecker
     {
         private final Map<Ontology, Boolean> marked = new HashMap<>(), onStack = new HashMap<>();
@@ -159,7 +159,12 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         if (getOntDocumentManager().getFileManager() instanceof DataManager)
             ontModelSpec.setImportModelGetter((DataManager)getOntDocumentManager().getFileManager());
         
-        return getOntModel(getOntDocumentManager(), getOntologyURI(), ontModelSpec).getOntology(getOntologyURI());
+        return getOntology(ontModelSpec);
+    }
+    
+    public Ontology getOntology(OntModelSpec loadSpec)
+    {   
+        return getOntModel(getOntDocumentManager(), getOntologyURI(), loadSpec).getOntology(getOntologyURI());
     }
     
     /**
