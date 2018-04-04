@@ -59,7 +59,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         super(Ontology.class);
         
-        if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");        
+        if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (materializationSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         
@@ -69,8 +69,8 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
         // materialize OntModel inferences to avoid invoking rules engine on every request
         if (materialize && materializationSpec.getReasoner() != null)
         {
-            OntModel infModel = getOntModel(ontDocumentManager, ontologyURI, materializationSpec);
-            Ontology ontology = infModel.getOntology(ontologyURI);
+            OntModel ontModel = getOntModel(ontDocumentManager, ontologyURI, materializationSpec);
+            Ontology ontology = ontModel.getOntology(ontologyURI);
 
             ImportCycleChecker checker = new ImportCycleChecker();
             checker.check(ontology);
@@ -81,7 +81,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             }
             
             OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM);
-            materializedModel.add(infModel);
+            materializedModel.add(ontModel);
             ontDocumentManager.addModel(ontologyURI, materializedModel, true);
         }
     }
@@ -134,15 +134,15 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     @Override
     public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
-    {	
-	return new Injectable<Ontology>()
-	{
-	    @Override
-	    public Ontology getValue()
-	    {
+    {
+        return new Injectable<Ontology>()
+        {
+            @Override
+            public Ontology getValue()
+            {
                 return getOntology();
-	    }
-	};
+            }
+        };
     }
 
     @Override
@@ -153,13 +153,13 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {
-        OntModelSpec ontModelSpec = OntModelSpec.OWL_MEM;
+        OntModelSpec loadSpec = OntModelSpec.OWL_MEM;
         
         // attempt to use DataManager to retrieve owl:import Models
         if (getOntDocumentManager().getFileManager() instanceof DataManager)
-            ontModelSpec.setImportModelGetter((DataManager)getOntDocumentManager().getFileManager());
+            loadSpec.setImportModelGetter((DataManager)getOntDocumentManager().getFileManager());
         
-        return getOntology(ontModelSpec);
+        return getOntology(loadSpec);
     }
     
     public Ontology getOntology(OntModelSpec loadSpec)
@@ -179,7 +179,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
     {
         if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
-        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");        
+        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
 
         try
@@ -200,7 +200,7 @@ public class OntologyProvider extends PerRequestTypeInjectableProvider<Context, 
             // lock and clone the model to avoid ConcurrentModificationExceptions
             ontModel.enterCriticalSection(Lock.READ);
             try
-            {            
+            {
                 return ModelFactory.createOntologyModel(ontModelSpec,
                         ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
             }

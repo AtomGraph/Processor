@@ -52,6 +52,7 @@ import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.DH;
 import com.atomgraph.processor.vocabulary.DHT;
+import java.util.Collections;
 import javax.annotation.PostConstruct;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.slf4j.Logger;
@@ -125,7 +126,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             throw new NotFoundException("Resource has not matched any template");
         }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");
-        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");        
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
         if (resourceContext == null) throw new IllegalArgumentException("ResourceContext cannot be null");
 
@@ -239,7 +240,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response post(Model model)
     {
-	return post(ModelFactory.createRDFSModel(getOntology().getOntModel(), model), null);
+        return post(ModelFactory.createRDFSModel(getOntology().getOntModel(), model), null);
     }
     
     /**
@@ -251,56 +252,56 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     public Response post(InfModel infModel, URI graphURI)
     {
-	if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
-	if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", infModel.getRawModel(), graphURI);
+        if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", infModel.getRawModel(), graphURI);
 
-	Resource created = getURIResource(infModel, RDF.type, FOAF.Document);
-	if (created == null)
-	{
-	    if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
-	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
-	}
+        Resource created = getURIResource(infModel, RDF.type, FOAF.Document);
+        if (created == null)
+        {
+            if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
 
         UpdateRequest insertDataRequest;
-	if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, infModel.getRawModel()).build();
-	else insertDataRequest = InsertDataBuilder.fromData(infModel.getRawModel()).build();
+        if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, infModel.getRawModel()).build();
+        else insertDataRequest = InsertDataBuilder.fromData(infModel.getRawModel()).build();
 
         insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
         if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
 
-        getSPARQLEndpoint().post(insertDataRequest, null, null);
-	
-	URI createdURI = UriBuilder.fromUri(created.getURI()).build();
-	if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
-	// http://stackoverflow.com/questions/3383725/post-redirect-get-prg-vs-meaningful-2xx-response-codes
-	// http://www.blackpepper.co.uk/posts/201-created-or-post-redirect-get/
-	//return Response.created(createdURI).entity(model).build();
-	return Response.seeOther(createdURI).build();
+        getSPARQLEndpoint().post(insertDataRequest, Collections.<URI>emptyList(), Collections.<URI>emptyList());
+        
+        URI createdURI = UriBuilder.fromUri(created.getURI()).build();
+        if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
+        // http://stackoverflow.com/questions/3383725/post-redirect-get-prg-vs-meaningful-2xx-response-codes
+        // http://www.blackpepper.co.uk/posts/201-created-or-post-redirect-get/
+        //return Response.created(createdURI).entity(model).build();
+        return Response.seeOther(createdURI).build();
     }
 
     public Resource getURIResource(InfModel infModel, Property property, Resource object)
     {
-	if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
-	if (object == null) throw new IllegalArgumentException("Object Resource cannot be null");
+        if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        if (object == null) throw new IllegalArgumentException("Object Resource cannot be null");
 
         ResIterator it = infModel.listSubjectsWithProperty(property, object);
-	try
-	{
-	    while (it.hasNext())
-	    {
-		Resource resource = it.next();
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource resource = it.next();
 
-		if (resource.isURIResource() && infModel.getRawModel().containsResource(resource))
+                if (resource.isURIResource() && infModel.getRawModel().containsResource(resource))
                     return resource;
-	    }
-	}
-	finally
-	{
-	    it.close();
-	}
-	
-	return null;
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
     }
 
     /**
@@ -312,34 +313,34 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response put(Model model)
     {
-	if (model == null) throw new IllegalArgumentException("Model cannot be null");
-	if (log.isDebugEnabled()) log.debug("PUT Model: {}", model);
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
+        if (log.isDebugEnabled()) log.debug("PUT Model: {}", model);
 
-	if (!model.containsResource(getOntResource()))
-	{
-	    if (log.isDebugEnabled()) log.debug("PUT Model does not contain statements with request URI '{}' as subject", getURI());
-	    throw new WebApplicationException(Response.Status.BAD_REQUEST);
-	}
-	
-	Model description = describe();	
-	
-	if (!description.isEmpty()) // check existing representation
-	{
-	    EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(model)));
-	    Response.ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
-	    if (rb != null)
-	    {
-		if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
-		return rb.build();
-	    }
+        if (!model.containsResource(getOntResource()))
+        {
+            if (log.isDebugEnabled()) log.debug("PUT Model does not contain statements with request URI '{}' as subject", getURI());
+            throw new WebApplicationException(Response.Status.BAD_REQUEST);
+        }
+        
+        Model description = describe();
+        
+        if (!description.isEmpty()) // check existing representation
+        {
+            EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(model)));
+            Response.ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
+            if (rb != null)
+            {
+                if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
+                return rb.build();
+            }
         }
         
         UpdateRequest deleteInsertRequest = getUpdateRequest(model);
         if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
-        getSPARQLEndpoint().post(deleteInsertRequest, null, null);
+        getSPARQLEndpoint().post(deleteInsertRequest, Collections.<URI>emptyList(), Collections.<URI>emptyList());
         
-	if (description.isEmpty()) return Response.created(getURI()).build();
-	else return getResponse(model);
+        if (description.isEmpty()) return Response.created(getURI()).build();
+        else return getResponse(model);
     }
 
     /**
@@ -350,12 +351,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     @Override
     public Response delete()
-    {	
+    {
         UpdateRequest request = getUpdateRequest((Model)null);
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-        getSPARQLEndpoint().post(request, null, null);
-	
-	return Response.noContent().build();
+        getSPARQLEndpoint().post(request, Collections.<URI>emptyList(), Collections.<URI>emptyList());
+
+        return Response.noContent().build();
     }
     
 
@@ -416,7 +417,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     public OntResource getOntResource()
     {
-	return ontResource;
+        return ontResource;
     }
 
     /**
@@ -428,7 +429,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public TemplateCall getTemplateCall()
     {
-	return templateCall;
+        return templateCall;
     }
     
     /**
@@ -440,7 +441,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     public CacheControl getCacheControl()
     {
-	return getTemplateCall().getTemplate().getCacheControl();
+        return getTemplateCall().getTemplate().getCacheControl();
     }
     
     /**
@@ -458,7 +459,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
     public QueryBuilder getPageQueryBuilder(QueryBuilder builder)
     {
-	if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
+        if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
                 
         if (builder.getSubSelectBuilders().isEmpty())
         {
@@ -517,9 +518,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */    
     public Query getQuery(String command, QuerySolutionMap qsm, String baseUri)
     {
-	if (command == null) throw new IllegalArgumentException("Command String cannot be null");
+        if (command == null) throw new IllegalArgumentException("Command String cannot be null");
      
-        return new ParameterizedSparqlString(command, qsm, baseUri).asQuery();        
+        return new ParameterizedSparqlString(command, qsm, baseUri).asQuery();
     }
 
     /**
@@ -529,19 +530,19 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     @Override
     public QueryBuilder getQueryBuilder()
-    {        
-	return queryBuilder;
+    {
+        return queryBuilder;
     }
 
     @Override
     public UpdateBuilder getUpdateBuilder()
-    {        
-	return updateBuilder;
+    {
+        return updateBuilder;
     }
 
     public NamedGraph getNamedGraph(RDFList pattern)
     {
-	if (pattern == null) throw new IllegalArgumentException("RDFList cannot be null");
+        if (pattern == null) throw new IllegalArgumentException("RDFList cannot be null");
 
         // TO-DO: iterate over all List items
         RDFNode deleteListHead = pattern.getHead();
@@ -598,7 +599,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     public HttpHeaders getHttpHeaders()
     {
-	return httpHeaders;
+        return httpHeaders;
     }
 
     public ResourceContext getResourceContext()
