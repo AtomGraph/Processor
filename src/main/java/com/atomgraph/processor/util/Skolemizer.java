@@ -338,12 +338,13 @@ public class Skolemizer
     {
         if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 
-        ExtendedIterator<OntClass> superClassIt = ontClass.listSuperClasses();
+        ExtendedIterator<OntClass> hasValueIt = ontClass.listSuperClasses();
         try
         {
-            while (superClassIt.hasNext())
+            while (hasValueIt.hasNext())
             {
-                OntClass superClass = superClassIt.next();
+                OntClass superClass = hasValueIt.next();
+                
                 if (superClass.canAs(HasValueRestriction.class))
                 {
                     HasValueRestriction hvr = superClass.as(HasValueRestriction.class);
@@ -359,6 +360,19 @@ public class Skolemizer
                         return UriBuilder.fromUri(absolutePath.getURI());
                     }
                 }
+            }
+        }
+        finally
+        {
+            hasValueIt.close();
+        }
+
+        ExtendedIterator<OntClass> allValuesFromIt = ontClass.listSuperClasses();
+        try
+        {
+            while (allValuesFromIt.hasNext())
+            {
+                OntClass superClass = allValuesFromIt.next();
                 
                 if (superClass.canAs(AllValuesFromRestriction.class))
                 {
@@ -376,9 +390,9 @@ public class Skolemizer
         }
         finally
         {
-            superClassIt.close();
+            allValuesFromIt.close();
         }
-
+        
         return getAbsolutePathBuilder();
     }
         
