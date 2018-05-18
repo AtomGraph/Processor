@@ -85,7 +85,7 @@ public class TemplateMatcher
             int hash = 7;
             hash = 59 * hash + Objects.hashCode(getPrecedence());
             hash = 59 * hash + Objects.hashCode(getTemplate().getPriority());
-            hash = 59 * hash + Objects.hashCode(getTemplate().getPath());
+            hash = 59 * hash + Objects.hashCode(getTemplate().getMatch());
             return hash;
         }
 
@@ -164,25 +164,25 @@ public class TemplateMatcher
                 // only match templates defined in this ontology - maybe reverse loops?
                 if (template.getIsDefinedBy() != null && template.getIsDefinedBy().equals(ontology))
                 {
-                    if (template.getPath() == null)
+                    if (template.getMatch() == null)
                     {
                         if (log.isErrorEnabled()) log.error("Template class {} does not have value for {} annotation", template, LDT.match);
                         throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.match + "' annotation");
                     }
 
-                    UriTemplate uriTemplate = template.getPath();
+                    UriTemplate match = template.getMatch();
                     HashMap<String, String> map = new HashMap<>();
 
-                    if (uriTemplate.match(path, map))
+                    if (match.match(path, map))
                     {
-                        if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, uriTemplate);
+                        if (log.isTraceEnabled()) log.trace("Path {} matched UriTemplate {}", path, match);
                         if (log.isTraceEnabled()) log.trace("Path {} matched OntClass {}", path, template);
                         
                         TemplatePrecedence precedence = new TemplatePrecedence(template, level * -1);
                         matches.add(precedence);
                     }
                     else
-                        if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, uriTemplate);
+                        if (log.isTraceEnabled()) log.trace("Path {} did not match UriTemplate {}", path, match);
                 }
             }
 

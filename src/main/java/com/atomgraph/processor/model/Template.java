@@ -46,12 +46,12 @@ public interface Template extends OntClass
             if (diff > 0) return 1;
             if (diff < 0) return -1;
             
-            return UriTemplate.COMPARATOR.compare(template1.getPath(), template2.getPath());
+            return UriTemplate.COMPARATOR.compare(template1.getMatch(), template2.getMatch());
         }
 
     };
         
-    UriTemplate getPath();
+    UriTemplate getMatch();
     
     String getSkolemTemplate();
 

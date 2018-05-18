@@ -100,7 +100,7 @@ public class TemplateImpl extends OntClassImpl implements Template
 
 
     @Override
-    public UriTemplate getPath()
+    public UriTemplate getMatch()
     {
         Statement path = getProperty(LDT.match);
         if (path != null)
@@ -440,7 +440,7 @@ public class TemplateImpl extends OntClassImpl implements Template
         append("[<").
         append(getURI()).
         append(">: \"").
-        append(getPath()).
+        append(getMatch()).
         append("\", ").
         append(Double.toString(getPriority())).
         append("]").
