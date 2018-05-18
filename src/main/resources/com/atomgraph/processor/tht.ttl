@@ -30,15 +30,15 @@
 
 # TEMPLATES
 
-:Container a rdfs:Class, ldt:Template ;
-    rdfs:subClassOf dht:Container ;
+:Container a ldt:Template ;
+    ldt:extends dht:Container ;
     ldt:query :DescribeWithChildrenTopics ;
     ldt:update :DeleteWithTopic ;
     rdfs:label "Container" ;
     rdfs:isDefinedBy : .
 
-:Item a rdfs:Class, ldt:Template ;
-    rdfs:subClassOf ct:Document ;
+:Item a ldt:Template ;
+    ldt:extends ct:Document ;
     ldt:query :DescribeWithTopic ;
     ldt:update :DeleteWithTopic ;
     rdfs:label "Item" ;

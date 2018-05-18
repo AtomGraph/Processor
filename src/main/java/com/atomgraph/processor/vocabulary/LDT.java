@@ -70,13 +70,13 @@ public final class LDT
     
     public static final DatatypeProperty paramName = m_model.createDatatypeProperty( NS + "paramName" );    
 
-    public static final AnnotationProperty template = m_model.createAnnotationProperty( NS + "template" );
+    public static final AnnotationProperty path = m_model.createAnnotationProperty( NS + "path" );
     
     public static final AnnotationProperty query = m_model.createAnnotationProperty( NS + "query" );
 
     public static final AnnotationProperty update = m_model.createAnnotationProperty( NS + "update" );
 
-    public static final AnnotationProperty path = m_model.createAnnotationProperty( NS + "path" );
+    public static final AnnotationProperty match = m_model.createAnnotationProperty( NS + "match" );
 
     public static final AnnotationProperty priority = m_model.createAnnotationProperty( NS + "priority" );
 

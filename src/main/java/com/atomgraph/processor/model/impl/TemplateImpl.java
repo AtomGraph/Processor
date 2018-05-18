@@ -102,15 +102,15 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public UriTemplate getPath()
     {
-        Statement path = getProperty(LDT.path);
+        Statement path = getProperty(LDT.match);
         if (path != null)
         {
             if (!path.getObject().isLiteral() ||
                     path.getObject().asLiteral().getDatatype() == null ||
                     !path.getObject().asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
             {
-                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", getURI(), LDT.path);
-                throw new OntologyException("Class '" + getURI() + "' property '" + LDT.path + "' is not an xsd:string literal");                        
+                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", getURI(), LDT.match);
+                throw new OntologyException("Class '" + getURI() + "' property '" + LDT.match + "' is not an xsd:string literal");
             }
             
             return new UriTemplate(path.getString());
@@ -195,8 +195,8 @@ public class TemplateImpl extends OntClassImpl implements Template
     
     protected Map<Property, Parameter> addSuperParameters(Template template, Map<Property, Parameter> args)
     {
-        if (template == null) throw new IllegalArgumentException("Template Set cannot be null");        
-        if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");        
+        if (template == null) throw new IllegalArgumentException("Template Set cannot be null");
+        if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");
         
         ExtendedIterator<OntClass> superIt = template.listSuperClasses();
         try
@@ -415,7 +415,7 @@ public class TemplateImpl extends OntClassImpl implements Template
 	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
 	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
 
-        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);        
+        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
         if (spinTemplateCall != null)
             return UpdateBuilder.fromUpdate(getParameterizedSparqlString(spinTemplateCall, base).asUpdate().
                     getOperations().get(0), commandModel);

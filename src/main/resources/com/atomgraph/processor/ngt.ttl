@@ -23,8 +23,8 @@
 
 # TEMPLATES
 
-:Document a rdfs:Class, ldt:Template ;
-    rdfs:subClassOf ct:Document ;
+:Document a ldt:Template ;
+    ldt:extends ct:Document ;
     ldt:query :Describe ;
     ldt:update :Delete ;
     rdfs:label "Document" ;

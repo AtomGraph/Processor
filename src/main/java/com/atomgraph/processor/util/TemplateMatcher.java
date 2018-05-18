@@ -166,8 +166,8 @@ public class TemplateMatcher
                 {
                     if (template.getPath() == null)
                     {
-                        if (log.isErrorEnabled()) log.error("Template class {} does not have value for {} annotation", template, LDT.path);
-                        throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.path + "' annotation");
+                        if (log.isErrorEnabled()) log.error("Template class {} does not have value for {} annotation", template, LDT.match);
+                        throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.match + "' annotation");
                     }
 
                     UriTemplate uriTemplate = template.getPath();
@@ -203,7 +203,7 @@ public class TemplateMatcher
             
             //traverse imports recursively, safely make changes to OntModel outside the iterator
             for (Ontology importedOntology : importedOntologies)
-                matches.addAll(match(importedOntology, path, level + 1));            
+                matches.addAll(match(importedOntology, path, level + 1));
         }
         finally
         {
