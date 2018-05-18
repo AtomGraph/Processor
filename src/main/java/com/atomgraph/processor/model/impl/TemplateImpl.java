@@ -197,7 +197,7 @@ public class TemplateImpl extends OntClassImpl implements Template
         if (template == null) throw new IllegalArgumentException("Template Set cannot be null");
         if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");
         
-        StmtIterator it = listProperties(LDT.extends_);
+        StmtIterator it = template.listProperties(LDT.extends_);
         try
         {
             while (it.hasNext())
