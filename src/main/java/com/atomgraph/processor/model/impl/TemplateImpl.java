@@ -41,7 +41,6 @@ import com.atomgraph.processor.vocabulary.LDT;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.Map.Entry;
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.query.ParameterizedSparqlString;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.RDFList;
@@ -198,32 +197,35 @@ public class TemplateImpl extends OntClassImpl implements Template
         if (template == null) throw new IllegalArgumentException("Template Set cannot be null");
         if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");
         
-        ExtendedIterator<OntClass> superIt = template.listSuperClasses();
+        StmtIterator it = listProperties(LDT.extends_);
         try
         {
-            while (superIt.hasNext())
+            while (it.hasNext())
             {
-                OntClass superClass = superIt.next();
-                if (superClass.canAs(Template.class))
+                Statement stmt = it.next();
+                if (!stmt.getObject().isResource() || !stmt.getObject().asResource().canAs(Template.class))
                 {
-                    Template superTemplate = superClass.as(Template.class);
-                    Map<Property, Parameter> superArgs = superTemplate.getLocalParameters();
-                    Iterator<Entry<Property, Parameter>> entryIt = superArgs.entrySet().iterator();
-                    while (entryIt.hasNext())
-                    {
-                        Entry<Property, Parameter> entry = entryIt.next();
-                        args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
-                    }
-                    
-                    addSuperParameters(superTemplate, args);  // recursion to super class
+                    if (log.isErrorEnabled()) log.error("Template's '{}' ldt:extends value '{}' is not an LDT Template", getURI(), stmt.getObject());
+                    throw new OntologyException("Template's '" + getURI() + "' ldt:extends value '" + stmt.getObject() + "' is not an LDT Template");
                 }
+
+                Template superTemplate = stmt.getObject().as(Template.class);
+                Map<Property, Parameter> superArgs = superTemplate.getLocalParameters();
+                Iterator<Entry<Property, Parameter>> entryIt = superArgs.entrySet().iterator();
+                while (entryIt.hasNext())
+                {
+                    Entry<Property, Parameter> entry = entryIt.next();
+                    args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
+                }
+
+                addSuperParameters(superTemplate, args);  // recursion to super class
             }
         }
         finally
         {
-            superIt.close();
+            it.close();
         }
-
+        
         return args;
     }
     
