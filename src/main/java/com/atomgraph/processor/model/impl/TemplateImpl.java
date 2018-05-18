@@ -349,8 +349,8 @@ public class TemplateImpl extends OntClassImpl implements Template
             org.spinrdf.model.Query query = SPINFactory.asQuery(queryOrTemplateCall);
             if (query == null)
             {
-                if (log.isErrorEnabled()) log.error("Class '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getURI(), queryOrTemplateCall);
-                throw new OntologyException("Class '" + getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                if (log.isErrorEnabled()) log.error("Template '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getURI(), queryOrTemplateCall);
+                throw new OntologyException("Template '" + getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
             }
             
             return QueryBuilder.fromQuery(getParameterizedSparqlString(query, base).asQuery(), commandModel);
@@ -452,18 +452,21 @@ public class TemplateImpl extends OntClassImpl implements Template
     {
 	if (superTemplate == null) throw new IllegalArgumentException("Template cannot be null");
         
-        ExtendedIterator<OntClass> it = listSuperClasses(false);
+        StmtIterator it = listProperties(LDT.extends_);
         try
         {
             while (it.hasNext())
             {
-                OntClass nextClass = it.next();
-                if (nextClass.canAs(Template.class))
+                Statement stmt = it.next();
+                if (!stmt.getObject().isResource() || !stmt.getObject().asResource().canAs(Template.class))
                 {
-                    Template nextTemplate = nextClass.as(Template.class);
-                    if (nextTemplate.equals(superTemplate) || nextTemplate.hasSuperTemplate(superTemplate))
-                        return true;
+                    if (log.isErrorEnabled()) log.error("Template's '{}' ldt:extends value '{}' is not an LDT Template", getURI(), stmt.getObject());
+                    throw new OntologyException("Template's '" + getURI() + "' ldt:extends value '" + stmt.getObject() + "' is not an LDT Template");
                 }
+
+                Template nextTemplate = stmt.getObject().as(Template.class);
+                if (nextTemplate.equals(superTemplate) || nextTemplate.hasSuperTemplate(superTemplate))
+                    return true;
             }
         }
         finally
