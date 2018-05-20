@@ -113,7 +113,7 @@ public class Skolemizer
 	if (absolutePathBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
         this.ontology = ontology;        
         this.baseUriBuilder = baseUriBuilder;
-        this.absolutePathBuilder = absolutePathBuilder;    
+        this.absolutePathBuilder = absolutePathBuilder;
     }
 
     public Model build(Model model)
@@ -189,7 +189,7 @@ public class Skolemizer
         builder.path(path);
 
         // add fragment identifier
-        String fragment = getStringValue(typeClass, LDT.fragment);            
+        String fragment = getStringValue(typeClass, LDT.fragment);
         return builder.fragment(fragment).buildFromMap(nameValueMap);
     }
 
@@ -332,7 +332,7 @@ public class Skolemizer
                     !ontClass.getPropertyValue(property).asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
             {
                 if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", ontClass, property);
-                throw new OntologyException("Class '" + ontClass + "' property '" + property + "' is not an xsd:string literal");                        
+                throw new OntologyException("Class '" + ontClass + "' property '" + property + "' is not an xsd:string literal");
             }
             
             return ontClass.getPropertyValue(property).asLiteral().getString();
