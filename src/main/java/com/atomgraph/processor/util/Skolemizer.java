@@ -42,6 +42,7 @@ import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
@@ -285,9 +286,9 @@ public class Skolemizer
                 if (ontClass.getIsDefinedBy() != null && ontClass.getIsDefinedBy().equals(ontology) &&
                         resource.hasProperty(property, ontClass))
                 {
-                    ClassPrecedence template = new ClassPrecedence(ontClass, level * -1);
+                    ClassPrecedence precedence = new ClassPrecedence(ontClass, level * -1);
                     if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
-                    matchedClasses.add(template);
+                    matchedClasses.add(precedence);
                 } 
             }            
         }
@@ -381,6 +382,32 @@ public class Skolemizer
         finally
         {
             hasValueIt.close();
+        }
+        
+        ExtendedIterator<OntClass> allValuesFromIt = ontClass.listSuperClasses();
+        try
+        {
+            while (allValuesFromIt.hasNext())
+            {
+                OntClass superClass = allValuesFromIt.next();
+                
+                if (superClass.canAs(AllValuesFromRestriction.class))
+                {
+                    AllValuesFromRestriction avr = superClass.as(AllValuesFromRestriction.class);
+                    if (!avr.getAllValuesFrom().canAs(OntClass.class))
+                    {
+                        if (log.isErrorEnabled()) log.error("AllValuesFrom restriction on class {} for property {} is not an OntClass resource", ontClass, avr.getOnProperty());
+                        throw new OntologyException("AllValuesFrom restriction on class '" + ontClass + "' for property '" + avr.getOnProperty() + "' is not an OntClass resource");
+                    }
+
+                    OntClass valueClass = avr.getAllValuesFrom().as(OntClass.class);
+                    return getParent(valueClass);
+                }
+            }
+        }
+        finally
+        {
+            allValuesFromIt.close();
         }
         
         return null;
