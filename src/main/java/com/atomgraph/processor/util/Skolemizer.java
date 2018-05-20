@@ -41,7 +41,6 @@ import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
-import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
