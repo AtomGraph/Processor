@@ -57,6 +57,8 @@ public class HTTP
 
     public static final DatatypeProperty reasonPhrase = m_model.createDatatypeProperty( NS + "reasonPhrase" );
     
-    public static final DatatypeProperty requestURI = m_model.createDatatypeProperty( NS + "requestURI" );
-    
+    public static final ObjectProperty requestURI = m_model.createObjectProperty( NS + "requestURI" );
+
+    public static final ObjectProperty absolutePath = m_model.createObjectProperty( NS + "absolutePath" );
+
 }
