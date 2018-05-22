@@ -166,8 +166,8 @@ public class TemplateMatcher
                 {
                     if (template.getMatch() == null)
                     {
-                        if (log.isErrorEnabled()) log.error("Template class {} does not have value for {} annotation", template, LDT.match);
-                        throw new OntologyException("Template class '" + template + "' does not have value for '" + LDT.match + "' annotation");
+                        if (log.isErrorEnabled()) log.error("Template {} does not have value for {} annotation", template, LDT.match);
+                        throw new OntologyException("Template '" + template + "' does not have value for '" + LDT.match + "' annotation");
                     }
 
                     UriTemplate match = template.getMatch();
