@@ -72,20 +72,19 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (templateCall == null) return response;
             
         Resource state = templateCall.build();
-        Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
-        if (!state.equals(absolutePath)) // add hypermedia if there are query parameters
-        {
-            state.addProperty(C.viewOf, absolutePath).
+        Resource requestedState = state.getModel().createResource(request.getRequestUri().toString());
+        if (!state.equals(requestedState)) // add hypermedia if there are query parameters
+            state.addProperty(C.viewOf, requestedState). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
 
-            if (templateCall.hasArgument(DH.limit)) // pages must have limits
-            {
-                if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
-                state.addProperty(DH.pageOf, absolutePath).
-                    addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
+        if (templateCall.hasArgument(DH.limit)) // pages must have limits
+        {
+            Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
+            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
+            state.addProperty(DH.pageOf, absolutePath).
+                addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
 
-                addPrevNextPage(templateCall, absolutePath, state);
-            }
+            addPrevNextPage(templateCall, absolutePath, state);
         }
 
         if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&

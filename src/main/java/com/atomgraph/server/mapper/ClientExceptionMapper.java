@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.ClientException;
 import com.atomgraph.server.vocabulary.HTTP;
+import org.apache.jena.rdf.model.Resource;
 
 /**
  *
@@ -32,11 +33,13 @@ public class ClientExceptionMapper extends ExceptionMapperBase implements Except
     @Override
     public Response toResponse(ClientException ex)
     {
+        Resource exRes = toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+            ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError"));
+        if (ex.getClientResponse().getLocation() != null)
+            exRes.addProperty(HTTP.requestURI, ResourceFactory.createResource(ex.getClientResponse().getLocation().toString()));
+            
         return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    addProperty(HTTP.requestURI, ResourceFactory.createResource(ex.getClientResponse().getLocation().toString())).
-                    getModel(), getVariants()).
+                getResponseBuilder(exRes.getModel(), getVariants()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
     }
