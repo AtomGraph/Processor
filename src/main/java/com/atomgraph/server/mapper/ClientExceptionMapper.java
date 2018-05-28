@@ -36,7 +36,7 @@ public class ClientExceptionMapper extends ExceptionMapperBase implements Except
         Resource exRes = toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError"));
         if (ex.getClientResponse().getLocation() != null)
-            exRes.addProperty(HTTP.requestURI, ResourceFactory.createResource(ex.getClientResponse().getLocation().toString()));
+            exRes.addLiteral(HTTP.absoluteURI, ex.getClientResponse().getLocation());
             
         return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
                 getResponseBuilder(exRes.getModel(), getVariants()).

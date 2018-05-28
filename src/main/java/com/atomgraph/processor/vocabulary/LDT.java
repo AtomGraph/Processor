@@ -82,8 +82,6 @@ public final class LDT
 
     public static final DatatypeProperty priority = m_model.createDatatypeProperty( NS + "priority" );
 
-    // public static final DatatypeProperty segment = m_model.createDatatypeProperty( NS + "segment" );
-
     public static final DatatypeProperty fragment = m_model.createDatatypeProperty( NS + "fragment" );
 
     public static final ObjectProperty param = m_model.createObjectProperty( NS + "param" );
@@ -93,5 +91,7 @@ public final class LDT
     public static final DatatypeProperty cacheControl = m_model.createDatatypeProperty( NS + "cacheControl" );
     
     public static final ObjectProperty lang = m_model.createObjectProperty( NS + "lang" );
-    
+
+    public static final ObjectProperty request = m_model.createObjectProperty( NS + "request" );
+
 }

@@ -47,7 +47,7 @@ public class C
 
     // public static final OntClass Document = m_model.createClass( NS + "Document" );
     
-    public static final OntClass View = m_model.createClass( NS + "View" );
+    public static final OntClass View = m_model.createClass( NS + "View" ); // TO-DO: rename to State?
     
     public static final OntClass SPARQLEndpoint = m_model.createClass( NS + "SPARQLEndpoint" );
 

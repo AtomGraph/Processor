@@ -28,7 +28,9 @@ import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
+import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.exception.OntClassNotFoundException;
+import com.atomgraph.server.vocabulary.HTTP;
 import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -70,11 +72,17 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         TemplateCall templateCall = getTemplateCall();
         if (templateCall == null) return response;
-            
+        
         Resource state = templateCall.build();
-        Resource requestedState = state.getModel().createResource(request.getRequestUri().toString());
-        if (!state.equals(requestedState)) // add hypermedia if there are query parameters
-            state.addProperty(C.viewOf, requestedState). // needed to lookup response state by request URI without redirection
+        /*
+        Resource requestRes = state.getModel().createResource().
+                addLiteral(HTTP.absoluteURI, request.getAbsolutePath().toString());
+        state.addProperty(LDT.request, requestRes);
+        */
+
+        Resource requestUri = state.getModel().createResource(request.getRequestUri().toString());
+        if (!state.equals(requestUri)) // add hypermedia if there are query parameters
+            state.addProperty(C.viewOf, requestUri). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
 
         if (templateCall.hasArgument(DH.limit)) // pages must have limits
@@ -109,7 +117,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
         if (state == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();            
+        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();
         Long offset = Long.valueOf(0);
         if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
 
