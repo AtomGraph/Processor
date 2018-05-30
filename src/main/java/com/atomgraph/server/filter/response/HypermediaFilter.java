@@ -29,7 +29,6 @@ import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
 import com.atomgraph.server.exception.OntClassNotFoundException;
-import com.atomgraph.server.vocabulary.HTTP;
 import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -73,9 +72,8 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (templateCall == null) return response;
         
         Resource state = templateCall.build();
-        Resource requestRes = state.getModel().createResource().
-                addLiteral(HTTP.absoluteURI, request.getAbsolutePath().toString());
-        state.addProperty(C.stateOf, requestRes);
+        Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
+        state.addProperty(C.stateOf, absolutePath);
 
         Resource requestUri = state.getModel().createResource(request.getRequestUri().toString());
         if (!state.equals(requestUri)) // add hypermedia if there are query parameters
@@ -84,7 +82,6 @@ public class HypermediaFilter implements ContainerResponseFilter
 
         if (templateCall.hasArgument(DH.limit)) // pages must have limits
         {
-            Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
             if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
             state.addProperty(DH.pageOf, absolutePath).
                 addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
