@@ -28,7 +28,6 @@ import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
-import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.HTTP;
 import com.atomgraph.server.vocabulary.XHV;
@@ -74,11 +73,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (templateCall == null) return response;
         
         Resource state = templateCall.build();
-        /*
         Resource requestRes = state.getModel().createResource().
                 addLiteral(HTTP.absoluteURI, request.getAbsolutePath().toString());
-        state.addProperty(LDT.request, requestRes);
-        */
+        state.addProperty(C.stateOf, requestRes);
 
         Resource requestUri = state.getModel().createResource(request.getRequestUri().toString());
         if (!state.equals(requestUri)) // add hypermedia if there are query parameters

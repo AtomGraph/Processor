@@ -55,4 +55,6 @@ public class C
     
     public static final ObjectProperty viewOf = m_model.createObjectProperty( NS + "viewOf" );
 
+    public static final ObjectProperty stateOf = m_model.createObjectProperty( NS + "stateOf" );
+
 }

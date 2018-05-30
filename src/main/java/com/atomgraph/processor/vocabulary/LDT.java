@@ -92,6 +92,4 @@ public final class LDT
     
     public static final ObjectProperty lang = m_model.createObjectProperty( NS + "lang" );
 
-    public static final ObjectProperty request = m_model.createObjectProperty( NS + "request" );
-
 }
