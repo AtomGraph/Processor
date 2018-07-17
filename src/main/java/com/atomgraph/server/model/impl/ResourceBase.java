@@ -383,16 +383,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        //rb.header("Query", getQuery().toString());
-        
-        Link classLink = new Link(URI.create(getTemplateCall().getTemplate().getURI()), RDF.type.getLocalName(), null);
-        rb.header("Link", classLink.toString());
-        
-        Link ontologyLink = new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null);
-        rb.header("Link", ontologyLink.toString());
-
-        Link baseLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null);
-        rb.header("Link", baseLink.toString());
+        rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
+        rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
         Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)

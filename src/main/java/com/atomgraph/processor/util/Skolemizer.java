@@ -190,7 +190,7 @@ public class Skolemizer
 
         // add fragment identifier
         String fragment = getStringValue(typeClass, LDT.fragment);
-        return builder.fragment(fragment).buildFromMap(nameValueMap);
+        return builder.fragment(fragment).buildFromMap(nameValueMap); // TO-DO: wrap into SkolemizationException
     }
 
     protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
