@@ -383,7 +383,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getLocalName(), null));
+        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
         rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
         rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
