@@ -92,7 +92,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * Public JAX-RS instance. Suitable for subclassing.
      * If the request URI does not match any URI template in the sitemap ontology, 404 Not Found is returned.
      * 
-     * If the matching ontology class is a subclass of <code>ldt:Document</code>, this resource becomes a page resource and
+     * If the matching template extends <code>ldt:Document</code>, this resource becomes a page resource and
      * HATEOS metadata is added (relations to the container and previous/next page resources).
      * 
      * @param application LDT application
@@ -383,6 +383,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
+        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getLocalName(), null));
         rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
         rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
@@ -413,8 +414,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Returns ontology class that this resource matches.
-     * If the request URI did not match any ontology class, <code>404 Not Found</code> was returned.
+     * Returns LDT template that the URI of this resource matches.
+     * If the request URI did not match any template, <code>404 Not Found</code> was returned.
      * 
      * @return ontology class
      */
@@ -426,8 +427,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     
     /**
      * Returns the cache control of this resource, if specified.
-     * The control value can be specified as a <code>ldt:cacheControl</code> value restriction on an ontology class in
-     * the sitemap ontology.
+     * The control value can be specified as <code>ldt:cacheControl</code> on templates in the sitemap ontology.
      * 
      * @return cache control object or null, if not specified
      */

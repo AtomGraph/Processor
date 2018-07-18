@@ -92,4 +92,6 @@ public final class LDT
     
     public static final ObjectProperty lang = m_model.createObjectProperty( NS + "lang" );
 
+    public static final ObjectProperty template = m_model.createObjectProperty( NS + "template" );
+
 }
