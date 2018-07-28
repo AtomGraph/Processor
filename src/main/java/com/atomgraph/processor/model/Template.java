@@ -53,8 +53,6 @@ public interface Template extends OntClass
         
     UriTemplate getMatch();
     
-    //String getSkolemTemplate();
-
     String getFragmentTemplate();
     
     org.apache.jena.rdf.model.Resource getQuery();

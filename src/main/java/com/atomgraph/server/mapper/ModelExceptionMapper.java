@@ -18,19 +18,9 @@ package com.atomgraph.server.mapper;
 
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
-import org.apache.jena.vocabulary.RDF;
-import java.net.URI;
-import java.util.List;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
-import com.atomgraph.core.util.Link;
 import com.atomgraph.server.exception.ModelException;
-import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.vocabulary.LDT;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,25 +39,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         ex.getModel().add(exception.getModel());
         
-        Link classLink = new Link(URI.create(getStateBuilder().getTemplate().getURI()), RDF.type.getLocalName(), null);
-        Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
-        Link baseUriLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null); // LDT.base?
-        
-        ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(ex.getModel(), getVariants()).
-                status(Response.Status.BAD_REQUEST).
-                header("Link", classLink.toString()).
-                header("Link", ontologyLink.toString()).
-                header("Link", baseUriLink.toString());
-
-        Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
-        if (reasoner instanceof GenericRuleReasoner)
-        {
-            List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
-            builder.header("Rules", RulePrinter.print(rules));
-        }
-        
-        return builder.build();
+        return getResponseBuilder(ex.getModel()).status(Response.Status.BAD_REQUEST).build();
     }
     
 }

@@ -35,8 +35,15 @@ import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
+import com.atomgraph.core.util.Link;
+import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
+import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
+import java.net.URI;
+import org.apache.jena.reasoner.Reasoner;
+import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
+import org.apache.jena.reasoner.rulesys.Rule;
 
 /**
  * Abstract base class for ExceptionMappers that build responses with exceptions as RDF resources.
@@ -90,6 +97,24 @@ abstract public class ExceptionMapperBase
         return response.getVariantListBuilder(getModelMediaTypes(), getLanguages(), getEncodings());
     }
     
+    public Response.ResponseBuilder getResponseBuilder(Model exceptionModel)
+    {
+        Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
+            getResponseBuilder(exceptionModel, getVariants()).
+                header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
+                header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
+                header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        
+        Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
+        if (reasoner instanceof GenericRuleReasoner)
+        {
+            List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
+            builder.header("Rules", RulePrinter.print(rules));
+        }
+        
+        return builder;
+    }
+    
     public List<MediaType> getModelMediaTypes()
     {
         return getMediaTypes().getWritable(Model.class);
@@ -115,7 +140,7 @@ abstract public class ExceptionMapperBase
         return providers;
     }
     
-    public TemplateCall getStateBuilder()
+    public TemplateCall getTemplateCall()
     {
         ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
         return cr.getContext(TemplateCall.class);

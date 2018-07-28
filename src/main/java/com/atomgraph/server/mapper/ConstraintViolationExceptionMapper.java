@@ -16,20 +16,12 @@
 
 package com.atomgraph.server.mapper;
 
-import com.atomgraph.core.util.Link;
 import com.atomgraph.server.exception.ConstraintViolationException;
-import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.vocabulary.LDT;
-import java.net.URI;
-import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,25 +60,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
             it.close();
         }
         
-        Link classLink = new Link(URI.create(getStateBuilder().getTemplate().getURI()), RDF.type.getLocalName(), null);
-        Link ontologyLink = new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null);
-        Link baseUriLink = new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null);
-        
-        Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(ex.getModel(), getVariants()).
-                status(Response.Status.BAD_REQUEST).
-                header("Link", classLink.toString()).
-                header("Link", ontologyLink.toString()).
-                header("Link", baseUriLink.toString());
-
-        Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
-        if (reasoner instanceof GenericRuleReasoner)
-        {
-            List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
-            builder.header("Rules", RulePrinter.print(rules));
-        }
-        
-        return builder.build();
+        return getResponseBuilder(ex.getModel()).status(Response.Status.BAD_REQUEST).build();
     }
     
 }

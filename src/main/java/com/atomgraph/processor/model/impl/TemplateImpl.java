@@ -119,12 +119,6 @@ public class TemplateImpl extends OntClassImpl implements Template
         return null;
     }
 
-//    @Override
-//    public String getSkolemTemplate()
-//    {
-//        return getStringValue(LDT.segment);
-//    }
-
     @Override
     public String getFragmentTemplate()
     {
@@ -161,7 +155,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public Map<Property, Parameter> getLocalParameters()
     {
-        Map<Property, Parameter> args = new HashMap<>();
+        Map<Property, Parameter> params = new HashMap<>();
         
         StmtIterator it = listProperties(LDT.param);
         try
@@ -175,14 +169,14 @@ public class TemplateImpl extends OntClassImpl implements Template
                     throw new OntologyException("Unsupported Argument '" + stmt.getObject() + "' for Template '" + getURI() + "' (rdf:type ldt:Parameter missing)");
                 }
 
-                Parameter arg = stmt.getObject().as(Parameter.class);
-                if (args.containsKey(arg.getPredicate()))
+                Parameter param = stmt.getObject().as(Parameter.class);
+                if (params.containsKey(param.getPredicate()))
                 {
-                    if (log.isErrorEnabled()) log.error("Multiple Arguments with the same predicate '{}' for Template '{}' ", arg.getPredicate(), getURI());
-                    throw new OntologyException("Multiple Arguments with the same predicate '" + arg.getPredicate() + "' for Template '" + getURI() + "'");
+                    if (log.isErrorEnabled()) log.error("Multiple Arguments with the same predicate '{}' for Template '{}' ", param.getPredicate(), getURI());
+                    throw new OntologyException("Multiple Arguments with the same predicate '" + param.getPredicate() + "' for Template '" + getURI() + "'");
                 }
                 
-                args.put(arg.getPredicate(), arg);
+                params.put(param.getPredicate(), param);
             }
         }
         finally
@@ -190,13 +184,13 @@ public class TemplateImpl extends OntClassImpl implements Template
             it.close();
         }
         
-        return args;
+        return params;
     }
     
-    protected Map<Property, Parameter> addSuperParameters(Template template, Map<Property, Parameter> args)
+    protected Map<Property, Parameter> addSuperParameters(Template template, Map<Property, Parameter> params)
     {
         if (template == null) throw new IllegalArgumentException("Template Set cannot be null");
-        if (args == null) throw new IllegalArgumentException("Parameter Map cannot be null");
+        if (params == null) throw new IllegalArgumentException("Parameter Map cannot be null");
         
         StmtIterator it = template.listProperties(LDT.extends_);
         try
@@ -216,10 +210,10 @@ public class TemplateImpl extends OntClassImpl implements Template
                 while (entryIt.hasNext())
                 {
                     Entry<Property, Parameter> entry = entryIt.next();
-                    args.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
+                    params.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
                 }
 
-                addSuperParameters(superTemplate, args);  // recursion to super class
+                addSuperParameters(superTemplate, params);  // recursion to super class
             }
         }
         finally
@@ -227,7 +221,7 @@ public class TemplateImpl extends OntClassImpl implements Template
             it.close();
         }
         
-        return args;
+        return params;
     }
     
     @Override

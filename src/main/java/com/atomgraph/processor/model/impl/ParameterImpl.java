@@ -45,7 +45,8 @@ public class ParameterImpl extends org.spinrdf.model.impl.ArgumentImpl implement
             {
                 return new ParameterImpl(node, enhGraph);
             }
-            else {
+            else
+            {
                 throw new ConversionException( "Cannot convert node " + node.toString() + " to Parameter: it does not have rdf:type ldt:Parameter or equivalent");
             }
         }
