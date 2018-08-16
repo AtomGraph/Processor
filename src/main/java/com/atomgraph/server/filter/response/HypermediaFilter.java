@@ -73,7 +73,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         Resource state = templateCall.build();
         Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
-        state.addProperty(C.stateOf, absolutePath);
+        if (!state.equals(absolutePath)) state.addProperty(C.stateOf, absolutePath);
 
         Resource requestUri = state.getModel().createResource(request.getRequestUri().toString());
         if (!state.equals(requestUri)) // add hypermedia if there are query parameters
