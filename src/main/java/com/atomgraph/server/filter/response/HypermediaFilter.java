@@ -130,10 +130,10 @@ public class HypermediaFilter implements ContainerResponseFilter
 
         com.atomgraph.core.util.StateBuilder nextBuilder = TemplateCall.fromResource(state);
         Resource next = nextBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
-                build().
-                addProperty(DH.pageOf, absolutePath).
-                addProperty(RDF.type, DH.Page).
-                addProperty(XHV.prev, state);
+            build().
+            addProperty(DH.pageOf, absolutePath).
+            addProperty(RDF.type, DH.Page).
+            addProperty(XHV.prev, state);
 
         if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", state, next);
         state.addProperty(XHV.next, next);

@@ -15,6 +15,7 @@
  */
 package com.atomgraph.processor.util;
 
+import com.atomgraph.core.util.StateBuilder;
 import com.atomgraph.processor.exception.ParameterException;
 import com.atomgraph.processor.model.Template;
 import java.util.List;
@@ -45,18 +46,20 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
 {
     
     private final Template template;
+    private final Resource original;
     
     protected TemplateCall(Resource resource, Template template)
     {
         super(UriBuilder.fromUri(resource.getURI()), resource.getModel());
         if (template == null) throw new IllegalArgumentException("Template cannot be null");
-        this.template = template;        
+        this.original = resource;
+        this.template = template;
     }
     
     public static TemplateCall fromUri(String uri, Model model, Template template)
     {
-        if (uri == null) throw new IllegalArgumentException("URI String cannot be null");        
-        if (model == null) throw new IllegalArgumentException("Model cannot be null");        
+        if (uri == null) throw new IllegalArgumentException("URI String cannot be null");
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
         
         return new TemplateCall(model.createResource(uri), template);
     }
@@ -64,6 +67,11 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     public static TemplateCall fromResource(Resource resource, Template template)
     {
         return new TemplateCall(resource, template);
+    }
+    
+    protected Resource getOriginal()
+    {
+        return original;
     }
     
     public final Template getTemplate()
@@ -99,15 +107,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             {
                 List<String> argValues = queryParams.get(paramName);
                 for (String argValue : argValues)
-                {
-                    Resource arg = getResource().getModel().createResource().
-                        addProperty(RDF.type, param).
-                        addLiteral(LDT.paramName, paramName).
-                        addProperty(SPL.predicate, param.getPredicate()).
-                        addProperty(RDF.value, RDFNodeFactory.createTyped(argValue, param.getValueType()));
-                    
-                    arg(arg);
-                }
+                    arg(param, RDFNodeFactory.createTyped(argValue, param.getValueType()));
             }
         }
         
@@ -123,15 +123,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             Parameter param = paramIt.next();
             RDFNode defaultValue = param.getDefaultValue();
             if (defaultValue != null && !hasArgument(param.getPredicate()))
-            {
-                Resource arg = getResource().getModel().createResource().
-                    addProperty(RDF.type, param).
-                    addLiteral(LDT.paramName, param.getPredicate().getLocalName()).
-                    addProperty(SPL.predicate, param.getPredicate()).
-                    addProperty(RDF.value, defaultValue);
-
-                arg(arg);
-            }            
+                arg(param, defaultValue);
         }
         
         return this;
@@ -208,9 +200,24 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         return null;
     }
     
+    public TemplateCall arg(Parameter param, RDFNode value)
+    {
+        if (param == null) throw new IllegalArgumentException("Parameter cannot be null");
+        if (value == null) throw new IllegalArgumentException("RDFNode cannot be null");
+
+        Resource arg = StateBuilder.fromUri(getOriginal().getURI(), getResource().getModel()).
+            property(param.getPredicate(), value).
+            build();
+        
+        return arg(arg.addProperty(RDF.type, param).
+            addLiteral(LDT.paramName, param.getPredicate().getLocalName()).
+            addProperty(SPL.predicate, param.getPredicate()).
+            addProperty(RDF.value, value));
+    }
+    
     public TemplateCall arg(Resource arg)
     {
-        if (arg == null) throw new IllegalArgumentException("Resource cannot be null");        
+        if (arg == null) throw new IllegalArgumentException("Resource cannot be null");
         
         getResource().addProperty(LDT.arg, arg);
 
