@@ -15,6 +15,7 @@
  */
 package com.atomgraph.processor.vocabulary;
 
+import com.atomgraph.processor.model.Parameter;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.OntModelSpec;
@@ -38,12 +39,22 @@ public class DHT
      *  @see #NS */
     public static String getURI()
     {
-	return NS;
+        return NS;
     }
     
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
     public static final OntClass Container = m_model.createClass( NS + "Container" );
+
+    public static final Parameter Limit = m_model.createIndividual( NS + "Limit", LDT.Parameter).as(Parameter.class);
+    
+    public static final Parameter ForClass = m_model.createIndividual( NS + "ForClass", LDT.Parameter).as(Parameter.class);
+
+    public static final Parameter Offset = m_model.createIndividual( NS + "Offset", LDT.Parameter).as(Parameter.class);
+    
+    public static final Parameter OrderBy = m_model.createIndividual( NS + "OrderBy", LDT.Parameter).as(Parameter.class);
+
+    public static final Parameter Desc = m_model.createIndividual( NS + "Desc", LDT.Parameter).as(Parameter.class);
 
 }
