@@ -88,7 +88,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
     {
-        if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
+	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
 
         // iterate query params to find unrecognized ones
         Set<String> argNames = queryParams.keySet();
@@ -107,7 +107,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             {
                 List<String> argValues = queryParams.get(paramName);
                 for (String argValue : argValues)
-                    TemplateCall.this.argument(param, RDFNodeFactory.createTyped(argValue, param.getValueType()));
+                    arg(param, RDFNodeFactory.createTyped(argValue, param.getValueType()));
             }
         }
         
@@ -123,7 +123,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             Parameter param = paramIt.next();
             RDFNode defaultValue = param.getDefaultValue();
             if (defaultValue != null && !hasArgument(param.getPredicate()))
-                TemplateCall.this.argument(param, defaultValue);
+                arg(param, defaultValue);
         }
         
         return this;
@@ -134,42 +134,6 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         return getResource().listProperties(LDT.arg);
     }
     
-    public boolean hasArgument(Parameter param)
-    {
-        return getArgument(param) != null;
-    }
-    
-    public Resource getArgument(Parameter param)
-    {
-        if (param == null) throw new IllegalArgumentException("Parameter cannot be null");
-        
-        StmtIterator it = getResource().listProperties(LDT.arg);
-        
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                Resource arg = stmt.getObject().asResource();
-                if (arg.getProperty(RDF.type).getResource().equals(param)) return arg;
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        return null;
-    }
-    
-    public Statement getArgumentValue(Parameter param)
-    {
-        Resource arg = getArgument(param);
-        if (arg != null) return arg.getRequiredProperty(RDF.value);
-        
-        return null;
-    }
-    
     public boolean hasArgument(Property predicate)
     {
         return getArgument(predicate) != null;
@@ -177,7 +141,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public Resource getArgument(Property predicate)
     {
-        if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
+	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
         
         StmtIterator it = getResource().listProperties(LDT.arg);
         
@@ -197,14 +161,6 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         
         return null;
     }
-
-    public Statement getArgumentValue(Property predicate)
-    {
-        Resource arg = getArgument(predicate);
-        if (arg != null) return arg.getRequiredProperty(RDF.value);
-        
-        return null;
-    }
     
     public boolean hasArgument(String varName, RDFNode object)
     {
@@ -213,8 +169,8 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public Resource getArgument(String varName, RDFNode object)
     {
-        if (varName == null) throw new IllegalArgumentException("Var name String cannot be null");
-        if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
+	if (varName == null) throw new IllegalArgumentException("Var name String cannot be null");
+	if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
         
         StmtIterator it = getResource().listProperties(LDT.arg);
         
@@ -235,8 +191,16 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         
         return null;
     }
+
+    public Statement getArgumentProperty(Property predicate)
+    {
+        Resource arg = getArgument(predicate);
+        if (arg != null) return arg.getRequiredProperty(RDF.value);
+        
+        return null;
+    }
     
-    public TemplateCall argument(Parameter param, RDFNode value)
+    public TemplateCall arg(Parameter param, RDFNode value)
     {
         if (param == null) throw new IllegalArgumentException("Parameter cannot be null");
         if (value == null) throw new IllegalArgumentException("RDFNode cannot be null");
@@ -245,13 +209,13 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
             property(param.getPredicate(), value).
             build();
         
-        return argument(arg.addProperty(RDF.type, param).
+        return arg(arg.addProperty(RDF.type, param).
             addLiteral(LDT.paramName, param.getPredicate().getLocalName()).
             addProperty(SPL.predicate, param.getPredicate()).
             addProperty(RDF.value, value));
     }
     
-    public TemplateCall argument(Resource arg)
+    public TemplateCall arg(Resource arg)
     {
         if (arg == null) throw new IllegalArgumentException("Resource cannot be null");
         
@@ -295,7 +259,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
                 if (getTemplate().getParameters().containsKey(spinArg.getPredicate()) && hasArgument(spinArg.getPredicate()))
                 {
                     Parameter param = getTemplate().getParameters().get(spinArg.getPredicate());
-                    qsm.add(param.getVarName(), getArgumentValue(param.getPredicate()).getObject());
+                    qsm.add(param.getVarName(), getArgumentProperty(param.getPredicate()).getObject());
                 }
         }
                 

@@ -28,7 +28,6 @@ import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
-import com.atomgraph.processor.vocabulary.DHT;
 import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
@@ -81,7 +80,7 @@ public class HypermediaFilter implements ContainerResponseFilter
             state.addProperty(C.viewOf, requestUri). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
 
-        if (templateCall.hasArgument(DHT.Limit)) // pages must have limits
+        if (templateCall.hasArgument(DH.limit)) // pages must have limits
         {
             if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
             state.addProperty(DH.pageOf, absolutePath).
@@ -91,9 +90,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         }
 
         if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
-                templateCall.hasArgument(DHT.ForClass))
+                templateCall.hasArgument(DH.forClass))
         {
-            String forClassURI = templateCall.getArgumentValue(DHT.ForClass).getResource().getURI();
+            String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
             OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
             if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
             // connects instance state to CONSTRUCTed template
@@ -112,9 +111,9 @@ public class HypermediaFilter implements ContainerResponseFilter
         if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
         if (state == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        Long limit = templateCall.getArgumentValue(DHT.Limit).getLong();
+        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();
         Long offset = Long.valueOf(0);
-        if (templateCall.hasArgument(DHT.Offset)) offset = templateCall.getArgumentValue(DHT.Offset).getLong();
+        if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
 
         if (offset >= limit)
         {

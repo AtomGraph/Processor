@@ -50,6 +50,7 @@ import com.atomgraph.processor.update.ModifyBuilder;
 import com.atomgraph.processor.update.UpdateBuilder;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
+import com.atomgraph.processor.vocabulary.DH;
 import com.atomgraph.processor.vocabulary.DHT;
 import java.util.Collections;
 import javax.annotation.PostConstruct;
@@ -78,7 +79,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private static final Logger log = LoggerFactory.getLogger(ResourceBase.class);
         
     private final com.atomgraph.processor.model.Application application;
-    private final Ontology ontology;    
+    private final Ontology ontology;
     private final TemplateCall templateCall;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
@@ -461,29 +462,29 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
         if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
 
-        if (getTemplateCall().hasArgument(DHT.Offset))
+        if (getTemplateCall().hasArgument(DH.offset))
         {
-            Long offset = getTemplateCall().getArgumentValue(DHT.Offset).getLong();
+            Long offset = getTemplateCall().getArgumentProperty(DH.offset).getLong();
             if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
             subSelectBuilder.replaceOffset(offset);
         }
 
-        if (getTemplateCall().hasArgument(DHT.Limit))
+        if (getTemplateCall().hasArgument(DH.limit))
         {
-            Long limit = getTemplateCall().getArgumentValue(DHT.Limit).getLong();
+            Long limit = getTemplateCall().getArgumentProperty(DH.limit).getLong();
             if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
             subSelectBuilder.replaceLimit(limit);
         }
 
-        if (getTemplateCall().hasArgument(DHT.OrderBy))
+        if (getTemplateCall().hasArgument(DH.orderBy))
         {
             try
             {
-                String orderBy = getTemplateCall().getArgumentValue(DHT.OrderBy).getString();
+                String orderBy = getTemplateCall().getArgumentProperty(DH.orderBy).getString();
 
                 Boolean desc = false; // ORDERY BY is ASC() by default
-                if (getTemplateCall().hasArgument(DHT.Desc))
-                    desc = getTemplateCall().getArgumentValue(DHT.Desc).getBoolean();
+                if (getTemplateCall().hasArgument(DH.desc))
+                    desc = getTemplateCall().getArgumentProperty(DH.desc).getBoolean();
 
                 if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
                 subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
