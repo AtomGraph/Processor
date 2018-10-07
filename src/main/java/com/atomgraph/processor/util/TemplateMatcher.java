@@ -126,15 +126,15 @@ public class TemplateMatcher
      */
     public Template match(URI uri, URI base)
     {
-	if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
-	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
-	if (!uri.isAbsolute()) throw new IllegalArgumentException("URI being matched \"" + uri + "\" is not absolute");
-	if (base.relativize(uri).equals(uri)) throw new IllegalArgumentException("URI being matched \"" + uri + "\" is not relative to the base URI \"" + base + "\"");
-	    
-	StringBuilder path = new StringBuilder();
-	// instead of path, include query string by relativizing request URI against base URI
-	path.append("/").append(base.relativize(uri));
-	return match(getOntology(), path);
+        if (uri == null) throw new IllegalArgumentException("URI being matched cannot be null");
+        if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
+        if (!uri.isAbsolute()) throw new IllegalArgumentException("URI being matched \"" + uri + "\" is not absolute");
+        if (base.relativize(uri).equals(uri)) throw new IllegalArgumentException("URI being matched \"" + uri + "\" is not relative to the base URI \"" + base + "\"");
+            
+        StringBuilder path = new StringBuilder();
+        // instead of path, include query string by relativizing request URI against base URI
+        path.append("/").append(base.relativize(uri));
+        return match(getOntology(), path);
     }
             
     /**
@@ -226,7 +226,7 @@ public class TemplateMatcher
      */
     public Template match(Ontology ontology, CharSequence path)
     {
-	if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
+        if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
         
         List<TemplatePrecedence> precedences = match(ontology, path, 0);
         if (!precedences.isEmpty())

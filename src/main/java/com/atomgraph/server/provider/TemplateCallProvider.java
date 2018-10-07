@@ -52,14 +52,14 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
     @Override
     public Injectable<TemplateCall> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<TemplateCall>()
-	{
-	    @Override
-	    public TemplateCall getValue()
-	    {
-                return TemplateCallProvider.this.getTemplateCall();
-	    }
-	};
+        return new Injectable<TemplateCall>()
+        {
+            @Override
+            public TemplateCall getValue()
+            {
+                return getTemplateCall();
+            }
+        };
     }
 
     @Override
@@ -94,7 +94,7 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
     
     public Template getTemplate()
     {
-	return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
+        return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
     }
 
     public Providers getProviders()

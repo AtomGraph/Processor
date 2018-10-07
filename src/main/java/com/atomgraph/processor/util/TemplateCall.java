@@ -139,7 +139,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
         return getArgument(predicate) != null;
     }
     
-    public Resource getArgument(Property predicate)
+    public Resource getArgument(Property predicate) // TO-DO: create model class Argument
     {
 	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
         

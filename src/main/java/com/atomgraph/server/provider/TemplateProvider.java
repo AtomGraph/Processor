@@ -51,14 +51,14 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     @Override
     public Injectable<Template> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<Template>()
-	{
-	    @Override
-	    public Template getValue()
-	    {
+        return new Injectable<Template>()
+        {
+            @Override
+            public Template getValue()
+            {
                 return getTemplate();
-	    }
-	};
+            }
+        };
     }
 
     @Override
@@ -84,7 +84,7 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {
-	return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
+        return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
     }
     
     public Providers getProviders()
