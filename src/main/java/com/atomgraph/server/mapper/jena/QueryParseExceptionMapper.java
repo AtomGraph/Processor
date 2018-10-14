@@ -40,14 +40,6 @@ public class QueryParseExceptionMapper extends ExceptionMapperBase implements Ex
                     getModel(), getVariants()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
-
-        /*
-	return Response.status(Response.Status.INTERNAL_SERVER_ERROR).
-                entity(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-                        ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel()).
-		build();
-        */
     }
 
 }
