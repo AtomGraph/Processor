@@ -30,7 +30,7 @@ public class ApplicationImpl extends com.atomgraph.core.model.impl.ApplicationIm
     public ApplicationImpl(Service service, Resource ontology)
     {
         super(service);
-        if (ontology == null) throw new IllegalArgumentException("Resource cannot be null");        
+        if (ontology == null) throw new IllegalArgumentException("Resource cannot be null");
         this.ontology = ontology;
     }
     

@@ -122,7 +122,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
         if (templateCall == null)
         {
-            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template Template, returning 404 Not Found", getURI());
+            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template, returning 404 Not Found", getURI());
             throw new NotFoundException("Resource has not matched any template");
         }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");

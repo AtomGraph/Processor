@@ -15,9 +15,7 @@
  */
 package com.atomgraph.server.provider;
 
-import com.atomgraph.core.model.Service;
 import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.model.impl.ApplicationImpl;
 import com.sun.jersey.core.spi.component.ComponentContext;
 import com.sun.jersey.spi.inject.Injectable;
 import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
@@ -25,8 +23,6 @@ import com.sun.jersey.spi.resource.Singleton;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
-import org.apache.jena.ontology.Ontology;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,24 +37,25 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationProvider.class);
     
-    @Context Providers providers;
+    private final Application application;
     
-    public ApplicationProvider()
+    public ApplicationProvider(Application application)
     {
         super(Application.class);
+        this.application = application;
     }
     
     @Override
     public Injectable<Application> getInjectable(ComponentContext ic, Context a)
     {
-	return new Injectable<Application>()
-	{
-	    @Override
-	    public Application getValue()
-	    {
+        return new Injectable<Application>()
+        {
+            @Override
+            public Application getValue()
+            {
                 return getApplication();
-	    }
-	};
+            }
+        };
     }
 
     @Override
@@ -69,27 +66,7 @@ public class ApplicationProvider extends PerRequestTypeInjectableProvider<Contex
     
     public Application getApplication()
     {
-        return getApplication(getService(), getOntology());
+        return application;
     }
-    
-    public Application getApplication(Service service, Ontology ontology)
-    {
-        return new ApplicationImpl(service, ontology);
-    }
-    
-    public Service getService()
-    {
-	return getProviders().getContextResolver(Service.class, null).getContext(Service.class);
-    }
-    
-    public Ontology getOntology()
-    {
-	return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
-    }
-    
-    public Providers getProviders()
-    {
-        return providers;
-    }
-    
+
 }

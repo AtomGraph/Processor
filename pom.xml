@@ -4,7 +4,7 @@
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
     <version>1.1.4-SNAPSHOT</version>
-    <packaging>jar</packaging>
+    <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
     <description>Generic Linked Data processor</description>
@@ -72,7 +72,7 @@
             <artifactId>servlet-api</artifactId>
             <version>2.5</version>
             <scope>provided</scope>
-        </dependency>        
+        </dependency>
         <dependency>
             <groupId>org.spinrdf</groupId>
             <artifactId>spinrdf</artifactId>
@@ -85,7 +85,7 @@
         </dependency>
     </dependencies>
 
-    <build>
+    <build><!--
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -94,6 +94,7 @@
                 </excludes>
             </resource>
         </resources>
+        -->
 
         <plugins>
             <plugin>
@@ -111,6 +112,15 @@
                     <compilerArguments>
                         <endorseddirs>${endorsed.dir}</endorseddirs>
                     </compilerArguments>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <failOnMissingWebXml>true</failOnMissingWebXml>
+                    <attachClasses>true</attachClasses>
                 </configuration>
             </plugin>
             <plugin>
@@ -135,11 +145,26 @@
     </distributionManagement>
 
     <profiles>
+        <profile>
+            <id>standalone</id>
+            <properties>
+                <packaging.type>war</packaging.type>
+            </properties>
+        </profile>
+        <profile>
+            <id>dependency</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <packaging.type>jar</packaging.type>
+            </properties>
+        </profile>
         <profile> 
             <id>release</id>
             <properties>
                 <packaging.type>jar</packaging.type>
-            </properties>          
+            </properties>
             <build>
                 <plugins>
                     <plugin>

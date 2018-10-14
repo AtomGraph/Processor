@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns="http://java.sun.com/xml/ns/javaee"
+    xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+    xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" 
+    id="atomgraph-processor" version="3.0">
+    <display-name>AtomGraph Processor</display-name>
+    <description>Ontology-driven Linked Data processor</description>
+    <context-param>
+        <param-name>http://www.w3.org/ns/sparql-service-description#endpoint</param-name>
+        <param-value>http://atomgraph.dydra.com/atomgraph/processor/sparql</param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://atomgraph.com/ns/core#graphStore</param-name>
+        <param-value>http://atomgraph.dydra.com/atomgraph/processor/service</param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://jena.hpl.hp.com/Service#queryAuthUser</param-name>
+        <param-value>username</param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://jena.hpl.hp.com/Service#queryAuthPwd</param-name>
+        <param-value>password</param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://atomgraph.com/ns/core#preemptiveAuth</param-name>
+        <param-value>true</param-value>
+    </context-param>
+    <context-param>
+        <param-name>https://www.w3.org/ns/ldt#ontology</param-name>
+        <param-value>https://www.w3.org/ns/ldt/core/templates#</param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://atomgraph.com/ns/processor#sitemapRules</param-name>
+        <param-value><![CDATA[
+[inhClass: (?class rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), (?class ?p ?o), (?p rdf:type <https://www.w3.org/ns/ldt#InheritedProperty>), (?subClass rdfs:subClassOf ?class), (?subClass rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), noValue(?subClass ?p) -> (?subClass ?p ?o) ]
+[inhTemplate: (?template rdf:type <https://www.w3.org/ns/ldt#Template>), (?template ?p ?o), (?p rdf:type <https://www.w3.org/ns/ldt#InheritedProperty>), (?subTemplate <https://www.w3.org/ns/ldt#extends> ?template), (?subTemplate rdf:type <https://www.w3.org/ns/ldt#Template>), noValue(?subTemplate ?p) -> (?subTemplate ?p ?o) ]
+[rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]
+]]></param-value>
+    </context-param>
+    <context-param>
+        <param-name>http://atomgraph.com/ns/processor#locationMapping</param-name>
+        <param-value>location-mapping.n3</param-value>
+    </context-param>
+    <servlet>
+        <servlet-name>processor</servlet-name>
+        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
+        <init-param>
+            <param-name>javax.ws.rs.Application</param-name>
+            <param-value>com.atomgraph.server.Application</param-value>
+        </init-param>
+        <init-param>
+            <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
+            <param-value>com.atomgraph.server.filter.response.HypermediaFilter</param-value>
+        </init-param>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>processor</servlet-name>
+        <url-pattern>/*</url-pattern>
+    </servlet-mapping>
+</web-app>

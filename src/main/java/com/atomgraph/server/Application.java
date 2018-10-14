@@ -69,6 +69,10 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
 import static com.atomgraph.core.Application.getClient;
+import com.atomgraph.core.model.Service;
+import com.atomgraph.core.provider.ServiceProvider;
+import com.atomgraph.processor.model.impl.ApplicationImpl;
+import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
  *
@@ -80,6 +84,8 @@ public class Application extends com.atomgraph.core.Application
 
     private final Set<Class<?>> classes = new HashSet<>();
     private final Set<Object> singletons = new HashSet<>();
+    private final com.atomgraph.processor.model.Application application;
+    private final Service service;
     private final String ontologyURI;
     private final OntModelSpec ontModelSpec;
     private final boolean cacheSitemap;
@@ -91,19 +97,19 @@ public class Application extends com.atomgraph.core.Application
     public Application(@Context ServletConfig servletConfig)
     {
         this(
-            servletConfig.getInitParameter(A.dataset.getURI()) != null ? getDataset(servletConfig.getInitParameter(A.dataset.getURI()), null) : null,
-            servletConfig.getInitParameter(SD.endpoint.getURI()) != null ? servletConfig.getInitParameter(SD.endpoint.getURI()) : null,
-            servletConfig.getInitParameter(A.graphStore.getURI()) != null ? servletConfig.getInitParameter(A.graphStore.getURI()) : null,
-            servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
-            servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
+            servletConfig.getServletContext().getInitParameter(A.dataset.getURI()) != null ? getDataset(servletConfig.getServletContext().getInitParameter(A.dataset.getURI()), null) : null,
+            servletConfig.getServletContext().getInitParameter(SD.endpoint.getURI()) != null ? servletConfig.getServletContext().getInitParameter(SD.endpoint.getURI()) : null,
+            servletConfig.getServletContext().getInitParameter(A.graphStore.getURI()) != null ? servletConfig.getServletContext().getInitParameter(A.graphStore.getURI()) : null,
+            servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
+            servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
             new MediaTypes(), getClient(new DefaultClientConfig()),
-            servletConfig.getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getInitParameter(A.maxGetRequestSize.getURI())) : null,
-            servletConfig.getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getInitParameter(A.preemptiveAuth.getURI())) : false,
-            getFileManager(new LocationMapper(servletConfig.getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getInitParameter(AP.locationMapping.getURI()) : null)),
-            servletConfig.getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getInitParameter(LDT.ontology.getURI()) : null,
-            servletConfig.getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getInitParameter(AP.sitemapRules.getURI()) : null,
-            servletConfig.getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getInitParameter(AP.cacheSitemap.getURI())) : true
-        );       
+            servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI())) : null,
+            servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI())) : false,
+            getFileManager(new LocationMapper(servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) : null)),
+            servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) : null,
+            servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) : null,
+            servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI())) : true
+        );
     }
     
     public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI,
@@ -128,6 +134,28 @@ public class Application extends com.atomgraph.core.Application
         
         this.ontologyURI = ontologyURI;
         this.cacheSitemap = cacheSitemap;
+
+        if (dataset != null)
+            service = new com.atomgraph.core.model.impl.dataset.ServiceImpl(dataset, mediaTypes);
+        else
+        {
+            if (endpointURI == null)
+            {
+                if (log.isErrorEnabled()) log.error("SPARQL endpoint not configured ('{}' not set in web.xml)", SD.endpoint.getURI());
+                throw new ConfigurationException(SD.endpoint);
+            }
+            if (graphStoreURI == null)
+            {
+                if (log.isErrorEnabled()) log.error("Graph Store not configured ('{}' not set in web.xml)", A.graphStore.getURI());
+                throw new ConfigurationException(A.graphStore);
+            }
+
+            service = new com.atomgraph.core.model.impl.remote.ServiceImpl(client, mediaTypes,
+                    ResourceFactory.createResource(endpointURI), ResourceFactory.createResource(graphStoreURI),
+                    authUser, authPwd, maxGetRequestSize);
+        }
+        
+        application = new ApplicationImpl(service, ResourceFactory.createResource(ontologyURI));
 
         List<Rule> rules = Rule.parseRules(rulesString);
         OntModelSpec rulesSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
@@ -165,10 +193,11 @@ public class Application extends com.atomgraph.core.Application
     @PostConstruct
     @Override
     public void init()
-    {        
+    {
         classes.add(ResourceBase.class); // handles /
 
-        singletons.add(new ApplicationProvider());
+        singletons.add(new ServiceProvider(getService()));
+        singletons.add(new ApplicationProvider(getApplication()));
         singletons.add(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
@@ -224,6 +253,12 @@ public class Application extends com.atomgraph.core.Application
         return singletons;
     }
     
+    @Override
+    public com.atomgraph.processor.model.Application getApplication()
+    {
+        return application;
+    }
+    
     public String getOntologyURI()
     {
         return ontologyURI;
@@ -231,7 +266,7 @@ public class Application extends com.atomgraph.core.Application
     
     public OntModelSpec getOntModelSpec()
     {
-        return ontModelSpec;    
+        return ontModelSpec;
     }
     
     public final boolean isCacheSitemap()
