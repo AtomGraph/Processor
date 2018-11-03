@@ -30,14 +30,14 @@ Docker
 
 Processor is available from Docker Hub as [`atomgraph/processor`](https://hub.docker.com/r/atomgraph/processor/) image.
 It accepts the following environment variables (that become webapp context parameters):
-* `ENDPOINT`
-* `GRAPH_STORE`
-* `ONTOLOGY`
-* `AUTH_USER`
-* `AUTH_PWD`
-* `PREEMPTIVE_AUTH`
-* `SITEMAP_RULES`
-* `LOCATION_MAPPING`
+* `ENDPOINT` - SPARQL 1.1 Protocol endpoint (URI)
+* `GRAPH_STORE` - SPARQL 1.1 Graph Store protocol endpoint (URI)
+* `ONTOLOGY` - LDT ontology (URI)
+* `AUTH_USER` - SPARQ service HTTP Basic auth user (string, optional)
+* `AUTH_PWD` - SPARQ service HTTP Basic auth password (string, optional)
+* `PREEMPTIVE_AUTH` - use premptive HTTP Basic auth? (`true`/`false`, optional)
+* `SITEMAP_RULES` - [Jena rules](https://jena.apache.org/documentation/inference/#rules) for the LDT ontologies (string, optional, see [default](blob/master/src/main/webapp/WEB-INF/web.xml#L36))
+* `LOCATION_MAPPING` - Jena's [LocationMapper config](https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file) (path to RDF file, optional, see [default](blob/master/src/main/resources/location-mapping.n3))
 
 Run the container like this:
 
