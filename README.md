@@ -69,7 +69,7 @@ Run the container with Wikidata's example like this (replace `~/WebRoot/...` pat
       -v "~/WebRoot/AtomGraph/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
       atomgraph/processor
 
-After that, access `http://localhost:8080/birthdays?limit=10` and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
+After that, access http://localhost:8080/birthdays?limit=10 and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
 
 Maven
 -----
