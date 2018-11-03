@@ -59,4 +59,8 @@ eval $transform
 
 # run Tomcat
 
-catalina.sh run
+if [ -z "$JPDA_ADDRESS" ] ; then
+    catalina.sh run
+else
+    catalina.sh jpda run
+fi

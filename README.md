@@ -30,23 +30,45 @@ Docker
 
 Processor is available from Docker Hub as [`atomgraph/processor`](https://hub.docker.com/r/atomgraph/processor/) image.
 It accepts the following environment variables (that become webapp context parameters):
-* `ENDPOINT` - SPARQL 1.1 Protocol endpoint (URI)
-* `GRAPH_STORE` - SPARQL 1.1 Graph Store protocol endpoint (URI)
-* `ONTOLOGY` - LDT ontology (URI)
-* `AUTH_USER` - SPARQ service HTTP Basic auth user (string, optional)
-* `AUTH_PWD` - SPARQ service HTTP Basic auth password (string, optional)
-* `PREEMPTIVE_AUTH` - use premptive HTTP Basic auth? (`true`/`false`, optional)
-* `SITEMAP_RULES` - [Jena rules](https://jena.apache.org/documentation/inference/#rules) for the LDT ontologies (string, optional, see [default](src/main/webapp/WEB-INF/web.xml#L16))
-* `LOCATION_MAPPING` - Jena's [LocationMapper config](https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file) (path to RDF file, optional, see [default](src/main/resources/location-mapping.n3))
 
-Run the container like this:
+<dl>
+    <dt><code>ENDPOINT</code></dt>
+    <dd>SPARQL 1.1 Protocol endpoint</dd>
+    <dd>URI</dd>
+    <dt><code>GRAPH_STORE</code></dt>
+    <dd>SPARQL 1.1 Graph Store Protocol endpoint</dd>
+    <dd>URI</dd>
+    <dt><code>ONTOLOGY</code></dt>
+    <dd>Linked Data Templates ontology</dd>
+    <dd>URI</dd>
+    <dt><code>AUTH_USER</code></dt>
+    <dd>SPARQL service HTTP Basic auth username</dd>
+    <dd>string, optional</dd>
+    <dt><code>AUTH_PWD</code></dt>
+    <dd>SPARQL service HTTP Basic auth password</dd>
+    <dd>string, optional</dd>
+    <dt><code>PREEMPTIVE_AUTH</code></dt>
+    <dd>use premptive HTTP Basic auth?</dd>
+    <dd><code>true</code>/<code>false</code>, optional</dd>
+    <dt><code>SITEMAP_RULES</code></dt>
+    <dd><a href="https://jena.apache.org/documentation/inference/#rules">Jena rules</a> for the LDT ontologies</dd>
+    <dd>string, optional, see <a href="src/main/webapp/WEB-INF/web.xml#L16">default</a></dd>
+    <dt><code>LOCATION_MAPPING</code></dt>
+    <dd>Jena's <a href="https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file">LocationMapper config</a> (path to RDF file, optional, see <a href="src/main/resources/location-mapping.n3">default</a></dd>
+</dl>
 
-     docker run -p 8080:8080 \
-       -e ENDPOINT="http://dbpedia.org/sparql" \
-       -e GRAPH_STORE="http://dbpedia.org/service" \
-       -e ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#" \
-       -v "~/WebRoot/AtomGraph/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
-       atomgraph/processor
+Run the container with Wikidata's example like this (replace `~/WebRoot/...` paths with your own):
+
+    docker run -p 8080:8080 \
+      -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
+      -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \ # not an actual GSP endpoint
+      -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
+      -v "~/WebRoot/AtomGraph/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
+      -v "~/WebRoot/AtomGraph/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/location-mapping.n3" \
+      -v "~/WebRoot/AtomGraph/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
+      atomgraph/processor
+
+After that, access [`http://localhost:8080/birthdays?limit=10`] and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
 
 Maven
 -----
@@ -66,7 +88,7 @@ Support
 
 Please [report issues](../../issues) if you've encountered a bug or have a feature request.
 
-Commercial AtomGraph consulting, development, and support are available from [AtomGraph](http://atomgraph.com).
+Commercial consulting, development, and support are available from [AtomGraph](http://atomgraph.com).
 
 Community
 =========

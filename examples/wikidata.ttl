@@ -1,15 +1,19 @@
-@prefix :     <http://linkeddatahub.com/ns#> .
+@base         <https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata> .
+
+@prefix :     <#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
+@prefix dht:  <https://www.w3.org/ns/ldt/document-hierarchy/templates#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
 
 : a ldt:Ontology ;
-  owl:imports ldt:, sp: ;
-  rdfs:label "Wikidata LDT ontology" .
+  owl:imports ldt:, dht:, sp: ;
+  rdfs:label "Wikidata's LDT ontology" .
 
 :BirthdaysTemplate a ldt:Template ;
+  ldt:extends dht:Container ; # we want pagination supported by containers
   rdfs:label "People born today" ;
   ldt:match "/birthdays" ;
   ldt:param :SexParam ;
@@ -23,22 +27,28 @@
   spl:optional true ;
   rdfs:isDefinedBy : .
 
-:BirthdaysQuery a ldt:Query, sp:Select ;
+:BirthdaysQuery a ldt:Query, sp:Construct ;
   rdfs:label "Birthdays query" ;
-  sp:text """PREFIX wdt: <http://www.wikidata.org/prop/direct/>
-PREFIX wikibase: <http://wikiba.se/ontology#>
-PREFIX bd: <http://www.bigdata.com/rdf#>
+  sp:text """PREFIX  bd:   <http://www.bigdata.com/rdf#>
+PREFIX  wdt:  <http://www.wikidata.org/prop/direct/>
+PREFIX  wikibase: <http://wikiba.se/ontology#>
 
-SELECT ?entityLabel (YEAR(?date) as ?year)
+CONSTRUCT 
+  { 
+    ?entity <https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#year> ?year .
+  }
 WHERE
-{
-    BIND(MONTH(NOW()) AS ?nowMonth)
-    BIND(DAY(NOW()) AS ?nowDay)
-
-    ?entity wdt:P569 ?date .
-    FILTER (MONTH(?date) = ?nowMonth && DAY(?date) = ?nowDay)
-    SERVICE wikibase:label {
-        bd:serviceParam wikibase:language "en" .
-    }
-}""" ;
+  { SELECT  ?entity ?year
+    WHERE
+      { BIND(month(now()) AS ?nowMonth)
+        BIND(day(now()) AS ?nowDay)
+        ?entity  wdt:P569  ?date
+        FILTER ( ( month(?date) = ?nowMonth ) && ( day(?date) = ?nowDay ) )
+        SERVICE wikibase:label
+          { bd:serviceParam
+                      wikibase:language  "en"
+          }
+        BIND(year(?date) AS ?year)
+      }
+  }""" ;
   rdfs:isDefinedBy : .
