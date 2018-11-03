@@ -33,13 +33,13 @@ It accepts the following environment variables (that become webapp context param
 
 <dl>
     <dt><code>ENDPOINT</code></dt>
-    <dd>SPARQL 1.1 Protocol endpoint</dd>
+    <dd><a href="https://www.w3.org/TR/sparql11-protocol/">SPARQL 1.1 Protocol</a> endpoint</dd>
     <dd>URI</dd>
     <dt><code>GRAPH_STORE</code></dt>
-    <dd>SPARQL 1.1 Graph Store Protocol endpoint</dd>
+    <dd><a href="https://www.w3.org/TR/sparql11-http-rdf-update/">SPARQL 1.1 Graph Store Protocol</a> endpoint</dd>
     <dd>URI</dd>
     <dt><code>ONTOLOGY</code></dt>
-    <dd>Linked Data Templates ontology</dd>
+    <dd><a href="https://atomgraph.github.io/Linked-Data-Templates/">Linked Data Templates</a> ontology</dd>
     <dd>URI</dd>
     <dt><code>AUTH_USER</code></dt>
     <dd>SPARQL service HTTP Basic auth username</dd>
