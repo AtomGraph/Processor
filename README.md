@@ -22,23 +22,33 @@ Getting started
 
 For full documentation, see the [wiki index](../../wiki).
 
+Docker
+------
+
+Processor is available from Docker Hub as [`atomgraph/processor`](https://hub.docker.com/r/atomgraph/processor/) image.
+It accepts the following environment variables (that become webapp context parameters):
+* `ENDPOINT`
+* `GRAPH_STORE`
+* `ONTOLOGY`
+* `AUTH_USER`
+* `AUTH_PWD`
+* `PREEMPTIVE_AUTH`
+* `SITEMAP_RULES_PARAM`
+* `LOCATION_MAPPING_PARAM`
+
+Run the container like this:
+
+     docker run -p 8080:8080 \
+       -e ENDPOINT="http://dbpedia.org/sparql" \
+       -e GRAPH_STORE="http://dbpedia.org/service" \
+       -e ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#" \
+       -v "~/WebRoot/AtomGraph/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
+       atomgraph/processor
+
 Maven
 -----
 
-AtomGraph artifacts [`graphity-processor`](http://search.maven.org/#browse%7C2124019457) and [`graphity-core`](http://search.maven.org/#browse%7C57568460) are
-released on Maven under the [`org.graphity`](http://search.maven.org/#browse%7C1400901156) group ID.
-
-You should normally choose [AtomGraph Web-Client](../../../Web-Client) as it includes both XSLT and Linked Data functionality, making it useful for end-user as
-well as server applications. However, if you do not need XSLT and dependency on Saxon or want to use Client and Processor in a client-server setup, you
-can choose `graphity-processor`. Dependencies to other AtomGraph artifacts will be resolved automagically during the Maven build processs. 
-
-        <dependency>
-            <groupId>com.atomgraph</groupId>
-            <artifactId>processor</artifactId>
-            <version>1.1.3</version>
-        </dependency>        
-
-See more about [installation](../../wiki/Installation).
+Processor 1.1.4 artifact is not yet released on Maven central.
 
 No permanent storage!
 ---------------------
@@ -46,7 +56,7 @@ No permanent storage!
 AtomGraph Processor does *not* include permanent RDF storage. By default it is configured to read the dataset from a file, therefore creating/updating data will have no effect.
 
 In order to store data permanently, you need to set up a [triplestore](http://en.wikipedia.org/wiki/Triplestore) and configure the webapp with its SPARQL endpoint.
-For open-source, we recommend trying Jena's [TDB](http://jena.apache.org/documentation/tdb/); for commercial, see [Dydra](http://dydra.com).
+For open-source, we recommend trying Apache Jena's [Fuseki](https://jena.apache.org/documentation/fuseki2/); for commercial, see [Dydra](http://dydra.com).
 
 Demonstration
 =============
