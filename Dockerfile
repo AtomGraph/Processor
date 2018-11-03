@@ -1,4 +1,4 @@
-FROM maven:3.5.4-jdk-8-alpine as maven
+FROM maven:3.5.4-jdk-8 as maven
 
 RUN apt-get update && apt-get install -y git
 
