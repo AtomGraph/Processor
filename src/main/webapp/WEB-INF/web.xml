@@ -7,28 +7,8 @@
     <display-name>AtomGraph Processor</display-name>
     <description>Ontology-driven Linked Data processor</description>
     <context-param>
-        <param-name>http://www.w3.org/ns/sparql-service-description#endpoint</param-name>
-        <param-value>http://atomgraph.dydra.com/atomgraph/processor/sparql</param-value>
-    </context-param>
-    <context-param>
-        <param-name>http://atomgraph.com/ns/core#graphStore</param-name>
-        <param-value>http://atomgraph.dydra.com/atomgraph/processor/service</param-value>
-    </context-param>
-    <context-param>
-        <param-name>http://jena.hpl.hp.com/Service#queryAuthUser</param-name>
-        <param-value>username</param-value>
-    </context-param>
-    <context-param>
-        <param-name>http://jena.hpl.hp.com/Service#queryAuthPwd</param-name>
-        <param-value>password</param-value>
-    </context-param>
-    <context-param>
         <param-name>http://atomgraph.com/ns/core#preemptiveAuth</param-name>
         <param-value>true</param-value>
-    </context-param>
-    <context-param>
-        <param-name>https://www.w3.org/ns/ldt#ontology</param-name>
-        <param-value>https://www.w3.org/ns/ldt/core/templates#</param-value>
     </context-param>
     <context-param>
         <param-name>http://atomgraph.com/ns/processor#sitemapRules</param-name>

@@ -36,19 +36,34 @@ COPY . /usr/src/app
 
 RUN mvn -Pstandalone clean install
 
-RUN cd target && ls -l
-
 ### Deploy Processor webapp on Tomcat
 
 FROM tomcat:8.0.52-jre8
 
 ARG VERSION=processor-1.1.4-SNAPSHOT
 
-WORKDIR /usr/local/tomcat/webapps/
+WORKDIR $CATALINA_HOME/webapps
 
 RUN rm -rf * # remove Tomcat's default webapps
 
 # copy exploded WAR folder from the maven stage
 COPY --from=maven /usr/src/app/target/$VERSION/ ROOT/
 
-CMD ["catalina.sh", "run"] 
+WORKDIR $CATALINA_HOME
+
+COPY src/main/webapp/META-INF/context.xml conf/Catalina/localhost/ROOT.xml
+
+### Install XSLT processor
+
+RUN apt-get update && \
+  apt-get -y install xsltproc
+
+### Copy entrypoint
+
+COPY entrypoint.sh entrypoint.sh
+
+COPY context.xsl conf/Catalina/localhost/context.xsl
+
+ENTRYPOINT ["/usr/local/tomcat/entrypoint.sh"]
+
+EXPOSE 8080
