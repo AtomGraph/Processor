@@ -36,8 +36,8 @@ It accepts the following environment variables (that become webapp context param
 * `AUTH_USER` - SPARQ service HTTP Basic auth user (string, optional)
 * `AUTH_PWD` - SPARQ service HTTP Basic auth password (string, optional)
 * `PREEMPTIVE_AUTH` - use premptive HTTP Basic auth? (`true`/`false`, optional)
-* `SITEMAP_RULES` - [Jena rules](https://jena.apache.org/documentation/inference/#rules) for the LDT ontologies (string, optional, see [default](../../blob/master/src/main/webapp/WEB-INF/web.xml#L36))
-* `LOCATION_MAPPING` - Jena's [LocationMapper config](https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file) (path to RDF file, optional, see [default](../../blob/master/src/main/resources/location-mapping.n3))
+* `SITEMAP_RULES` - [Jena rules](https://jena.apache.org/documentation/inference/#rules) for the LDT ontologies (string, optional, see [default](src/main/webapp/WEB-INF/web.xml#L16))
+* `LOCATION_MAPPING` - Jena's [LocationMapper config](https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file) (path to RDF file, optional, see [default](src/main/resources/location-mapping.n3))
 
 Run the container like this:
 
