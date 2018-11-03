@@ -22,6 +22,9 @@ Getting started
 
 For full documentation, see the [wiki index](../../wiki).
 
+Usage
+=====
+
 Docker
 ------
 
@@ -57,75 +60,6 @@ AtomGraph Processor does *not* include permanent RDF storage. By default it is c
 
 In order to store data permanently, you need to set up a [triplestore](http://en.wikipedia.org/wiki/Triplestore) and configure the webapp with its SPARQL endpoint.
 For open-source, we recommend trying Apache Jena's [Fuseki](https://jena.apache.org/documentation/fuseki2/); for commercial, see [Dydra](http://dydra.com).
-
-Demonstration
-=============
-
-Here's the Linked Data output of the [root resource](../../wiki/Document-hierarchy) description when AtomGraph Processor is run as a standalone webapp (for
-brevity, all URIs are relativized against the webapp's base URI):
-
-```
-@prefix sioc:  <http://rdfs.org/sioc/ns#> .
-@prefix rdfs:  <http://www.w3.org/2000/01/rdf-schema#> .
-@prefix foaf:  <http://xmlns.com/foaf/0.1/> .
-@prefix dct:   <http://purl.org/dc/terms/> .
-@prefix xsd:   <http://www.w3.org/2001/XMLSchema#> .
-@prefix gc:    <http://atomgraph.com/ns/client#> .
-@prefix rdf:   <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
-@prefix void:  <http://rdfs.org/ns/void#> .
-@prefix ldt:   <https://www.w3.org/ns/ldt#> .
-
-# services
-
-<sparql>
-        a                   ldt:SPARQLEndpoint ;
-        dct:title           "SPARQL endpoint" ;
-        sioc:has_space      <> .
-
-<service>
-        a                   ldt:GraphStore ;
-        dct:title           "Graph Store Protocol endpoint" ;
-        sioc:has_space      <> .
-
-# root container
-
-<>
-        a                   ldt:Container ;
-        rdfs:seeAlso        <sparql> , <http://atomgraph.com> ;
-        dct:description     "Generic Linked Data processor" ;
-        dct:title           "AtomGraph Processor" ;
-        foaf:maker          <http://atomgraph.com/#company> .
-
-# child containers
-
-<ontologies/>
-        a                   ldt:Container ;
-        ldt:slug            "ontologies" ;
-        dct:title           "Ontologies" ;
-        sioc:has_parent     <> .
-
-<queries/>
-        a                   ldt:Container ;
-        ldt:slug            "queries" ;
-        dct:title           "Queries" ;
-        sioc:has_parent     <> .
-
-<templates/>
-        a                   ldt:Container ;
-        ldt:slug            "templates" ;
-        dct:title           "Templates" ;
-        sioc:has_parent     <> .
-
-# page
-
-<?offset=0&limit=20>
-        a                   ldt:Page ;
-        ldt:limit            "20"^^xsd:long ;
-        ldt:offset           "0"^^xsd:long ;
-        ldt:pageOf           <> ;
-        <http://www.w3.org/1999/xhtml/vocab#next>
-                            <?offset=20&limit=20> .
-```
 
 Support
 =======
