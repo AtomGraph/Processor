@@ -1,10 +1,10 @@
 @base         <https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata> .
 
 @prefix :     <#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
 @prefix dht:  <https://www.w3.org/ns/ldt/document-hierarchy/templates#> .
-@prefix owl:  <http://www.w3.org/2002/07/owl#> .
-@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
 
