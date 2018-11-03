@@ -33,8 +33,8 @@ It accepts the following environment variables (that become webapp context param
 * `AUTH_USER`
 * `AUTH_PWD`
 * `PREEMPTIVE_AUTH`
-* `SITEMAP_RULES_PARAM`
-* `LOCATION_MAPPING_PARAM`
+* `SITEMAP_RULES`
+* `LOCATION_MAPPING`
 
 Run the container like this:
 
