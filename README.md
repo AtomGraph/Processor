@@ -59,7 +59,8 @@ It accepts the following environment variables (that become webapp context param
 
 Run the container with Wikidata's example like this (replace `~/WebRoot/...` paths with your own):
 
-    docker run -p 8080:8080 \
+    docker run \
+       -p 8080:8080 \
       -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
       -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \ # not an actual GSP endpoint
       -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
@@ -68,7 +69,7 @@ Run the container with Wikidata's example like this (replace `~/WebRoot/...` pat
       -v "~/WebRoot/AtomGraph/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
       atomgraph/processor
 
-After that, access [`http://localhost:8080/birthdays?limit=10`] and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
+After that, access [http://localhost:8080/birthdays?limit=10] and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
 
 Maven
 -----
