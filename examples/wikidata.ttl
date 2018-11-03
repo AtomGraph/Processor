@@ -1,0 +1,44 @@
+@prefix :     <http://linkeddatahub.com/ns#> .
+@prefix ldt:  <https://www.w3.org/ns/ldt#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix sp:   <http://spinrdf.org/sp#> .
+@prefix spl:  <http://spinrdf.org/spl#> .
+
+: a ldt:Ontology ;
+  owl:imports ldt:, sp: ;
+  rdfs:label "Wikidata LDT ontology" .
+
+:BirthdaysTemplate a ldt:Template ;
+  rdfs:label "People born today" ;
+  ldt:match "/birthdays" ;
+  ldt:param :SexParam ;
+  ldt:query :BirthdaysQuery ;
+  rdfs:isDefinedBy : .
+
+:SexParam a ldt:Parameter ;
+  rdfs:label "Sex parameter" ;
+  spl:predicate :sex ;
+  spl:valueType rdfs:Resource ;
+  spl:optional true ;
+  rdfs:isDefinedBy : .
+
+:BirthdaysQuery a ldt:Query, sp:Select ;
+  rdfs:label "Birthdays query" ;
+  sp:text """PREFIX wdt: <http://www.wikidata.org/prop/direct/>
+PREFIX wikibase: <http://wikiba.se/ontology#>
+PREFIX bd: <http://www.bigdata.com/rdf#>
+
+SELECT ?entityLabel (YEAR(?date) as ?year)
+WHERE
+{
+    BIND(MONTH(NOW()) AS ?nowMonth)
+    BIND(DAY(NOW()) AS ?nowDay)
+
+    ?entity wdt:P569 ?date .
+    FILTER (MONTH(?date) = ?nowMonth && DAY(?date) = ?nowDay)
+    SERVICE wikibase:label {
+        bd:serviceParam wikibase:language "en" .
+    }
+}""" ;
+  rdfs:isDefinedBy : .
