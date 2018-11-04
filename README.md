@@ -60,7 +60,7 @@ It accepts the following environment variables (that become webapp context param
 Run the container with Wikidata's example like this (replace `~/WebRoot/...` paths with your own):
 
     docker run \
-       -p 8080:8080 \
+      -p 8080:8080 \
       -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
       -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \ # not an actual GSP endpoint
       -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
