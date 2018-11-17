@@ -16,19 +16,16 @@
 
 package com.atomgraph.server.filter.response;
 
-import com.atomgraph.processor.util.Constructor;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
 import com.sun.jersey.spi.container.ContainerResponse;
 import com.sun.jersey.spi.container.ContainerResponseFilter;
-import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
 import com.atomgraph.processor.vocabulary.DH;
-import com.atomgraph.server.exception.OntClassNotFoundException;
 import com.atomgraph.server.vocabulary.XHV;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
@@ -37,7 +34,6 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
-import org.apache.jena.ontology.OntClass;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,15 +85,15 @@ public class HypermediaFilter implements ContainerResponseFilter
             addPrevNextPage(templateCall, absolutePath, state);
         }
 
-        if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
-                templateCall.hasArgument(DH.forClass))
-        {
-            String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
-            OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
-            if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
-            // connects instance state to CONSTRUCTed template
-            state.addProperty(DH.instance, addInstance(state.getModel(), forClass, request.getBaseUri().toString()));
-        }
+//        if (response.getStatusType().getFamily().equals(Response.Status.Family.SUCCESSFUL) &&
+//                templateCall.hasArgument(DH.forClass))
+//        {
+//            String forClassURI = templateCall.getArgumentProperty(DH.forClass).getResource().getURI();
+//            OntClass forClass = templateCall.getTemplate().getOntModel().getOntClass(forClassURI);
+//            if (forClass == null) throw new OntClassNotFoundException("OntClass '" + forClassURI + "' not found in sitemap");
+//            // connects instance state to CONSTRUCTed template
+//            state.addProperty(DH.instance, addInstance(state.getModel(), forClass, request.getBaseUri().toString()));
+//        }
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
         response.setEntity(state.getModel().add((Model)response.getEntity()));
@@ -139,11 +135,11 @@ public class HypermediaFilter implements ContainerResponseFilter
         state.addProperty(XHV.next, next);
     }
     
-    public Resource addInstance(Model targetModel, OntClass forClass, String baseURI)
-    {
-        if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
-        return new Constructor().construct(forClass, targetModel, baseURI);
-    }
+//    public Resource addInstance(Model targetModel, OntClass forClass, String baseURI)
+//    {
+//        if (log.isDebugEnabled()) log.debug("Invoking constructor on class: {}", forClass);
+//        return new Constructor().construct(forClass, targetModel, baseURI);
+//    }
 
     public TemplateCall getTemplateCall()
     {
