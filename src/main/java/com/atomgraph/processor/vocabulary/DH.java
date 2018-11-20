@@ -52,10 +52,6 @@ public class DH
 
     public static final OntClass Page = m_model.createClass( NS + "Page" );
 
-    public static final ObjectProperty forClass = m_model.createObjectProperty( NS + "forClass" );
-
-    public static final ObjectProperty instance = m_model.createObjectProperty( NS + "instance" );
-
     public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
 
     public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
