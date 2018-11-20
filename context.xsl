@@ -24,7 +24,6 @@ xmlns:srv="&srv;"
     <xsl:param name="srv:queryAuthPwd"/>
     <xsl:param name="a:preemptiveAuth"/>
     <xsl:param name="ap:sitemapRules"/>
-    <xsl:param name="ap:locationMapping"/>
 
     <xsl:template match="@*|node()">
         <xsl:copy>
@@ -56,9 +55,6 @@ xmlns:srv="&srv;"
             </xsl:if>
             <xsl:if test="$ap:sitemapRules">
                 <Parameter name="&ap;sitemapRules" value="{$ap:sitemapRules}" override="false"/>
-            </xsl:if>
-            <xsl:if test="$ap:locationMapping">
-                <Parameter name="&ap;locationMapping" value="{$ap:locationMapping}" override="false"/>
             </xsl:if>
         </xsl:copy>
     </xsl:template>

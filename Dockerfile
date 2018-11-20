@@ -67,3 +67,9 @@ COPY context.xsl conf/Catalina/localhost/context.xsl
 ENTRYPOINT ["/usr/local/tomcat/entrypoint.sh"]
 
 EXPOSE 8080
+
+# system location mapping
+ENV LOCATION_MAPPING="/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/location-mapping.n3"
+
+# user-defined location mapping
+ENV CUSTOM_LOCATION_MAPPING="/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3"

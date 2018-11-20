@@ -50,24 +50,24 @@ It accepts the following environment variables (that become webapp context param
     <dt><code>PREEMPTIVE_AUTH</code></dt>
     <dd>use premptive HTTP Basic auth?</dd>
     <dd><code>true</code>/<code>false</code>, optional</dd>
-    <dt><code>SITEMAP_RULES</code></dt>
-    <dd><a href="https://jena.apache.org/documentation/inference/#rules">Jena rules</a> for the LDT ontologies</dd>
-    <dd>string, optional, see <a href="src/main/webapp/WEB-INF/web.xml#L16">default</a></dd>
-    <dt><code>LOCATION_MAPPING</code></dt>
-    <dd>Jena's <a href="https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file">LocationMapper config</a> (path to RDF file, optional, see <a href="src/main/resources/location-mapping.n3">default</a></dd>
 </dl>
 
-Run the container with Wikidata's example like this (replace `~/WebRoot/...` paths with your own):
+If you want to have your ontologies read from a local file rather than their URIs, you can define a custom [location mapping](https://jena.apache.org/documentation/notes/file-manager.html#the-locationmapper-configuration-file) that will be appended to the system location mapping.
+The mapping has to be a file in N3 format and mounted to the `/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3` path. Validate the file syntax beforehand to avoid errors.
+
+To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties`.
+
+Run the container with Wikidata's example like this (replace `//c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
     docker run \
-      -p 8080:8080 \
-      -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
-      -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \ # not an actual GSP endpoint
-      -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
-      -v "~/WebRoot/AtomGraph/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
-      -v "~/WebRoot/AtomGraph/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/location-mapping.n3" \
-      -v "~/WebRoot/AtomGraph/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
-      atomgraph/processor
+        -p 8080:8080 \
+        -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
+        -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \
+        -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
+        -v "//c/Users/namedgraph/WebRoot/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
+        -v "//c/Users/namedgraph/WebRoot/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
+        -v "//c/Users/namedgraph/WebRoot/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
+        atomgraph/processor
 
 After that, access http://localhost:8080/birthdays?limit=10 and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
 

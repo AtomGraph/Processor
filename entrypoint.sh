@@ -13,6 +13,13 @@ if [ -z "$ONTOLOGY" ] ; then
     exit 1
 fi
 
+# if user-defined location mapping exists, append it to system location mapping
+
+if [ -f "$CUSTOM_LOCATION_MAPPING" ] ; then
+    cat "$CUSTOM_LOCATION_MAPPING" >> "$LOCATION_MAPPING"
+    cat "$LOCATION_MAPPING"
+fi
+
 # set Context variables (which are used in $CATALINA_HOME/conf/Catalina/localhost/ROOT.xml)
 
 if [ ! -z "$ENDPOINT" ] ; then
@@ -36,9 +43,6 @@ fi
 if [ ! -z "$SITEMAP_RULES" ] ; then
     SITEMAP_RULES_PARAM="--stringparam ap:sitemapRules $SITEMAP_RULES "
 fi
-if [ ! -z "$LOCATION_MAPPING" ] ; then
-    LOCATION_MAPPING_PARAM="--stringparam ap:locationMapping $LOCATION_MAPPING "
-fi
 
 # $CATALINA_HOME must be the WORKDIR at this point
 
@@ -51,7 +55,6 @@ transform="xsltproc \
   $AUTH_PWD_PARAM \
   $PREEMPTIVE_AUTH_PARAM \
   $SITEMAP_RULES_PARAM \
-  $LOCATION_MAPPING_PARAM \
   conf/Catalina/localhost/context.xsl \
   conf/Catalina/localhost/ROOT.xml"
 
