@@ -50,18 +50,18 @@ public class BasedModelProvider extends ModelProvider
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
     {
-	if (log.isTraceEnabled()) log.trace("Reading Model with HTTP headers: {} MediaType: {}", httpHeaders, mediaType);
-	
-	Model model = ModelFactory.createDefaultModel();	
+        if (log.isTraceEnabled()) log.trace("Reading Model with HTTP headers: {} MediaType: {}", httpHeaders, mediaType);
+        
+        Model model = ModelFactory.createDefaultModel();
 
-        MediaType formatType = new MediaType(mediaType.getType(), mediaType.getSubtype()); // discard charset param        
+        MediaType formatType = new MediaType(mediaType.getType(), mediaType.getSubtype()); // discard charset param
         Lang lang = RDFLanguages.contentTypeToLang(formatType.toString());
         if (lang == null)
         {
             if (log.isErrorEnabled()) log.error("MediaType '{}' not supported by Jena", formatType);
             throw new NoReaderForLangException("MediaType not supported: " + formatType);
         }
-	if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
+        if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
         
         return read(model, entityStream, lang, getUriInfo().getBaseUri().toString());
     }
@@ -69,18 +69,18 @@ public class BasedModelProvider extends ModelProvider
     @Override
     public void writeTo(Model model, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException
     {
-	if (log.isTraceEnabled()) log.trace("Writing Model with HTTP headers: {} MediaType: {}", httpHeaders, mediaType);
+        if (log.isTraceEnabled()) log.trace("Writing Model with HTTP headers: {} MediaType: {}", httpHeaders, mediaType);
 
-        MediaType formatType = new MediaType(mediaType.getType(), mediaType.getSubtype()); // discard charset param        
+        MediaType formatType = new MediaType(mediaType.getType(), mediaType.getSubtype()); // discard charset param
         Lang lang = RDFLanguages.contentTypeToLang(formatType.toString());
         if (lang == null)
         {
             if (log.isErrorEnabled()) log.error("MediaType '{}' not supported by Jena", formatType);
             throw new NoWriterForLangException("MediaType not supported: " + formatType);
         }
-	if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
+        if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
         
-	write(model, entityStream, lang, getUriInfo().getBaseUri().toString());
+        write(model, entityStream, lang, getUriInfo().getBaseUri().toString());
     }
     
     public UriInfo getUriInfo()

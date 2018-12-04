@@ -43,6 +43,7 @@ import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.apache.jena.ontology.AllValuesFromRestriction;
+import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
 import org.slf4j.Logger;
@@ -108,45 +109,45 @@ public class Skolemizer
 
     public Skolemizer(Ontology ontology, UriBuilder baseUriBuilder, UriBuilder absolutePathBuilder)
     {
-	if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
-	if (baseUriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
-	if (absolutePathBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
-        this.ontology = ontology;        
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
+        if (baseUriBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
+        if (absolutePathBuilder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
+        this.ontology = ontology;
         this.baseUriBuilder = baseUriBuilder;
         this.absolutePathBuilder = absolutePathBuilder;
     }
 
     public Model build(Model model)
     {
-    	if (model == null) throw new IllegalArgumentException("Model cannot be null");
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
-	Map<Resource, String> resourceURIMap = new HashMap<>();
-	ResIterator resIt = model.listSubjects();
-	try
-	{
-	    while (resIt.hasNext())
-	    {
-		Resource resource = resIt.next();
+        Map<Resource, String> resourceURIMap = new HashMap<>();
+        ResIterator resIt = model.listSubjects();
+        try
+        {
+            while (resIt.hasNext())
+            {
+                Resource resource = resIt.next();
                 if (resource.isAnon())
                 {
                     URI uri = build(resource);
                     if (uri != null) resourceURIMap.put(resource, uri.toString());
                 }
-	    }
-	}
-	finally
-	{
-	    resIt.close();
-	}
-	
-	Iterator<Map.Entry<Resource, String>> entryIt = resourceURIMap.entrySet().iterator();
-	while (entryIt.hasNext())
-	{
-	    Map.Entry<Resource, String> entry = entryIt.next();
-	    ResourceUtils.renameResource(entry.getKey(), entry.getValue());
-	}
+            }
+        }
+        finally
+        {
+            resIt.close();
+        }
+        
+        Iterator<Map.Entry<Resource, String>> entryIt = resourceURIMap.entrySet().iterator();
+        while (entryIt.hasNext())
+        {
+            Map.Entry<Resource, String> entry = entryIt.next();
+            ResourceUtils.renameResource(entry.getKey(), entry.getValue());
+        }
 
-	return model;
+        return model;
     }
     
     public URI build(Resource resource)
@@ -165,8 +166,8 @@ public class Skolemizer
     
     public URI build(Resource resource, OntClass typeClass)
     {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 
         // skolemization template builds with absolute path builder (e.g. "{slug}")
         String path = getStringValue(typeClass, LDT.path);
@@ -195,84 +196,84 @@ public class Skolemizer
 
     protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
     {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (parser == null) throw new IllegalArgumentException("UriTemplateParser cannot be null");
 
-	Map<String, String> nameValueMap = new HashMap<>();
-	
+        Map<String, String> nameValueMap = new HashMap<>();
+        
         List<String> names = parser.getNames();
-	for (String name : names)
-	{
-	    Literal literal = getLiteral(resource, name);
-	    if (literal != null) nameValueMap.put(name, literal.getString());
-	}
+        for (String name : names)
+        {
+            Literal literal = getLiteral(resource, name);
+            if (literal != null) nameValueMap.put(name, literal.getString());
+        }
 
         return nameValueMap;
     }
 
     protected Literal getLiteral(Resource resource, String namePath)
     {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 
-	if (namePath.contains("."))
-	{
-	    String name = namePath.substring(0, namePath.indexOf("."));
-	    String nameSubPath = namePath.substring(namePath.indexOf(".") + 1);
-	    Resource subResource = getResource(resource, name);
-	    if (subResource != null) return getLiteral(subResource, nameSubPath);
-	}
-	
-	StmtIterator it = resource.listProperties();
-	try
-	{
-	    while (it.hasNext())
-	    {
-		Statement stmt = it.next();
-		if (stmt.getObject().isLiteral() && stmt.getPredicate().getLocalName().equals(namePath))
-		{
-		    if (log.isTraceEnabled()) log.trace("Found Literal {} for property name: {} ", stmt.getLiteral(), namePath);
-		    return stmt.getLiteral();
-		}
-	    }
-	}
-	finally
-	{
-	    it.close();
-	}
-	
-	return null;
+        if (namePath.contains("."))
+        {
+            String name = namePath.substring(0, namePath.indexOf("."));
+            String nameSubPath = namePath.substring(namePath.indexOf(".") + 1);
+            Resource subResource = getResource(resource, name);
+            if (subResource != null) return getLiteral(subResource, nameSubPath);
+        }
+        
+        StmtIterator it = resource.listProperties();
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                if (stmt.getObject().isLiteral() && stmt.getPredicate().getLocalName().equals(namePath))
+                {
+                    if (log.isTraceEnabled()) log.trace("Found Literal {} for property name: {} ", stmt.getLiteral(), namePath);
+                    return stmt.getLiteral();
+                }
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
     }
 
     protected Resource getResource(Resource resource, String name)
     {
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	
-	StmtIterator it = resource.listProperties();
-	try
-	{
-	    while (it.hasNext())
-	    {
-		Statement stmt = it.next();
-		if (stmt.getObject().isAnon() && stmt.getPredicate().getLocalName().equals(name))
-		{
-		    if (log.isTraceEnabled()) log.trace("Found Resource {} for property name: {} ", stmt.getResource(), name);
-		    return stmt.getResource();
-		}
-	    }
-	}
-	finally
-	{
-	    it.close();
-	}
-	
-	return null;
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        
+        StmtIterator it = resource.listProperties();
+        try
+        {
+            while (it.hasNext())
+            {
+                Statement stmt = it.next();
+                if (stmt.getObject().isAnon() && stmt.getPredicate().getLocalName().equals(name))
+                {
+                    if (log.isTraceEnabled()) log.trace("Found Resource {} for property name: {} ", stmt.getResource(), name);
+                    return stmt.getResource();
+                }
+            }
+        }
+        finally
+        {
+            it.close();
+        }
+        
+        return null;
     }
     
     public SortedSet<ClassPrecedence> match(Ontology ontology, Resource resource, Property property, int level)
     {
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
-	if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         SortedSet<ClassPrecedence> matchedClasses = new TreeSet<>();
         ResIterator it = ontology.getOntModel().listResourcesWithProperty(LDT.path);
@@ -290,7 +291,7 @@ public class Skolemizer
                     if (log.isTraceEnabled()) log.trace("Resource {} matched OntClass {}", resource, ontClass);
                     matchedClasses.add(precedence);
                 } 
-            }            
+            }
         }
         finally
         {
@@ -322,8 +323,8 @@ public class Skolemizer
 
     protected String getStringValue(OntClass ontClass, Property property)
     {
-	if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         if (ontClass.hasProperty(property))
         {
@@ -359,7 +360,7 @@ public class Skolemizer
         ExtendedIterator<OntClass> hasValueIt = ontClass.listSuperClasses();
         try
         {
-            while (hasValueIt.hasNext())
+            while (hasValueIt.hasNext()) // TO-DO: catch org.apache.jena.ontology.ConversionException
             {
                 OntClass superClass = hasValueIt.next();
                 
@@ -378,6 +379,11 @@ public class Skolemizer
                     }
                 }
             }
+        }
+        catch (ConversionException ex)
+        {
+            if (log.isErrorEnabled()) log.error("Class '{}' has invalid (unresolved) superclass. Check if all superclass ontologies are imported", ontClass);
+            throw new OntologyException(ex);
         }
         finally
         {
@@ -404,6 +410,11 @@ public class Skolemizer
                     return getParent(valueClass);
                 }
             }
+        }
+        catch (ConversionException ex)
+        {
+            if (log.isErrorEnabled()) log.error("Class '{}' has invalid (unresolved) superclass. Check if all superclass ontologies are imported", ontClass);
+            throw new OntologyException(ex);
         }
         finally
         {

@@ -40,7 +40,7 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
 
     private static final Logger log = LoggerFactory.getLogger(TemplateProvider.class);
 
-    @Context UriInfo uriInfo;    
+    @Context UriInfo uriInfo;
     @Context Providers providers;
     
     public TemplateProvider()

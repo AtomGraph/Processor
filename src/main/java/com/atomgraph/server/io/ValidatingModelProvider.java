@@ -42,7 +42,7 @@ public class ValidatingModelProvider extends BasedModelProvider
 {
     private static final Logger log = LoggerFactory.getLogger(ValidatingModelProvider.class);
     
-    @Context private Providers providers;    
+    @Context private Providers providers;
     
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException

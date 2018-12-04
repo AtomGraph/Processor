@@ -88,7 +88,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public TemplateCall applyArguments(MultivaluedMap<String, String> queryParams)
     {
-	if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
+        if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
 
         // iterate query params to find unrecognized ones
         Set<String> argNames = queryParams.keySet();
@@ -141,7 +141,7 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public Resource getArgument(Property predicate) // TO-DO: create model class Argument
     {
-	if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
+        if (predicate == null) throw new IllegalArgumentException("Property cannot be null");
         
         StmtIterator it = getResource().listProperties(LDT.arg);
         
@@ -169,8 +169,8 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     
     public Resource getArgument(String varName, RDFNode object)
     {
-	if (varName == null) throw new IllegalArgumentException("Var name String cannot be null");
-	if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
+        if (varName == null) throw new IllegalArgumentException("Var name String cannot be null");
+        if (object == null) throw new IllegalArgumentException("RDFNode cannot be null");
         
         StmtIterator it = getResource().listProperties(LDT.arg);
         
