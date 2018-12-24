@@ -2,9 +2,7 @@ FROM maven:3.5.3-jdk-8 as maven
 
 RUN apt-get update && apt-get install -y git
 
-### Clone and build AtomGraph core (2.0.1-SNAPSHOT is not on Maven central)
-
-RUN mkdir -p /usr/src/Core
+### Clone and build AtomGraph Core (2.0.1-SNAPSHOT is not on Maven central)
 
 WORKDIR /usr/src
 
@@ -16,8 +14,6 @@ RUN mvn clean install
 
 ### Clone and build our fork of SPIN RDF API
 
-RUN mkdir -p /usr/src/spinrdf
-
 WORKDIR /usr/src
 
 RUN git clone https://github.com/AtomGraph/spinrdf.git
@@ -27,8 +23,6 @@ WORKDIR /usr/src/spinrdf
 RUN mvn clean install
 
 ### Build AtomGraph Processor
-
-RUN mkdir -p /usr/src/Processor
 
 WORKDIR /usr/src/Processor
 
@@ -63,7 +57,6 @@ RUN apt-get update && \
 COPY entrypoint.sh entrypoint.sh
 
 RUN chmod +x entrypoint.sh
-
 
 COPY context.xsl conf/Catalina/localhost/context.xsl
 
