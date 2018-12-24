@@ -28,11 +28,11 @@ RUN mvn clean install
 
 ### Build AtomGraph Processor
 
-RUN mkdir -p /usr/src/app
+RUN mkdir -p /usr/src/Processor
 
-WORKDIR /usr/src/app
+WORKDIR /usr/src/Processor
 
-COPY . /usr/src/app
+COPY . /usr/src/Processor
 
 RUN mvn -Pstandalone clean install
 
@@ -47,7 +47,7 @@ WORKDIR $CATALINA_HOME/webapps
 RUN rm -rf * # remove Tomcat's default webapps
 
 # copy exploded WAR folder from the maven stage
-COPY --from=maven /usr/src/app/target/$VERSION/ ROOT/
+COPY --from=maven /usr/src/Processor/target/$VERSION/ ROOT/
 
 WORKDIR $CATALINA_HOME
 
@@ -61,6 +61,9 @@ RUN apt-get update && \
 ### Copy entrypoint
 
 COPY entrypoint.sh entrypoint.sh
+
+RUN chmod +x entrypoint.sh
+
 
 COPY context.xsl conf/Catalina/localhost/context.xsl
 
