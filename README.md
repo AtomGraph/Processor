@@ -74,22 +74,23 @@ After that, access http://localhost:8080/birthdays?limit=10 and you will retriev
 Maven
 -----
 
-Processor 1.1.4 artifact is not yet released on Maven central.
+Processor will be released on Maven central when it reaches the 2.1 version.
 
-No permanent storage!
----------------------
+Datasource
+==========
 
-AtomGraph Processor does *not* include permanent RDF storage. By default it is configured to read the dataset from a file, therefore creating/updating data will have no effect.
+AtomGraph Processor does *not* include an RDF datasource. It queries RDF data on the fly from a SPARQL endpoint using [SPARQL 1.1 Protocol](https://www.w3.org/TR/sparql11-protocol/) over HTTP. SPARQL endpoints are provided by most RDF [triplestores](http://en.wikipedia.org/wiki/Triplestore).
 
-In order to store data permanently, you need to set up a [triplestore](http://en.wikipedia.org/wiki/Triplestore) and configure the webapp with its SPARQL endpoint.
-For open-source, we recommend trying Apache Jena's [Fuseki](https://jena.apache.org/documentation/fuseki2/); for commercial, see [Dydra](http://dydra.com).
+The easiest way to set up a SPARQL endpoint on an RDF dataset is Apache Jena [Fuseki](https://jena.apache.org/documentation/fuseki2/) as a Docker container using our [fuseki-docker](../../../fuseki-docker) image. There is also a number of of [public SPARQL endpoints](http://sparqles.ai.wu.ac.at).
+
+For a commercial triplestore with SPARQL 1.1 support see [Dydra](https://dydra.com).
 
 Support
 =======
 
 Please [report issues](../../issues) if you've encountered a bug or have a feature request.
 
-Commercial consulting, development, and support are available from [AtomGraph](http://atomgraph.com).
+Commercial consulting, development, and support are available from [AtomGraph](https://atomgraph.com).
 
 Community
 =========
