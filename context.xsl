@@ -6,7 +6,6 @@
     <!ENTITY sd     "http://www.w3.org/ns/sparql-service-description#">
     <!ENTITY srv    "http://jena.hpl.hp.com/Service#">
 ]>
-
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
 xmlns:a="&a;"
