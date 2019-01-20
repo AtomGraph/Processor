@@ -301,12 +301,12 @@ public class TemplateImpl extends OntClassImpl implements Template
         if (hasProperty(LDT.cacheControl))
             return CacheControl.valueOf(getPropertyValue(LDT.cacheControl).asLiteral().getString()); // will fail on bad config
 
-	return null;
+        return null;
     }
     
     protected String getStringValue(Property property)
     {
-	if (property == null) throw new IllegalArgumentException("Property cannot be null");
+        if (property == null) throw new IllegalArgumentException("Property cannot be null");
 
         if (hasProperty(property) && getPropertyValue(property).isLiteral())
             return getPropertyValue(property).asLiteral().getString();
@@ -335,8 +335,8 @@ public class TemplateImpl extends OntClassImpl implements Template
     
     public QueryBuilder getQueryBuilder(Resource queryOrTemplateCall, URI base, Model commandModel)
     {
-	if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query Resource cannot be null");
-	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (queryOrTemplateCall == null) throw new IllegalArgumentException("Query Resource cannot be null");
+        if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
         
         org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(queryOrTemplateCall);
         if (spinTemplateCall != null)
@@ -347,7 +347,7 @@ public class TemplateImpl extends OntClassImpl implements Template
             if (query == null)
             {
                 if (log.isErrorEnabled()) log.error("Template '{}' ldt:query value '{}' is not a SPIN Query or TemplateCall", getURI(), queryOrTemplateCall);
-                throw new OntologyException("Template '" + getURI() + "' ldt:query value '" + queryOrTemplateCall + "' not a SPIN Query or TemplateCall");
+                throw new OntologyException("Template '" + getURI() + "' ldt:query value '" + queryOrTemplateCall + "' is not a SPIN Query or TemplateCall");
             }
             
             return QueryBuilder.fromQuery(getParameterizedSparqlString(query, base).asQuery(), commandModel);
@@ -356,8 +356,8 @@ public class TemplateImpl extends OntClassImpl implements Template
 
     public ParameterizedSparqlString getParameterizedSparqlString(org.spinrdf.model.TemplateCall spinTemplateCall, URI base)
     {
-	if (spinTemplateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
+        if (spinTemplateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+        if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
 
         if (spinTemplateCall.getTemplate() == null)
         {
@@ -375,8 +375,8 @@ public class TemplateImpl extends OntClassImpl implements Template
 
     public ParameterizedSparqlString getParameterizedSparqlString(org.spinrdf.model.Command command, URI base)
     {
-	if (command == null) throw new IllegalArgumentException("Command cannot be null");
-	if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
+        if (command == null) throw new IllegalArgumentException("Command cannot be null");
+        if (base == null) throw new IllegalArgumentException("Base URI cannot be null");
 
         Statement textStmt = command.getRequiredProperty(SP.text);
         if (textStmt == null || !textStmt.getObject().isLiteral())
@@ -409,8 +409,8 @@ public class TemplateImpl extends OntClassImpl implements Template
     
     public UpdateBuilder getUpdateBuilder(Resource updateOrTemplateCall, URI base, Model commandModel)
     {
-	if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
-	if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
+        if (updateOrTemplateCall == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (commandModel == null) throw new IllegalArgumentException("Model cannot be null");
 
         org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(updateOrTemplateCall);
         if (spinTemplateCall != null)
@@ -447,7 +447,7 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public final boolean hasSuperTemplate(Template superTemplate)
     {
-	if (superTemplate == null) throw new IllegalArgumentException("Template cannot be null");
+        if (superTemplate == null) throw new IllegalArgumentException("Template cannot be null");
         
         StmtIterator it = listProperties(LDT.extends_);
         try

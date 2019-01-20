@@ -285,15 +285,17 @@ public class QueryBuilder implements org.spinrdf.model.Query
         StringBuffer buffer = null;
         for (int i = 0;  i < len;  i ++) {
             int ch = literal.charAt(i);
-            if (".*+?{[()|\\^$".indexOf(ch) >= 0) {
-                if (buffer == null) {
+            if (".*+?{[()|\\^$".indexOf(ch) >= 0)
+            {
+                if (buffer == null)
+                {
                     buffer = new StringBuffer(i+(len-i)*2);
                     if (i > 0)  buffer.append(literal.substring(0, i));
                 }
                 buffer.append((char)'\\');
                 buffer.append((char)ch);
-            } else if (buffer != null)
-                buffer.append((char)ch);
+            }
+            else if (buffer != null) buffer.append((char)ch);
         }
         return buffer != null ? buffer.toString() : literal;
     }
