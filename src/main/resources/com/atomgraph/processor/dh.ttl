@@ -34,13 +34,13 @@
     rdfs:comment "A string that will be used to build URI from template such as /{slug}" ;
     rdfs:isDefinedBy : .
 
-:pageOf a owl:ObjectProperty ;
-    rdfs:subPropertyOf cd:viewOf ;
-    rdfs:domain :Page ;
-    rdfs:range :Container ;
-    rdfs:label "Page of container" ;
-    rdfs:comment "Links page resource to its container resource" ;
-    rdfs:isDefinedBy : .
+#:pageOf a owl:ObjectProperty ;
+#    rdfs:subPropertyOf cd:viewOf ;
+#    rdfs:domain :Page ;
+#    rdfs:range :Container ;
+#    rdfs:label "Page of container" ;
+#    rdfs:comment "Links page resource to its container resource" ;
+#    rdfs:isDefinedBy : .
 
 :limit a owl:DatatypeProperty ;
     rdfs:domain :Page ;

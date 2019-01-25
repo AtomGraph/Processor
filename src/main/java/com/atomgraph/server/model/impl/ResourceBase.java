@@ -147,6 +147,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * Post-construct initialization.
      * Subclasses need to call <code>super.init()</code> first, just like with super() instance.
      */
+    /*
     @PostConstruct
     public void init()
     {
@@ -169,6 +170,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             }
         }
     }
+    */
     
     /**
      * Returns sub-resource instance.

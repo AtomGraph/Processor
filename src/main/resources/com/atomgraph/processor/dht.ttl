@@ -25,63 +25,63 @@
     vann:preferredNamespacePrefix "dht";
     dct:license <http://www.opendatacommons.org/licenses/pddl/1.0/> .
 
-:Container a ldt:Template ;
-    ldt:extends ct:Document ;
-    ldt:match "{path: .*}/" ;
-    ldt:query :DescribeWithChildren ;
-    ldt:param :Limit, :Offset, :OrderBy, :Desc ;
-    rdfs:label "Container" ;
-    rdfs:comment "Matches URIs with trailing slash" ;
-    rdfs:isDefinedBy : .
+#:Container a ldt:Template ;
+#    ldt:extends ct:Document ;
+#    ldt:match "{path: .*}/" ;
+#    ldt:query :DescribeWithChildren ;
+#    ldt:param :Limit, :Offset, :OrderBy, :Desc ;
+#    rdfs:label "Container" ;
+#    rdfs:comment "Matches URIs with trailing slash" ;
+#    rdfs:isDefinedBy : .
 
 # PARAMETERS
 
-:Limit a ldt:Parameter ;
-    rdfs:label "Limit" ;
-    spl:predicate dh:limit ;
-    spl:valueType xsd:long ;
-    spl:optional true ;
-    rdfs:isDefinedBy : .
+#:Limit a ldt:Parameter ;
+#    rdfs:label "Limit" ;
+#    spl:predicate dh:limit ;
+#    spl:valueType xsd:long ;
+#    spl:optional true ;
+#    rdfs:isDefinedBy : .
+#
+#:Offset a ldt:Parameter ;
+#    rdfs:label "Offset" ;
+#    spl:predicate dh:offset ;
+#    spl:valueType xsd:long ;
+#    spl:optional true ;
+#    rdfs:isDefinedBy : .
+#
+#:OrderBy a ldt:Parameter ;
+#    rdfs:label "Order by" ;
+#    spl:predicate dh:orderBy ;
+#    spl:valueType xsd:string ;
+#    spl:optional true ;
+#    rdfs:isDefinedBy : .
 
-:Offset a ldt:Parameter ;
-    rdfs:label "Offset" ;
-    spl:predicate dh:offset ;
-    spl:valueType xsd:long ;
-    spl:optional true ;
-    rdfs:isDefinedBy : .
-
-:OrderBy a ldt:Parameter ;
-    rdfs:label "Order by" ;
-    spl:predicate dh:orderBy ;
-    spl:valueType xsd:string ;
-    spl:optional true ;
-    rdfs:isDefinedBy : .
-
-:Desc a ldt:Parameter ;
-    rdfs:label "Descending order?" ;
-    spl:predicate dh:desc ;
-    spl:valueType xsd:boolean ;
-    spl:optional true ;
-    rdfs:isDefinedBy : .
+#:Desc a ldt:Parameter ;
+#    rdfs:label "Descending order?" ;
+#    spl:predicate dh:desc ;
+#    spl:valueType xsd:boolean ;
+#    spl:optional true ;
+#    rdfs:isDefinedBy : .
 
 # QUERIES
 
-:DescribeWithChildren a sp:Describe, sp:Query ;
-    sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
-PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
-
-DESCRIBE ?this ?child
-WHERE
-  { ?this ?p ?o
-    OPTIONAL
-      { { SELECT DISTINCT ?child
-          WHERE
-            {   { ?child sioc:has_parent ?this }
-              UNION
-                { ?child sioc:has_container ?this }
-            }
-        }
-      }
-  }""" ;
-    rdfs:label "Describe with children" ;
-    rdfs:isDefinedBy : .
+#:DescribeWithChildren a sp:Describe, sp:Query ;
+#    sp:text """PREFIX  sioc: <http://rdfs.org/sioc/ns#>
+#PREFIX  foaf: <http://xmlns.com/foaf/0.1/>
+#
+#DESCRIBE ?this ?child
+#WHERE
+#  { ?this ?p ?o
+#    OPTIONAL
+#      { { SELECT DISTINCT ?child
+#          WHERE
+#            {   { ?child sioc:has_parent ?this }
+#              UNION
+#                { ?child sioc:has_container ?this }
+#            }
+#        }
+#      }
+#  }""" ;
+#    rdfs:label "Describe with children" ;
+#    rdfs:isDefinedBy : .
