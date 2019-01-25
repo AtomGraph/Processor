@@ -47,6 +47,7 @@ import org.spinrdf.vocabulary.SP;
  * @see <a href="http://spinrdf.org/sp.html">SPIN - SPARQL Syntax</a>
  * @see <a href="http://topbraid.org/spin/api/">SPIN API</a>
  */
+@Deprecated // move to Atomgraph Web-Client
 public class QueryBuilder implements org.spinrdf.model.Query
 {
     private static final Logger log = LoggerFactory.getLogger(QueryBuilder.class);

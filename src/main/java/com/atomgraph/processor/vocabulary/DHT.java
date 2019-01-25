@@ -44,6 +44,6 @@ public class DHT
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
-    public static final OntClass Container = m_model.createClass( NS + "Container" );
+    // public static final OntClass Container = m_model.createClass( NS + "Container" );
 
 }
