@@ -71,6 +71,7 @@ import org.apache.jena.reasoner.rulesys.Rule;
 import static com.atomgraph.core.Application.getClient;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.provider.ServiceProvider;
+import com.atomgraph.core.util.jena.DataManager;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
 import org.apache.jena.rdf.model.ResourceFactory;
 
@@ -171,8 +172,9 @@ public class Application extends com.atomgraph.core.Application
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
-        FileManager.setStdLocators(fileManager);
-        FileManager.setGlobalFileManager(fileManager);
+        DataManager dataManager = new DataManager(LocationMapper.get(), client, mediaTypes, preemptiveAuth);
+        FileManager.setStdLocators(dataManager);
+        FileManager.setGlobalFileManager(dataManager);
         if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
 
         OntDocumentManager.getInstance().setFileManager(fileManager);
@@ -181,14 +183,7 @@ public class Application extends com.atomgraph.core.Application
     }
     
     /**
-     * Initializes (post construction) DataManager, its LocationMapper and Locators, and Context
-     * 
-     * @see com.atomgraph.client.util.DataManager
-     * @see com.atomgraph.processor.locator
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/FileManager.html">FileManager</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/LocationMapper.html">LocationMapper</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/jena/org/apache/jena/util/Locator.html">Locator</a>
-     * @see <a href="http://jena.apache.org/documentation/javadoc/arq/com/hp/hpl/jena/sparql/util/Context.html">Context</a>
+     * Initializes JAX-RS resource classes and providers.
      */
     @PostConstruct
     @Override

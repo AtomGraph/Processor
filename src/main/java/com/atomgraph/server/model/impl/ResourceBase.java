@@ -522,12 +522,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param baseUri base URI of the query
      * @return query object
      */    
-    public Query getQuery(String command, QuerySolutionMap qsm, String baseUri)
-    {
-        if (command == null) throw new IllegalArgumentException("Command String cannot be null");
-     
-        return new ParameterizedSparqlString(command, qsm, baseUri).asQuery();
-    }
+//    public Query getQuery(String command, QuerySolutionMap qsm, String baseUri)
+//    {
+//        if (command == null) throw new IllegalArgumentException("Command String cannot be null");
+//     
+//        return new ParameterizedSparqlString(command, qsm, baseUri).asQuery();
+//    }
 
     /**
      * Returns query builder, which is used to build SPARQL query to retrieve RDF description of this resource.
