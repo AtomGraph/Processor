@@ -144,7 +144,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.querySolutionMap = templateCall.getQuerySolutionMap();
         this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
         this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
-        this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+        if (templateCall.getTemplate().getUpdate() != null)
+            this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+        else
+            this.update = null;
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
