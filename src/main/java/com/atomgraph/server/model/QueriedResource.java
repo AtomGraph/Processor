@@ -16,9 +16,8 @@
 
 package com.atomgraph.server.model;
 
-import com.atomgraph.processor.query.QueryBuilder;
-import com.atomgraph.processor.update.ModifyBuilder;
-import com.atomgraph.processor.update.UpdateBuilder;
+import org.apache.jena.update.Update;
+import org.apache.jena.update.UpdateRequest;
 
 /**
  * RDF resource, representation of which was queried from a SPARQL endpoint.
@@ -34,8 +33,10 @@ public interface QueriedResource extends com.atomgraph.core.model.QueriedResourc
      * 
      * @return query builder
      */
-    public QueryBuilder getQueryBuilder();
-
-    public UpdateBuilder getUpdateBuilder();
+//    public QueryBuilder getQueryBuilder();
+//
+//    public UpdateBuilder getUpdateBuilder();
+    
+    public UpdateRequest getUpdate();
     
 }

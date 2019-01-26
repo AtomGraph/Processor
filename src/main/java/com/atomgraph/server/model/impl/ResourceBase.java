@@ -55,8 +55,10 @@ import com.atomgraph.processor.vocabulary.DHT;
 import java.util.Collections;
 import javax.annotation.PostConstruct;
 import org.apache.jena.sparql.vocabulary.FOAF;
+import org.apache.jena.update.Update;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.spinrdf.arq.ARQ2SPIN;
 import org.spinrdf.model.NamedGraph;
 import org.spinrdf.model.SPINFactory;
 import org.spinrdf.model.update.DeleteWhere;
@@ -85,8 +87,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     private final QuerySolutionMap querySolutionMap;
-    private QueryBuilder queryBuilder;
-    private UpdateBuilder updateBuilder;
+//    private QueryBuilder queryBuilder;
+//    private UpdateBuilder updateBuilder;
+    private final Query query;
+    private final UpdateRequest update;
 
     /**
      * Public JAX-RS instance. Suitable for subclassing.
@@ -139,6 +143,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.resourceContext = resourceContext;
         this.querySolutionMap = templateCall.getQuerySolutionMap();
         this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+        this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
@@ -448,59 +454,65 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Query getQuery()
     {
-        return getQuery(getQueryBuilder().build().toString(), getQuerySolutionMap(), getUriInfo().getBaseUri().toString());
+        return query;
     }
 
-    public QueryBuilder getPageQueryBuilder(QueryBuilder builder)
+    @Override
+    public UpdateRequest getUpdate()
     {
-        if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
-                
-        if (builder.getSubSelectBuilders().isEmpty())
-        {
-            if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
-            throw new OntologyException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
-        }
-
-        SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
-        if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
-
-        if (getTemplateCall().hasArgument(DH.offset))
-        {
-            Long offset = getTemplateCall().getArgumentProperty(DH.offset).getLong();
-            if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-            subSelectBuilder.replaceOffset(offset);
-        }
-
-        if (getTemplateCall().hasArgument(DH.limit))
-        {
-            Long limit = getTemplateCall().getArgumentProperty(DH.limit).getLong();
-            if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-            subSelectBuilder.replaceLimit(limit);
-        }
-
-        if (getTemplateCall().hasArgument(DH.orderBy))
-        {
-            try
-            {
-                String orderBy = getTemplateCall().getArgumentProperty(DH.orderBy).getString();
-
-                Boolean desc = false; // ORDERY BY is ASC() by default
-                if (getTemplateCall().hasArgument(DH.desc))
-                    desc = getTemplateCall().getArgumentProperty(DH.desc).getBoolean();
-
-                if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-                subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-                    orderBy(orderBy, desc);
-            }
-            catch (IllegalArgumentException ex)
-            {
-                if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
-                // TO-DO: throw custom Exception with query and orderBy value
-            }
-        }
-        
-        return builder;
+        return update;
     }
+    
+//    public QueryBuilder getPageQueryBuilder(QueryBuilder builder)
+//    {
+//        if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
+//                
+//        if (builder.getSubSelectBuilders().isEmpty())
+//        {
+//            if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
+//            throw new OntologyException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
+//        }
+//
+//        SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
+//        if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
+//
+//        if (getTemplateCall().hasArgument(DH.offset))
+//        {
+//            Long offset = getTemplateCall().getArgumentProperty(DH.offset).getLong();
+//            if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
+//            subSelectBuilder.replaceOffset(offset);
+//        }
+//
+//        if (getTemplateCall().hasArgument(DH.limit))
+//        {
+//            Long limit = getTemplateCall().getArgumentProperty(DH.limit).getLong();
+//            if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
+//            subSelectBuilder.replaceLimit(limit);
+//        }
+//
+//        if (getTemplateCall().hasArgument(DH.orderBy))
+//        {
+//            try
+//            {
+//                String orderBy = getTemplateCall().getArgumentProperty(DH.orderBy).getString();
+//
+//                Boolean desc = false; // ORDERY BY is ASC() by default
+//                if (getTemplateCall().hasArgument(DH.desc))
+//                    desc = getTemplateCall().getArgumentProperty(DH.desc).getBoolean();
+//
+//                if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
+//                subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
+//                    orderBy(orderBy, desc);
+//            }
+//            catch (IllegalArgumentException ex)
+//            {
+//                if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
+//                // TO-DO: throw custom Exception with query and orderBy value
+//            }
+//        }
+//        
+//        return builder;
+//    }
     
      /**
      * Returns query used to retrieve RDF description of this resource
@@ -522,17 +534,17 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * 
      * @return query builder
      */
-    @Override
-    public QueryBuilder getQueryBuilder()
-    {
-        return queryBuilder;
-    }
-
-    @Override
-    public UpdateBuilder getUpdateBuilder()
-    {
-        return updateBuilder;
-    }
+//    @Override
+//    public QueryBuilder getQueryBuilder()
+//    {
+//        return queryBuilder;
+//    }
+//
+//    @Override
+//    public UpdateBuilder getUpdateBuilder()
+//    {
+//        return updateBuilder;
+//    }
 
     public NamedGraph getNamedGraph(RDFList pattern)
     {
@@ -547,43 +559,44 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
     
     public UpdateRequest getUpdateRequest(Model model)
-    {        
-        if (model != null && !model.isEmpty())
-        {
-            // turn DELETE {} WHERE {} or DELETE WHERE {} into DELETE {} INSERT {} WHERE with request data
-            ModifyBuilder builder = ModifyBuilder.fromModify(getUpdateBuilder().getModel());
-
-            NamedGraph deleteNamedGraph = null;
-            if (getUpdateBuilder().canAs(DeleteWhere.class))
-            {
-                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere()).
-                    where(getUpdateBuilder().as(DeleteWhere.class).getWhere());
-                deleteNamedGraph = getNamedGraph(getUpdateBuilder().as(DeleteWhere.class).getWhere());
-            }
-            if (getUpdateBuilder().canAs(Modify.class))
-            {
-                RDFList deletePattern = getUpdateBuilder().as(Modify.class).
-                    getPropertyResourceValue(SP.deletePattern).as(RDFList.class);
-                builder.deletePattern(deletePattern).
-                    where(getUpdateBuilder().as(Modify.class).getWhere());
-                deleteNamedGraph = getNamedGraph(deletePattern);
-            }
-            
-            if (deleteNamedGraph != null)
-            {
-                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(),
-                        deleteNamedGraph.getNameNode(), builder.createDataList(model));
-                builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
-            }
-            else
-                builder.insertPattern(model);
-            
-            return new ParameterizedSparqlString(builder.build().toString(),
-                    getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
-        }
-            
-        return new ParameterizedSparqlString(getUpdateBuilder().build().toString(),
-                getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
+    {
+        throw new UnsupportedOperationException();
+//        if (model != null && !model.isEmpty())
+//        {
+//            // turn DELETE {} WHERE {} or DELETE WHERE {} into DELETE {} INSERT {} WHERE with request data
+//            ModifyBuilder builder = ModifyBuilder.fromModify(getUpdateBuilder().getModel());
+//
+//            NamedGraph deleteNamedGraph = null;
+//            if (getUpdateBuilder().canAs(DeleteWhere.class))
+//            {
+//                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere()).
+//                    where(getUpdateBuilder().as(DeleteWhere.class).getWhere());
+//                deleteNamedGraph = getNamedGraph(getUpdateBuilder().as(DeleteWhere.class).getWhere());
+//            }
+//            if (getUpdateBuilder().canAs(Modify.class))
+//            {
+//                RDFList deletePattern = getUpdateBuilder().as(Modify.class).
+//                    getPropertyResourceValue(SP.deletePattern).as(RDFList.class);
+//                builder.deletePattern(deletePattern).
+//                    where(getUpdateBuilder().as(Modify.class).getWhere());
+//                deleteNamedGraph = getNamedGraph(deletePattern);
+//            }
+//            
+//            if (deleteNamedGraph != null)
+//            {
+//                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(),
+//                        deleteNamedGraph.getNameNode(), builder.createDataList(model));
+//                builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
+//            }
+//            else
+//                builder.insertPattern(model);
+//            
+//            return new ParameterizedSparqlString(builder.build().toString(),
+//                    getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
+//        }
+//            
+//        return new ParameterizedSparqlString(getUpdateBuilder().build().toString(),
+//                getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
     }
     
     /**

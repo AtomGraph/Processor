@@ -27,6 +27,7 @@ import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
+import org.spinrdf.model.Query;
 
 /**
  *
@@ -75,13 +76,13 @@ public interface Template extends OntClass
     
     CacheControl getCacheControl();
 
-    QueryBuilder getQueryBuilder(URI base);
-        
-    QueryBuilder getQueryBuilder(URI base, Model commandModel);
-
-    UpdateBuilder getUpdateBuilder(URI base);
-    
-    UpdateBuilder getUpdateBuilder(URI base, Model commandModel);
+//    QueryBuilder getQueryBuilder(URI base);
+//        
+//    QueryBuilder getQueryBuilder(URI base, Model commandModel);
+//
+//    UpdateBuilder getUpdateBuilder(URI base);
+//    
+//    UpdateBuilder getUpdateBuilder(URI base, Model commandModel);
     
     boolean hasSuperTemplate(Template superTemplate);
 
