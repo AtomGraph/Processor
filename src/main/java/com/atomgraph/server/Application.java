@@ -106,7 +106,7 @@ public class Application extends com.atomgraph.core.Application
             new MediaTypes(), getClient(new DefaultClientConfig()),
             servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI())) : null,
             servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI())) : false,
-            getFileManager(new LocationMapper(servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) : null)),
+            new LocationMapper(servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) : null),
             servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) : null,
             servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) : null,
             servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI())) : true
@@ -116,11 +116,11 @@ public class Application extends com.atomgraph.core.Application
     public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI,
             final String authUser, final String authPwd,
             final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize, final boolean preemptiveAuth,
-            final FileManager fileManager, final String ontologyURI, final String rulesString, boolean cacheSitemap)
+            final LocationMapper locationMapper, final String ontologyURI, final String rulesString, boolean cacheSitemap)
     {
         super(dataset, endpointURI, graphStoreURI, authUser, authPwd,
                 mediaTypes, client, maxGetRequestSize, preemptiveAuth);
-        if (fileManager == null) throw new IllegalArgumentException("FileManager be null");
+        if (locationMapper == null) throw new IllegalArgumentException("LocationMapper be null");
         
         if (ontologyURI == null)
         {
@@ -172,12 +172,12 @@ public class Application extends com.atomgraph.core.Application
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
-        DataManager dataManager = new DataManager(LocationMapper.get(), client, mediaTypes, preemptiveAuth);
+        DataManager dataManager = new DataManager(locationMapper, client, mediaTypes, preemptiveAuth);
         FileManager.setStdLocators(dataManager);
         FileManager.setGlobalFileManager(dataManager);
         if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
 
-        OntDocumentManager.getInstance().setFileManager(fileManager);
+        OntDocumentManager.getInstance().setFileManager(dataManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
     }
