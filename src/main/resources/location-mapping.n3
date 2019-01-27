@@ -7,7 +7,6 @@
    [ lm:name "https://www.w3.org/ns/ldt/core/templates#" ;                  lm:altName "com/atomgraph/processor/ct.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/named-graphs/templates#" ;          lm:altName "com/atomgraph/processor/ngt.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy/domain#" ;       lm:altName "com/atomgraph/processor/dh.ttl" ] ,
-   [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy/templates#" ;    lm:altName "com/atomgraph/processor/dht.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/topic-hierarchy/templates#" ;       lm:altName "com/atomgraph/processor/tht.ttl" ] ,
    [ lm:name "http://rdfs.org/sioc/ns#" ;                                   lm:altName "com/atomgraph/processor/sioc.owl" ] ,
    [ lm:name "http://rdfs.org/ns/void#" ;                                   lm:altName "com/atomgraph/processor/void.owl" ] ,
