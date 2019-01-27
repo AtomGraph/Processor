@@ -76,14 +76,14 @@ public class HypermediaFilter implements ContainerResponseFilter
             state.addProperty(C.viewOf, requestUri). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
 
-        if (templateCall.hasArgument(DH.limit)) // pages must have limits
-        {
-            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
-            state.addProperty(DH.pageOf, absolutePath).
-                addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
-
-            addPrevNextPage(templateCall, absolutePath, state);
-        }
+//        if (templateCall.hasArgument(DH.limit)) // pages must have limits
+//        {
+//            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
+//            state.addProperty(DH.pageOf, absolutePath).
+//                addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
+//
+//            addPrevNextPage(templateCall, absolutePath, state);
+//        }
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
         response.setEntity(state.getModel().add((Model)response.getEntity()));
@@ -91,39 +91,39 @@ public class HypermediaFilter implements ContainerResponseFilter
         return response;
     }
         
-    public void addPrevNextPage(TemplateCall templateCall, Resource absolutePath, Resource state)
-    {
-        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-        if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (state == null) throw new IllegalArgumentException("Resource cannot be null");
-        
-        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();
-        Long offset = Long.valueOf(0);
-        if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
-
-        if (offset >= limit)
-        {
-            com.atomgraph.core.util.StateBuilder prevBuilder = TemplateCall.fromResource(state);
-            Resource prev = prevBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset - limit)).
-                build().
-                addProperty(DH.pageOf, absolutePath).
-                addProperty(RDF.type, DH.Page).
-                addProperty(XHV.next, state);
-
-            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", state, prev);
-            state.addProperty(XHV.prev, prev);
-        }
-
-        com.atomgraph.core.util.StateBuilder nextBuilder = TemplateCall.fromResource(state);
-        Resource next = nextBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
-            build().
-            addProperty(DH.pageOf, absolutePath).
-            addProperty(RDF.type, DH.Page).
-            addProperty(XHV.prev, state);
-
-        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", state, next);
-        state.addProperty(XHV.next, next);
-    }
+//    public void addPrevNextPage(TemplateCall templateCall, Resource absolutePath, Resource state)
+//    {
+//        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
+//        if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
+//        if (state == null) throw new IllegalArgumentException("Resource cannot be null");
+//        
+//        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();
+//        Long offset = Long.valueOf(0);
+//        if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
+//
+//        if (offset >= limit)
+//        {
+//            com.atomgraph.core.util.StateBuilder prevBuilder = TemplateCall.fromResource(state);
+//            Resource prev = prevBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset - limit)).
+//                build().
+//                addProperty(DH.pageOf, absolutePath).
+//                addProperty(RDF.type, DH.Page).
+//                addProperty(XHV.next, state);
+//
+//            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", state, prev);
+//            state.addProperty(XHV.prev, prev);
+//        }
+//
+//        com.atomgraph.core.util.StateBuilder nextBuilder = TemplateCall.fromResource(state);
+//        Resource next = nextBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
+//            build().
+//            addProperty(DH.pageOf, absolutePath).
+//            addProperty(RDF.type, DH.Page).
+//            addProperty(XHV.prev, state);
+//
+//        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", state, next);
+//        state.addProperty(XHV.next, next);
+//    }
 
     public TemplateCall getTemplateCall()
     {
