@@ -24,7 +24,6 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.sparql.util.Loader;
 import org.apache.jena.update.UpdateRequest;
-import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.List;
@@ -37,20 +36,18 @@ import com.atomgraph.core.exception.NotFoundException;
 import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.model.Service;
-import com.atomgraph.processor.update.InsertDataBuilder;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
-import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import java.util.Collections;
-import org.apache.jena.sparql.vocabulary.FOAF;
+import java.util.Iterator;
+import static javax.ws.rs.core.Response.Status.OK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQ2SPIN;
-import org.spinrdf.model.NamedGraph;
 import org.spinrdf.vocabulary.SPIN;
 
 /**
@@ -138,35 +135,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
         if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
     }
-
-    /**
-     * Post-construct initialization.
-     * Subclasses need to call <code>super.init()</code> first, just like with super() instance.
-     */
-    /*
-    @PostConstruct
-    public void init()
-    {
-        if (getRequest().getMethod().equalsIgnoreCase("PUT") || getRequest().getMethod().equalsIgnoreCase("DELETE"))
-            updateBuilder = getTemplateCall().getTemplate().getUpdateBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
-        
-        // PUT needs a query to check for existing description; MATCH_RESOURCE is Jersey-specific, set by ResourceContext.matchResource()
-        if (getRequest().getMethod().equalsIgnoreCase("GET") || getRequest().getMethod().equalsIgnoreCase("PUT") ||
-                getRequest().getMethod().equalsIgnoreCase("POST") || getRequest().getMethod().equalsIgnoreCase("com.sun.jersey.MATCH_RESOURCE"))
-        {
-            queryBuilder = getTemplateCall().getTemplate().getQueryBuilder(getUriInfo().getBaseUri(), ModelFactory.createDefaultModel());
-            
-            if (getTemplateCall().getTemplate().getOntModel().createResource(DHT.Container.getURI()).canAs(Template.class))
-            {
-                // apply LIMIT/OFFSET/ORDER BY pagination if this template is a sub-template of dh:Container
-                Template containerTemplate = getTemplateCall().getTemplate().getOntModel().
-                        createResource(DHT.Container.getURI()).as(Template.class);
-                if (getTemplateCall().getTemplate().hasSuperTemplate(containerTemplate))
-                    queryBuilder = getPageQueryBuilder(queryBuilder);
-            }
-        }
-    }
-    */
     
     /**
      * Returns sub-resource instance.
@@ -202,143 +170,46 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Handles GET method. Redirects to default state if it differs from request URI.
+     * Handles POST method. Appends the submitted RDF dataset to the Graph Store.
      * 
+     * @param dataset the RDF payload
      * @return response
      */
     @Override
-    public Response get()
+    public Response post(Dataset dataset)
     {
-        // transition to a URI of another application state (HATEOAS)
-        if (!isDefaultState())
+        if (dataset == null) throw new IllegalArgumentException("Dataset cannot be null");
+
+        getGraphStore().post(dataset.getDefaultModel(), Boolean.TRUE, null);
+        
+        Iterator<String> it = dataset.listNames();
+        while (it.hasNext())
         {
-            if (log.isDebugEnabled()) log.debug("Redirecting to a state transition URI: {}", getTemplateCall().getURI());
-            return Response.seeOther(URI.create(getTemplateCall().getURI())).build();
+            String graphName = it.next();
+            getGraphStore().post(dataset.getNamedModel(graphName), Boolean.FALSE, URI.create(graphName));
         }
         
-        return super.get();
+        return Response.ok().build();
     }
-    
+
     /**
-     * Checks whether the URI of the template call matches the request URI.
+     * Handles PUT method. Deletes the resource description and appends the submitted RDF dataset to the Graph Store.
      * 
-     * @return true if request matches state
-     */
-    public boolean isDefaultState()
-    {
-        return getTemplateCall().getURI().equals(getUriInfo().getRequestUri().toString());
-    }
-    
-    /**
-     * Handles POST method: creates inference model over request payload.
-     * 
-     * @param model the RDF payload
+     * @param dataset RDF payload
      * @return response
      */
     @Override
-    public Response post(Model model)
+    public Response put(Dataset dataset)
     {
-        return post(ModelFactory.createRDFSModel(getOntology().getOntModel(), model), null);
-    }
-    
-    /**
-     * Handles POST method, stores the submitted RDF model in the specified named graph of the specified SPARQL endpoint, and returns response.
-     * 
-     * @param infModel the RDF payload
-     * @param graphURI target graph name
-     * @return response
-     */
-    public Response post(InfModel infModel, URI graphURI)
-    {
-        if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
-        if (log.isDebugEnabled()) log.debug("POSTed Model: {} to GRAPH URI: {}", infModel.getRawModel(), graphURI);
-
-        Resource created = getURIResource(infModel, RDF.type, FOAF.Document);
-        if (created == null)
-        {
-            if (log.isDebugEnabled()) log.debug("POSTed Model does not contain statements with URI as subject and type '{}'", FOAF.Document.getURI());
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-
-        UpdateRequest insertDataRequest;
-        if (graphURI != null) insertDataRequest = InsertDataBuilder.fromData(graphURI, infModel.getRawModel()).build();
-        else insertDataRequest = InsertDataBuilder.fromData(infModel.getRawModel()).build();
-
-        insertDataRequest.setBaseURI(getUriInfo().getBaseUri().toString());
-        if (log.isDebugEnabled()) log.debug("INSERT DATA request: {}", insertDataRequest);
-
-        getSPARQLEndpoint().post(insertDataRequest, Collections.<URI>emptyList(), Collections.<URI>emptyList());
+        Response deleted = delete();
         
-        URI createdURI = UriBuilder.fromUri(created.getURI()).build();
-        if (log.isDebugEnabled()) log.debug("Redirecting to POSTed Resource URI: {}", createdURI);
-        // http://stackoverflow.com/questions/3383725/post-redirect-get-prg-vs-meaningful-2xx-response-codes
-        // http://www.blackpepper.co.uk/posts/201-created-or-post-redirect-get/
-        //return Response.created(createdURI).entity(model).build();
-        return Response.seeOther(createdURI).build();
-    }
-
-    public Resource getURIResource(InfModel infModel, Property property, Resource object)
-    {
-        if (infModel == null) throw new IllegalArgumentException("Model cannot be null");
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-        if (object == null) throw new IllegalArgumentException("Object Resource cannot be null");
-
-        ResIterator it = infModel.listSubjectsWithProperty(property, object);
-        try
+        if (deleted.getStatus() != OK.getStatusCode())
         {
-            while (it.hasNext())
-            {
-                Resource resource = it.next();
-
-                if (resource.isURIResource() && infModel.getRawModel().containsResource(resource))
-                    return resource;
-            }
-        }
-        finally
-        {
-            it.close();
+            if (log.isErrorEnabled()) log.error("PUT Dataset does not execute DELETE with '{}' as subject", getURI());
+            throw new WebApplicationException(new IllegalStateException(deleted.getMetadata().toString()), deleted.getStatus());
         }
         
-        return null;
-    }
-
-    /**
-     * Handles PUT method, stores the submitted RDF model in the default graph of default SPARQL endpoint, and returns response.
-     * 
-     * @param model RDF payload
-     * @return response
-     */
-    @Override
-    public Response put(Model model)
-    {
-        if (model == null) throw new IllegalArgumentException("Model cannot be null");
-        if (log.isDebugEnabled()) log.debug("PUT Model: {}", model);
-
-        if (!model.containsResource(getOntResource()))
-        {
-            if (log.isDebugEnabled()) log.debug("PUT Model does not contain statements with request URI '{}' as subject", getURI());
-            throw new WebApplicationException(Response.Status.BAD_REQUEST);
-        }
-        
-        Model description = describe();
-        
-        if (!description.isEmpty()) // check existing representation
-        {
-            EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(model)));
-            Response.ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
-            if (rb != null)
-            {
-                if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
-                return rb.build();
-            }
-        }
-        
-        UpdateRequest deleteInsertRequest = getUpdateRequest(model);
-        if (log.isDebugEnabled()) log.debug("DELETE/INSERT UpdateRequest: {}", deleteInsertRequest);
-        getSPARQLEndpoint().post(deleteInsertRequest, Collections.<URI>emptyList(), Collections.<URI>emptyList());
-        
-        if (description.isEmpty()) return Response.created(getURI()).build();
-        else return getResponse(model);
+        return post(dataset);
     }
 
     /**
@@ -350,13 +221,13 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response delete()
     {
-        UpdateRequest request = getUpdateRequest((Model)null);
-        if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", request);
-        getSPARQLEndpoint().post(request, Collections.<URI>emptyList(), Collections.<URI>emptyList());
+        if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
+            
+        if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdate());
+        getSPARQLEndpoint().post(getUpdate(), Collections.<URI>emptyList(), Collections.<URI>emptyList());
 
         return Response.noContent().build();
     }
-    
 
     /**
      * Returns variable bindings for description query.
@@ -447,148 +318,19 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return query;
     }
 
+    /**
+     * Returns update used to remove RDF description of this resource.
+     * Query solution bindings are applied by default.
+     * 
+     * @return update object with applied solution bindings
+     * @see #getQuerySolutionMap()
+     */
     @Override
     public UpdateRequest getUpdate()
     {
         return update;
     }
-    
-//    public QueryBuilder getPageQueryBuilder(QueryBuilder builder)
-//    {
-//        if (builder == null) throw new IllegalArgumentException("QueryBuilder cannot be null");
-//                
-//        if (builder.getSubSelectBuilders().isEmpty())
-//        {
-//            if (log.isErrorEnabled()) log.error("QueryBuilder '{}' does not contain a sub-SELECT", queryBuilder);
-//            throw new OntologyException("Sub-SELECT missing in QueryBuilder: " + queryBuilder + "'");
-//        }
-//
-//        SelectBuilder subSelectBuilder = builder.getSubSelectBuilders().get(0);
-//        if (log.isDebugEnabled()) log.debug("Found main sub-SELECT of the query: {}", subSelectBuilder);
-//
-//        if (getTemplateCall().hasArgument(DH.offset))
-//        {
-//            Long offset = getTemplateCall().getArgumentProperty(DH.offset).getLong();
-//            if (log.isDebugEnabled()) log.debug("Setting OFFSET on container sub-SELECT: {}", offset);
-//            subSelectBuilder.replaceOffset(offset);
-//        }
-//
-//        if (getTemplateCall().hasArgument(DH.limit))
-//        {
-//            Long limit = getTemplateCall().getArgumentProperty(DH.limit).getLong();
-//            if (log.isDebugEnabled()) log.debug("Setting LIMIT on container sub-SELECT: {}", limit);
-//            subSelectBuilder.replaceLimit(limit);
-//        }
-//
-//        if (getTemplateCall().hasArgument(DH.orderBy))
-//        {
-//            try
-//            {
-//                String orderBy = getTemplateCall().getArgumentProperty(DH.orderBy).getString();
-//
-//                Boolean desc = false; // ORDERY BY is ASC() by default
-//                if (getTemplateCall().hasArgument(DH.desc))
-//                    desc = getTemplateCall().getArgumentProperty(DH.desc).getBoolean();
-//
-//                if (log.isDebugEnabled()) log.debug("Setting ORDER BY on container sub-SELECT: ?{} DESC: {}", orderBy, desc);
-//                subSelectBuilder.replaceOrderBy(null). // any existing ORDER BY condition is removed first
-//                    orderBy(orderBy, desc);
-//            }
-//            catch (IllegalArgumentException ex)
-//            {
-//                if (log.isWarnEnabled()) log.warn(ex.getMessage(), ex);
-//                // TO-DO: throw custom Exception with query and orderBy value
-//            }
-//        }
-//        
-//        return builder;
-//    }
-    
-     /**
-     * Returns query used to retrieve RDF description of this resource
-     * 
-     * @param command query string
-     * @param qsm query solution map to be applied
-     * @param baseUri base URI of the query
-     * @return query object
-     */    
-//    public Query getQuery(String command, QuerySolutionMap qsm, String baseUri)
-//    {
-//        if (command == null) throw new IllegalArgumentException("Command String cannot be null");
-//     
-//        return new ParameterizedSparqlString(command, qsm, baseUri).asQuery();
-//    }
 
-    /**
-     * Returns query builder, which is used to build SPARQL query to retrieve RDF description of this resource.
-     * 
-     * @return query builder
-     */
-//    @Override
-//    public QueryBuilder getQueryBuilder()
-//    {
-//        return queryBuilder;
-//    }
-//
-//    @Override
-//    public UpdateBuilder getUpdateBuilder()
-//    {
-//        return updateBuilder;
-//    }
-
-    public NamedGraph getNamedGraph(RDFList pattern)
-    {
-        if (pattern == null) throw new IllegalArgumentException("RDFList cannot be null");
-
-        // TO-DO: iterate over all List items
-        RDFNode deleteListHead = pattern.getHead();
-        if (deleteListHead.canAs(NamedGraph.class))
-            return deleteListHead.as(NamedGraph.class);
-        
-        return null;
-    }
-    
-    public UpdateRequest getUpdateRequest(Model model)
-    {
-        throw new UnsupportedOperationException();
-//        if (model != null && !model.isEmpty())
-//        {
-//            // turn DELETE {} WHERE {} or DELETE WHERE {} into DELETE {} INSERT {} WHERE with request data
-//            ModifyBuilder builder = ModifyBuilder.fromModify(getUpdateBuilder().getModel());
-//
-//            NamedGraph deleteNamedGraph = null;
-//            if (getUpdateBuilder().canAs(DeleteWhere.class))
-//            {
-//                builder.deletePattern(getUpdateBuilder().as(DeleteWhere.class).getWhere()).
-//                    where(getUpdateBuilder().as(DeleteWhere.class).getWhere());
-//                deleteNamedGraph = getNamedGraph(getUpdateBuilder().as(DeleteWhere.class).getWhere());
-//            }
-//            if (getUpdateBuilder().canAs(Modify.class))
-//            {
-//                RDFList deletePattern = getUpdateBuilder().as(Modify.class).
-//                    getPropertyResourceValue(SP.deletePattern).as(RDFList.class);
-//                builder.deletePattern(deletePattern).
-//                    where(getUpdateBuilder().as(Modify.class).getWhere());
-//                deleteNamedGraph = getNamedGraph(deletePattern);
-//            }
-//            
-//            if (deleteNamedGraph != null)
-//            {
-//                NamedGraph insertNamedGraph = SPINFactory.createNamedGraph(builder.getModel(),
-//                        deleteNamedGraph.getNameNode(), builder.createDataList(model));
-//                builder.insertPattern(builder.getModel().createList().with(insertNamedGraph));
-//            }
-//            else
-//                builder.insertPattern(model);
-//            
-//            return new ParameterizedSparqlString(builder.build().toString(),
-//                    getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
-//        }
-//            
-//        return new ParameterizedSparqlString(getUpdateBuilder().build().toString(),
-//                getQuerySolutionMap(), getUriInfo().getBaseUri().toString()).asUpdate();
-    }
-    
     /**
      * Returns HTTP headers of the current request.
      * 

@@ -58,7 +58,7 @@ To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/R
 
 Run the container with Wikidata's example like this (replace `//c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
-    docker run \
+    docker run --rm \
         -p 8080:8080 \
         -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
         -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \

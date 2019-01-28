@@ -29,14 +29,10 @@ public interface QueriedResource extends com.atomgraph.core.model.QueriedResourc
 {
     
     /**
-     * Returns query builder, which is used to build SPARQL query to retrieve RDF description of this resource.
+     * Returns the SPARQL query that is used to retrieve RDF description of this resource.
      * 
      * @return query builder
      */
-//    public QueryBuilder getQueryBuilder();
-//
-//    public UpdateBuilder getUpdateBuilder();
-    
     public UpdateRequest getUpdate();
     
 }

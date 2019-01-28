@@ -31,6 +31,7 @@ import com.atomgraph.core.model.Service;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.util.TemplateCall;
+import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,53 +52,53 @@ public class Item extends ResourceBase
             @Context Service service, @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
-	super(uriInfo, request, mediaTypes,
+        super(uriInfo, request, mediaTypes,
                 service, application, ontology, templateCall,
                 httpHeaders, resourceContext);
-	if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
+        if (log.isDebugEnabled()) log.debug("Constructing {} as direct indication of GRAPH {}", getClass(), uriInfo.getAbsolutePath());
     }
     
     @Override
     public Response get()
     {
-	if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());        
+        if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());
         return getResponse(getGraphStore().getModel(getURI().toString()));
     }
 
     @Override
-    public Response post(Model model)
+    public Response post(Dataset dataset)
     {
-	if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        return getGraphStore().post(model, Boolean.FALSE, getURI());
+        if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getGraphStore());
+        return getGraphStore().post(dataset.getDefaultModel(), Boolean.FALSE, getURI());
     }
 
     @Override
-    public Response put(Model model)
+    public Response put(Dataset dataset)
     {
-	Model existing = getGraphStore().getModel(getURI().toString());
+        Model existing = getGraphStore().getModel(getURI().toString());
 
-	if (!existing.isEmpty()) // remove existing representation
-	{
-	    EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(model)));
-	    ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
-	    if (rb != null)
-	    {
-		if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
-		return rb.build();
-	    }
+        if (!existing.isEmpty()) // remove existing representation
+        {
+            EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(dataset.getDefaultModel())));
+            ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
+            if (rb != null)
+            {
+                if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
+                return rb.build();
+            }
         }
         
         if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        getGraphStore().put(model, Boolean.FALSE, getURI());
+        getGraphStore().put(dataset.getDefaultModel(), Boolean.FALSE, getURI());
         
-	if (existing.isEmpty()) return Response.created(getURI()).build();        
-        else return Response.ok(model).build();
+        if (existing.isEmpty()) return Response.created(getURI()).build();
+        else return Response.ok(dataset).build();
     }
 
     @Override
     public Response delete()
     {
-	if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
+        if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
         return getGraphStore().delete(Boolean.FALSE, getURI());
     }
     

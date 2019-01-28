@@ -69,6 +69,7 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
 import static com.atomgraph.core.Application.getClient;
+import com.atomgraph.core.io.DatasetProvider;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.provider.ServiceProvider;
 import com.atomgraph.core.util.jena.DataManager;
@@ -196,7 +197,8 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
-        singletons.add(new SkolemizingModelProvider());
+        singletons.add(new DatasetProvider());
+        singletons.add(new SkolemizingModelProvider()); // should we skolemize every named graph instead?
         singletons.add(new ResultSetProvider());
         singletons.add(new QueryParamProvider());
         singletons.add(new UpdateRequestReader());

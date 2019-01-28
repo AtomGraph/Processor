@@ -4,16 +4,14 @@
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
-@prefix dht:  <https://www.w3.org/ns/ldt/document-hierarchy/templates#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
 
 : a ldt:Ontology ;
-  owl:imports ldt:, dht:, sp: ;
+  owl:imports ldt:, sp: ;
   rdfs:label "Wikidata's LDT ontology" .
 
 :BirthdaysTemplate a ldt:Template ;
-  ldt:extends dht:Container ; # we want pagination supported by containers
   rdfs:label "People born today" ;
   ldt:match "/birthdays" ;
   ldt:param :SexParam ;
@@ -50,5 +48,6 @@ WHERE
           }
         BIND(year(?date) AS ?year)
       }
+    LIMIT 100
   }""" ;
   rdfs:isDefinedBy : .
