@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Martynas Jusevičius <martynas@atomgraph.com>.
+ * Copyright 2019 Martynas Jusevičius <martynas@atomgraph.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,33 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.atomgraph.server.io;
 
-import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.Model;
+import com.atomgraph.processor.util.Skolemizer;
+import com.atomgraph.server.exception.SkolemizationException;
+import java.util.Iterator;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
-import com.atomgraph.server.exception.SkolemizationException;
-import com.atomgraph.processor.util.Skolemizer;
+import javax.ws.rs.core.UriInfo;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Model provider that skolemizes read triples against class URI templates in an ontology.
+ * Dataset provider that skolemizes read triples in each graph against class URI templates in an ontology.
  * 
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class SkolemizingModelProvider extends ValidatingModelProvider
+public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
 {
+
     private static final Logger log = LoggerFactory.getLogger(SkolemizingModelProvider.class);
     
     @Context private Request request;
-    
+    @Context UriInfo uriInfo;
+
     @Override
+    public Dataset process(Dataset dataset)
+    {
+        process(dataset.getDefaultModel());
+        
+        Iterator<String> it = dataset.listNames();
+        while (it.hasNext())
+        {
+            String graphURI = it.next();
+            process(dataset.getNamedModel(graphURI));
+        }
+        
+        return dataset;
+    }
+    
     public Model process(Model model)
     {
         if (getRequest().getMethod().equalsIgnoreCase("POST"))
@@ -58,11 +76,10 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
                 it.close();
             }
         
-            return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(),
-                    super.process(model));
+            return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
         }
         
-        return super.process(model);
+        return model;
     }
     
     public Resource process(Resource resource)
@@ -74,7 +91,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     {
         try
         {
-            return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder).build(model);
+            return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder).build(model); // not optimal to create Skolemizer for each Model
         }
         catch (IllegalArgumentException ex)
         {
@@ -86,5 +103,10 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     {
         return request;
     }
-
+    
+    public UriInfo getUriInfo()
+    {
+        return uriInfo;
+    }
+    
 }

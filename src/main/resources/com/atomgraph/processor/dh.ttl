@@ -57,10 +57,10 @@
       PREFIX dh:      <https://www.w3.org/ns/ldt/document-hierarchy/domain#>
 
       CONSTRUCT {
-        ?this dh:slug [ a xsd:string ] . # ?slug .
+        ?this dh:slug ?slug .
       }
       WHERE {
-        # BIND (STRUUID() AS ?slug)
+        BIND (STRUUID() AS ?slug)
 }""" ;
     rdfs:label "Document constructor" ;
     rdfs:isDefinedBy : .

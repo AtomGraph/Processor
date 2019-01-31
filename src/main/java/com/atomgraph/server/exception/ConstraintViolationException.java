@@ -28,12 +28,17 @@ public class ConstraintViolationException extends ModelException
 {
     private final List<ConstraintViolation> cvs;
     
-    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
+    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model, String graphURI)
     {
         super(model);
         this.cvs = cvs;
     }
 
+    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
+    {
+        this(cvs, model, null);
+    }
+    
     public List<ConstraintViolation> getConstraintViolations()
     {
         return cvs;

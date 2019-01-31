@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 Martynas Jusevičius <martynas@atomgraph.com>.
+ * Copyright 2019 Martynas Jusevičius <martynas@atomgraph.com>.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,60 +13,76 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package com.atomgraph.server.io;
 
-import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.Model;
+import com.atomgraph.core.io.DatasetProvider;
+import com.atomgraph.processor.util.Validator;
+import com.atomgraph.server.exception.ConstraintViolationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.Iterator;
 import java.util.List;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
-import com.atomgraph.server.exception.ConstraintViolationException;
-import com.atomgraph.processor.util.Validator;
+import org.apache.jena.ontology.Ontology;
+import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.constraints.ConstraintViolation;
 
 /**
- * Model provider that validates read triples against SPIN constraints in an ontology.
+ * Dataset provider that validates read triples in each graph against SPIN constraints in an ontology.
  * 
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-public class ValidatingModelProvider extends BasedModelProvider
+public class ValidatingDatasetProvider extends DatasetProvider
 {
-    private static final Logger log = LoggerFactory.getLogger(ValidatingModelProvider.class);
+
+    private static final Logger log = LoggerFactory.getLogger(ValidatingDatasetProvider.class);
     
     @Context private Providers providers;
     
     @Override
-    public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
+    public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
     {
         return process(super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream));
     }
 
-    public Model process(Model model)
+    public Dataset process(Dataset dataset)
     {
-        return validate(model);
+        return validate(dataset);
     }
     
-    public Model validate(Model model)
+    public Dataset validate(Dataset dataset)
     {
-        List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(model);
+        Validator validator = new Validator(getOntology().getOntModel());
         
+        List<ConstraintViolation> cvs = validator.validate(dataset.getDefaultModel());
         if (!cvs.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-            throw new ConstraintViolationException(cvs, model);
+            throw new ConstraintViolationException(cvs, dataset.getDefaultModel());
         }
         
-        return model;
+        Iterator<String> it = dataset.listNames();
+        while (it.hasNext())
+        {
+            String graphURI = it.next();
+            cvs = validator.validate(dataset.getNamedModel(graphURI));
+
+            if (!cvs.isEmpty())
+            {
+                if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
+                throw new ConstraintViolationException(cvs, dataset.getNamedModel(graphURI), graphURI);
+            }
+        }
+        
+        return dataset;
     }
         
     public Ontology getOntology()
@@ -79,5 +95,5 @@ public class ValidatingModelProvider extends BasedModelProvider
     {
         return providers;
     }
-
+    
 }
