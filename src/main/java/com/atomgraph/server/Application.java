@@ -198,7 +198,6 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new TemplateProvider());
         singletons.add(new TemplateCallProvider());
         singletons.add(new SkolemizingDatasetProvider());
-        singletons.add(new SkolemizingModelProvider());
         singletons.add(new ResultSetProvider());
         singletons.add(new QueryParamProvider());
         singletons.add(new UpdateRequestReader());

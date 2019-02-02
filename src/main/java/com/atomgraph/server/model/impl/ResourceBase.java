@@ -71,8 +71,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     private final QuerySolutionMap querySolutionMap;
-//    private QueryBuilder queryBuilder;
-//    private UpdateBuilder updateBuilder;
     private final Query query;
     private final UpdateRequest update;
 

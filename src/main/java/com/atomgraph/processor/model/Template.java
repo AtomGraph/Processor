@@ -15,19 +15,14 @@
  */
 package com.atomgraph.processor.model;
 
-import com.atomgraph.processor.query.QueryBuilder;
-import com.atomgraph.processor.update.UpdateBuilder;
 import com.sun.jersey.api.uri.UriTemplate;
-import java.net.URI;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
-import org.spinrdf.model.Query;
 
 /**
  *
@@ -68,21 +63,11 @@ public interface Template extends OntClass
    
     Map<String, Parameter> getParameterMap();
 
-    // Map<Property, RDFNode> getDefaultValues();
-
     List<Locale> getLanguages();
     
     org.apache.jena.rdf.model.Resource getLoadClass();
     
     CacheControl getCacheControl();
-
-//    QueryBuilder getQueryBuilder(URI base);
-//        
-//    QueryBuilder getQueryBuilder(URI base, Model commandModel);
-//
-//    UpdateBuilder getUpdateBuilder(URI base);
-//    
-//    UpdateBuilder getUpdateBuilder(URI base, Model commandModel);
     
     boolean hasSuperTemplate(Template superTemplate);
 
