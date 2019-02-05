@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
 {
 
-    private static final Logger log = LoggerFactory.getLogger(SkolemizingModelProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(SkolemizingDatasetProvider.class);
     
     @Context private Request request;
     @Context UriInfo uriInfo;
