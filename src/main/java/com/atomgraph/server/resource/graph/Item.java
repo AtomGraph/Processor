@@ -32,6 +32,7 @@ import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.util.TemplateCall;
 import org.apache.jena.query.Dataset;
+import org.apache.jena.query.DatasetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -43,7 +44,7 @@ import org.slf4j.LoggerFactory;
  * @see com.atomgraph.core.model.GraphStore
  * @see <a href="http://www.w3.org/TR/sparql11-http-rdf-update/#direct-graph-identification">4.1 Direct Graph Identification</a>
  */
-public class Item extends ResourceBase
+public class Item extends ResourceBase // TO-DO: extends GraphStore
 {
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
@@ -62,7 +63,7 @@ public class Item extends ResourceBase
     public Response get()
     {
         if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());
-        return getResponse(getGraphStore().getModel(getURI().toString()));
+        return getResponse(DatasetFactory.create(getGraphStore().getModel(getURI().toString())));
     }
 
     @Override
