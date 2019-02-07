@@ -240,13 +240,13 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     /**
      * Adds matched sitemap class as affordance metadata in <pre>Link</pre> header.
      * 
-     * @param model response model
+     * @param dataset response RDF dataset
      * @return response builder
      */
     @Override
-    public ResponseBuilder getResponseBuilder(Model model)
+    public ResponseBuilder getResponseBuilder(Dataset dataset)
     {
-        ResponseBuilder rb = super.getResponseBuilder(model);
+        ResponseBuilder rb = super.getResponseBuilder(dataset);
         
         rb.cacheControl(getCacheControl());
 
