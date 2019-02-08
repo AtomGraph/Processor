@@ -19,6 +19,7 @@ package com.atomgraph.server.mapper;
 import com.atomgraph.server.exception.ConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -60,7 +61,7 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
             it.close();
         }
         
-        return getResponseBuilder(ex.getModel()).status(Response.Status.BAD_REQUEST).build();
+        return getResponseBuilder(DatasetFactory.create(ex.getModel())).status(Response.Status.BAD_REQUEST).build();
     }
     
 }

@@ -20,6 +20,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.NotFoundException;
+import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -31,10 +32,9 @@ public class NotFoundExceptionMapper extends ExceptionMapperBase implements Exce
     @Override
     public Response toResponse(NotFoundException ex)
     {
-        return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.NOT_FOUND,
+        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.NOT_FOUND,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#NotFound")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(Response.Status.NOT_FOUND).
                 build();
     }

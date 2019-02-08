@@ -20,6 +20,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.ConfigurationException;
+import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -31,12 +32,11 @@ public class ConfigurationExceptionMapper extends ExceptionMapperBase implements
     @Override
     public Response toResponse(ConfigurationException ex)
     {
-        return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
-                build();    
+                build();
     }
     
 }

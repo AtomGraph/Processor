@@ -21,6 +21,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.ClientException;
 import com.atomgraph.server.vocabulary.HTTP;
+import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Resource;
 
 /**
@@ -39,7 +40,7 @@ public class ClientExceptionMapper extends ExceptionMapperBase implements Except
             exRes.addLiteral(HTTP.absoluteURI, ex.getClientResponse().getLocation());
             
         return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(exRes.getModel(), getVariants()).
+                getResponseBuilder(DatasetFactory.create(exRes.getModel()), getVariants()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
     }

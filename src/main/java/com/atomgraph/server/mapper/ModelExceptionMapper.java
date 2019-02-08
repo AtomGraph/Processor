@@ -21,6 +21,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.server.exception.ModelException;
+import org.apache.jena.query.DatasetFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +40,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         ex.getModel().add(exception.getModel());
         
-        return getResponseBuilder(ex.getModel()).status(Response.Status.BAD_REQUEST).build();
+        return getResponseBuilder(DatasetFactory.create(ex.getModel())).status(Response.Status.BAD_REQUEST).build();
     }
     
 }

@@ -20,6 +20,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.processor.exception.ParameterException;
+import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -31,12 +32,11 @@ public class ParameterExceptionMapper extends ExceptionMapperBase implements Exc
     @Override
     public Response toResponse(ParameterException ex)
     {
-        return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.BAD_REQUEST,
+        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.BAD_REQUEST,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(Response.Status.BAD_REQUEST).
-                build();    
+                build();
     }
 
     

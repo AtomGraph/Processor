@@ -41,6 +41,7 @@ import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
 import java.net.URI;
+import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
@@ -62,7 +63,6 @@ abstract public class ExceptionMapperBase
     {
         if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
         if (status == null) throw new IllegalArgumentException("Response.Status cannot be null");
-        //if (statusResource == null) throw new IllegalArgumentException("Status Resource cannot be null");
 
         Resource resource = ModelFactory.createDefaultModel().createResource().
                 addProperty(RDF.type, HTTP.Response).
@@ -97,10 +97,15 @@ abstract public class ExceptionMapperBase
         return response.getVariantListBuilder(getModelMediaTypes(), getLanguages(), getEncodings());
     }
     
-    public Response.ResponseBuilder getResponseBuilder(Model exceptionModel)
+    public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
+    {
+        return getResponseBuilder(dataset.getDefaultModel());
+    }
+    
+    public Response.ResponseBuilder getResponseBuilder(Model model)
     {
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(exceptionModel, getVariants()).
+            getResponseBuilder(model, getVariants()).
                 header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
                 header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
                 header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
