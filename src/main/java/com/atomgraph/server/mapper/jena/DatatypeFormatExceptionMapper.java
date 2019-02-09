@@ -20,6 +20,7 @@ import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.datatypes.DatatypeFormatException;
 import org.apache.jena.rdf.model.ResourceFactory;
 import com.atomgraph.server.mapper.ExceptionMapperBase;
+import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -31,10 +32,9 @@ public class DatatypeFormatExceptionMapper extends ExceptionMapperBase implement
     @Override
     public Response toResponse(DatatypeFormatException ex)
     {
-        return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.BAD_REQUEST,
+        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.BAD_REQUEST,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(Response.Status.BAD_REQUEST).
                 build();
     }

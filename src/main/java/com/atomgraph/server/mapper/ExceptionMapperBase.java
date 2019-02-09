@@ -81,26 +81,26 @@ abstract public class ExceptionMapperBase
         return cr.getContext(MediaTypes.class);
     }
 
-    public Variant getVariant()
-    {
-        return getRequest().selectVariant(getVariants());
-    }
+//    public Variant getVariant()
+//    {
+//        return getRequest().selectVariant(getVariants());
+//    }
     
-    public List<Variant> getVariants()
+    public List<Variant> getVariants(Class clazz)
     {
-        return getVariantListBuilder().add().build();
+        return getVariantListBuilder(clazz).add().build();
     }
 
-    public Variant.VariantListBuilder getVariantListBuilder()
+    public Variant.VariantListBuilder getVariantListBuilder(Class clazz)
     {
         com.atomgraph.core.model.impl.Response response = com.atomgraph.core.model.impl.Response.fromRequest(getRequest());
-        return response.getVariantListBuilder(getModelMediaTypes(), getLanguages(), getEncodings());
+        return response.getVariantListBuilder(getMediaTypes().getWritable(clazz), getLanguages(), getEncodings());
     }
     
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(dataset, getVariants()).
+            getResponseBuilder(dataset, getVariants(Dataset.class)).
                 header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
                 header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
                 header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
@@ -118,7 +118,7 @@ abstract public class ExceptionMapperBase
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(model, getVariants()).
+            getResponseBuilder(model, getVariants(Model.class)).
                 header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
                 header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
                 header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
@@ -133,10 +133,10 @@ abstract public class ExceptionMapperBase
         return builder;
     }
     
-    public List<MediaType> getModelMediaTypes()
-    {
-        return getMediaTypes().getWritable(Model.class);
-    }
+//    public List<MediaType> getWritableMediaTypes()
+//    {
+//        return getMediaTypes().getWritable(Model.class);
+//    }
     
     public List<Locale> getLanguages()
     {

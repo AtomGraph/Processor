@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.server.mapper.ExceptionMapperBase;
+import org.apache.jena.query.DatasetFactory;
 
 /**
  * Maps (tunnels) Jena's remote query execution exception.
@@ -37,17 +38,15 @@ public class QueryExceptionHTTPMapper extends ExceptionMapperBase implements Exc
     public Response toResponse(QueryExceptionHTTP ex)
     {        
         if (ex.getResponseCode() > 0)
-            return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.fromStatusCode(ex.getResponseCode()),
+            return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.fromStatusCode(ex.getResponseCode()),
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(ex.getResponseCode()).
                 build();
         else
-            return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+            return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel(), getVariants()).
+                    getModel())).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
     }

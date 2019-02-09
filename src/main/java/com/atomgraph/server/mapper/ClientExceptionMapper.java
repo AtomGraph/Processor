@@ -39,8 +39,7 @@ public class ClientExceptionMapper extends ExceptionMapperBase implements Except
         if (ex.getClientResponse().getLocation() != null)
             exRes.addLiteral(HTTP.absoluteURI, ex.getClientResponse().getLocation());
             
-        return com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-                getResponseBuilder(DatasetFactory.create(exRes.getModel()), getVariants()).
+        return getResponseBuilder(DatasetFactory.create(exRes.getModel())).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
     }
