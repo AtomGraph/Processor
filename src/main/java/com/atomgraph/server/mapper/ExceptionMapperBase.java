@@ -99,7 +99,20 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
-        return getResponseBuilder(dataset.getDefaultModel());
+        Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
+            getResponseBuilder(dataset, getVariants()).
+                header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
+                header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
+                header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        
+        Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
+        if (reasoner instanceof GenericRuleReasoner)
+        {
+            List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
+            builder.header("Rules", RulePrinter.print(rules));
+        }
+        
+        return builder;
     }
     
     public Response.ResponseBuilder getResponseBuilder(Model model)
