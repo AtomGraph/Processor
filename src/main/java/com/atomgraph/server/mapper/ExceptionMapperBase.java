@@ -26,7 +26,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -80,11 +79,6 @@ abstract public class ExceptionMapperBase
         ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
         return cr.getContext(MediaTypes.class);
     }
-
-//    public Variant getVariant()
-//    {
-//        return getRequest().selectVariant(getVariants());
-//    }
     
     public List<Variant> getVariants(Class clazz)
     {
@@ -132,11 +126,6 @@ abstract public class ExceptionMapperBase
         
         return builder;
     }
-    
-//    public List<MediaType> getWritableMediaTypes()
-//    {
-//        return getMediaTypes().getWritable(Model.class);
-//    }
     
     public List<Locale> getLanguages()
     {
