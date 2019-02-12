@@ -46,6 +46,8 @@ public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
     @Override
     public Dataset process(Dataset dataset)
     {
+        dataset = super.process(dataset); // validation
+        
         process(dataset.getDefaultModel());
         
         Iterator<String> it = dataset.listNames();
@@ -60,8 +62,8 @@ public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
     
     public Model process(Model model)
     {
-        if (getRequest().getMethod().equalsIgnoreCase("POST"))
-        {
+//        if (getRequest().getMethod().equalsIgnoreCase("POST"))
+//        {
             ResIterator it = model.listSubjects();
             try
             {
@@ -77,9 +79,9 @@ public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
             }
         
             return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
-        }
-        
-        return model;
+//        }
+//        
+//        return model;
     }
     
     public Resource process(Resource resource)
