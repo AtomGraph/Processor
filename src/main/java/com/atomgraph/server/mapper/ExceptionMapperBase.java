@@ -93,6 +93,9 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
+        Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
+        if (variant == null) return getResponseBuilder(dataset.getDefaultModel());
+        
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(dataset, getVariants(Dataset.class)).
                 header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).

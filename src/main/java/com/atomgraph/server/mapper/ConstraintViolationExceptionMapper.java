@@ -61,7 +61,9 @@ public class ConstraintViolationExceptionMapper extends ExceptionMapperBase impl
             it.close();
         }
         
-        return getResponseBuilder(DatasetFactory.create(ex.getModel())).status(Response.Status.BAD_REQUEST).build();
+        return getResponseBuilder(DatasetFactory.create(ex.getModel())).
+                status(Response.Status.BAD_REQUEST).
+                build();
     }
     
 }
