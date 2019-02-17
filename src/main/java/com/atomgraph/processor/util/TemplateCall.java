@@ -90,13 +90,13 @@ public class TemplateCall extends com.atomgraph.core.util.StateBuilder
     {
         if (queryParams == null) throw new IllegalArgumentException("Query parameter map cannot be null");
 
-        // iterate query params to find unrecognized ones
-        Set<String> argNames = queryParams.keySet();
-        for (String argName : argNames)
-        {
-            Parameter param = getTemplate().getParameterMap().get(argName);
-            if (param == null) throw new ParameterException(argName, getTemplate());
-        }
+//        // iterate query params to find unrecognized ones
+//        Set<String> argNames = queryParams.keySet();
+//        for (String argName : argNames)
+//        {
+//            Parameter param = getTemplate().getParameterMap().get(argName);
+//            if (param == null) throw new ParameterException(argName, getTemplate());
+//        }
         
         // iterate parameters to find those that match query argument names
         Set<String> paramNames = getTemplate().getParameterMap().keySet();
