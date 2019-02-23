@@ -64,4 +64,6 @@ public class DH
     
     public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
 
+    public static final ObjectProperty select = m_model.createObjectProperty( NS + "select");
+    
 }
