@@ -94,7 +94,7 @@ abstract public class ExceptionMapperBase
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
         Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
-        if (variant == null) return getResponseBuilder(dataset.getDefaultModel());
+        if (variant == null) return getResponseBuilder(dataset.getDefaultModel()); // if quads are not acceptable, fallback to responding with the default graph
         
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(dataset, getVariants(Dataset.class)).
