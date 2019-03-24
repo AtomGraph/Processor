@@ -48,19 +48,7 @@ public class DH
 
     public static final OntClass Container = m_model.createClass( NS + "Container" );
     
-    public static final OntClass Item = m_model.createClass( NS + "Item" );
-
-//    public static final OntClass Page = m_model.createClass( NS + "Page" );
-//
-//    public static final ObjectProperty pageOf = m_model.createObjectProperty( NS + "pageOf" );
-//
-//    public static final DatatypeProperty offset = m_model.createDatatypeProperty( NS + "offset" );
-//    
-//    public static final DatatypeProperty limit = m_model.createDatatypeProperty( NS + "limit" );
-//
-//    public static final DatatypeProperty orderBy = m_model.createDatatypeProperty( NS + "orderBy" );
-//
-//    public static final DatatypeProperty desc = m_model.createDatatypeProperty( NS + "desc" );
+    public static final OntClass Document = m_model.createClass( NS + "Document" );
     
     public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
 
