@@ -7,7 +7,7 @@
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
-    <description>Generic Linked Data processor</description>
+    <description>Ontology-driven Linked Data processor and server for SPARQL backends</description>
     <url>https://github.com/AtomGraph/Processor</url>
     <inceptionYear>2015</inceptionYear>
 
