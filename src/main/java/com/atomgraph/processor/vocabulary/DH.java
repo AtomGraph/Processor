@@ -46,9 +46,11 @@ public class DH
     /** <p>The namespace of the vocabulary as a resource</p> */
     public static final Resource NAMESPACE = m_model.createResource( NS );
 
+    public static final OntClass Document = m_model.createClass( NS + "Document" );
+    
     public static final OntClass Container = m_model.createClass( NS + "Container" );
     
-    public static final OntClass Document = m_model.createClass( NS + "Document" );
+    public static final OntClass Item = m_model.createClass( NS + "Item" );
     
     public static final DatatypeProperty slug = m_model.createDatatypeProperty( NS + "slug" );
 
