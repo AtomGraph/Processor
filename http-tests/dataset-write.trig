@@ -1,0 +1,14 @@
+@base <http://localhost:8081/> .
+
+{
+
+    <default-subject> <http://example.com/default-predicate> <default-object>, "default object" .
+
+}
+
+<graph-name>
+{
+    
+    <named-subject> <http://example.com/named-predicate> <named-object>, "named object" .
+
+}

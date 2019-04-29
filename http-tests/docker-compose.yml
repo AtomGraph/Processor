@@ -1,0 +1,42 @@
+version: "2"
+services:
+  fuseki:
+    image: atomgraph/fuseki
+    ports:
+      - 3030:3030
+    volumes:
+      - ./dataset-read.trig:/usr/share/data/dataset.trig:ro
+      - ./config/ds.ttl:/mnt/apache-fuseki/configuration/ds.ttl:ro
+    command: ["--config", "/mnt/apache-fuseki/configuration/ds.ttl"]
+  fuseki-write:
+    image: atomgraph/fuseki
+    ports:
+      - 3031:3030
+    volumes:
+      - ./dataset-write.trig:/usr/share/data/dataset.trig:ro
+      - ./config/ds.ttl:/mnt/apache-fuseki/configuration/ds.ttl:ro
+    command: ["--config", "/mnt/apache-fuseki/configuration/ds.ttl"]
+  processor:
+    image: atomgraph/processor
+    depends_on:
+      - fuseki
+    ports:
+      - 8080:8080
+      - 8002:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
+  processor-write: # dataset will be modified
+    image: atomgraph/processor
+    depends_on:
+      - fuseki-write
+    ports:
+      - 8081:8080
+      - 8003:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
