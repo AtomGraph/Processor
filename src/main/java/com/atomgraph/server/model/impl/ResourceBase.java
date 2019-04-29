@@ -29,7 +29,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 import javax.ws.rs.Path;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.exception.NotFoundException;
@@ -44,7 +43,6 @@ import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import java.util.Collections;
 import java.util.Iterator;
-import static javax.ws.rs.core.Response.Status.OK;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQ2SPIN;
@@ -199,13 +197,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response put(Dataset dataset)
     {
-        Response deleted = delete();
-        
-        if (deleted.getStatus() != OK.getStatusCode())
-        {
-            if (log.isErrorEnabled()) log.error("PUT Dataset does not execute DELETE with '{}' as subject", getURI());
-            throw new WebApplicationException(new IllegalStateException(deleted.getMetadata().toString()), deleted.getStatus());
-        }
+        delete();
         
         return post(dataset);
     }

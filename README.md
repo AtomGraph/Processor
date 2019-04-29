@@ -80,7 +80,7 @@ Datasource
 
 AtomGraph Processor does *not* include an RDF datasource. It queries RDF data on the fly from a SPARQL endpoint using [SPARQL 1.1 Protocol](https://www.w3.org/TR/sparql11-protocol/) over HTTP. SPARQL endpoints are provided by most RDF [triplestores](http://en.wikipedia.org/wiki/Triplestore).
 
-The easiest way to set up a SPARQL endpoint on an RDF dataset is Apache Jena [Fuseki](https://jena.apache.org/documentation/fuseki2/) as a Docker container using our [fuseki-docker](../../../fuseki-docker) image. There is also a number of of [public SPARQL endpoints](http://sparqles.ai.wu.ac.at).
+The easiest way to set up a SPARQL endpoint on an RDF dataset is Apache Jena [Fuseki](https://jena.apache.org/documentation/fuseki2/) as a Docker container using our [fuseki](https://cloud.docker.com/u/atomgraph/repository/docker/atomgraph/fuseki) image. There is also a number of of [public SPARQL endpoints](http://sparqles.ai.wu.ac.at).
 
 For a commercial triplestore with SPARQL 1.1 support see [Dydra](https://dydra.com).
 
