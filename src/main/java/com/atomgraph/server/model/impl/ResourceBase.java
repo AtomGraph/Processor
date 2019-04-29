@@ -219,6 +219,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response delete()
     {
+        get(); // will throw NotFoundException if resource does not exist (query result is empty)
+        
         if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
             
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdate());
