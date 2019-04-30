@@ -2,6 +2,7 @@
 
 (
 curl -w "%{http_code}\n" -f -s \
+     -X PUT \
      -H "Accept: application/n-quads" \
      -H "Content-Type: application/not-accepted" --data-binary @- \
     "${BASE_URL_WRITABLE}" <<EOF

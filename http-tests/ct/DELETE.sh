@@ -14,10 +14,10 @@ cat ../dataset-write.trig \
 curl -w "%{http_code}\n" -f -s \
   -X DELETE \
   "${BASE_URL_WRITABLE}default-subject" \
-| egrep -q "${STATUS_NO_CONTENT}"
+| grep -q "${STATUS_NO_CONTENT}"
 
 # check that deleted resource is really gone
 
 curl -w "%{http_code}\n" -f -s \
   "${BASE_URL_WRITABLE}default-subject" \
-| egrep -q "${STATUS_NOT_FOUND}"
+| grep -q "${STATUS_NOT_FOUND}"

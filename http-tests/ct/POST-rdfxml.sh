@@ -13,11 +13,16 @@ cat ../dataset-write.trig \
 (
 curl -w "%{http_code}\n" -f -s \
      -H "Accept: application/n-triples" \
-     -H "Content-Type: application/n-triples" \
+     -H "Content-Type: application/rdf+xml" \
      --data-binary @- \
     "${BASE_URL_WRITABLE}" <<EOF
-<${BASE_URL_WRITABLE}default-subject-post> <http://example.com/default-predicate> "default object POST" .
-<${BASE_URL_WRITABLE}default-subject-post> <http://example.com/another-predicate> "another object POST" .
+<?xml version="1.0"?>
+<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:ex="http://example.com/">
+  <rdf:Description rdf:about="${BASE_URL_WRITABLE}default-subject-post">
+    <ex:default-predicate>default object POST</ex:default-predicate>
+    <ex:another-predicate>another object POST</ex:another-predicate>
+  </rdf:Description>
+</rdf:RDF>
 EOF
 ) \
 | grep -q "${STATUS_OK}"
