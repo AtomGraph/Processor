@@ -15,8 +15,8 @@ env:
   - ENDPOINT_URL_WRITABLE="http://localhost:3031/ds/"
 
 before_script:
-  - while ! curl -w "%{http_code}\n" -s "${BASE_URL}" | grep "200" ; do sleep 1 ; done # wait for processor to start
-  - while ! curl -w "%{http_code}\n" -s "${BASE_URL_WRITABLE}" | grep "200" ; do sleep 1 ; done # wait for processor-write to start
+  - while ! curl -w "%{http_code}\n" -s http://localhost:8080 | grep "200" ; do sleep 1 ; done # wait for processor to start
+  - while ! curl -w "%{http_code}\n" -s http://localhost:8081 | grep "200" ; do sleep 1 ; done # wait for processor-write to start
 
 script:
   -  bash ./run.sh # run tests

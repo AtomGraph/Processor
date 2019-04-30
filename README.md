@@ -1,11 +1,10 @@
 AtomGraph Processor is a server of declarative, read-write Linked Data applications. If you have a triplestore with RDF data that you want to serve Linked Data from, or write RDF over a RESTful HTTP interface, AtomGraph Processor is the only component you need.
 
 What AtomGraph Processor provides for users as out-of-the-box generic features:
-* declarative control of published and accepted data using URI and SPARQL templates
-* pagination on container resources, with ordering by property columns
+* API logic in a single [Linked Data Templates](https://atomgraph.github.io/Linked-Data-Templates/) ontology
 * control of RDF input quality with SPARQL-based constraints
 * SPARQL endpoint and Graph Store Protocol endpoint
-* HTTP content negotiation and caching
+* HTTP content negotiation and caching support
 * a separate RDF resource for every application state, following the [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) principle
 
 AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](../../wiki/Articles-and-presentations) about AtomGraph.
@@ -83,6 +82,13 @@ AtomGraph Processor does *not* include an RDF datasource. It queries RDF data on
 The easiest way to set up a SPARQL endpoint on an RDF dataset is Apache Jena [Fuseki](https://jena.apache.org/documentation/fuseki2/) as a Docker container using our [fuseki](https://cloud.docker.com/u/atomgraph/repository/docker/atomgraph/fuseki) image. There is also a number of of [public SPARQL endpoints](http://sparqles.ai.wu.ac.at).
 
 For a commercial triplestore with SPARQL 1.1 support see [Dydra](https://dydra.com).
+
+Test suite
+==========
+
+Processor includes a basic HTTP [test suite](tree/master/http-tests) for Linked Data Templates.
+
+[![Build status](https://api.travis-ci.org/AtomGraph/Processor.svg?branch=master)](https://travis-ci.org/AtomGraph/Processor)
 
 Support
 =======
