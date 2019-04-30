@@ -1,19 +1,22 @@
 language: c
 before_install:
- - sudo apt-get update
- - sudo apt-get install -qq raptor2-utils
+  - sudo apt-get update
+  - sudo apt-get install -qq raptor2-utils
 
 install:
- - cd http-tests
- - docker-compose pull
- - docker-compose up -d
+  - cd http-tests
+  - docker-compose pull
+  - docker-compose up -d
 
 env:
+  - BASE_URL="http://localhost:8080/"
+  - BASE_URL_WRITABLE="http://localhost:8081/"
+  - ENDPOINT_URL="http://localhost:3030/ds/"
+  - ENDPOINT_URL_WRITABLE="http://localhost:3031/ds/"
 
 before_script:
-#  - curl http://localhost:8080/
-#  - curl http://localhost:8081/
-  - docker ps
+  - while ! curl -w "%{http_code}\n" -s http://localhost:8080 | grep "200" ; do sleep 1 ; done" // wait for processor to start
+  - while ! curl -w "%{http_code}\n" -s http://localhost:8081 | grep "200" ; do sleep 1 ; done" // wait for processor-write to start
 
 script:
   -  bash ./run.sh
