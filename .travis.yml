@@ -3,15 +3,23 @@ before_install:
  - sudo apt-get update
  - sudo apt-get install -qq raptor2-utils
 
-before_script:
+install:
  - cd http-tests
  - docker-compose pull
  - docker-compose up -d
 
 env:
 
+before_script:
+  - curl http://localhost:8080/
+  - curl http://localhost:8081/
+
 script:
   -  bash ./run.sh
+
+after_script:
+  - docker-compose stop
+  - docker-compose rm -f
 
 notifications:
   email:
