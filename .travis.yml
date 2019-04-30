@@ -11,14 +11,14 @@ install:
 env:
 
 before_script:
-  - curl http://localhost:8080/
-  - curl http://localhost:8081/
+  - curl http://processor:8080/
+  - curl http://processor-write:8081/
 
 script:
   -  bash ./run.sh
 
 after_script:
-  - docker-compose stop
+  - docker-compose down
   - docker-compose rm -f
 
 notifications:
