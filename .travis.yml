@@ -1,11 +1,17 @@
 language: c
 before_install:
+ - sudo apt-get update
  - sudo apt-get install -qq raptor2-utils
+
+before_script:
+ - cd http-tests
+ - docker-compose pull
+ - docker-compose up
 
 env:
 
 script:
-  -  bash  ./http-tests/run.sh
+  -  bash  ./run.sh
 
 notifications:
   email:
