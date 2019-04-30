@@ -6,7 +6,7 @@ before_install:
 before_script:
  - cd http-tests
  - docker-compose pull
- - docker-compose -d up
+ - docker-compose up -d
 
 env:
 
