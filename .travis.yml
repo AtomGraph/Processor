@@ -11,8 +11,9 @@ install:
 env:
 
 before_script:
-  - curl http://0.0.0.0:8080/
-  - curl http://127.0.0.1:8081/
+#  - curl http://localhost:8080/
+#  - curl http://localhost:8081/
+  - docker ps
 
 script:
   -  bash ./run.sh
