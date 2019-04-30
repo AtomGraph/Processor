@@ -11,8 +11,8 @@ install:
 env:
 
 before_script:
-  - curl http://processor:8080/
-  - curl http://processor-write:8081/
+  - curl http://0.0.0.0:8080/
+  - curl http://127.0.0.1:8081/
 
 script:
   -  bash ./run.sh
