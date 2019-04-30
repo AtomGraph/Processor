@@ -6,12 +6,12 @@ before_install:
 before_script:
  - cd http-tests
  - docker-compose pull
- - docker-compose up
+ - docker-compose -d up
 
 env:
 
 script:
-  -  bash  ./run.sh
+  -  bash ./run.sh
 
 notifications:
   email:
