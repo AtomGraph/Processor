@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 export STATUS_OK=200
 export STATUS_DELETE_SUCCESS='200|204'
 export STATUS_PATCH_SUCCESS='200|201|204'
