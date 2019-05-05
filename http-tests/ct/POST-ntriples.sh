@@ -1,12 +1,8 @@
 #!/bin/bash
 
 # re-initialize writable dataset
-cat ../dataset-write.trig \
-| curl -f -s \
-  -X PUT \
-  --data-binary @- \
-  -H "Content-Type: application/trig" \
-  "${ENDPOINT_URL_WRITABLE}" > /dev/null
+
+initialize_dataset "$BASE_URL_WRITABLE" "../dataset-write.trig" "$ENDPOINT_URL_WRITABLE"
 
 # append new resource description
 

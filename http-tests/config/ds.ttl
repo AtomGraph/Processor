@@ -17,6 +17,4 @@
     fuseki:dataset <#dataset>
 .
 
-<#dataset> a ja:MemoryDataset;
-   ja:data "/usr/share/data/dataset.trig";
-.
+<#dataset> a ja:MemoryDataset .

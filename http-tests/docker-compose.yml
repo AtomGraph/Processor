@@ -5,7 +5,6 @@ services:
     ports:
       - 3030:3030
     volumes:
-      - ./dataset-read.trig:/usr/share/data/dataset.trig:ro
       - ./config/ds.ttl:/mnt/apache-fuseki/configuration/ds.ttl:ro
     command: ["--config", "/mnt/apache-fuseki/configuration/ds.ttl"]
   fuseki-write:
@@ -13,10 +12,9 @@ services:
     ports:
       - 3031:3030
     volumes:
-      - ./dataset-write.trig:/usr/share/data/dataset.trig:ro
       - ./config/ds.ttl:/mnt/apache-fuseki/configuration/ds.ttl:ro
     command: ["--config", "/mnt/apache-fuseki/configuration/ds.ttl"]
-  processor:
+  processor-ct:
     image: atomgraph/processor
     depends_on:
       - fuseki
@@ -28,7 +26,7 @@ services:
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
-  processor-write: # dataset will be modified
+  processor-ct-write: # dataset will be modified
     image: atomgraph/processor
     depends_on:
       - fuseki-write
@@ -40,3 +38,27 @@ services:
       - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
+  processor-ngt:
+    image: atomgraph/processor
+    depends_on:
+      - fuseki
+    ports:
+      - 8082:8080
+      - 8004:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://www.w3.org/ns/ldt/named-graphs/templates#"
+  processor-ngt-write: # dataset will be modified
+    image: atomgraph/processor
+    depends_on:
+      - fuseki-write
+    ports:
+      - 8083:8080
+      - 8005:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://www.w3.org/ns/ldt/named-graphs/templates#"

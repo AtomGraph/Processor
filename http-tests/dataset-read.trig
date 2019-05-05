@@ -1,5 +1,3 @@
-@base <http://localhost:8080/> .
-
 {
 
     <default-subject> <http://example.com/default-predicate> <default-object>, "default object" .
