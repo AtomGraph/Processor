@@ -6,7 +6,7 @@ before_install:
 install:
   - cd http-tests
   - docker-compose pull
-  - docker-compose up -d # run fuseki and processor in the background
+  - docker-compose up -d # run fuseki and processor containers in the background
 
 before_script:
   - while ! curl -w "%{http_code}\n" -s http://localhost:8080 | grep "200" ; do sleep 1 ; done # wait for processor-ct to start
@@ -17,7 +17,7 @@ before_script:
   - while ! curl -w "%{http_code}\n" -s http://localhost:8085 | grep "200" ; do sleep 1 ; done # wait for processor-custom-write to start
 
 script:
-  -  bash ./run.sh # run tests
+  - bash ./run.sh # run tests
 
 after_script:
   - docker-compose down # shutdown fuseki and processor
