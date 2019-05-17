@@ -98,10 +98,10 @@ abstract public class ExceptionMapperBase
         
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(dataset, getVariants(Dataset.class)).
-                header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
                 header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
                 header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        
+        if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+
         Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
@@ -116,9 +116,9 @@ abstract public class ExceptionMapperBase
     {
         Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
             getResponseBuilder(model, getVariants(Model.class)).
-                header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null)).
                 header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null)).
                 header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
         
         Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)

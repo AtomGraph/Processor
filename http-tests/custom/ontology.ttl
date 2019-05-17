@@ -1,0 +1,61 @@
+@base         <https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom> .
+
+@prefix :     <#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix ldt:  <https://www.w3.org/ns/ldt#> .
+@prefix sp:   <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
+@prefix spl:  <http://spinrdf.org/spl#> .
+
+: a ldt:Ontology ;
+    owl:imports ldt:, sp: ;
+    rdfs:label "Test ontology" .
+
+:DefaultSubjectSuperTemplate a ldt:Template ;
+    rdfs:label "Default subject super template" ;
+    ldt:match "/match" ;
+    ldt:param :OptionalParam ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ; # :DefaultSubjectQuery ;
+    ldt:update [ a :DefaultSubjectUpdateTemplate ] ; # :DefaultSubjectUpdate ;
+    rdfs:isDefinedBy : .
+
+:DefaultSubjectTemplate a ldt:Template ;
+    rdfs:label "Default subject template" ;
+    ldt:match "/default-subject" ;
+    ldt:extends :DefaultSubjectSuperTemplate ;
+    rdfs:isDefinedBy : .
+
+:OptionalParam a ldt:Parameter ;
+    rdfs:label "Object parameter" ;
+    spl:predicate :object ;
+    spl:optional true ;
+    rdfs:isDefinedBy : .
+
+:DefaultSubjectQueryTemplate a spin:Template ;
+    rdfs:label "Default subject query template" ;
+    spin:constraint :OptionalParam ;
+    spin:body :DefaultSubjectQuery ;
+    rdfs:isDefinedBy : .
+
+:DefaultSubjectQuery a ldt:Query, sp:Describe ;
+    rdfs:label "Default subject query" ;
+    sp:text """DESCRIBE ?subject
+{
+    ?subject <http://example.com/default-predicate> ?object
+}""" ;
+    rdfs:isDefinedBy : .
+
+:DefaultSubjectUpdateTemplate a spin:Template ;
+    rdfs:label "Default subject update template" ;
+    spin:constraint :OptionalParam ;
+    spin:body :DefaultSubjectUpdate ;
+    rdfs:isDefinedBy : .
+
+:DefaultSubjectUpdate a ldt:Query, sp:Delete ;
+    rdfs:label "Default subject update" ;
+    sp:text """DELETE WHERE
+{
+    ?subject <http://example.com/default-predicate> ?object
+}""" ;
+    rdfs:isDefinedBy : .

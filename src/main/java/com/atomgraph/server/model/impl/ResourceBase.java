@@ -43,6 +43,7 @@ import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import java.util.Collections;
 import java.util.Iterator;
+import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.arq.ARQ2SPIN;
@@ -123,9 +124,23 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.resourceContext = resourceContext;
         this.querySolutionMap = templateCall.getQuerySolutionMap();
         this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+        if (templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type).canAs(org.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
+        {
+            org.spinrdf.model.Template queryTemplate = templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type).as(org.spinrdf.model.Template.class);
+            this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+        }
+        else
+            this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
         if (templateCall.getTemplate().getUpdate() != null)
-            this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+        {
+            if (templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type).canAs(org.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
+            {
+                org.spinrdf.model.Template updateTemplate = templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type).as(org.spinrdf.model.Template.class);
+                this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+            }
+            else
+                this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+        }
         else
             this.update = null;
 

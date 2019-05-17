@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# check that parameter value results in query pattern non-match
+
+curl -w "%{http_code}\n" -f -s \
+  -H "Accept: application/n-quads" \
+  "${BASE_URL}default-subject?object=non-matching-literal" \
+| grep -q "${STATUS_NOT_FOUND}"

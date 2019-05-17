@@ -62,3 +62,33 @@ services:
       - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/named-graphs/templates#"
+  processor-custom:
+    image: atomgraph/processor
+    depends_on:
+      - fuseki
+    ports:
+      - 8084:8080
+      - 8006:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#"
+    volumes:
+      - ./custom/ontology.ttl:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/com/atomgraph/processor/http-tests/custom/ontology.ttl:ro
+      - ./custom/location-mapping.n3:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3:ro
+  processor-custom-write:
+    image: atomgraph/processor
+    depends_on:
+      - fuseki-write
+    ports:
+      - 8085:8080
+      - 8007:8000 # debugger
+    environment:
+      - JPDA_ADDRESS=8000 # debugger port
+      - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
+      - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
+      - ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#"
+    volumes:
+      - ./custom/ontology.ttl:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/com/atomgraph/processor/http-tests/custom/ontology.ttl:ro
+      - ./custom/location-mapping.n3:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3:ro

@@ -49,6 +49,7 @@ function initialize_dataset()
       -H "Content-Type: application/trig" \
       "${3}data" > /dev/null
 }
+
 export -f initialize_dataset
 
 export ENDPOINT_URL="http://localhost:3030/ds/"
@@ -61,8 +62,8 @@ error_count=0
 export BASE_URL="http://localhost:8080/"
 export BASE_URL_WRITABLE="http://localhost:8081/"
 
-initialize_dataset "$BASE_URL" "dataset-read.trig" "$ENDPOINT_URL"
-initialize_dataset "$BASE_URL_WRITABLE" "dataset-write.trig" "$ENDPOINT_URL_WRITABLE"
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 run_tests $(find ./ct/ -name '*.sh*')
 (( error_count += $? ))
@@ -72,10 +73,23 @@ run_tests $(find ./ct/ -name '*.sh*')
 export BASE_URL="http://localhost:8082/"
 export BASE_URL_WRITABLE="http://localhost:8083/"
 
-initialize_dataset "$BASE_URL" "dataset-read.trig" "$ENDPOINT_URL"
-initialize_dataset "$BASE_URL_WRITABLE" "dataset-write.trig" "$ENDPOINT_URL_WRITABLE"
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 run_tests $(find ./ngt/ -name '*.sh*')
 (( error_count += $? ))
+
+### Custom ontology tests ###
+
+export BASE_URL="http://localhost:8084/"
+export BASE_URL_WRITABLE="http://localhost:8085/"
+
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
+
+run_tests $(find ./custom/ -name '*.sh*')
+(( error_count += $? ))
+
+### Exit
 
 exit $error_count

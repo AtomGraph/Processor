@@ -1,0 +1,6 @@
+@prefix lm: <http://jena.hpl.hp.com/2004/08/location-mapping#> .
+
+[] lm:mapping
+
+   [ lm:name "https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#" ; lm:altName "com/atomgraph/processor/http-tests/custom/ontology.ttl" ]
+.

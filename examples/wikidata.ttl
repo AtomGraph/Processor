@@ -8,26 +8,26 @@
 @prefix spl:  <http://spinrdf.org/spl#> .
 
 : a ldt:Ontology ;
-  owl:imports ldt:, sp: ;
-  rdfs:label "Wikidata's LDT ontology" .
+    owl:imports ldt:, sp: ;
+    rdfs:label "Wikidata's LDT ontology" .
 
 :BirthdaysTemplate a ldt:Template ;
-  rdfs:label "People born today" ;
-  ldt:match "/birthdays" ;
-  ldt:param :SexParam ;
-  ldt:query :BirthdaysQuery ;
-  rdfs:isDefinedBy : .
+    rdfs:label "People born today" ;
+    ldt:match "/birthdays" ;
+    ldt:param :SexParam ;
+    ldt:query :BirthdaysQuery ;
+    rdfs:isDefinedBy : .
 
 :SexParam a ldt:Parameter ;
-  rdfs:label "Sex parameter" ;
-  spl:predicate :sex ;
-  spl:valueType rdfs:Resource ;
-  spl:optional true ;
-  rdfs:isDefinedBy : .
+    rdfs:label "Sex parameter" ;
+    spl:predicate :sex ;
+    spl:valueType rdfs:Resource ;
+    spl:optional true ;
+    rdfs:isDefinedBy : .
 
 :BirthdaysQuery a ldt:Query, sp:Construct ;
-  rdfs:label "Birthdays query" ;
-  sp:text """PREFIX  bd:   <http://www.bigdata.com/rdf#>
+    rdfs:label "Birthdays query" ;
+    sp:text """PREFIX  bd:   <http://www.bigdata.com/rdf#>
 PREFIX  wdt:  <http://www.wikidata.org/prop/direct/>
 PREFIX  wikibase: <http://wikiba.se/ontology#>
 
@@ -50,4 +50,4 @@ WHERE
       }
     LIMIT 100
   }""" ;
-  rdfs:isDefinedBy : .
+    rdfs:isDefinedBy : .

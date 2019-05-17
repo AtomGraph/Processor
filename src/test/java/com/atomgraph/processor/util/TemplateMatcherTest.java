@@ -37,7 +37,7 @@ public class TemplateMatcherTest
 {
     
     private Ontology ontology, importedOntology, importedImportedOntology;
-    private Template importedImportedTemplate, importedTemplate1, importedTemplate2, importedTemplate3, template1, template2, template3;
+    private Template importedImportedTemplate, importedTemplate1, importedTemplate2, template1, template3;
     private TemplateMatcher matcher;
     
     @BeforeClass
@@ -57,42 +57,42 @@ public class TemplateMatcherTest
 
         importedImportedTemplate = importedImportedOntology.getOntModel().createClass("http://test/ontology/import/import/template").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "{path}").
+                addProperty(RDFS.isDefinedBy, importedImportedOntology).
                 as(Template.class);
-        importedImportedTemplate.addLiteral(LDT.match, "{path}").
-                addProperty(RDFS.isDefinedBy, importedImportedOntology);
         
         importedTemplate1 = importedOntology.getOntModel().createClass("http://test/ontology/import/template1").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "{less}/{specific}/{path}").
+                addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
-        importedTemplate1.addLiteral(LDT.match, "{less}/{specific}/{path}").
-                addProperty(RDFS.isDefinedBy, importedOntology);
         importedTemplate2 = importedOntology.getOntModel().createClass("http://test/ontology/import/template2").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "{other}/{path}").
+                addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
-        importedTemplate2.addLiteral(LDT.match, "{other}/{path}").
-                addProperty(RDFS.isDefinedBy, importedOntology);
-        importedTemplate3 = importedOntology.getOntModel().createClass("http://test/ontology/import/template3").
+        importedOntology.getOntModel().createClass("http://test/ontology/import/template3").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "more/specific/{path}").
+                addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
-        importedTemplate3.addLiteral(LDT.match, "more/specific/{path}").
-                addProperty(RDFS.isDefinedBy, importedOntology);
         
         template1 = ontology.getOntModel().createClass("http://test/ontology/template1").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "more/specific/{path}").
+                addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
-        template1.addLiteral(LDT.match, "more/specific/{path}").
-                addProperty(RDFS.isDefinedBy, ontology);
-        template2 = ontology.getOntModel().createClass("http://test/ontology/template2").
+        ontology.getOntModel().createClass("http://test/ontology/template2").
                 addProperty(RDF.type, LDT.Template).
+                addLiteral(LDT.match, "other/{path}").
+                addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
-        template2.addLiteral(LDT.match, "other/{path}").
-                addProperty(RDFS.isDefinedBy, ontology);
         template3 = ontology.getOntModel().createClass("http://test/ontology/template3").
                 addProperty(RDF.type, LDT.Template).
-                as(Template.class);
-        template3.addLiteral(LDT.match, "other/{path}").
+                addLiteral(LDT.match, "other/{path}").
                 addLiteral(LDT.priority, 1). // priority takes precedence
-                addProperty(RDFS.isDefinedBy, ontology);
+                addProperty(RDFS.isDefinedBy, ontology).
+                as(Template.class);
         
         matcher = new TemplateMatcher(ontology);
     }

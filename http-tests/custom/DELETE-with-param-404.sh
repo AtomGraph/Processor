@@ -4,9 +4,9 @@
 
 initialize_dataset "$BASE_URL_WRITABLE" "../dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-# check that unrecognized parameters are allowed
+# check that parameter value results in query pattern non-match
 
 curl -w "%{http_code}\n" -f -s \
   -X DELETE \
-  "${BASE_URL_WRITABLE}named-subject?param=value" \
-| grep -q "${STATUS_NO_CONTENT}"
+  "${BASE_URL_WRITABLE}default-subject?object=non-matching-literal" \
+| grep -q "${STATUS_NOT_FOUND}"
