@@ -2,7 +2,7 @@
 
 # re-initialize writable dataset
 
-initialize_dataset "$BASE_URL_WRITABLE" "../dataset.trig" "$ENDPOINT_URL_WRITABLE"
+initialize_dataset "$BASE_URL_WRITABLE" "../../dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 # delete resource
 

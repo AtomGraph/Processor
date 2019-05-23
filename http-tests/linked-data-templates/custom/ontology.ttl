@@ -12,12 +12,21 @@
     owl:imports ldt:, sp: ;
     rdfs:label "Test ontology" .
 
+# classes
+
+:ConstrainedType a rdfs:Class ;
+    rdfs:label "Constrained class" ;
+    spin:constraint :MissingPropertyQuery ;
+    rdfs:isDefinedBy : .
+
+# templates
+
 :DefaultSubjectSuperTemplate a ldt:Template ;
     rdfs:label "Default subject super template" ;
     ldt:match "/match" ;
     ldt:param :OptionalParam ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ; # :DefaultSubjectQuery ;
-    ldt:update [ a :DefaultSubjectUpdateTemplate ] ; # :DefaultSubjectUpdate ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:update [ a :DefaultSubjectUpdateTemplate ] ;
     rdfs:isDefinedBy : .
 
 :DefaultSubjectTemplate a ldt:Template ;
@@ -26,11 +35,15 @@
     ldt:extends :DefaultSubjectSuperTemplate ;
     rdfs:isDefinedBy : .
 
+# params
+
 :OptionalParam a ldt:Parameter ;
     rdfs:label "Object parameter" ;
     spl:predicate :object ;
     spl:optional true ;
     rdfs:isDefinedBy : .
+
+# queries
 
 :DefaultSubjectQueryTemplate a spin:Template ;
     rdfs:label "Default subject query template" ;
@@ -58,4 +71,11 @@
 {
     ?subject <http://example.com/default-predicate> ?object
 }""" ;
+    rdfs:isDefinedBy : .
+
+:MissingPropertyQuery a sp:Ask ;
+    rdfs:label "Constraint query" ;
+    sp:text """ASK
+WHERE
+  { FILTER NOT EXISTS { ?this  <http://example.com/constrained-predicate>  ?object } }""" ;
     rdfs:isDefinedBy : .

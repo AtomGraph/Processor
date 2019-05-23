@@ -65,7 +65,7 @@ export BASE_URL_WRITABLE="http://localhost:8081/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-run_tests $(find ./ct/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/ct/ -name '*.sh*')
 (( error_count += $? ))
 
 ### Named Graph Templates ontology tests ###
@@ -76,7 +76,7 @@ export BASE_URL_WRITABLE="http://localhost:8083/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-run_tests $(find ./ngt/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/ngt/ -name '*.sh*')
 (( error_count += $? ))
 
 ### Custom ontology tests ###
@@ -87,7 +87,7 @@ export BASE_URL_WRITABLE="http://localhost:8085/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-run_tests $(find ./custom/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/custom/ -name '*.sh*')
 (( error_count += $? ))
 
 ### Exit
