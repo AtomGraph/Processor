@@ -74,7 +74,7 @@
     rdfs:isDefinedBy : .
 
 :MissingPropertyQuery a sp:Ask ;
-    rdfs:label "Constraint query" ;
+    rdfs:label "Missing property query" ;
     sp:text """ASK
 WHERE
   { FILTER NOT EXISTS { ?this  <http://example.com/constrained-predicate>  ?object } }""" ;
