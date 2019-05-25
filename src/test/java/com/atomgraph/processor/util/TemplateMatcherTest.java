@@ -23,7 +23,6 @@ import static junit.framework.Assert.assertEquals;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.vocabulary.RDF;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,40 +54,33 @@ public class TemplateMatcherTest
         importedImportedOntology = ontology.getOntModel().createOntology("http://test/ontology/import/import");
         importedOntology.addImport(importedImportedOntology);
 
-        importedImportedTemplate = importedImportedOntology.getOntModel().createClass("http://test/ontology/import/import/template").
-                addProperty(RDF.type, LDT.Template).
+        importedImportedTemplate = importedImportedOntology.getOntModel().createIndividual("http://test/ontology/import/import/template", LDT.Template).
                 addLiteral(LDT.match, "{path}").
                 addProperty(RDFS.isDefinedBy, importedImportedOntology).
                 as(Template.class);
         
-        importedTemplate1 = importedOntology.getOntModel().createClass("http://test/ontology/import/template1").
-                addProperty(RDF.type, LDT.Template).
+        importedTemplate1 = importedOntology.getOntModel().createIndividual("http://test/ontology/import/template1", LDT.Template).
                 addLiteral(LDT.match, "{less}/{specific}/{path}").
                 addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
-        importedTemplate2 = importedOntology.getOntModel().createClass("http://test/ontology/import/template2").
-                addProperty(RDF.type, LDT.Template).
+        importedTemplate2 = importedOntology.getOntModel().createIndividual("http://test/ontology/import/template2", LDT.Template).
                 addLiteral(LDT.match, "{other}/{path}").
                 addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
-        importedOntology.getOntModel().createClass("http://test/ontology/import/template3").
-                addProperty(RDF.type, LDT.Template).
+        importedOntology.getOntModel().createIndividual("http://test/ontology/import/template3", LDT.Template).
                 addLiteral(LDT.match, "more/specific/{path}").
                 addProperty(RDFS.isDefinedBy, importedOntology).
                 as(Template.class);
         
-        template1 = ontology.getOntModel().createClass("http://test/ontology/template1").
-                addProperty(RDF.type, LDT.Template).
+        template1 = ontology.getOntModel().createIndividual("http://test/ontology/template1", LDT.Template).
                 addLiteral(LDT.match, "more/specific/{path}").
                 addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
-        ontology.getOntModel().createClass("http://test/ontology/template2").
-                addProperty(RDF.type, LDT.Template).
+        ontology.getOntModel().createIndividual("http://test/ontology/template2", LDT.Template).
                 addLiteral(LDT.match, "other/{path}").
                 addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
-        template3 = ontology.getOntModel().createClass("http://test/ontology/template3").
-                addProperty(RDF.type, LDT.Template).
+        template3 = ontology.getOntModel().createIndividual("http://test/ontology/template3", LDT.Template).
                 addLiteral(LDT.match, "other/{path}").
                 addLiteral(LDT.priority, 1). // priority takes precedence
                 addProperty(RDFS.isDefinedBy, ontology).
@@ -116,8 +108,7 @@ public class TemplateMatcherTest
     public void testTemplateWithNoPath()
     {
         Ontology invalidOntology = ModelFactory.createOntologyModel().createOntology("http://test/invalid-ontology");
-        Template invalidTemplate = invalidOntology.getOntModel().createClass("http://test/invalid-ontology/no-path-template").
-                addProperty(RDF.type, LDT.Template).
+        Template invalidTemplate = invalidOntology.getOntModel().createIndividual("http://test/invalid-ontology/no-path-template", LDT.Template).
                 as(Template.class);
         invalidTemplate.addProperty(RDFS.isDefinedBy, invalidOntology);
         
@@ -129,8 +120,7 @@ public class TemplateMatcherTest
     public void testTemplateWithNumericalPath()
     {
         Ontology invalidOntology = ModelFactory.createOntologyModel().createOntology("http://test/invalid-ontology");
-        Template invalidTemplate = invalidOntology.getOntModel().createClass("http://test/invalid-ontology/invalid-template").
-                addProperty(RDF.type, LDT.Template).
+        Template invalidTemplate = invalidOntology.getOntModel().createIndividual("http://test/invalid-ontology/invalid-template", LDT.Template).
                 as(Template.class);
         invalidTemplate.addLiteral(LDT.match, 123).
                 addProperty(RDFS.isDefinedBy, invalidOntology);
