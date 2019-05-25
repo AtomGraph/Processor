@@ -124,18 +124,37 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.resourceContext = resourceContext;
         this.querySolutionMap = templateCall.getQuerySolutionMap();
         this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-        if (templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type).canAs(org.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
+        
+        if (templateCall.getTemplate().getQuery() == null)
         {
-            org.spinrdf.model.Template queryTemplate = templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type).as(org.spinrdf.model.Template.class);
+            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' is missing", templateCall.getTemplate());
+            throw new OntologyException("ldt:query value for template '" + templateCall.getTemplate() + "' is missing");
+        }
+        Resource queryType = templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type);
+        if (queryType == null)
+        {
+            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' does not have a type", templateCall.getTemplate());
+            throw new OntologyException("ldt:query value of template '" + templateCall.getTemplate() + "' does not have a type");
+        }
+        if (queryType.canAs(org.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
+        {
+            org.spinrdf.model.Template queryTemplate = queryType.as(org.spinrdf.model.Template.class);
             this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
         }
         else
             this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+        
         if (templateCall.getTemplate().getUpdate() != null)
         {
-            if (templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type).canAs(org.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
+            Resource updateType = templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type);
+            if (updateType == null)
             {
-                org.spinrdf.model.Template updateTemplate = templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type).as(org.spinrdf.model.Template.class);
+                if (log.isErrorEnabled()) log.error("ldt:update value for template '{}' does not have a type", templateCall.getTemplate());
+                throw new OntologyException("ldt:update value for template '" + templateCall.getTemplate() + "' does not have a type");
+            }
+            if (updateType.canAs(org.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
+            {
+                org.spinrdf.model.Template updateTemplate = updateType.as(org.spinrdf.model.Template.class);
                 this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
             }
             else

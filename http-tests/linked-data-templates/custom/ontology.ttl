@@ -35,6 +35,24 @@
     ldt:extends :DefaultSubjectSuperTemplate ;
     rdfs:isDefinedBy : .
 
+:MissingQueryTemplate a ldt:Template ;
+    rdfs:label "Missing query template" ;
+    ldt:match "/missing-query" ;
+    rdfs:isDefinedBy : .
+
+:InvalidQueryTemplate a ldt:Template ;
+    rdfs:label "Invalid query template" ;
+    ldt:match "/invalid-query" ;
+    ldt:query _:blank ;
+    rdfs:isDefinedBy : .
+
+:InvalidUpdateTemplate a ldt:Template ;
+    rdfs:label "Invalid update template" ;
+    ldt:match "/invalid-update" ;
+    ldt:query :DefaultSubjectQuery ;
+    ldt:update _:blank ;
+    rdfs:isDefinedBy : .
+
 # params
 
 :OptionalParam a ldt:Parameter ;
