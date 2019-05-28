@@ -4,5 +4,5 @@
 
 curl -w "%{http_code}\n" -f -s \
   -H "Accept: application/n-quads" \
-  "${BASE_URL}default-subject?object=default%20object" \
+  "${BASE_URL}this-unbound" \
 | grep -q "${STATUS_OK}"

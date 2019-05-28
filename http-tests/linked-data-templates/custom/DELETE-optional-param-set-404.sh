@@ -8,5 +8,5 @@ initialize_dataset "$BASE_URL_WRITABLE" "../../dataset.trig" "$ENDPOINT_URL_WRIT
 
 curl -w "%{http_code}\n" -f -s \
   -X DELETE \
-  "${BASE_URL_WRITABLE}default-subject?object=non-matching-literal" \
+  "${BASE_URL_WRITABLE}optional-param?object=non-matching-literal" \
 | grep -q "${STATUS_NOT_FOUND}"

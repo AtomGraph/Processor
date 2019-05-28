@@ -4,6 +4,42 @@
 
 }
 
+{
+
+    <super> <http://example.com/default-predicate> <super-object>, "super object" .
+
+}
+
+{
+
+    <missing-update> <http://example.com/default-predicate> <missing-update-object>, "missing update object" .
+
+}
+
+{
+
+    <mandatory-param> <http://example.com/default-predicate> <mandatory-object>, "mandatory object" .
+
+}
+
+{
+
+    <optional-param> <http://example.com/default-predicate> <optional-object>, "optional object" .
+
+}
+
+{
+
+    <optional-default-param> <http://example.com/default-predicate> <optional-default-object>, "optional default object" .
+
+}
+
+{
+
+    <inherited-param> <http://example.com/default-predicate> <inherited-object>, "inherited object" .
+
+}
+
 <graph-name>
 {
     

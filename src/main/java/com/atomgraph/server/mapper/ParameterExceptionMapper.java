@@ -26,7 +26,6 @@ import org.apache.jena.query.DatasetFactory;
  *
  * @author Martynas Jusevičius <martynas@atomgraph.com>
  */
-@Deprecated
 public class ParameterExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ParameterException>
 {
     

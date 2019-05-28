@@ -4,5 +4,5 @@
 
 curl -w "%{http_code}\n" -f -s \
   -H "Accept: application/n-quads" \
-  "${BASE_URL}default-subject?object=non-matching-literal" \
+  "${BASE_URL}mandatory-param?object=non-matching-literal" \
 | grep -q "${STATUS_NOT_FOUND}"

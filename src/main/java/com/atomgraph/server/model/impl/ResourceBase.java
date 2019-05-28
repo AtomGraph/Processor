@@ -252,7 +252,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdate());
         getSPARQLEndpoint().post(getUpdate(), Collections.<URI>emptyList(), Collections.<URI>emptyList());
 
-        return Response.noContent().build();
+        return Response.noContent().build(); // subsequent GET might still return 200 OK, depending on query solution map
     }
 
     /**

@@ -21,10 +21,15 @@
 
 # templates
 
+:ThisUnboundTemplate a ldt:Template ;
+    rdfs:label "?this unbound template" ;
+    ldt:match "/this-unbound" ;
+    ldt:query :ThisUnboundQuery ;
+    rdfs:isDefinedBy : .
+
 :DefaultSubjectSuperTemplate a ldt:Template ;
     rdfs:label "Default subject super template" ;
-    ldt:match "/match" ;
-    ldt:param :OptionalParam ;
+    ldt:match "/super" ;
     ldt:query [ a :DefaultSubjectQueryTemplate ] ;
     ldt:update [ a :DefaultSubjectUpdateTemplate ] ;
     rdfs:isDefinedBy : .
@@ -46,6 +51,12 @@
     ldt:query _:blank ;
     rdfs:isDefinedBy : .
 
+:MissingUpdateTemplate a ldt:Template ;
+    rdfs:label "Missing update template" ;
+    ldt:match "/missing-update" ;
+    ldt:query :DefaultSubjectQuery ;
+    rdfs:isDefinedBy : .
+
 :InvalidUpdateTemplate a ldt:Template ;
     rdfs:label "Invalid update template" ;
     ldt:match "/invalid-update" ;
@@ -53,15 +64,71 @@
     ldt:update _:blank ;
     rdfs:isDefinedBy : .
 
+:UnusedParamTemplate a ldt:Template ;
+    rdfs:label "Mandatory param template" ;
+    ldt:match "/mandatory-param" ;
+    ldt:query :DefaultSubjectQuery ; # param is not used if the query is not a SPIN template
+    ldt:param :IgnoredParam ;
+    rdfs:isDefinedBy : .
+
+:MandatoryParamTemplate a ldt:Template ;
+    rdfs:label "Mandatory param template" ;
+    ldt:match "/mandatory-param" ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:param :MandatoryParam ;
+    rdfs:isDefinedBy : .
+
+:OptionalParamTemplate a ldt:Template ;
+    rdfs:label "Optional param template" ;
+    ldt:match "/optional-param" ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:update [ a :DefaultSubjectUpdateTemplate ] ;
+    ldt:param :OptionalParam ;
+    rdfs:isDefinedBy : .
+
+:OptionalDefaultParamTemplate a ldt:Template ;
+    rdfs:label "Optional default param template" ;
+    ldt:match "/optional-default-param" ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:param :OptionalDefaultParam ;
+    rdfs:isDefinedBy : .
+
+:InheritedParamTemplate a ldt:Template ;
+    ldt:extends :OptionalParamTemplate ;
+    rdfs:label "Inherited param template" ;
+    ldt:match "/inherited-param" ;
+    rdfs:isDefinedBy : .
+
 # params
 
+:MandatoryParam a ldt:Parameter ;
+    rdfs:label "Mandatory parameter" ;
+    spl:predicate :object ;
+    spl:optional false ;
+    rdfs:isDefinedBy : .
+
 :OptionalParam a ldt:Parameter ;
-    rdfs:label "Object parameter" ;
+    rdfs:label "Optional parameter" ;
     spl:predicate :object ;
     spl:optional true ;
     rdfs:isDefinedBy : .
 
+:OptionalDefaultParam a ldt:Parameter ;
+    rdfs:label "Optional default parameter" ;
+    spl:predicate :object ;
+    spl:optional true ;
+    spl:defaultValue "optional default object" ;
+    rdfs:isDefinedBy : .
+
 # queries
+
+:ThisUnboundQuery a ldt:Query, sp:Describe ;
+    rdfs:label "Default subject query" ;
+    sp:text """DESCRIBE ?subject
+{
+    ?subject <http://example.com/default-predicate> ?object
+}""" ;
+    rdfs:isDefinedBy : .
 
 :DefaultSubjectQueryTemplate a spin:Template ;
     rdfs:label "Default subject query template" ;
@@ -71,9 +138,12 @@
 
 :DefaultSubjectQuery a ldt:Query, sp:Describe ;
     rdfs:label "Default subject query" ;
-    sp:text """DESCRIBE ?subject
+    sp:text """CONSTRUCT
 {
-    ?subject <http://example.com/default-predicate> ?object
+    ?this <http://example.com/default-predicate> ?object
+}
+{
+    ?this <http://example.com/default-predicate> ?object
 }""" ;
     rdfs:isDefinedBy : .
 
@@ -87,7 +157,7 @@
     rdfs:label "Default subject update" ;
     sp:text """DELETE WHERE
 {
-    ?subject <http://example.com/default-predicate> ?object
+    ?this <http://example.com/default-predicate> ?object
 }""" ;
     rdfs:isDefinedBy : .
 
