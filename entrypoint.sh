@@ -22,25 +22,25 @@ fi
 
 # set Context variables (which are used in $CATALINA_HOME/conf/Catalina/localhost/ROOT.xml)
 
-if [ ! -z "$ENDPOINT" ] ; then
+if [ -n "$ENDPOINT" ] ; then
     ENDPOINT_PARAM="--stringparam sd:endpoint $ENDPOINT "
 fi
-if [ ! -z "$GRAPH_STORE" ] ; then
+if [ -n "$GRAPH_STORE" ] ; then
     GRAPH_STORE_PARAM="--stringparam a:graphStore $GRAPH_STORE "
 fi
-if [ ! -z "$ONTOLOGY" ] ; then
+if [ -n "$ONTOLOGY" ] ; then
     ONTOLOGY_PARAM="--stringparam ldt:ontology $ONTOLOGY "
 fi
-if [ ! -z "$AUTH_USER" ] ; then
+if [ -n "$AUTH_USER" ] ; then
     AUTH_USER_PARAM="--stringparam srv:queryAuthUser $AUTH_USER "
 fi
-if [ ! -z "$AUTH_PWD" ] ; then
+if [ -n "$AUTH_PWD" ] ; then
     AUTH_PWD_PARAM="--stringparam srv:queryAuthPwd $AUTH_PWD "
 fi
-if [ ! -z "$PREEMPTIVE_AUTH" ] ; then
+if [ -n "$PREEMPTIVE_AUTH" ] ; then
     PREEMPTIVE_AUTH_PARAM="--stringparam a:preemptiveAuth $PREEMPTIVE_AUTH "
 fi
-if [ ! -z "$SITEMAP_RULES" ] ; then
+if [ -n "$SITEMAP_RULES" ] ; then
     SITEMAP_RULES_PARAM="--stringparam ap:sitemapRules $SITEMAP_RULES "
 fi
 
@@ -58,7 +58,7 @@ transform="xsltproc \
   conf/Catalina/localhost/context.xsl \
   conf/Catalina/localhost/ROOT.xml"
 
-eval $transform
+eval "$transform"
 
 # run Tomcat
 

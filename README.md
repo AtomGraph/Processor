@@ -66,7 +66,7 @@ Run the container with Wikidata's example like this (replace `//c/Users/namedgra
         -v "//c/Users/namedgraph/WebRoot/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
         atomgraph/processor
 
-After that, access http://localhost:8080/birthdays?limit=10 and you will retrieve RDF data with 10 people (or "entities") that have a birthday today.
+After that, access http://localhost:8080/birthdays and you will retrieve RDF data with people (or "entities") that have a birthday today.
 
 ## Maven
 
