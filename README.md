@@ -54,19 +54,19 @@ To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/R
 
 ### Example
 
-Run the container with Wikidata's example like this (replace `//c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
+Run the container with Wikidata's example like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
     docker run --rm \
         -p 8080:8080 \
         -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
         -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \
         -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
-        -v "//c/Users/namedgraph/WebRoot/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
-        -v "//c/Users/namedgraph/WebRoot/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
-        -v "//c/Users/namedgraph/WebRoot/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
+        -v "/c/Users/namedgraph/WebRoot/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
+        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
+        -v "/c/Users/namedgraph/WebRoot/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
         atomgraph/processor
 
-After that, access http://localhost:8080/birthdays and you will retrieve RDF data with people (or "entities") that have a birthday today.
+After that, open http://localhost:8080/birthdays in the browser and you will retrieve RDF descriptions of 100 people (or "entities") that have a birthday today. Alternatively you can run `curl http://localhost:8080/birthdays` from shell.
 
 ## Maven
 
