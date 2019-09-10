@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A provider that reads/writes model and resolves relative URIs against request base URI.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class BasedModelProvider extends ModelProvider
 {

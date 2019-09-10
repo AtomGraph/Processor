@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Model provider that skolemizes read triples against class URI templates in an ontology.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class SkolemizingModelProvider extends ValidatingModelProvider
 {

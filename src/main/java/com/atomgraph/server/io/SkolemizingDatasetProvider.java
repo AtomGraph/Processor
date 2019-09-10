@@ -33,7 +33,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Dataset provider that skolemizes read triples in each graph against class URI templates in an ontology.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
 {

@@ -26,7 +26,7 @@ import org.apache.jena.query.DatasetFactory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
 public class QueryParseExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<QueryParseException>

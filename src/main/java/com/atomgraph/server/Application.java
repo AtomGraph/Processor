@@ -78,7 +78,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class Application extends com.atomgraph.core.Application
 {

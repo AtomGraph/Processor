@@ -38,7 +38,7 @@ import org.spinrdf.constraints.ConstraintViolation;
 /**
  * Dataset provider that validates read triples in each graph against SPIN constraints in an ontology.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class ValidatingDatasetProvider extends DatasetProvider
 {

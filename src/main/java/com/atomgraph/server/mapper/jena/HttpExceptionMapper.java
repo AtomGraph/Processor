@@ -25,7 +25,7 @@ import org.apache.jena.query.DatasetFactory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Deprecated
 public class HttpExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<HttpException>

@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * JAX-RS provider for resource template class in the sitemap ontology that matches the current request.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class TemplateMatcher
 {
@@ -226,7 +226,7 @@ public class TemplateMatcher
      */
     public Template match(Ontology ontology, CharSequence path)
     {
-        if (ontology == null) throw new IllegalArgumentException("OntModel cannot be null");
+        if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         
         List<TemplatePrecedence> precedences = match(ontology, path, 0);
         if (!precedences.isEmpty())

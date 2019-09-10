@@ -32,7 +32,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
 public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, Template> implements ContextResolver<Template>

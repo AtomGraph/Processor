@@ -40,7 +40,7 @@ import org.slf4j.LoggerFactory;
  * Named graph resource.
  * Implements direct graph identification of the SPARQL Graph Store Protocol.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  * @see com.atomgraph.core.model.GraphStore
  * @see <a href="http://www.w3.org/TR/sparql11-http-rdf-update/#direct-graph-identification">4.1 Direct Graph Identification</a>
  */

@@ -20,7 +20,7 @@ import org.apache.jena.rdf.model.Model;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class SkolemizationException extends ModelException
 {

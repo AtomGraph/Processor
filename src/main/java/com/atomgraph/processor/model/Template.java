@@ -26,7 +26,7 @@ import org.apache.jena.rdf.model.Property;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public interface Template extends OntClass
 {

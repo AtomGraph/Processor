@@ -22,7 +22,7 @@ import org.apache.jena.update.UpdateRequest;
 /**
  * RDF resource, representation of which was queried from a SPARQL endpoint.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  * @see com.atomgraph.processor.query.QueryBuilder
  */
 public interface QueriedResource extends com.atomgraph.core.model.QueriedResource

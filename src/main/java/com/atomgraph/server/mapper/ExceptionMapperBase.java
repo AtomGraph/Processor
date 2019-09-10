@@ -48,7 +48,7 @@ import org.apache.jena.reasoner.rulesys.Rule;
 /**
  * Abstract base class for ExceptionMappers that build responses with exceptions as RDF resources.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
 abstract public class ExceptionMapperBase

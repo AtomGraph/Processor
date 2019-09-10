@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 /**
  * A filter that adds HATEOAS transitions to the RDF query result.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  * @see <a href="https://www.ics.uci.edu/~fielding/pubs/dissertation/rest_arch_style.htm">Representational State Transfer (REST): chapter 5</a>
  */
 @Provider

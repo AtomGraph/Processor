@@ -18,7 +18,7 @@ package com.atomgraph.processor.exception;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class OntologyException extends RuntimeException
 {

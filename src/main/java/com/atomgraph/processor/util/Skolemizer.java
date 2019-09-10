@@ -53,7 +53,7 @@ import org.slf4j.LoggerFactory;
  * Builder class that can build URIs from templates for RDF resources as well as models.
  * Needs to be initialized with sitemap ontology, ontology class matching request URI, and request URI information.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class Skolemizer
 {

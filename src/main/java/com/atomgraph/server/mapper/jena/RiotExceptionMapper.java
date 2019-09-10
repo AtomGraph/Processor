@@ -24,7 +24,7 @@ import org.apache.jena.query.DatasetFactory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 public class RiotExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<RiotException>
 {

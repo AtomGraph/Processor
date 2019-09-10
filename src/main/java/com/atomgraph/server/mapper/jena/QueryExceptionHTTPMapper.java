@@ -27,7 +27,7 @@ import org.apache.jena.query.DatasetFactory;
 /**
  * Maps (tunnels) Jena's remote query execution exception.
  * 
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
 @Deprecated
