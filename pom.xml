@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
-    <version>1.1.4-SNAPSHOT</version>
+    <version>2.0.2-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
@@ -52,12 +52,10 @@
                 <enabled>true</enabled>
             </releases>
         </repository>
-        <!--
         <repository>
-            <id>org.topbraid</id>
-            <url>http://topquadrant.com/repository/spin</url>
+            <id>jitpack.io</id>
+            <url>https://jitpack.io</url>
         </repository>
-        -->
     </repositories>
 
     <dependencies>
@@ -73,10 +71,18 @@
             <version>2.5</version>
             <scope>provided</scope>
         </dependency>
+        <!--
         <dependency>
             <groupId>org.spinrdf</groupId>
             <artifactId>spinrdf</artifactId>
             <version>3.0.0-SNAPSHOT</version>
+        </dependency>
+        -->
+        <!-- we need to use JitPack since SPINRDF is not published on Maven central -->
+        <dependency>
+            <groupId>com.github.spinrdf</groupId>
+            <artifactId>spinrdf</artifactId>
+            <version>0acf2c0fdaaa7038d795c98b72bce89b045887e9</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -99,12 +105,12 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-release-plugin</artifactId>
-                <version>2.1</version>
+                <version>2.5.3</version>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>1.7</source>
                     <target>1.7</target>
@@ -116,7 +122,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
-                <version>2.4</version>
+                <version>3.2.3</version>
                 <configuration>
                     <failOnMissingWebXml>true</failOnMissingWebXml>
                     <attachClasses>true</attachClasses>
@@ -125,7 +131,7 @@
             <plugin>
                 <groupId>org.sonatype.plugins</groupId>
                 <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.3</version>
+                <version>1.6.8</version>
                 <extensions>true</extensions>
                 <configuration>
                     <serverId>ossrh</serverId>
@@ -169,7 +175,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-source-plugin</artifactId>
-                        <version>2.2.1</version>
+                        <version>3.1.0</version>
                         <executions>
                             <execution>
                                 <id>attach-sources</id>
@@ -182,7 +188,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-javadoc-plugin</artifactId>
-                        <version>2.9.1</version>
+                        <version>3.1.1</version>
                         <executions>
                             <execution>
                                 <id>attach-javadocs</id>
@@ -195,7 +201,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
