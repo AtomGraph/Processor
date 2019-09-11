@@ -40,6 +40,12 @@
 
 }
 
+{
+
+    <value-type-param> <http://example.com/default-predicate> <value-type-object>, 42 .
+
+}
+
 <graph-name>
 {
     

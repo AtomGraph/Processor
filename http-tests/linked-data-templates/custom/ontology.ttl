@@ -2,6 +2,7 @@
 
 @prefix :     <#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
@@ -99,7 +100,14 @@
     ldt:match "/inherited-param" ;
     rdfs:isDefinedBy : .
 
-# params
+:ValueTypeParamTemplate a ldt:Template ;
+    rdfs:label "Value type param template" ;
+    ldt:match "/value-type-param" ;
+    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:param :ValueTypeParam ;
+    rdfs:isDefinedBy : .
+
+# parameters
 
 :MandatoryParam a ldt:Parameter ;
     rdfs:label "Mandatory parameter" ;
@@ -118,6 +126,13 @@
     spl:predicate :object ;
     spl:optional true ;
     spl:defaultValue "optional default object" ;
+    rdfs:isDefinedBy : .
+
+:ValueTypeParam a ldt:Parameter ;
+    rdfs:label "Value typed parameter" ;
+    spl:predicate :object ;
+    spl:optional false ;
+    spl:valueType xsd:integer ;
     rdfs:isDefinedBy : .
 
 # queries
