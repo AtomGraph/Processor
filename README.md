@@ -14,8 +14,8 @@ For a compatible frontend framework for end-user applications, see [AtomGraph We
 # Getting started
 
 * [how AtomGraph Processor works](../../wiki/How-Processor-works)
+* [Linked Data Templates](../../wiki/Linked-Data-Templates)
 * [installing AtomGraph Processor](../../wiki/Installation)
-* [configuring AtomGraph Processor](../../wiki/Configuration)
 
 For full documentation, see the [wiki index](../../wiki).
 
