@@ -7,17 +7,17 @@ What AtomGraph Processor provides for users as out-of-the-box generic features:
 * HTTP content negotiation and caching support
 * a separate RDF resource for every application state, following the [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) principle
 
-AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](../../wiki/Articles-and-presentations) about AtomGraph.
+AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](https://github.com/AtomGraph/Processor/wiki/Articles-and-presentations) about AtomGraph.
 
-For a compatible frontend framework for end-user applications, see [AtomGraph Web-Client](../../../Web-Client).
+For a compatible frontend framework for end-user applications, see [AtomGraph Web-Client](https://github.com/AtomGraph/Web-Client).
 
 # Getting started
 
-* [how AtomGraph Processor works](../../wiki/How-Processor-works)
-* [Linked Data Templates](../../wiki/Linked-Data-Templates)
-* [installing AtomGraph Processor](../../wiki/Installation)
+* [how AtomGraph Processor works](https://github.com/AtomGraph/Processor/wiki/How-Processor-works)
+* [Linked Data Templates](https://github.com/AtomGraph/Processor/wiki/Linked-Data-Templates)
+* [installing AtomGraph Processor](https://github.com/AtomGraph/Processor/wiki/Installation)
 
-For full documentation, see the [wiki index](../../wiki).
+For full documentation, see the [wiki index](https://github.com/AtomGraph/Processor/wiki).
 
 # Usage
 
@@ -88,7 +88,7 @@ Processor includes a basic HTTP [test suite](http-tests) for Linked Data Templat
 
 # Support
 
-Please [report issues](../../issues) if you've encountered a bug or have a feature request.
+Please [report issues](https://github.com/AtomGraph/Processor/issues) if you've encountered a bug or have a feature request.
 
 Commercial consulting, development, and support are available from [AtomGraph](https://atomgraph.com).
 
