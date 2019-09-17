@@ -54,7 +54,7 @@ To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/R
 
 ### Example
 
-Run the container with [Wikidata's example ontology](examples/wikidata.ttl) like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
+Run the container with [Wikidata's example](examples) like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
     docker run --rm \
         -p 8080:8080 \
