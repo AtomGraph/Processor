@@ -54,7 +54,7 @@ To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/R
 
 ### Example
 
-Run the container with [Wikidata's example](examples) like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
+Run the container with [Wikidata's example](https://github.com/AtomGraph/Processor/tree/master/examples) like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
     docker run --rm \
         -p 8080:8080 \
@@ -82,7 +82,7 @@ For a commercial triplestore with SPARQL 1.1 support see [Dydra](https://dydra.c
 
 # Test suite
 
-Processor includes a basic HTTP [test suite](http-tests) for Linked Data Templates.
+Processor includes a basic HTTP [test suite](https://github.com/AtomGraph/Processor/tree/master/http-tests) for Linked Data Templates.
 
 [![Build status](https://api.travis-ci.org/AtomGraph/Processor.svg?branch=master)](https://travis-ci.org/AtomGraph/Processor)
 
