@@ -70,7 +70,7 @@ After that, open http://localhost:8080/birthdays in the browser and you will ret
 
 ## Maven
 
-Processor will be released on Maven central when it reaches the 2.1 version.
+Processor is released on Maven central as [`com.atomgraph:processor`](https://search.maven.org/artifact/com.atomgraph/processor/).
 
 # Datasource
 
