@@ -49,6 +49,8 @@ function wait_to_finish {
 
 ### Arguments ###
 
+# context variables are used in $CATALINA_HOME/conf/Catalina/localhost/ROOT.xml
+
 if [ -z "$ENDPOINT" ] ; then
     echo '$ENDPOINT not set'
     exit 1
