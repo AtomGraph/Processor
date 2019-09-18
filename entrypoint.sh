@@ -31,7 +31,6 @@ trap "ignore_signal HUP" "HUP"
 ### Sleeper function ###
 
 # $1 process PID
-# $2 function
 function wait_to_finish {
     while true; do
         sleep 1 &
