@@ -1,5 +1,54 @@
 #!/bin/bash
 
+### Signal handlers ###
+
+function handle_signal {
+    case "$1" in
+      TERM|INT|EXIT)
+        if [ -n "$CMD_PID" ]; then
+          kill "$CMD_PID" &>/dev/null
+          sleep 1
+        fi
+        
+        echo "Exiting ..." >&2
+        exit 0
+        ;;
+      *)
+        echo "Terminating abnormally" >&2
+        exit 1
+        ;;
+    esac
+}
+
+function ignore_signal {
+  log "Caught signal $1 - ignored" >&2
+}
+
+trap "handle_signal TERM" "TERM"
+trap "handle_signal INT" "INT"
+trap "ignore_signal HUP" "HUP"
+
+### Sleeper function ###
+
+# $1 process PID
+# $2 function
+function wait_to_finish {
+    while true; do
+        sleep 1 &
+        PID=$!
+
+        if ! wait $PID ; then
+            kill $PID &>/dev/null
+        fi
+
+        if ! ps -p "$1" > /dev/null ; then # process not running anymore
+           break; # exit while loop
+        fi
+    done
+}
+
+### Arguments ###
+
 if [ -z "$ENDPOINT" ] ; then
     echo '$ENDPOINT not set'
     exit 1
@@ -44,6 +93,8 @@ if [ -n "$SITEMAP_RULES" ] ; then
     SITEMAP_RULES_PARAM="--stringparam ap:sitemapRules $SITEMAP_RULES "
 fi
 
+### Execution ###
+
 # $CATALINA_HOME must be the WORKDIR at this point
 
 transform="xsltproc \
@@ -60,10 +111,13 @@ transform="xsltproc \
 
 eval "$transform"
 
-# run Tomcat
+# run Tomcat process in the background
 
 if [ -z "$JPDA_ADDRESS" ] ; then
-    catalina.sh run
+    catalina.sh run &
 else
-    catalina.sh jpda run
+    catalina.sh jpda run &
 fi
+
+CMD_PID=$!
+wait_to_finish $CMD_PID
