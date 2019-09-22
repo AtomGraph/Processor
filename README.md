@@ -100,6 +100,8 @@ After that, open one of the following URLs in the browser and you will retrieve 
 
 Alternatively you can run `curl http://localhost:8080/` etc. from shell.
 
+_Note that Wikidata's SPARQL endpoint [`https://query.wikidata.org/bigdata/namespace/wdq/sparql`](https://query.wikidata.org/bigdata/namespace/wdq/sparql) is very popular and therefore often overloaded. An error response received by the SPARQL client from Wikidata will result in `500 Internal Server Error` response by the Processor._
+
 ## Maven
 
 Processor is released on Maven central as [`com.atomgraph:processor`](https://search.maven.org/artifact/com.atomgraph/processor/).
