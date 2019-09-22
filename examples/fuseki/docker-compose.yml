@@ -15,7 +15,6 @@ services:
     ports:
       - 8080:8080
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
