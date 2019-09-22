@@ -22,6 +22,6 @@
     ja:defaultGraph
       [ rdfs:label "dataset.ttl" ;
         a ja:MemoryModel ;
-        ja:content [ja:externalContent <file:/tmp/data/dataset.ttl> ] ;
+        ja:content [ ja:externalContent <file:/tmp/data/dataset.ttl> ] ;
       ] ;
     .
