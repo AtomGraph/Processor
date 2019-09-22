@@ -5,17 +5,45 @@
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
+@prefix spin: <http://spinrdf.org/spin#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
 
 : a ldt:Ontology ;
     owl:imports ldt:, sp: ;
     rdfs:label "Wikidata's LDT ontology" .
 
+# root
+
+:RootTemplate a ldt:Template ;
+    rdfs:label "Root resource template" ;
+    ldt:match "/" ;
+    ldt:query :RootQuery ;
+    rdfs:isDefinedBy : .
+
+:RootQuery a ldt:Query, sp:Construct ;
+    rdfs:label "Root query" ;
+    sp:text """PREFIX foaf:   <http://xmlns.com/foaf/0.1/>
+PREFIX dct:    <http://purl.org/dc/terms/>
+PREFIX rdfs:    <http://www.w3.org/2000/01/rdf-schema#>
+
+CONSTRUCT 
+  { 
+    ?this a foaf:Document ;
+        dct:title "This is an RDF document served by AtomGraph Processor" ;
+        rdfs:seeAlso <birthdays>, <sparql> .
+  }
+WHERE
+  {
+  }""" ;
+    rdfs:isDefinedBy : .
+
+# birthdays
+
 :BirthdaysTemplate a ldt:Template ;
     rdfs:label "People born today" ;
     ldt:match "/birthdays" ;
     ldt:param :SexParam ;
-    ldt:query :BirthdaysQuery ;
+    ldt:query [ a :BirthdaysQueryTemplate ] ;
     rdfs:isDefinedBy : .
 
 :SexParam a ldt:Parameter ;
@@ -23,6 +51,12 @@
     spl:predicate :sex ;
     spl:valueType rdfs:Resource ;
     spl:optional true ;
+    rdfs:isDefinedBy : .
+
+:BirthdaysQueryTemplate a spin:Template ;
+    rdfs:label "Birthdays query template" ;
+    spin:constraint :SexParam ;
+    spin:body :BirthdaysQuery ;
     rdfs:isDefinedBy : .
 
 :BirthdaysQuery a ldt:Query, sp:Construct ;
@@ -33,14 +67,16 @@ PREFIX  wikibase: <http://wikiba.se/ontology#>
 
 CONSTRUCT 
   { 
-    ?entity <https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#year> ?year .
+    ?entity <https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#birthYear> ?year ;
+        wdt:P21 ?sex
   }
 WHERE
   { SELECT  ?entity ?year
     WHERE
       { BIND(month(now()) AS ?nowMonth)
         BIND(day(now()) AS ?nowDay)
-        ?entity  wdt:P569  ?date
+        ?entity wdt:P569 ?date .
+        ?entity wdt:P21 ?sex .
         FILTER ( ( month(?date) = ?nowMonth ) && ( day(?date) = ?nowDay ) )
         SERVICE wikibase:label
           { bd:serviceParam

@@ -52,9 +52,35 @@ The mapping has to be a file in N3 format and mounted to the `/usr/local/tomcat/
 
 To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties`.
 
-### Example
+### Examples
 
-Run the container with [Wikidata's example](https://github.com/AtomGraph/Processor/tree/master/examples) like this (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
+The examples shows Processor running with combinations of
+* default and custom LDT ontologies
+* local and remote SPARQL services
+* Docker commands
+
+However different combinations are supported as well.
+
+#### Default ontology and a local SPARQL service
+
+The [Fuseki example](https://github.com/AtomGraph/Processor/tree/master/examples/fuseki) shows how to run a local Fuseki SPARQL service together with Processor. Fuseki loads RDF dataset from a file. Processor uses a built-in LDT ontology.
+It uses the [`docker-compose`](https://docs.docker.com/compose/) command.
+
+Run the Processor container together with [Fuseki](https://hub.docker.com/r/atomgraph/fuseki) container:
+
+    docker-compose up
+
+After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
+* `http://localhost:8080/` - root resource
+
+Alternatively you can run `curl http://localhost:8080/` etc. from shell.
+
+#### Custom ontology and a remote SPARQL service
+
+The [Wikidata example](https://github.com/AtomGraph/Processor/tree/master/examples/wikidata) example shows to run Processor with a custom LDT ontology and a remote SPARQL service.
+It uses the [`docker run`](https://docs.docker.com/engine/reference/run/) command.
+
+Run the Processor container (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
     docker run --rm \
         -p 8080:8080 \
@@ -62,11 +88,17 @@ Run the container with [Wikidata's example](https://github.com/AtomGraph/Process
         -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \
         -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
         -v "/c/Users/namedgraph/WebRoot/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
-        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
-        -v "/c/Users/namedgraph/WebRoot/Processor/examples/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
+        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
+        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
         atomgraph/processor
 
-After that, open http://localhost:8080/birthdays in the browser and you will retrieve RDF descriptions of 100 people (or "entities") that have a birthday today. Alternatively you can run `curl http://localhost:8080/birthdays` from shell.
+After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
+* `http://localhost:8080/` - root resource
+* `http://localhost:8080/birthdays` - 100 people born today
+* `http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581072` - 100 females born today
+* `http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581097` - 100 males born today
+
+Alternatively you can run `curl http://localhost:8080/` etc. from shell.
 
 ## Maven
 
