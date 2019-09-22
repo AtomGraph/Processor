@@ -71,7 +71,7 @@ Run the Processor container together with [Fuseki](https://hub.docker.com/r/atom
     docker-compose up
 
 After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
-* `http://localhost:8080/` - root resource
+* [`http://localhost:8080/`](http://localhost:8080/) - root resource
 
 Alternatively you can run `curl http://localhost:8080/` etc. from shell.
 
@@ -93,10 +93,10 @@ Run the Processor container (replace `/c/Users/namedgraph/WebRoot/...` paths wit
         atomgraph/processor
 
 After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
-* `http://localhost:8080/` - root resource
-* `http://localhost:8080/birthdays` - 100 people born today
-* `http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581072` - 100 females born today
-* `http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581097` - 100 males born today
+* [`http://localhost:8080/`](http://localhost:8080/) - root resource
+* [`http://localhost:8080/birthdays`](http://localhost:8080/birthdays) - 100 people born today
+* [`http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581072`](http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581072) - 100 females born today
+* [`http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581097`](http://localhost:8080/birthdays?sex=http%3A%2F%2Fwww.wikidata.org%2Fentity%2FQ6581097) - 100 males born today
 
 Alternatively you can run `curl http://localhost:8080/` etc. from shell.
 
