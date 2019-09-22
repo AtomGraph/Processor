@@ -54,7 +54,7 @@ To enable logging, mount `log4j.properties` file to `/usr/local/tomcat/webapps/R
 
 ### Examples
 
-The examples shows Processor running with combinations of
+The examples show Processor running with combinations of
 * default and custom LDT ontologies
 * local and remote SPARQL services
 * Docker commands
