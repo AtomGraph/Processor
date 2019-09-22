@@ -75,13 +75,9 @@ WHERE
     WHERE
       { BIND(month(now()) AS ?nowMonth)
         BIND(day(now()) AS ?nowDay)
-        ?entity wdt:P569 ?date .
-        ?entity wdt:P21 ?sex .
+        ?entity wdt:P569 ?date ;
+            wdt:P21 ?sex .
         FILTER ( ( month(?date) = ?nowMonth ) && ( day(?date) = ?nowDay ) )
-        SERVICE wikibase:label
-          { bd:serviceParam
-                      wikibase:language  "en"
-          }
         BIND(year(?date) AS ?year)
       }
     LIMIT 100
