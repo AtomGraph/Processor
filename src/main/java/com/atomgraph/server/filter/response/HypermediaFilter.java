@@ -16,7 +16,6 @@
 
 package com.atomgraph.server.filter.response;
 
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import com.sun.jersey.spi.container.ContainerRequest;
@@ -32,6 +31,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
+import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 public class HypermediaFilter implements ContainerResponseFilter
 {
     private static final Logger log = LoggerFactory.getLogger(HypermediaFilter.class);
-            
+
     @Context Providers providers;
     @Context UriInfo uriInfo;
     
@@ -58,7 +58,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
         if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(CREATED) ||
                 response.getStatusType().equals(NOT_FOUND) || response.getStatusType().equals(INTERNAL_SERVER_ERROR) || 
-                response.getEntity() == null || (!(response.getEntity() instanceof Model)))
+                response.getEntity() == null || (!(response.getEntity() instanceof Dataset)))
             return response;
         
         TemplateCall templateCall = getTemplateCall();
@@ -73,54 +73,13 @@ public class HypermediaFilter implements ContainerResponseFilter
             state.addProperty(C.viewOf, requestUri). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
 
-//        if (templateCall.hasArgument(DH.limit)) // pages must have limits
-//        {
-//            if (log.isDebugEnabled()) log.debug("Adding Page metadata: {} dh:pageOf {}", state, absolutePath);
-//            state.addProperty(DH.pageOf, absolutePath).
-//                addProperty(RDF.type, DH.Page); // do we still need dh:Page now that we have core:View?
-//
-//            addPrevNextPage(templateCall, absolutePath, state);
-//        }
-
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
-        response.setEntity(state.getModel().add((Model)response.getEntity()));
+        Dataset newEntity = ((Dataset)response.getEntity());
+        newEntity.getDefaultModel().add(state.getModel());
+        response.setEntity(newEntity);
         
         return response;
     }
-        
-//    public void addPrevNextPage(TemplateCall templateCall, Resource absolutePath, Resource state)
-//    {
-//        if (templateCall == null) throw new IllegalArgumentException("TemplateCall cannot be null");
-//        if (absolutePath == null) throw new IllegalArgumentException("Resource cannot be null");
-//        if (state == null) throw new IllegalArgumentException("Resource cannot be null");
-//        
-//        Long limit = templateCall.getArgumentProperty(DH.limit).getLong();
-//        Long offset = Long.valueOf(0);
-//        if (templateCall.hasArgument(DH.offset)) offset = templateCall.getArgumentProperty(DH.offset).getLong();
-//
-//        if (offset >= limit)
-//        {
-//            com.atomgraph.core.util.StateBuilder prevBuilder = TemplateCall.fromResource(state);
-//            Resource prev = prevBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset - limit)).
-//                build().
-//                addProperty(DH.pageOf, absolutePath).
-//                addProperty(RDF.type, DH.Page).
-//                addProperty(XHV.next, state);
-//
-//            if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:previous {}", state, prev);
-//            state.addProperty(XHV.prev, prev);
-//        }
-//
-//        com.atomgraph.core.util.StateBuilder nextBuilder = TemplateCall.fromResource(state);
-//        Resource next = nextBuilder.replaceProperty(DH.offset, ResourceFactory.createTypedLiteral(offset + limit)).
-//            build().
-//            addProperty(DH.pageOf, absolutePath).
-//            addProperty(RDF.type, DH.Page).
-//            addProperty(XHV.prev, state);
-//
-//        if (log.isDebugEnabled()) log.debug("Adding page metadata: {} xhv:next {}", state, next);
-//        state.addProperty(XHV.next, next);
-//    }
 
     public TemplateCall getTemplateCall()
     {
