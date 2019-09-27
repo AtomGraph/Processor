@@ -20,3 +20,15 @@ services:
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
+  nginx:
+    image: nginx
+    depends_on:
+      - processor
+    ports:
+      - 80:80
+    environment:
+      - PROXY_PASS=http://processor:8080 # internal Processor URL (hostname equals docker-compose service name)
+      - PROXY_SET_HOST=example.org # the hostname set on the request URI before it's passed to Processor
+    volumes:
+      - ./nginx.conf.template:/etc/nginx/nginx.conf.template:ro
+    command: /bin/bash -c "envsubst '$$PROXY_PASS $$PROXY_SET_HOST' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && cat /etc/nginx/nginx.conf && nginx -g 'daemon off;'"

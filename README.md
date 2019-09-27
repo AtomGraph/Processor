@@ -66,14 +66,19 @@ However different combinations are supported as well.
 The [Fuseki example](https://github.com/AtomGraph/Processor/tree/master/examples/fuseki) shows how to run a local [Fuseki](https://jena.apache.org/documentation/fuseki2/) SPARQL service together with Processor. Fuseki loads RDF dataset from a file. Processor uses a built-in LDT ontology.
 It uses the [`docker-compose`](https://docs.docker.com/compose/) command.
 
-Run the Processor container together with [Fuseki](https://hub.docker.com/r/atomgraph/fuseki) container:
+Run the Processor container together with [Fuseki](https://hub.docker.com/r/atomgraph/fuseki) and [nginx](https://hub.docker.com/_/nginx) container:
 
     docker-compose up
 
 After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
 * [`http://localhost:8080/`](http://localhost:8080/) - root resource
+* [`http://localhost/`](http://localhost/) - root resource where the hostname of the Processor's base URI is rewritten to `example.org`
 
 Alternatively you can run `curl http://localhost:8080/` etc. from shell.
+
+In this setup we have nginx as a reverse proxy in front of Processor. That makes Processor also available on `http://localhost/` which is the nginx host.
+The internal hostname rewriting is done by nginx and useful in situations where the Processor hostname is different from the application's dataset base URI and SPARQL queries do not match any triples.
+The [dataset](https://github.com/AtomGraph/Processor/blob/master/examples/fuseki/dataset.ttl) for this example contains a second `http://example.org/` base URI, which works with the rewritten `example.org` hostname.
 
 #### Custom ontology and a remote SPARQL service
 
