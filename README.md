@@ -63,7 +63,7 @@ However different combinations are supported as well.
 
 #### Default ontology and a local SPARQL service
 
-The [Fuseki example](https://github.com/AtomGraph/Processor/tree/master/examples/fuseki) shows how to run a local [Fuseki](https://jena.apache.org/documentation/fuseki2/) SPARQL service together with Processor. Fuseki loads RDF dataset from a file. Processor uses a built-in LDT ontology.
+The [Fuseki example](https://github.com/AtomGraph/Processor/tree/master/examples/fuseki) shows how to run a local [Fuseki](https://jena.apache.org/documentation/fuseki2/) SPARQL service together with Processor and how to setup [nginx](https://www.nginx.com) as a reverse proxy in front of Processor. Fuseki loads RDF dataset from a file. Processor uses a built-in LDT ontology.
 It uses the [`docker-compose`](https://docs.docker.com/compose/) command.
 
 Run the Processor container together with [Fuseki](https://hub.docker.com/r/atomgraph/fuseki) and [nginx](https://hub.docker.com/_/nginx) container:
