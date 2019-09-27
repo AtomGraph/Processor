@@ -31,4 +31,4 @@ services:
       - PROXY_SET_HOST=example.org # the hostname set on the request URI before it's passed to Processor
     volumes:
       - ./nginx.conf.template:/etc/nginx/nginx.conf.template:ro
-    command: /bin/bash -c "envsubst '$$PROXY_PASS $$PROXY_SET_HOST' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && cat /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
+    command: /bin/bash -c "envsubst '$$PROXY_PASS $$PROXY_SET_HOST' < /etc/nginx/nginx.conf.template > /etc/nginx/nginx.conf && nginx -g 'daemon off;'"
