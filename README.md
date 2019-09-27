@@ -76,8 +76,8 @@ After that, open one of the following URLs in the browser and you will retrieve 
 
 Alternatively you can run `curl http://localhost:8080/` etc. from shell.
 
-In this setup we have nginx as a reverse proxy in front of Processor. That makes Processor also available on `http://localhost/` which is the nginx host.
-The internal hostname rewriting is done by nginx and useful in situations where the Processor hostname is different from the application's dataset base URI and SPARQL queries do not match any triples.
+In this setup Processor is also available on `http://localhost/` which is the nginx host.
+The internal hostname rewriting is done by nginx and useful in situations when the Processor hostname is different from the application's dataset base URI and SPARQL queries do not match any triples.
 The [dataset](https://github.com/AtomGraph/Processor/blob/master/examples/fuseki/dataset.ttl) for this example contains a second `http://example.org/` base URI, which works with the rewritten `example.org` hostname.
 
 #### Custom ontology and a remote SPARQL service
