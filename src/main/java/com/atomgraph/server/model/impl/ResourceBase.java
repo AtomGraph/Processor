@@ -33,7 +33,6 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.exception.NotFoundException;
 import com.atomgraph.core.model.GraphStore;
-import com.atomgraph.core.model.SPARQLEndpoint;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -250,7 +249,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
             
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdate());
-        getSPARQLEndpoint().post(getUpdate(), Collections.<URI>emptyList(), Collections.<URI>emptyList());
+        getService().getEndpointAccessor().update(getUpdate(), Collections.<URI>emptyList(), Collections.<URI>emptyList());
 
         return Response.noContent().build(); // subsequent GET might still return 200 OK, depending on query solution map
     }
@@ -384,10 +383,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return ontology;
     }
  
-    public SPARQLEndpoint getSPARQLEndpoint()
-    {
-        return getService().getSPARQLEndpoint(getRequest());
-    }
+//    public SPARQLEndpoint getSPARQLEndpoint()
+//    {
+//        return getService().getSPARQLEndpoint(getRequest());
+//    }
     
     public GraphStore getGraphStore()
     {
