@@ -62,21 +62,25 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     @Override
     public Response get()
     {
-        if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI(), getGraphStore());
-        return getResponse(DatasetFactory.create(getGraphStore().getModel(getURI().toString())));
+        if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI());
+        return getResponse(DatasetFactory.create(getService().getDatasetAccessor().getModel(getURI().toString())));
     }
 
     @Override
     public Response post(Dataset dataset)
     {
-        if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        return getGraphStore().post(dataset.getDefaultModel(), Boolean.FALSE, getURI());
+        if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI());
+        
+        Dataset newDataset = DatasetFactory.create();
+        newDataset.addNamedModel(getURI().toString(), dataset.getDefaultModel()); // put request entity graph into a named graph
+        
+        return super.post(newDataset);
     }
 
     @Override
     public Response put(Dataset dataset)
     {
-        Model existing = getGraphStore().getModel(getURI().toString());
+        Model existing = getService().getDatasetAccessor().getModel(getURI().toString());
 
         if (!existing.isEmpty()) // remove existing representation
         {
@@ -89,8 +93,8 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
             }
         }
         
-        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore {}", getURI(), getGraphStore());
-        getGraphStore().put(dataset.getDefaultModel(), Boolean.FALSE, getURI());
+        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore", getURI());
+        getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
         
         if (existing.isEmpty()) return Response.created(getURI()).build();
         else return Response.ok(dataset).build();
@@ -99,8 +103,11 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     @Override
     public Response delete()
     {
-        if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore {}", getURI(), getGraphStore());
-        return getGraphStore().delete(Boolean.FALSE, getURI());
+        if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore", getURI());
+        
+        getService().getDatasetAccessor().deleteModel(getURI().toString());
+        
+        return Response.noContent().build();
     }
     
 }

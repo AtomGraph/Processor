@@ -102,6 +102,7 @@ public class Application extends com.atomgraph.core.Application
             servletConfig.getServletContext().getInitParameter(A.dataset.getURI()) != null ? getDataset(servletConfig.getServletContext().getInitParameter(A.dataset.getURI()), null) : null,
             servletConfig.getServletContext().getInitParameter(SD.endpoint.getURI()) != null ? servletConfig.getServletContext().getInitParameter(SD.endpoint.getURI()) : null,
             servletConfig.getServletContext().getInitParameter(A.graphStore.getURI()) != null ? servletConfig.getServletContext().getInitParameter(A.graphStore.getURI()) : null,
+            servletConfig.getServletContext().getInitParameter(A.quadStore.getURI()) != null ? servletConfig.getServletContext().getInitParameter(A.quadStore.getURI()) : null,
             servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) != null ? servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthUser.getSymbol()) : null,
             servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) != null ? servletConfig.getServletContext().getInitParameter(org.apache.jena.sparql.engine.http.Service.queryAuthPwd.getSymbol()) : null,
             new MediaTypes(), getClient(new DefaultClientConfig()),
@@ -114,12 +115,12 @@ public class Application extends com.atomgraph.core.Application
         );
     }
     
-    public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI,
+    public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI, final String quadStoreURI,
             final String authUser, final String authPwd,
             final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize, final boolean preemptiveAuth,
             final LocationMapper locationMapper, final String ontologyURI, final String rulesString, boolean cacheSitemap)
     {
-        super(dataset, endpointURI, graphStoreURI, authUser, authPwd,
+        super(dataset, endpointURI, graphStoreURI, quadStoreURI, authUser, authPwd,
                 mediaTypes, client, maxGetRequestSize, preemptiveAuth);
         if (locationMapper == null) throw new IllegalArgumentException("LocationMapper be null");
         
@@ -154,6 +155,7 @@ public class Application extends com.atomgraph.core.Application
 
             service = new com.atomgraph.core.model.impl.remote.ServiceImpl(client, mediaTypes,
                     ResourceFactory.createResource(endpointURI), ResourceFactory.createResource(graphStoreURI),
+                    quadStoreURI != null ? ResourceFactory.createResource(quadStoreURI) : null,
                     authUser, authPwd, maxGetRequestSize);
         }
         

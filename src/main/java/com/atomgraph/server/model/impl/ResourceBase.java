@@ -32,7 +32,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.exception.NotFoundException;
-import com.atomgraph.core.model.GraphStore;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -209,13 +208,13 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         if (dataset == null) throw new IllegalArgumentException("Dataset cannot be null");
 
-        getGraphStore().post(dataset.getDefaultModel(), Boolean.TRUE, null);
+        getService().getDatasetAccessor().add(dataset.getDefaultModel());
         
         Iterator<String> it = dataset.listNames();
         while (it.hasNext())
         {
             String graphName = it.next();
-            getGraphStore().post(dataset.getNamedModel(graphName), Boolean.FALSE, URI.create(graphName));
+            getService().getDatasetAccessor().add(graphName, dataset.getNamedModel(graphName));
         }
         
         return Response.ok().build();
@@ -383,14 +382,4 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return ontology;
     }
  
-//    public SPARQLEndpoint getSPARQLEndpoint()
-//    {
-//        return getService().getSPARQLEndpoint(getRequest());
-//    }
-    
-    public GraphStore getGraphStore()
-    {
-        return getService().getGraphStore(getRequest());
-    }
-    
 }
