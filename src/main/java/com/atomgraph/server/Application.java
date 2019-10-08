@@ -69,6 +69,7 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.reasoner.rulesys.Rule;
 import static com.atomgraph.core.Application.getClient;
+import com.atomgraph.core.io.QueryProvider;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.provider.ServiceProvider;
 import com.atomgraph.core.util.jena.DataManager;
@@ -203,6 +204,7 @@ public class Application extends com.atomgraph.core.Application
         singletons.add(new SkolemizingModelProvider());
         singletons.add(new ResultSetProvider());
         singletons.add(new QueryParamProvider());
+        singletons.add(new QueryProvider());
         singletons.add(new UpdateRequestReader());
         singletons.add(new MediaTypesProvider(getMediaTypes()));
         singletons.add(new DataManagerProvider(getDataManager()));

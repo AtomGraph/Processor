@@ -52,3 +52,10 @@
     <named-subject> <http://example.com/named-predicate> <named-object>, "named object" .
 
 }
+
+<another-graph-name>
+{
+    
+    <another-named-subject> <http://example.com/named-predicate> <named-object>, "named object" .
+
+}

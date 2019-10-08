@@ -3,14 +3,14 @@
 export STATUS_OK=200
 export STATUS_DELETE_SUCCESS='200|204'
 export STATUS_PATCH_SUCCESS='200|201|204'
-export POST_SUCCESS='20201|204'
+# export POST_SUCCESS='200|201|204'
 export STATUS_POST_SUCCESS='200|201|204'
-export PUT_SUCCESS='201|204'
-export STATUS_PUT_SUCCESS='200|201|204'
+# export PUT_SUCCESS='201|204'
+# export STATUS_PUT_SUCCESS='200|201|204'
 export STATUS_CREATED=201
 export STATUS_NO_CONTENT=204
 export STATUS_UPDATED='201|204'
-export DELETE_SUCCESS=204
+# export DELETE_SUCCESS=204
 export STATUS_NOT_MODIFIED=304
 export STATUS_BAD_REQUEST=400
 export STATUS_UNAUTHORIZED=401
@@ -68,6 +68,8 @@ export BASE_URL_WRITABLE="http://localhost:8081/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
+printf "\n ### Core Templates ontology tests ###\n\n"
+
 run_tests $(find ./linked-data-templates/ct/ -name '*.sh*')
 (( error_count += $? ))
 
@@ -79,10 +81,12 @@ export BASE_URL_WRITABLE="http://localhost:8083/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
+printf "\n### Named Graph Templates ontology tests ###\n\n"
+
 run_tests $(find ./linked-data-templates/ngt/ -name '*.sh*')
 (( error_count += $? ))
 
-### Custom ontology tests ###
+### Custom LDT ontology tests ###
 
 export BASE_URL="http://localhost:8084/"
 export BASE_URL_WRITABLE="http://localhost:8085/"
@@ -90,7 +94,48 @@ export BASE_URL_WRITABLE="http://localhost:8085/"
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
+printf "\n### Custom LDT ontology tests ###\n\n"
+
 run_tests $(find ./linked-data-templates/custom/ -name '*.sh*')
+(( error_count += $? ))
+
+### SPARQL Protocol query tests ###
+
+export BASE_URL="http://localhost:8080/"
+export BASE_URL_WRITABLE="http://localhost:8081/"
+
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
+
+printf "\n### SPARQL Protocol query tests ###\n\n"
+
+run_tests $(find ./sparql-protocol/query/ -name '*.sh*')
+(( error_count += $? ))
+
+### SPARQL Protocol update tests ###
+
+export BASE_URL="http://localhost:8080/"
+export BASE_URL_WRITABLE="http://localhost:8081/"
+
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
+
+printf "\n### SPARQL Protocol update tests ###\n\n"
+
+run_tests $(find ./sparql-protocol/update/ -name '*.sh*')
+(( error_count += $? ))
+
+### Graph Store Protocol tests ###
+
+export BASE_URL="http://localhost:8080/"
+export BASE_URL_WRITABLE="http://localhost:8081/"
+
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
+
+printf "\n### Graph Store Protocol tests ###\n\n"
+
+run_tests $(find ./graph-store-protocol/ -name '*.sh*')
 (( error_count += $? ))
 
 ### Exit
