@@ -98,6 +98,7 @@
     ldt:extends :OptionalParamTemplate ;
     rdfs:label "Inherited param template" ;
     ldt:match "/inherited-param" ;
+    ldt:param :UnusedParam ;
     rdfs:isDefinedBy : .
 
 :ValueTypeParamTemplate a ldt:Template ;
@@ -132,6 +133,13 @@
     rdfs:label "Value typed parameter" ;
     spl:predicate :object ;
     spl:optional false ;
+    spl:valueType xsd:integer ;
+    rdfs:isDefinedBy : .
+
+:UnusedParam a ldt:Parameter ;
+    rdfs:label "Unused parameter" ;
+    spl:predicate :unused ;
+    spl:optional true ;
     spl:valueType xsd:integer ;
     rdfs:isDefinedBy : .
 
