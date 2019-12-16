@@ -229,7 +229,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response put(Dataset dataset)
     {
-        delete();
+        delete(false);
         
         return post(dataset);
     }
@@ -243,7 +243,20 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response delete()
     {
-        get(); // will throw NotFoundException if resource does not exist (query result is empty)
+        return delete(true);
+    }
+
+    /**
+     * Handles DELETE method, deletes the RDF representation of this resource from the default SPARQL endpoint, and
+     * returns response.
+     * If the parameter is set, it calls <code>GET</code> method, which might throw a <code>404 Not Found</code> response.
+     * 
+     * @param get If true, call <code>GET</code> method.
+     * @return response
+     */
+    public Response delete(boolean get)
+    {
+        if (get) get(); // will throw NotFoundException if resource does not exist (query result is empty)
         
         if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
             
@@ -253,6 +266,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return Response.noContent().build(); // subsequent GET might still return 200 OK, depending on query solution map
     }
 
+    
     /**
      * Returns variable bindings for description query.
      * 
@@ -264,6 +278,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
         
     /**
+     * Creates response builder from response dataset.
      * Adds matched sitemap class as affordance metadata in <pre>Link</pre> header.
      * 
      * @param dataset response RDF dataset
@@ -290,6 +305,12 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return rb;
     }
         
+    /**
+     * Content languages supported by the matching LDT template.
+     * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.3.2">Content-Language</a>
+     * 
+     * @return list of locales
+     */
     @Override
     public List<Locale> getLanguages()
     {

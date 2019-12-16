@@ -4,7 +4,7 @@
 
 initialize_dataset "$BASE_URL_WRITABLE" "../../dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-# append new resource description
+# set new resource description
 
 (
 curl -w "%{http_code}\n" -f -s \
