@@ -17,7 +17,7 @@ curl -w "%{http_code}\n" -f -s \
 <${BASE_URL_WRITABLE}non-existing-put> <http://example.com/another-predicate> "another new object PUT" .
 EOF
 ) \
-| grep -q "${STATUS_OK}"
+| grep -q "${STATUS_CREATED}"
 
 # check that resource is accessible
 
