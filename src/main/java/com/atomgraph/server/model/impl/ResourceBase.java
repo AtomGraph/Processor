@@ -198,10 +198,10 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Handles POST method. Appends the submitted RDF dataset to the Graph Store.
+     * Handles <code>POST</code> method. Appends the submitted RDF representation to the application's dataset.
      * 
      * @param dataset the RDF payload
-     * @return response
+     * @return response <code>200 OK</code>
      */
     @Override
     public Response post(Dataset dataset)
@@ -221,42 +221,39 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Handles PUT method. Deletes the resource description and appends the submitted RDF dataset to the Graph Store.
+     * Handles <code>PUT</code> method. Deletes the resource description (if any) and
+     * appends the submitted RDF representation to the application's dataset.
      * 
      * @param dataset RDF payload
-     * @return response
+     * @return response <code>201 Created</code> if resource did not exist, <code>200 OK</code> if it did
      */
     @Override
     public Response put(Dataset dataset)
     {
-        delete(false);
-        
-        return post(dataset);
+        try
+        {
+            delete();
+            
+            return post(dataset);
+        }
+        catch (NotFoundException ex)
+        {
+            post(dataset);
+            
+            return Response.created(getURI()).build();
+        }
     }
 
     /**
-     * Handles DELETE method, deletes the RDF representation of this resource from the default SPARQL endpoint, and
+     * Handles <code>DELETE</code> method, deletes the RDF representation of this resource from the default SPARQL endpoint, and
      * returns response.
      * 
-     * @return response
+     * @return response <code>204 No Content</code>
      */
     @Override
     public Response delete()
     {
-        return delete(true);
-    }
-
-    /**
-     * Handles DELETE method, deletes the RDF representation of this resource from the default SPARQL endpoint, and
-     * returns response.
-     * If the parameter is set, it calls <code>GET</code> method, which might throw a <code>404 Not Found</code> response.
-     * 
-     * @param get If true, call <code>GET</code> method.
-     * @return response
-     */
-    public Response delete(boolean get)
-    {
-        if (get) get(); // will throw NotFoundException if resource does not exist (query result is empty)
+        get(); // will throw NotFoundException if resource does not exist (query result is empty)
         
         if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
             
