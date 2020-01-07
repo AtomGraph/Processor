@@ -245,7 +245,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     /**
-     * Handles <code>DELETE</code> method, deletes the RDF representation of this resource from the default SPARQL endpoint, and
+     * Handles <code>DELETE</code> method, deletes the RDF representation of this resource from the application's dataset, and
      * returns response.
      * 
      * @return response <code>204 No Content</code>

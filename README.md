@@ -121,7 +121,7 @@ For a commercial triplestore with SPARQL 1.1 support see [Dydra](https://dydra.c
 
 # Test suite
 
-Processor includes a basic HTTP [test suite](https://github.com/AtomGraph/Processor/tree/master/http-tests) for Linked Data Templates.
+Processor includes a basic HTTP [test suite](https://github.com/AtomGraph/Processor/tree/master/http-tests) for Linked Data Templates, SPARQL Protocol and the Graph Store Protocol.
 
 [![Build status](https://api.travis-ci.org/AtomGraph/Processor.svg?branch=master)](https://travis-ci.org/AtomGraph/Processor)
 

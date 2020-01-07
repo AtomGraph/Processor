@@ -175,7 +175,7 @@
                 <packaging.type>jar</packaging.type>
             </properties>
         </profile>
-        <profile> 
+        <profile>
             <id>release</id>
             <properties>
                 <packaging.type>jar</packaging.type>
