@@ -45,7 +45,7 @@ function run_tests()
 function initialize_dataset()
 {
     echo "@base <${1}> ." \
-    | cat - "$2" \
+    | cat - "${2}" \
     | curl -f -s \
       -X PUT \
       --data-binary @- \
