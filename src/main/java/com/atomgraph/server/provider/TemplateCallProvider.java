@@ -32,7 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Template call provider.
+ * 
+ * @see com.atomgraph.processor.util.TemplateCall
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
@@ -70,8 +72,7 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
     
     public TemplateCall getTemplateCall()
     {
-        if (getTemplate() != null)
-            return getTemplateCall(getTemplate(), getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
+        if (getTemplate() != null) return getTemplateCall(getTemplate(), getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
         
         return null;
     }

@@ -31,7 +31,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Template provider.
+ * 
+ * @see com.atomgraph.processor.model.Template
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
@@ -69,7 +71,9 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
 
     public Template getTemplate()
     {
-        return getTemplate(getOntology(), getUriInfo());
+        if (getOntology() != null) return getTemplate(getOntology(), getUriInfo());
+        
+        return null;
     }
 
     public Template getTemplate(Ontology ontology, UriInfo uriInfo)

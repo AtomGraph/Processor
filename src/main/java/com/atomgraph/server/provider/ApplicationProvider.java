@@ -27,7 +27,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- *
+ * Application provider.
+ * 
+ * @see com.atomgraph.processor.model.Application
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider

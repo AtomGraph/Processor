@@ -42,6 +42,7 @@ import org.slf4j.LoggerFactory;
 /**
  * Application ontology provider.
  * 
+ * @see org.apache.jena.ontology.Ontology
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
