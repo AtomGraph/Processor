@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE xsl:stylesheet [
-    <!ENTITY a      "http://atomgraph.com/ns/core#">
-    <!ENTITY ap     "http://atomgraph.com/ns/processor#">
+    <!ENTITY a      "https://w3id.org/atomgraph/core#">
+    <!ENTITY ap     "https://w3id.org/atomgraph/processor#">
     <!ENTITY ldt    "https://www.w3.org/ns/ldt#">
     <!ENTITY sd     "http://www.w3.org/ns/sparql-service-description#">
     <!ENTITY srv    "http://jena.hpl.hp.com/Service#">
