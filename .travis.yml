@@ -1,25 +1,31 @@
 language: c
+
+services:
+  - docker
+
 before_install:
   - sudo apt-get update
-  - sudo apt-get install -qq raptor2-utils
 
 install:
-  - cd http-tests
-  - docker-compose pull
-  - docker-compose up -d # run fuseki and processor containers in the background
+  - sudo apt-get install -qq raptor2-utils
 
 before_script:
+  - docker build -t atomgraph/processor .
+  - docker-compose up -d # run fuseki and processor containers in the background
   - while ! curl -w "%{http_code}\n" -s http://localhost:8080 | grep "200" ; do sleep 1 ; done # wait for processor-ct to start
   - while ! curl -w "%{http_code}\n" -s http://localhost:8081 | grep "200" ; do sleep 1 ; done # wait for processor-ct-write to start
   - while ! curl -w "%{http_code}\n" -s http://localhost:8082 | grep "200" ; do sleep 1 ; done # wait for processor-ngt to start
   - while ! curl -w "%{http_code}\n" -s http://localhost:8083 | grep "200" ; do sleep 1 ; done # wait for processor-ngt-write to start
   - while ! curl -w "%{http_code}\n" -s http://localhost:8084 | grep "200" ; do sleep 1 ; done # wait for processor-custom to start
   - while ! curl -w "%{http_code}\n" -s http://localhost:8085 | grep "200" ; do sleep 1 ; done # wait for processor-custom-write to start
+  - pushd .
+  - cd http-tests
 
 script:
   - bash ./run.sh # run tests
 
 after_script:
+  - popd
   - docker-compose down # shutdown fuseki and processor
   - docker-compose rm -f
 
