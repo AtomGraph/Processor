@@ -35,11 +35,14 @@ import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.util.Link;
+import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
 import java.net.URI;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.MediaType;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
@@ -80,25 +83,17 @@ abstract public class ExceptionMapperBase
         return cr.getContext(MediaTypes.class);
     }
     
-    public List<Variant> getVariants(Class clazz)
-    {
-        return getVariantListBuilder(clazz).add().build();
-    }
-
-    public Variant.VariantListBuilder getVariantListBuilder(Class clazz)
-    {
-        com.atomgraph.core.model.impl.Response response = com.atomgraph.core.model.impl.Response.fromRequest(getRequest());
-        return response.getVariantListBuilder(getMediaTypes().getWritable(clazz), getLanguages(), getEncodings());
-    }
-    
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
-        Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
+        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Dataset.class)));
         if (variant == null) return getResponseBuilder(dataset.getDefaultModel()); // if quads are not acceptable, fallback to responding with the default graph
         
-        Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(dataset, getVariants(Dataset.class)).
-                header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
+                dataset,
+                new EntityTag(Long.toHexString(com.atomgraph.core.model.impl.Response.hashDataset(dataset))),
+                variant).
+                getResponseBuilder().
+            header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
 
         if (getOntology() != null)
@@ -118,9 +113,14 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
-        Response.ResponseBuilder builder = com.atomgraph.core.model.impl.Response.fromRequest(getRequest()).
-            getResponseBuilder(model, getVariants(Model.class)).
-                header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Dataset.class)));
+
+        Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
+                model,
+                new EntityTag(Long.toHexString(ModelUtils.hashModel(model))),
+                variant).
+                getResponseBuilder().
+            header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
         
         if (getOntology() != null)
@@ -136,6 +136,17 @@ abstract public class ExceptionMapperBase
         }
         
         return builder;
+    }
+    
+    /**
+     * Builds a list of acceptable response variants.
+     * 
+     * @param mediaTypes
+     * @return supported variants
+     */
+    public List<Variant> getVariants(List<MediaType> mediaTypes)
+    {
+        return com.atomgraph.core.model.impl.Response.getVariantListBuilder(mediaTypes, getLanguages(), getEncodings()).build();
     }
     
     public List<Locale> getLanguages()
