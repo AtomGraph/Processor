@@ -113,7 +113,7 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
-        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Dataset.class)));
+        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Model.class)));
 
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
                 model,
@@ -146,7 +146,7 @@ abstract public class ExceptionMapperBase
      */
     public List<Variant> getVariants(List<MediaType> mediaTypes)
     {
-        return com.atomgraph.core.model.impl.Response.getVariantListBuilder(mediaTypes, getLanguages(), getEncodings()).build();
+        return com.atomgraph.core.model.impl.Response.getVariantListBuilder(mediaTypes, getLanguages(), getEncodings()).add().build();
     }
     
     public List<Locale> getLanguages()
