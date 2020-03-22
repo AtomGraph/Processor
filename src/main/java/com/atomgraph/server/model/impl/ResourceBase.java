@@ -301,6 +301,34 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         return rb;
     }
+    
+    /**
+     * Creates response builder from response model.
+     * Adds matched sitemap class as affordance metadata in <pre>Link</pre> header.
+     * 
+     * @param model response RDF model
+     * @return response builder
+     */
+    @Override
+    public ResponseBuilder getResponseBuilder(Model model)
+    {
+        ResponseBuilder rb = super.getResponseBuilder(model);
+        
+        rb.cacheControl(getCacheControl());
+
+        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
+        rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        
+        Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
+        if (reasoner instanceof GenericRuleReasoner)
+        {
+            GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
+            rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
+        }
+        
+        return rb;
+    }
         
     /**
      * Content languages supported by the matching LDT template.
