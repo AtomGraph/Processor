@@ -90,6 +90,7 @@ abstract public class ExceptionMapperBase
         
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
                 dataset,
+                null,
                 new EntityTag(Long.toHexString(com.atomgraph.core.model.impl.Response.hashDataset(dataset))),
                 variant).
                 getResponseBuilder().
@@ -117,6 +118,7 @@ abstract public class ExceptionMapperBase
 
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
                 model,
+                null,
                 new EntityTag(Long.toHexString(ModelUtils.hashModel(model))),
                 variant).
                 getResponseBuilder().
