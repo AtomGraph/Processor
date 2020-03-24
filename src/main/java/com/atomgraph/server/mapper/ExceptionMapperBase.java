@@ -85,7 +85,7 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
-        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Dataset.class)));
+        Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
         if (variant == null) return getResponseBuilder(dataset.getDefaultModel()); // if quads are not acceptable, fallback to responding with the default graph
         
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
@@ -114,7 +114,7 @@ abstract public class ExceptionMapperBase
     
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
-        Variant variant = getRequest().selectVariant(getVariants(getMediaTypes().getWritable(Model.class)));
+        Variant variant = getRequest().selectVariant(getVariants(Model.class));
 
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
                 model,
@@ -139,6 +139,17 @@ abstract public class ExceptionMapperBase
         
         return builder;
     }
+
+    /**
+     * Builds a list of acceptable response variants for a certain class.
+     * 
+     * @param clazz class
+     * @return list of variants
+     */
+    public List<Variant> getVariants(Class clazz)
+    {
+        return getVariants(getWritableMediaTypes(clazz));
+    }
     
     /**
      * Builds a list of acceptable response variants.
@@ -149,6 +160,17 @@ abstract public class ExceptionMapperBase
     public List<Variant> getVariants(List<MediaType> mediaTypes)
     {
         return com.atomgraph.core.model.impl.Response.getVariantListBuilder(mediaTypes, getLanguages(), getEncodings()).add().build();
+    }
+    
+    /**
+     * Get writable media types for a certain class.
+     * 
+     * @param clazz class
+     * @return list of media types
+     */
+    public List<MediaType> getWritableMediaTypes(Class clazz)
+    {
+        return getMediaTypes().getWritable(clazz);
     }
     
     public List<Locale> getLanguages()
