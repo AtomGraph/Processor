@@ -17,7 +17,7 @@
 package com.atomgraph.server.model;
 
 import com.atomgraph.processor.model.Application;
-import com.atomgraph.processor.util.TemplateCall;
+import com.atomgraph.processor.model.TemplateCall;
 import org.apache.jena.ontology.Ontology;
 
 /**

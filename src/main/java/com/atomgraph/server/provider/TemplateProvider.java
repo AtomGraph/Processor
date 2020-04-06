@@ -18,15 +18,13 @@ package com.atomgraph.server.provider;
 
 import com.atomgraph.processor.model.Template;
 import org.apache.jena.ontology.Ontology;
-import com.sun.jersey.core.spi.component.ComponentContext;
-import com.sun.jersey.spi.inject.Injectable;
-import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.processor.util.TemplateMatcher;
+import javax.inject.Inject;
 import javax.ws.rs.ext.Provider;
+import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +35,8 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, Template> implements ContextResolver<Template>
+@Deprecated
+public class TemplateProvider implements Factory<Template> // extends PerRequestTypeInjectableProvider<Context, Template> implements ContextResolver<Template>
 {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateProvider.class);
@@ -45,28 +44,43 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     @Context UriInfo uriInfo;
     @Context Providers providers;
     
-    public TemplateProvider()
-    {
-        super(Template.class);
-    }
+    @Inject Ontology ontology;
     
+    
+//    public TemplateProvider()
+//    {
+//        super(Template.class);
+//    }
+//    
+//    @Override
+//    public Injectable<Template> getInjectable(ComponentContext ic, Context a)
+//    {
+//        return new Injectable<Template>()
+//        {
+//            @Override
+//            public Template getValue()
+//            {
+//                return getTemplate();
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public Template getContext(Class<?> type)
+//    {
+//        return getTemplate();
+//    }
+    
+
     @Override
-    public Injectable<Template> getInjectable(ComponentContext ic, Context a)
+    public Template provide()
     {
-        return new Injectable<Template>()
-        {
-            @Override
-            public Template getValue()
-            {
-                return getTemplate();
-            }
-        };
+        return getTemplate();
     }
 
     @Override
-    public Template getContext(Class<?> type)
+    public void dispose(Template t)
     {
-        return getTemplate();
     }
 
     public Template getTemplate()
@@ -88,7 +102,7 @@ public class TemplateProvider extends PerRequestTypeInjectableProvider<Context, 
     
     public Ontology getOntology()
     {
-        return getProviders().getContextResolver(Ontology.class, null).getContext(Ontology.class);
+        return ontology;
     }
     
     public Providers getProviders()

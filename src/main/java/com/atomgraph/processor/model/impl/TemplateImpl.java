@@ -15,7 +15,6 @@
  */
 package com.atomgraph.processor.model.impl;
 
-import com.sun.jersey.api.uri.UriTemplate;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.processor.model.Parameter;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
+import org.glassfish.jersey.uri.UriTemplate;
 
 /**
  *

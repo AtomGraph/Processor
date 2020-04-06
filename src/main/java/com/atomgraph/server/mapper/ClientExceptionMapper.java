@@ -36,8 +36,8 @@ public class ClientExceptionMapper extends ExceptionMapperBase implements Except
     {
         Resource exRes = toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError"));
-        if (ex.getClientResponse().getLocation() != null)
-            exRes.addLiteral(HTTP.absoluteURI, ex.getClientResponse().getLocation());
+//        if (ex.getClientResponse().getLocation() != null)
+//            exRes.addLiteral(HTTP.absoluteURI, ex.getClientResponse().getLocation());
             
         return getResponseBuilder(DatasetFactory.create(exRes.getModel())).
                 status(Response.Status.INTERNAL_SERVER_ERROR).

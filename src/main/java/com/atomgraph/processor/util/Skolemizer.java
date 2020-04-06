@@ -29,7 +29,6 @@ import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.util.ResourceUtils;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.api.uri.UriTemplateParser;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -46,6 +45,7 @@ import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.ConversionException;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
+import org.glassfish.jersey.uri.internal.UriTemplateParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

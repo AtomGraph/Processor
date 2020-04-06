@@ -30,18 +30,19 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.core.util.ModelUtils;
+import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
 import java.net.URI;
+import javax.inject.Inject;
 import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.reasoner.Reasoner;
@@ -61,6 +62,10 @@ abstract public class ExceptionMapperBase
     @Context private Providers providers;
     @Context private UriInfo uriInfo;
     
+    @Inject Ontology ontology;
+    @Inject TemplateCall templateCall;
+    @Inject MediaTypes mediaTypes;
+    
     public Resource toResource(Exception ex, Response.StatusType status, Resource statusResource)
     {
         if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
@@ -77,12 +82,6 @@ abstract public class ExceptionMapperBase
         return resource;
     }
     
-    public MediaTypes getMediaTypes()
-    {
-        ContextResolver<MediaTypes> cr = getProviders().getContextResolver(MediaTypes.class, null);
-        return cr.getContext(MediaTypes.class);
-    }
-    
     public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
     {
         Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
@@ -94,12 +93,12 @@ abstract public class ExceptionMapperBase
                 new EntityTag(Long.toHexString(com.atomgraph.core.model.impl.Response.hashDataset(dataset))),
                 variant).
                 getResponseBuilder().
-            header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        if (getTemplateCall() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
 
         if (getOntology() != null)
         {
-            builder.header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
+            builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
 
             Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
             if (reasoner instanceof GenericRuleReasoner)
@@ -115,6 +114,7 @@ abstract public class ExceptionMapperBase
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
         Variant variant = getRequest().selectVariant(getVariants(Model.class));
+        if (variant == null) variant = new Variant(com.atomgraph.core.MediaType.TEXT_TURTLE_TYPE, (Locale)null, null); // if still not acceptable, default to Turtle
 
         Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
                 model,
@@ -122,12 +122,12 @@ abstract public class ExceptionMapperBase
                 new EntityTag(Long.toHexString(ModelUtils.hashModel(model))),
                 variant).
                 getResponseBuilder().
-            header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall() != null) builder.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        if (getTemplateCall() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
         
         if (getOntology() != null)
         {
-            builder.header("Link", new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
+            builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
 
             Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
             if (reasoner instanceof GenericRuleReasoner)
@@ -195,16 +195,19 @@ abstract public class ExceptionMapperBase
     
     public TemplateCall getTemplateCall()
     {
-        ContextResolver<TemplateCall> cr = getProviders().getContextResolver(TemplateCall.class, null);
-        return cr.getContext(TemplateCall.class);
+        return templateCall;
     }
 
     public Ontology getOntology()
     {
-        ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-        return cr.getContext(Ontology.class);
+        return ontology;
     }
-    
+
+    public MediaTypes getMediaTypes()
+    {
+        return mediaTypes;
+    }
+
     public UriInfo getUriInfo()
     {
         return uriInfo;

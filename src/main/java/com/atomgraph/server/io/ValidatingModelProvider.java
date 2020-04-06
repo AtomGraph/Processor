@@ -26,10 +26,10 @@ import java.util.List;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import com.atomgraph.server.exception.ConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
+import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.spinrdf.constraints.ConstraintViolation;
@@ -45,6 +45,8 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     @Context private Providers providers;
     
+    @Inject Ontology ontology;
+
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
     {
@@ -71,8 +73,7 @@ public class ValidatingModelProvider extends BasedModelProvider
         
     public Ontology getOntology()
     {
-        ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-        return cr.getContext(Ontology.class);
+        return ontology;
     }
 
     public Providers getProviders()

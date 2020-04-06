@@ -16,63 +16,53 @@
 package com.atomgraph.server.provider;
 
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.util.TemplateCall;
-import com.sun.jersey.core.spi.component.ComponentContext;
-import com.sun.jersey.spi.inject.Injectable;
-import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
+import com.atomgraph.processor.model.TemplateCall;
+import com.atomgraph.processor.model.impl.TemplateCallFactory;
+import com.atomgraph.processor.util.TemplateMatcher;
 import java.net.URI;
+import javax.inject.Inject;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriInfo;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
-import javax.ws.rs.ext.Providers;
+import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.glassfish.hk2.api.Factory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  * Template call provider.
  * 
- * @see com.atomgraph.processor.util.TemplateCall
+ * @see com.atomgraph.processor.model.impl.TemplateCallImpl
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Context, TemplateCall> implements ContextResolver<TemplateCall>
+public class TemplateCallProvider implements Factory<TemplateCall> // extends PerRequestTypeInjectableProvider<Context, TemplateCallImpl> implements ContextResolver<TemplateCall>
 {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
 
-    @Context Providers providers;
+    //@Context Providers providers;
     @Context UriInfo uriInfo;
-        
-    public TemplateCallProvider()
-    {
-        super(TemplateCall.class);
-    }
     
+    @Inject Ontology ontology;
+
     @Override
-    public Injectable<TemplateCall> getInjectable(ComponentContext ic, Context a)
+    public TemplateCall provide()
     {
-        return new Injectable<TemplateCall>()
-        {
-            @Override
-            public TemplateCall getValue()
-            {
-                return getTemplateCall();
-            }
-        };
+        return getTemplateCall();
     }
 
     @Override
-    public TemplateCall getContext(Class<?> type)
+    public void dispose(TemplateCall tc)
     {
-        return getTemplateCall();
     }
     
     public TemplateCall getTemplateCall()
     {
-        if (getTemplate() != null) return getTemplateCall(getTemplate(), getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
+        Template template = getTemplate();
+        if (template != null) return getTemplateCall(template, getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
         
         return null;
     }
@@ -83,8 +73,8 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
         if (absolutePath == null) throw new IllegalArgumentException("URI cannot be null");
         if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
 
-        if (log.isDebugEnabled()) log.debug("Building TemplateCall from Template {}", template);
-        TemplateCall templateCall = TemplateCall.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
+        //if (log.isDebugEnabled()) log.debug("Building TemplateCall from Template {}", template);
+        TemplateCall templateCall = TemplateCallFactory.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
             applyArguments(queryParams). // apply URL query parameters
             applyDefaults().
             validateOptionals(); // validate (non-)optional arguments
@@ -93,15 +83,33 @@ public class TemplateCallProvider extends PerRequestTypeInjectableProvider<Conte
         return templateCall;
     }
     
+//    public Template getTemplate()
+//    {
+//        //return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
+//        return template;
+//    }
+
     public Template getTemplate()
     {
-        return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
+        if (getOntology() != null) return getTemplate(getOntology(), getUriInfo());
+        
+        return null;
     }
 
-    public Providers getProviders()
+    public Template getTemplate(Ontology ontology, UriInfo uriInfo)
     {
-        return providers;
+        return new TemplateMatcher(ontology).match(uriInfo.getAbsolutePath(), uriInfo.getBaseUri());
     }
+    
+    public Ontology getOntology()
+    {
+        return ontology;
+    }
+    
+//    public Providers getProviders()
+//    {
+//        return providers;
+//    }
 
     public UriInfo getUriInfo()
     {

@@ -24,7 +24,6 @@ import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.sparql.util.Loader;
 import org.apache.jena.update.UpdateRequest;
-import com.sun.jersey.api.core.ResourceContext;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
@@ -37,10 +36,12 @@ import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.util.RulePrinter;
-import com.atomgraph.processor.util.TemplateCall;
 import java.util.Collections;
 import java.util.Iterator;
+import javax.inject.Inject;
+import javax.ws.rs.container.ResourceContext;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -88,8 +89,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @param httpHeaders HTTP headers of the current request
      * @param resourceContext resource context
      */
-    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
-            @Context Service service, @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+    @Inject
+    public ResourceBase(@Context UriInfo uriInfo, @Context Request request, MediaTypes mediaTypes,
+            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, TemplateCall templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
@@ -288,9 +290,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
-        rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
-        rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
         Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
@@ -316,9 +318,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        rb.header("Link", new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
-        rb.header("Link", new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
-        rb.header("Link", new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
         Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)

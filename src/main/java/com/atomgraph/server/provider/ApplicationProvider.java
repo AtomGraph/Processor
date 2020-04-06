@@ -15,13 +15,6 @@
  */
 package com.atomgraph.server.provider;
 
-import com.atomgraph.processor.model.Application;
-import com.sun.jersey.core.spi.component.ComponentContext;
-import com.sun.jersey.spi.inject.Injectable;
-import com.sun.jersey.spi.inject.PerRequestTypeInjectableProvider;
-import com.sun.jersey.spi.resource.Singleton;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Provider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,42 +26,41 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-@Singleton
-public class ApplicationProvider extends PerRequestTypeInjectableProvider<Context, Application> implements ContextResolver<Application>
+public class ApplicationProvider // extends PerRequestTypeInjectableProvider<Context, Application> implements ContextResolver<Application>
 {
 
     private static final Logger log = LoggerFactory.getLogger(ApplicationProvider.class);
     
-    private final Application application;
+    //private final Application application;
     
-    public ApplicationProvider(Application application)
-    {
-        super(Application.class);
-        this.application = application;
-    }
-    
-    @Override
-    public Injectable<Application> getInjectable(ComponentContext ic, Context a)
-    {
-        return new Injectable<Application>()
-        {
-            @Override
-            public Application getValue()
-            {
-                return getApplication();
-            }
-        };
-    }
-
-    @Override
-    public Application getContext(Class<?> type)
-    {
-        return getApplication();
-    }
-    
-    public Application getApplication()
-    {
-        return application;
-    }
+//    public ApplicationProvider(Application application)
+//    {
+//        super(Application.class);
+//        this.application = application;
+//    }
+//    
+//    @Override
+//    public Injectable<Application> getInjectable(ComponentContext ic, Context a)
+//    {
+//        return new Injectable<Application>()
+//        {
+//            @Override
+//            public Application getValue()
+//            {
+//                return getApplication();
+//            }
+//        };
+//    }
+//
+//    @Override
+//    public Application getContext(Class<?> type)
+//    {
+//        return getApplication();
+//    }
+//    
+//    public Application getApplication()
+//    {
+//        return application;
+//    }
 
 }

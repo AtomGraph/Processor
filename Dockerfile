@@ -10,7 +10,7 @@ RUN mvn -Pstandalone clean install
 
 ### Deploy Processor webapp on Tomcat
 
-FROM tomcat:8.0.52-jre8
+FROM tomcat:9.0.31-jdk8
 
 WORKDIR $CATALINA_HOME/webapps
 

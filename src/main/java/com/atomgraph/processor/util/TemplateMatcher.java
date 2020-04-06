@@ -21,7 +21,6 @@ import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.api.uri.UriTemplate;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,6 +31,7 @@ import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.util.Comparator;
 import java.util.Objects;
+import org.glassfish.jersey.uri.UriTemplate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

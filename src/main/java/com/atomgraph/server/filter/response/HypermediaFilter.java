@@ -16,14 +16,14 @@
 
 package com.atomgraph.server.filter.response;
 
+import com.atomgraph.processor.model.TemplateCall;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
-import com.sun.jersey.spi.container.ContainerRequest;
-import com.sun.jersey.spi.container.ContainerResponse;
-import com.sun.jersey.spi.container.ContainerResponseFilter;
 import javax.ws.rs.ext.Provider;
-import com.atomgraph.processor.util.TemplateCall;
 import com.atomgraph.processor.vocabulary.C;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.ContainerResponseContext;
+import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
 import static javax.ws.rs.core.Response.Status.CREATED;
 import static javax.ws.rs.core.Response.Status.Family.REDIRECTION;
@@ -50,25 +50,25 @@ public class HypermediaFilter implements ContainerResponseFilter
     @Context UriInfo uriInfo;
     
     @Override
-    public ContainerResponse filter(ContainerRequest request, ContainerResponse response)
+    public void filter(ContainerRequestContext request, ContainerResponseContext response)
     {
         if (request == null) throw new IllegalArgumentException("ContainerRequest cannot be null");
         if (response == null) throw new IllegalArgumentException("ContainerResponse cannot be null");
         
         // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
-        if (response.getStatusType().getFamily().equals(REDIRECTION) || response.getStatusType().equals(CREATED) ||
-                response.getStatusType().equals(NOT_FOUND) || response.getStatusType().equals(INTERNAL_SERVER_ERROR) || 
+        if (response.getStatusInfo().getFamily().equals(REDIRECTION) || response.getStatusInfo().equals(CREATED) ||
+                response.getStatusInfo().equals(NOT_FOUND) || response.getStatusInfo().equals(INTERNAL_SERVER_ERROR) || 
                 response.getEntity() == null || (!(response.getEntity() instanceof Dataset)))
-            return response;
+            return;
         
         TemplateCall templateCall = getTemplateCall();
-        if (templateCall == null) return response;
+        if (templateCall == null) return;
         
         Resource state = templateCall.build();
-        Resource absolutePath = state.getModel().createResource(request.getAbsolutePath().toString());
+        Resource absolutePath = state.getModel().createResource(request.getUriInfo().getAbsolutePath().toString());
         if (!state.equals(absolutePath)) state.addProperty(C.stateOf, absolutePath);
 
-        Resource requestUri = state.getModel().createResource(request.getRequestUri().toString());
+        Resource requestUri = state.getModel().createResource(request.getUriInfo().getRequestUri().toString());
         if (!state.equals(requestUri)) // add hypermedia if there are query parameters
             state.addProperty(C.viewOf, requestUri). // needed to lookup response state by request URI without redirection
                 addProperty(RDF.type, C.View);
@@ -77,8 +77,6 @@ public class HypermediaFilter implements ContainerResponseFilter
         Dataset newEntity = ((Dataset)response.getEntity());
         newEntity.getDefaultModel().add(state.getModel());
         response.setEntity(newEntity);
-        
-        return response;
     }
 
     public TemplateCall getTemplateCall()

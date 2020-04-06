@@ -24,10 +24,10 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.List;
+import javax.inject.Inject;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.ContextResolver;
 import javax.ws.rs.ext.Providers;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.Dataset;
@@ -47,6 +47,8 @@ public class ValidatingDatasetProvider extends DatasetProvider
     
     @Context private Providers providers;
     
+    @Inject Ontology ontology;
+
     @Override
     public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
     {
@@ -87,8 +89,7 @@ public class ValidatingDatasetProvider extends DatasetProvider
         
     public Ontology getOntology()
     {
-        ContextResolver<Ontology> cr = getProviders().getContextResolver(Ontology.class, null);
-        return cr.getContext(Ontology.class);
+        return ontology;
     }
 
     public Providers getProviders()
