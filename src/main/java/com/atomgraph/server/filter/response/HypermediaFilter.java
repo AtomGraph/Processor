@@ -21,6 +21,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.vocabulary.RDF;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.vocabulary.C;
+import java.util.Optional;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -61,10 +62,10 @@ public class HypermediaFilter implements ContainerResponseFilter
                 response.getEntity() == null || (!(response.getEntity() instanceof Dataset)))
             return;
         
-        TemplateCall templateCall = getTemplateCall();
-        if (templateCall == null) return;
+        Optional<TemplateCall> templateCall = getTemplateCall();
+        if (!templateCall.isPresent()) return;
         
-        Resource state = templateCall.build();
+        Resource state = templateCall.get().build();
         Resource absolutePath = state.getModel().createResource(request.getUriInfo().getAbsolutePath().toString());
         if (!state.equals(absolutePath)) state.addProperty(C.stateOf, absolutePath);
 
@@ -79,7 +80,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         response.setEntity(newEntity);
     }
 
-    public TemplateCall getTemplateCall()
+    public Optional<TemplateCall> getTemplateCall()
     {
         if (!getUriInfo().getMatchedResources().isEmpty() &&
                 getUriInfo().getMatchedResources().get(0) instanceof com.atomgraph.server.model.Resource)

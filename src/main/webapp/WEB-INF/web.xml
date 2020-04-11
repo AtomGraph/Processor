@@ -22,31 +22,8 @@
         <param-name>https://w3id.org/atomgraph/processor#locationMapping</param-name>
         <param-value>location-mapping.n3</param-value>
     </context-param>
-	<!-- TO-DO: remove after Jersey upgrade -->
-    <context-param>
-        <param-name>http://www.w3.org/ns/sparql-service-description#endpoint</param-name>
-        <param-value>http://atomgraph.dydra.com/graphity/core/sparql</param-value>
-    </context-param>
-    <context-param>
-        <param-name>https://w3id.org/atomgraph/core#graphStore</param-name>
-        <param-value>http://atomgraph.dydra.com/graphity/core/service</param-value>
-    </context-param>
-    <context-param>
-        <param-name>https://www.w3.org/ns/ldt#ontology</param-name>
-        <param-value>https://www.w3.org/ns/ldt/document-hierarchy/domain#</param-value>
-    </context-param>
-    
     <servlet>
         <servlet-name>com.atomgraph.server.Application</servlet-name>
-<!--        <servlet-class>com.sun.jersey.spi.container.servlet.ServletContainer</servlet-class>
-        <init-param>
-            <param-name>javax.ws.rs.Application</param-name>
-            <param-value>com.atomgraph.server.Application</param-value>
-        </init-param>-->
-<!--        <init-param>
-            <param-name>com.sun.jersey.spi.container.ContainerResponseFilters</param-name>
-            <param-value>com.atomgraph.server.filter.response.HypermediaFilter</param-value>
-        </init-param>-->
     </servlet>
     <servlet-mapping>
         <servlet-name>com.atomgraph.server.Application</servlet-name>

@@ -20,6 +20,7 @@ import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.TemplateCallFactory;
 import com.atomgraph.processor.util.TemplateMatcher;
 import java.net.URI;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MultivaluedMap;
@@ -38,7 +39,7 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-public class TemplateCallProvider implements Factory<TemplateCall> // extends PerRequestTypeInjectableProvider<Context, TemplateCallImpl> implements ContextResolver<TemplateCall>
+public class TemplateCallProvider implements Factory<Optional<TemplateCall>> // extends PerRequestTypeInjectableProvider<Context, Optional<TemplateCall>Impl> implements ContextResolver<Optional<TemplateCall>>
 {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
@@ -49,38 +50,39 @@ public class TemplateCallProvider implements Factory<TemplateCall> // extends Pe
     @Inject Ontology ontology;
 
     @Override
-    public TemplateCall provide()
+    public Optional<TemplateCall> provide()
     {
         return getTemplateCall();
     }
 
     @Override
-    public void dispose(TemplateCall tc)
+    public void dispose(Optional<TemplateCall> tc)
     {
     }
     
-    public TemplateCall getTemplateCall()
+    public Optional<TemplateCall> getTemplateCall()
     {
         Template template = getTemplate();
         if (template != null) return getTemplateCall(template, getUriInfo().getAbsolutePath(), getUriInfo().getQueryParameters());
         
-        return null;
+        return Optional.empty();
     }
     
-    public TemplateCall getTemplateCall(Template template, URI absolutePath, MultivaluedMap<String, String> queryParams)
+    public Optional<TemplateCall> getTemplateCall(Template template, URI absolutePath, MultivaluedMap<String, String> queryParams)
     {
         if (template == null) throw new IllegalArgumentException("Template cannot be null");
         if (absolutePath == null) throw new IllegalArgumentException("URI cannot be null");
         if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
 
-        //if (log.isDebugEnabled()) log.debug("Building TemplateCall from Template {}", template);
+        //if (log.isDebugEnabled()) log.debug("Building Optional<TemplateCall> from Template {}", template);
         TemplateCall templateCall = TemplateCallFactory.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
             applyArguments(queryParams). // apply URL query parameters
             applyDefaults().
             validateOptionals(); // validate (non-)optional arguments
         templateCall.build(); // build state URI
         
-        return templateCall;
+        return Optional.of(templateCall);
+        //return templateCall;
     }
     
 //    public Template getTemplate()

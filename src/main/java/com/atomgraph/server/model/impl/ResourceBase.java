@@ -40,8 +40,10 @@ import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.util.RulePrinter;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.container.ResourceContext;
+import javax.ws.rs.core.Response.Status;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,13 +66,15 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
     private final com.atomgraph.processor.model.Application application;
     private final Ontology ontology;
-    private final TemplateCall templateCall;
+    private final Optional<TemplateCall> templateCall;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
     private final HttpHeaders httpHeaders;  
     private final QuerySolutionMap querySolutionMap;
     private final Query query;
+    private final Resource queryResource, queryType;
     private final UpdateRequest update;
+    private final Resource updateResource, updateType;
 
     /**
      * Public JAX-RS instance. Suitable for subclassing.
@@ -91,7 +95,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     @Inject
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, MediaTypes mediaTypes,
-            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, TemplateCall templateCall,
+            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, Optional<TemplateCall> templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
@@ -100,16 +104,16 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     }
 
     protected ResourceBase(final UriInfo uriInfo, final Request request, final MediaTypes mediaTypes, final URI uri,
-            final Service service, final com.atomgraph.processor.model.Application application, final Ontology ontology, final TemplateCall templateCall,
+            final Service service, final com.atomgraph.processor.model.Application application, final Ontology ontology, final Optional<TemplateCall> templateCall,
             final HttpHeaders httpHeaders, final ResourceContext resourceContext)
     {
         super(uriInfo, request, mediaTypes, uri, service);
 
-        if (templateCall == null)
-        {
-            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template, returning 404 Not Found", getURI());
-            throw new NotFoundException("Resource has not matched any template");
-        }
+//        if (templateCall == null)
+//        {
+//            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template, returning 404 Not Found", getURI());
+//            throw new NotFoundException("Resource has not matched any template");
+//        }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
@@ -122,48 +126,71 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         this.templateCall = templateCall;
         this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
-        this.querySolutionMap = templateCall.getQuerySolutionMap();
-        this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
-        
-        if (templateCall.getTemplate().getQuery() == null)
+
+        if (templateCall.isPresent())
         {
-            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' is missing", templateCall.getTemplate());
-            throw new OntologyException("ldt:query value for template '" + templateCall.getTemplate() + "' is missing");
-        }
-        Resource queryType = templateCall.getTemplate().getQuery().getPropertyResourceValue(RDF.type);
-        if (queryType == null)
-        {
-            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' does not have a type", templateCall.getTemplate());
-            throw new OntologyException("ldt:query value of template '" + templateCall.getTemplate() + "' does not have a type");
-        }
-        if (queryType.canAs(org.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
-        {
-            org.spinrdf.model.Template queryTemplate = queryType.as(org.spinrdf.model.Template.class);
-            this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
-        }
-        else
-            this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getQuery()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
-        
-        if (templateCall.getTemplate().getUpdate() != null)
-        {
-            Resource updateType = templateCall.getTemplate().getUpdate().getPropertyResourceValue(RDF.type);
-            if (updateType == null)
+            this.querySolutionMap = templateCall.get().getQuerySolutionMap();
+            this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
+            
+            queryResource = templateCall.get().getTemplate().getQuery();
+            if (queryResource != null)
             {
-                if (log.isErrorEnabled()) log.error("ldt:update value for template '{}' does not have a type", templateCall.getTemplate());
-                throw new OntologyException("ldt:update value for template '" + templateCall.getTemplate() + "' does not have a type");
-            }
-            if (updateType.canAs(org.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
-            {
-                org.spinrdf.model.Template updateTemplate = updateType.as(org.spinrdf.model.Template.class);
-                this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+                queryType = queryResource.getPropertyResourceValue(RDF.type);
+
+                if (queryType != null)
+                {
+                    if (queryType.canAs(org.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
+                    {
+                        org.spinrdf.model.Template queryTemplate = queryType.as(org.spinrdf.model.Template.class);
+                        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+                    }
+                    else
+                        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryResource), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
+                }
+                else
+                    query = null;
             }
             else
-                this.update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(templateCall.getTemplate().getUpdate()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+            {
+                queryType = null;
+                query = null;
+            }
+
+            updateResource = templateCall.get().getTemplate().getUpdate();
+            if (updateResource != null)
+            {
+                updateType = updateResource.getPropertyResourceValue(RDF.type);
+                if (updateType != null)
+                {
+                    if (updateType.canAs(org.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
+                    {
+                        org.spinrdf.model.Template updateTemplate = updateType.as(org.spinrdf.model.Template.class);
+                        update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+                    }
+                    else
+                        update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateResource), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
+                }
+                else
+                    update = null;
+            }
+            else
+            {
+                updateType = null;
+                update = null;
+            }
         }
         else
-            this.update = null;
+        {
+            querySolutionMap = null;
+            queryResource = null;
+            queryType = null;
+            query = null;
+            updateResource = null;
+            updateType = null;
+            update = null;
+        }
 
-        if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.getTemplate());
+        if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall);
     }
     
     /**
@@ -176,13 +203,19 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Object getSubResource()
     {
-        if (getTemplateCall().getTemplate().getLoadClass() != null)
+        if (!getTemplateCall().isPresent())
         {
-            Resource javaClass = getTemplateCall().getTemplate().getLoadClass();
+            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any ldt:Template, returning 404 Not Found", getURI());
+            throw new NotFoundException("Resource has not matched any ldt:Template");
+        }
+        
+        if (getTemplateCall().get().getTemplate().getLoadClass() != null)
+        {
+            Resource javaClass = getTemplateCall().get().getTemplate().getLoadClass();
             if (!javaClass.isURIResource())
             {
-                if (log.isErrorEnabled()) log.error("ldt:loadClass value of template '{}' is not a URI resource", getTemplateCall().getTemplate());
-                throw new OntologyException("ldt:loadClass value of template '" + getTemplateCall().getTemplate() + "' is not a URI resource");
+                if (log.isErrorEnabled()) log.error("ldt:loadClass value of template '{}' is not a URI resource", getTemplateCall().get().getTemplate());
+                throw new OntologyException("ldt:loadClass value of template '" + getTemplateCall().get().getTemplate() + "' is not a URI resource");
             }
 
             Class clazz = Loader.loadClass(javaClass.getURI());
@@ -199,6 +232,23 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return this;
     }
 
+    @Override
+    public Response get()
+    {
+        if (getQueryResource() == null) // cannot be validated in constructor in Jersey 2.x: https://github.com/eclipse-ee4j/jersey/issues/4436
+        {
+            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' is missing", getTemplateCall().get().getTemplate());
+            throw new OntologyException("ldt:query value for template '" + getTemplateCall().get().getTemplate() + "' is missing");
+        }
+        if (getQueryType() == null)
+        {
+            if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' does not have a type", getTemplateCall().get().getTemplate());
+            throw new OntologyException("ldt:query value of template '" + getTemplateCall().get().getTemplate() + "' does not have a type");
+        }
+        
+        return super.get();
+    }
+    
     /**
      * Handles <code>POST</code> method. Appends the submitted RDF representation to the application's dataset.
      * 
@@ -255,10 +305,16 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response delete()
     {
-        get(); // will throw NotFoundException if resource does not exist (query result is empty)
-        
-        if (getUpdate() == null) return Response.status(501).build(); // 501 Not Implemented
-            
+        get(); // will throw NotFoundException if no Template matched or resource does not exist (query result is empty)
+                
+        if (getUpdateResource() != null && getUpdateType() == null) // cannot be validated in constructor in Jersey 2.x: https://github.com/eclipse-ee4j/jersey/issues/4436
+        {
+            if (log.isErrorEnabled()) log.error("ldt:update value for template '{}' does not have a type", getTemplateCall().get().getTemplate());
+            throw new OntologyException("ldt:update value for template '" + getTemplateCall().get().getTemplate() + "' does not have a type");
+        }
+
+        if (getUpdate() == null) return Response.status(Status.NOT_IMPLEMENTED).build();
+
         if (log.isDebugEnabled()) log.debug("DELETE UpdateRequest: {}", getUpdate());
         getService().getEndpointAccessor().update(getUpdate(), Collections.<URI>emptyList(), Collections.<URI>emptyList());
 
@@ -290,11 +346,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
         rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
         rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
-        Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
+        Reasoner reasoner = getTemplateCall().get().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
@@ -318,11 +374,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         
         rb.cacheControl(getCacheControl());
 
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
         rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
         rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         
-        Reasoner reasoner = getTemplateCall().getTemplate().getOntModel().getSpecification().getReasoner();
+        Reasoner reasoner = getTemplateCall().get().getTemplate().getOntModel().getSpecification().getReasoner();
         if (reasoner instanceof GenericRuleReasoner)
         {
             GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
@@ -341,7 +397,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public List<Locale> getLanguages()
     {
-        return getTemplateCall().getTemplate().getLanguages();
+        return getTemplateCall().get().getTemplate().getLanguages();
     }
         
     /**
@@ -361,7 +417,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * @return ontology class
      */
     @Override
-    public TemplateCall getTemplateCall()
+    public Optional<TemplateCall> getTemplateCall()
     {
         return templateCall;
     }
@@ -374,7 +430,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     public CacheControl getCacheControl()
     {
-        return getTemplateCall().getTemplate().getCacheControl();
+        return getTemplateCall().get().getTemplate().getCacheControl();
     }
     
     /**
@@ -390,6 +446,16 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return query;
     }
 
+    public Resource getQueryResource()
+    {
+        return queryResource;
+    }
+    
+    public Resource getQueryType()
+    {
+        return queryType;
+    }
+    
     /**
      * Returns update used to remove RDF description of this resource.
      * Query solution bindings are applied by default.
@@ -403,6 +469,17 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return update;
     }
 
+    public Resource getUpdateResource()
+    {
+        return updateResource;
+    }
+    
+    public Resource getUpdateType()
+    {
+        return updateType;
+    }
+
+    
     /**
      * Returns HTTP headers of the current request.
      * 

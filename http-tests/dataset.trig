@@ -46,6 +46,12 @@
 
 }
 
+{
+
+    <invalid-update> <http://example.com/default-predicate> <found> .
+
+}
+
 <graph-name>
 {
     

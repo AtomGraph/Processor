@@ -66,12 +66,14 @@ import com.atomgraph.core.model.Service;
 import com.atomgraph.core.util.jena.DataManager;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
+import com.atomgraph.server.filter.response.HypermediaFilter;
 import com.atomgraph.server.io.SkolemizingDatasetProvider;
 import com.atomgraph.server.provider.TemplateCallProvider;
-import com.atomgraph.server.provider.TemplateProvider;
+import java.util.Optional;
 import javax.ws.rs.client.Client;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ResourceFactory;
+import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.process.internal.RequestScoped;
@@ -84,8 +86,6 @@ public class Application extends com.atomgraph.core.Application
 {
     private static final Logger log = LoggerFactory.getLogger(Application.class);
 
-//    private final Set<Class<?>> classes = new HashSet<>();
-//    private final Set<Object> singletons = new HashSet<>();
     private final com.atomgraph.processor.model.Application application;
     private final Service service;
     private final String ontologyURI;
@@ -196,13 +196,8 @@ public class Application extends com.atomgraph.core.Application
     public void init()
     {
         register(ResourceBase.class); // handles /
-
-        //register(new ServiceProvider(getService()));
-        //register(application);
-//        register(new OntologyProvider(OntDocumentManager.getInstance(), getOntologyURI(), getOntModelSpec(), true));
-//        register(new TemplateProvider());
-//        register(new TemplateCallProvider());
-
+        register(HypermediaFilter.class);
+        
         register(new AbstractBinder()
         {
             @Override
@@ -227,22 +222,14 @@ public class Application extends com.atomgraph.core.Application
                 bind(service).to(Service.class);
             }
         });
-//        register(new AbstractBinder()
-//        {
-//            @Override
-//            protected void configure()
-//            {
-//                bindFactory(TemplateProvider.class).to(Template.class).
-//                proxy(true).proxyForSameScope(false).in(RequestScoped.class);
-//            }
-//        });
         register(new AbstractBinder()
         {
             @Override
             protected void configure()
             {
-                bindFactory(TemplateCallProvider.class).to(TemplateCall.class).
-                proxy(true).proxyForSameScope(false).in(RequestScoped.class);
+                bindFactory(TemplateCallProvider.class).to(new TypeLiteral<Optional<TemplateCall>>() {}).
+                //proxy(true).proxyForSameScope(false).
+                in(RequestScoped.class);
             }
         });
         register(new AbstractBinder()
@@ -260,19 +247,17 @@ public class Application extends com.atomgraph.core.Application
         register(new QueryParamProvider());
         register(new QueryProvider());
         register(new UpdateRequestReader());
-//        register(new MediaTypesProvider(getMediaTypes()));
         register(new DataManagerProvider(getDataManager()));
-        register(new RiotExceptionMapper());
-        register(new ModelExceptionMapper());
-        register(new ConstraintViolationExceptionMapper());
-        register(new DatatypeFormatExceptionMapper());
-        //register(new NotFoundExceptionMapper());
+        register(RiotExceptionMapper.class);
+        register(ModelExceptionMapper.class);
+        register(ConstraintViolationExceptionMapper.class);
+        register(DatatypeFormatExceptionMapper.class);
         register(NotFoundExceptionMapper.class);
-        register(new ClientExceptionMapper());
-        register(new ConfigurationExceptionMapper());
-        register(new OntologyExceptionMapper());
-        register(new ParameterExceptionMapper());
-        register(new QueryParseExceptionMapper());
+        register(ClientExceptionMapper.class);
+        register(ConfigurationExceptionMapper.class);
+        register(OntologyExceptionMapper.class);
+        register(ParameterExceptionMapper.class);
+        register(QueryParseExceptionMapper.class);
      
         //if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
@@ -284,36 +269,6 @@ public class Application extends com.atomgraph.core.Application
         return fileManager;
     }
     
-    /**
-     * Provides JAX-RS root resource classes.
-     *
-     * @return set of root resource classes
-     * @see <a
-     * href="http://docs.oracle.com/javaee/6/api/javax/ws/rs/core/Application.html#getClasses()">Application.getClasses()</a>
-     */
-//    @Override
-//    public Set<Class<?>> getClasses()
-//    {
-//        return classes;
-//    }
-//
-//    /**
-//     * Provides JAX-RS singleton objects (e.g. resources or Providers)
-//     * 
-//     * @return set of singleton objects
-//     * @see <a href="http://docs.oracle.com/javaee/6/api/javax/ws/rs/core/Application.html#getSingletons()">Application.getSingletons()</a>
-//     */
-//    @Override
-//    public Set<Object> getSingletons()
-//    {
-//        return singletons;
-//    }
-//    
-//    @Override
-//    public com.atomgraph.processor.model.Application getApplication()
-//    {
-//        return application;
-//    }
     
     public String getOntologyURI()
     {

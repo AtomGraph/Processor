@@ -40,6 +40,7 @@ import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
 import java.net.URI;
+import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
@@ -63,7 +64,7 @@ abstract public class ExceptionMapperBase
     @Context private UriInfo uriInfo;
     
     @Inject Ontology ontology;
-    @Inject TemplateCall templateCall;
+    @Inject Optional<TemplateCall> templateCall;
     @Inject MediaTypes mediaTypes;
     
     public Resource toResource(Exception ex, Response.StatusType status, Resource statusResource)
@@ -94,7 +95,7 @@ abstract public class ExceptionMapperBase
                 variant).
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
 
         if (getOntology() != null)
         {
@@ -123,7 +124,7 @@ abstract public class ExceptionMapperBase
                 variant).
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().getTemplate().getURI()), LDT.template.getURI(), null));
+        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
         
         if (getOntology() != null)
         {
@@ -193,7 +194,7 @@ abstract public class ExceptionMapperBase
         return providers;
     }
     
-    public TemplateCall getTemplateCall()
+    public Optional<TemplateCall> getTemplateCall()
     {
         return templateCall;
     }
@@ -202,7 +203,7 @@ abstract public class ExceptionMapperBase
     {
         return ontology;
     }
-
+    
     public MediaTypes getMediaTypes()
     {
         return mediaTypes;

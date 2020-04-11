@@ -22,6 +22,7 @@ import java.util.Map;
 import javax.ws.rs.core.CacheControl;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.rdf.model.Property;
+import org.apache.jena.rdf.model.Resource;
 import org.glassfish.jersey.uri.UriTemplate;
 
 /**
@@ -51,9 +52,9 @@ public interface Template extends OntClass
     
     String getFragmentTemplate();
     
-    org.apache.jena.rdf.model.Resource getQuery();
+    Resource getQuery();
     
-    org.apache.jena.rdf.model.Resource getUpdate();
+    Resource getUpdate();
     
     Double getPriority();
         
@@ -65,7 +66,7 @@ public interface Template extends OntClass
 
     List<Locale> getLanguages();
     
-    org.apache.jena.rdf.model.Resource getLoadClass();
+    Resource getLoadClass();
     
     CacheControl getCacheControl();
     

@@ -30,6 +30,8 @@ import com.atomgraph.core.model.Service;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.TemplateCall;
+import java.util.Optional;
+import javax.inject.Inject;
 import javax.ws.rs.container.ResourceContext;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
@@ -49,8 +51,9 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     
     private static final Logger log = LoggerFactory.getLogger(Item.class);
     
+    @Inject
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
-            @Context Service service, @Context com.atomgraph.processor.model.Application application, @Context Ontology ontology, @Context TemplateCall templateCall,
+            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, Optional<TemplateCall> templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         super(uriInfo, request, mediaTypes,
