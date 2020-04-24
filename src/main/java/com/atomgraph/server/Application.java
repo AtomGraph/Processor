@@ -228,7 +228,6 @@ public class Application extends com.atomgraph.core.Application
             protected void configure()
             {
                 bindFactory(TemplateCallProvider.class).to(new TypeLiteral<Optional<TemplateCall>>() {}).
-                //proxy(true).proxyForSameScope(false).
                 in(RequestScoped.class);
             }
         });

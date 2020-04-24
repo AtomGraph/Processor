@@ -39,12 +39,11 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-public class TemplateCallProvider implements Factory<Optional<TemplateCall>> // extends PerRequestTypeInjectableProvider<Context, Optional<TemplateCall>Impl> implements ContextResolver<Optional<TemplateCall>>
+public class TemplateCallProvider implements Factory<Optional<TemplateCall>>
 {
 
     private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
 
-    //@Context Providers providers;
     @Context UriInfo uriInfo;
     
     @Inject Ontology ontology;
@@ -82,14 +81,7 @@ public class TemplateCallProvider implements Factory<Optional<TemplateCall>> // 
         templateCall.build(); // build state URI
         
         return Optional.of(templateCall);
-        //return templateCall;
     }
-    
-//    public Template getTemplate()
-//    {
-//        //return getProviders().getContextResolver(Template.class, null).getContext(Template.class);
-//        return template;
-//    }
 
     public Template getTemplate()
     {
@@ -107,11 +99,6 @@ public class TemplateCallProvider implements Factory<Optional<TemplateCall>> // 
     {
         return ontology;
     }
-    
-//    public Providers getProviders()
-//    {
-//        return providers;
-//    }
 
     public UriInfo getUriInfo()
     {
