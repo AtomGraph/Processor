@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
-    <version>2.2.11-SNAPSHOT</version>
+    <version>2.2.13-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
@@ -96,25 +96,7 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
-            <version>2.1.17-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <scope>test</scope>
-            <version>2.44.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.opera</groupId>
-            <artifactId>operadriver</artifactId>
-            <scope>test</scope>
-            <version>1.5</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                    <artifactId>selenium-remote-driver</artifactId>
-                </exclusion>
-            </exclusions>
+            <version>2.1.18-SNAPSHOT</version>
         </dependency>
     </dependencies>
 
