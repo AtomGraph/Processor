@@ -11,7 +11,6 @@ install:
 
 before_script:
   - docker build -t atomgraph/processor .
-  - pushd .
   - cd http-tests
   - docker-compose up -d # run fuseki and processor containers in the background
   - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
@@ -25,7 +24,6 @@ script:
   - bash ./run.sh # run tests
 
 after_script:
-  - popd
   - docker-compose down # shutdown fuseki and processor
   - docker-compose rm -f
 
