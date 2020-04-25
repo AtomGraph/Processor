@@ -18,8 +18,8 @@ before_script:
   - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
   - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
   - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8083 | grep "404" ; do sleep 1 ; done # wait for processor-ngt-write to start
-  - while ! curl -w "%{http_code}\n" -s http://localhost:8084 | grep "500" ; do sleep 1 ; done # wait for processor-custom to start
-  - while ! curl -w "%{http_code}\n" -s http://localhost:8085 | grep "500" ; do sleep 1 ; done # wait for processor-custom-write to start
+  - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8084 | grep "404" ; do sleep 1 ; done # wait for processor-custom to start
+  - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8085 | grep "404" ; do sleep 1 ; done # wait for processor-custom-write to start
 
 script:
   - bash ./run.sh # run tests

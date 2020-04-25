@@ -109,11 +109,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         super(uriInfo, request, mediaTypes, uri, service);
 
-//        if (templateCall == null)
-//        {
-//            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any template, returning 404 Not Found", getURI());
-//            throw new NotFoundException("Resource has not matched any template");
-//        }
         if (application == null) throw new IllegalArgumentException("Application cannot be null");
         if (ontology == null) throw new IllegalArgumentException("Ontology cannot be null");
         if (httpHeaders == null) throw new IllegalArgumentException("HttpHeaders cannot be null");
@@ -203,13 +198,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Object getSubResource()
     {
-        if (!getTemplateCall().isPresent())
-        {
-            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any ldt:Template, returning 404 Not Found", getURI());
-            throw new NotFoundException("Resource has not matched any ldt:Template");
-        }
-        
-        if (getTemplateCall().get().getTemplate().getLoadClass() != null)
+        if (getTemplateCall().isPresent() && getTemplateCall().get().getTemplate().getLoadClass() != null)
         {
             Resource javaClass = getTemplateCall().get().getTemplate().getLoadClass();
             if (!javaClass.isURIResource())
@@ -235,6 +224,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public Response get()
     {
+        if (!getTemplateCall().isPresent())
+        {
+            if (log.isDebugEnabled()) log.debug("Resource {} has not matched any ldt:Template, returning 404 Not Found", getURI());
+            throw new NotFoundException("Resource has not matched any ldt:Template");
+        }
         if (getQueryResource() == null) // cannot be validated in constructor in Jersey 2.x: https://github.com/eclipse-ee4j/jersey/issues/4436
         {
             if (log.isErrorEnabled()) log.error("ldt:query value for template '{}' is missing", getTemplateCall().get().getTemplate());
