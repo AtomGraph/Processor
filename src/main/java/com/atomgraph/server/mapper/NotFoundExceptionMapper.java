@@ -16,10 +16,10 @@
 
 package com.atomgraph.server.mapper;
 
+import javax.ws.rs.NotFoundException;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import com.atomgraph.core.exception.NotFoundException;
 import org.apache.jena.query.DatasetFactory;
 
 /**

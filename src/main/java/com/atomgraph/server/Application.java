@@ -32,7 +32,6 @@ import com.atomgraph.core.io.ResultSetProvider;
 import com.atomgraph.core.io.UpdateRequestReader;
 import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.core.vocabulary.SD;
-import com.atomgraph.server.mapper.ClientExceptionMapper;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
 import com.atomgraph.server.mapper.ModelExceptionMapper;
 import com.atomgraph.server.mapper.NotFoundExceptionMapper;
@@ -64,10 +63,12 @@ import static com.atomgraph.core.Application.getClient;
 import com.atomgraph.core.io.QueryProvider;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.util.jena.DataManager;
+import com.atomgraph.core.util.jena.DataManagerImpl;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
 import com.atomgraph.server.filter.response.HypermediaFilter;
 import com.atomgraph.server.io.SkolemizingDatasetProvider;
+import com.atomgraph.server.mapper.ClientErrorExceptionMapper;
 import com.atomgraph.server.provider.TemplateCallProvider;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
@@ -176,12 +177,12 @@ public class Application extends com.atomgraph.core.Application
         SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
         ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
         
-        DataManager dataManager = new DataManager(locationMapper, client, mediaTypes, preemptiveAuth);
-        FileManager.setStdLocators(dataManager);
-        FileManager.setGlobalFileManager(dataManager);
+        DataManager dataManager = new DataManagerImpl(locationMapper, client, mediaTypes, preemptiveAuth);
+        FileManager.setStdLocators((FileManager)dataManager);
+        FileManager.setGlobalFileManager((FileManager)dataManager);
         if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
 
-        OntDocumentManager.getInstance().setFileManager(dataManager);
+        OntDocumentManager.getInstance().setFileManager((FileManager)dataManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         
@@ -252,7 +253,7 @@ public class Application extends com.atomgraph.core.Application
         register(ConstraintViolationExceptionMapper.class);
         register(DatatypeFormatExceptionMapper.class);
         register(NotFoundExceptionMapper.class);
-        register(ClientExceptionMapper.class);
+        register(ClientErrorExceptionMapper.class);
         register(ConfigurationExceptionMapper.class);
         register(OntologyExceptionMapper.class);
         register(ParameterExceptionMapper.class);

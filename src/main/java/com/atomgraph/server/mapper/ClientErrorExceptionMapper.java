@@ -19,8 +19,7 @@ package com.atomgraph.server.mapper;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import com.atomgraph.core.exception.ClientException;
-import com.atomgraph.server.vocabulary.HTTP;
+import javax.ws.rs.ClientErrorException;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Resource;
 
@@ -28,11 +27,11 @@ import org.apache.jena.rdf.model.Resource;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ClientExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ClientException>
+public class ClientErrorExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ClientErrorException>
 {
 
     @Override
-    public Response toResponse(ClientException ex)
+    public Response toResponse(ClientErrorException ex)
     {
         Resource exRes = toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError"));
