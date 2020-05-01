@@ -68,7 +68,6 @@ import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
 import com.atomgraph.server.filter.response.HypermediaFilter;
 import com.atomgraph.server.io.SkolemizingDatasetProvider;
-import com.atomgraph.server.mapper.BadRequestExceptionMapper;
 import com.atomgraph.server.mapper.ClientErrorExceptionMapper;
 import com.atomgraph.server.mapper.NotAcceptableExceptionMapper;
 import com.atomgraph.server.mapper.NotSupportedExceptionMapper;
