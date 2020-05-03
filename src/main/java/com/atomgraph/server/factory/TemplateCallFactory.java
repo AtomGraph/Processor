@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atomgraph.server.provider;
+package com.atomgraph.server.factory;
 
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.model.impl.TemplateCallFactory;
+import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.util.TemplateMatcher;
 import java.net.URI;
 import java.util.Optional;
@@ -39,10 +39,10 @@ import org.slf4j.LoggerFactory;
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
-public class TemplateCallProvider implements Factory<Optional<TemplateCall>>
+public class TemplateCallFactory implements Factory<Optional<TemplateCall>>
 {
 
-    private static final Logger log = LoggerFactory.getLogger(TemplateCallProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(TemplateCallFactory.class);
 
     @Context UriInfo uriInfo;
     
@@ -74,7 +74,7 @@ public class TemplateCallProvider implements Factory<Optional<TemplateCall>>
         if (queryParams == null) throw new IllegalArgumentException("MultivaluedMap cannot be null");
 
         //if (log.isDebugEnabled()) log.debug("Building Optional<TemplateCall> from Template {}", template);
-        TemplateCall templateCall = TemplateCallFactory.fromUri(absolutePath.toString(), ModelFactory.createDefaultModel(), template).
+        TemplateCall templateCall = new TemplateCallImpl(ModelFactory.createDefaultModel().createResource(absolutePath.toString()), template).
             applyArguments(queryParams). // apply URL query parameters
             applyDefaults().
             validateOptionals(); // validate (non-)optional arguments

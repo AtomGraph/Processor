@@ -20,7 +20,7 @@ import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ParameterImpl;
-import com.atomgraph.processor.model.impl.TemplateCallFactory;
+import com.atomgraph.processor.model.impl.TemplateCallImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.LDT;
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -117,7 +117,7 @@ public class TemplateCallTest
                 as(Template.class);
         
         resource = ModelFactory.createDefaultModel().createResource("http://resource/");
-        call = TemplateCallFactory.fromResource(resource, template);
+        call = new TemplateCallImpl(resource, template);
     }
     
     @Test
@@ -207,7 +207,7 @@ public class TemplateCallTest
         queryParams.add(PREDICATE2_LOCAL_NAME, param2Value);
         queryParams.add(UNUSED_PREDICATE_LOCAL_NAME, param3Value);
 
-        TemplateCall otherCall = TemplateCallFactory.fromResource(resource, template).
+        TemplateCall otherCall = new TemplateCallImpl(resource, template).
             arg(param1, ResourceFactory.createPlainLiteral(param1Value)).
             arg(param2, ResourceFactory.createPlainLiteral(param2Value)).
             arg(param3, param3Value);

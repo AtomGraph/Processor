@@ -44,7 +44,7 @@ import com.atomgraph.processor.model.impl.ParameterImpl;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.AP;
 import com.atomgraph.server.mapper.OntologyExceptionMapper;
-import com.atomgraph.server.provider.OntologyProvider;
+import com.atomgraph.server.util.OntologyLoader;
 import com.atomgraph.server.io.SkolemizingModelProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ import com.atomgraph.server.io.SkolemizingDatasetProvider;
 import com.atomgraph.server.mapper.ClientErrorExceptionMapper;
 import com.atomgraph.server.mapper.NotAcceptableExceptionMapper;
 import com.atomgraph.server.mapper.NotSupportedExceptionMapper;
-import com.atomgraph.server.provider.TemplateCallProvider;
+import com.atomgraph.server.factory.TemplateCallFactory;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
 import org.apache.jena.ontology.Ontology;
@@ -188,7 +188,7 @@ public class Application extends com.atomgraph.core.Application
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         
-        this.ontology = new OntologyProvider(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec, true).getOntology();
+        this.ontology = new OntologyLoader(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec, true).getOntology();
     }
     
     /**
@@ -230,7 +230,7 @@ public class Application extends com.atomgraph.core.Application
             @Override
             protected void configure()
             {
-                bindFactory(TemplateCallProvider.class).to(new TypeLiteral<Optional<TemplateCall>>() {}).
+                bindFactory(TemplateCallFactory.class).to(new TypeLiteral<Optional<TemplateCall>>() {}).
                 in(RequestScoped.class);
             }
         });
@@ -272,7 +272,6 @@ public class Application extends com.atomgraph.core.Application
         fileManager.setLocationMapper(locationMapper);
         return fileManager;
     }
-    
     
     public String getOntologyURI()
     {

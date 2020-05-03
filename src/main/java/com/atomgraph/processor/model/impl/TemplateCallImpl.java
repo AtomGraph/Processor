@@ -24,7 +24,6 @@ import java.util.Set;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.jena.query.QuerySolutionMap;
-import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
@@ -50,7 +49,7 @@ public class TemplateCallImpl extends com.atomgraph.core.util.StateBuilder imple
     private final Template template;
     private final Resource original;
     
-    protected TemplateCallImpl(Resource resource, Template template)
+    public TemplateCallImpl(Resource resource, Template template)
     {
         super(UriBuilder.fromUri(resource.getURI()), resource.getModel());
         if (template == null) throw new IllegalArgumentException("Template cannot be null");

@@ -14,7 +14,7 @@
  *  limitations under the License.
  *
  */
-package com.atomgraph.server.provider;
+package com.atomgraph.server.util;
 
 import com.atomgraph.core.util.jena.DataManager;
 import org.apache.jena.ontology.OntDocumentManager;
@@ -25,13 +25,10 @@ import org.apache.jena.ontology.Ontology;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import java.util.HashMap;
 import java.util.Map;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.ext.Provider;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.shared.Lock;
 import com.atomgraph.processor.exception.OntologyException;
-import javax.ws.rs.ext.Providers;
-import org.glassfish.hk2.api.Factory;
+import javax.ws.rs.ClientErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,21 +38,16 @@ import org.slf4j.LoggerFactory;
  * @see org.apache.jena.ontology.Ontology
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-//@Provider
-public class OntologyProvider //implements Factory<Ontology> // extends PerRequestTypeInjectableProvider<Context, Ontology> implements ContextResolver<Ontology>
+public class OntologyLoader
 {
-    private static final Logger log = LoggerFactory.getLogger(OntologyProvider.class);
+    private static final Logger log = LoggerFactory.getLogger(OntologyLoader.class);
     
-    @Context Providers providers;
-
     private final OntDocumentManager ontDocumentManager;
     private final String ontologyURI;
     
-    public OntologyProvider(final OntDocumentManager ontDocumentManager, final String ontologyURI,
+    public OntologyLoader(final OntDocumentManager ontDocumentManager, final String ontologyURI,
             final OntModelSpec materializationSpec, final boolean materialize)
     {
-//        super(Ontology.class);
-        
         if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (materializationSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
@@ -128,25 +120,6 @@ public class OntologyProvider //implements Factory<Ontology> // extends PerReque
         }
         
     }
-//    
-//    @Override
-//    public Injectable<Ontology> getInjectable(ComponentContext cc, Context context)
-//    {
-//        return new Injectable<Ontology>()
-//        {
-//            @Override
-//            public Ontology getValue()
-//            {
-//                return getOntology();
-//            }
-//        };
-//    }
-//
-//    @Override
-//    public Ontology getContext(Class<?> type)
-//    {
-//        return getOntology();
-//    }
     
     public Ontology getOntology()
     {
@@ -179,8 +152,8 @@ public class OntologyProvider //implements Factory<Ontology> // extends PerReque
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
 
-//        try
-//        {
+        try
+        {
             OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
 
             // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
@@ -205,15 +178,15 @@ public class OntologyProvider //implements Factory<Ontology> // extends PerReque
             {
                 ontModel.leaveCriticalSection();
             }
-//        }
-//        catch (ClientHandlerException ex) // thrown by DataManager
-//        {
-//            // remove ontology from cache, so next time it will be reloaded, possibly with fixed imports
-//            manager.getFileManager().removeCacheModel(ontologyURI);
-//            
-//            if (log.isErrorEnabled()) log.error("Could not load ontology '{}' or its imports", ontologyURI);
-//            throw new OntologyException("Could not load ontology '" + ontologyURI + "' or its imports", ex);
-//        }
+        }
+        catch (ClientErrorException ex) // thrown by DataManager
+        {
+            // remove ontology from cache, so next time it will be reloaded, possibly with fixed imports
+            manager.getFileManager().removeCacheModel(ontologyURI);
+            
+            if (log.isErrorEnabled()) log.error("Could not load ontology '{}' or its imports", ontologyURI);
+            throw new OntologyException("Could not load ontology '" + ontologyURI + "' or its imports", ex);
+        }
     }
 
     public OntDocumentManager getOntDocumentManager()
@@ -224,11 +197,6 @@ public class OntologyProvider //implements Factory<Ontology> // extends PerReque
     public String getOntologyURI()
     {
         return ontologyURI;
-    }
-    
-    public Providers getProviders()
-    {
-        return providers;
     }
     
 }
