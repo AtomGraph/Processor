@@ -22,7 +22,6 @@ import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.sparql.util.Loader;
 import org.apache.jena.update.UpdateRequest;
 import java.net.URI;
 import java.util.List;
@@ -44,6 +43,7 @@ import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Response.Status;
+import org.apache.jena.sparql.util.ClsLoader;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -207,7 +207,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
                 throw new OntologyException("ldt:loadClass value of template '" + getTemplateCall().get().getTemplate() + "' is not a URI resource");
             }
 
-            Class clazz = Loader.loadClass(javaClass.getURI());
+            Class clazz = ClsLoader.loadClass(javaClass.getURI());
             if (clazz == null)
             {
                 if (log.isErrorEnabled()) log.error("Java class with URI '{}' could not be loaded", javaClass.getURI());
