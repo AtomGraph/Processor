@@ -91,7 +91,7 @@
         <dependency>
             <groupId>com.github.AtomGraph</groupId>
             <artifactId>spinrdf</artifactId>
-            <version>23d1be77a171291ee6375c5e5062760c4a073c16</version>
+            <version>c8210416682b8840b2c6d11c9730f6d2427aa712</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
