@@ -30,7 +30,7 @@ import com.atomgraph.processor.model.Parameter;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ParameterImpl extends org.spinrdf.model.impl.ArgumentImpl implements Parameter
+public class ParameterImpl extends com.atomgraph.spinrdf.model.impl.ArgumentImpl implements Parameter
 {
     
     private static final Logger log = LoggerFactory.getLogger(ParameterImpl.class);
@@ -56,12 +56,6 @@ public class ParameterImpl extends org.spinrdf.model.impl.ArgumentImpl implement
         {
             if (eg == null) throw new IllegalArgumentException("EnhGraph cannot be null");
             
-            /*
-            // node will support being an OntClass facet if it has rdf:type owl:Class or equivalent
-            Profile profile = (eg instanceof OntModel) ? ((OntModel) eg).getProfile() : null;
-            return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
-            */
-
             return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Parameter.asNode());
         }
     };

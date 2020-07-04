@@ -10,7 +10,7 @@
 @prefix spl:  <http://spinrdf.org/spl#> .
 
 : a ldt:Ontology ;
-    owl:imports ldt:, sp: ;
+    owl:imports ldt:, sp:, spin:, spl: ;
     rdfs:label "Test ontology" .
 
 # classes
@@ -31,8 +31,8 @@
 :DefaultSubjectSuperTemplate a ldt:Template ;
     rdfs:label "Default subject super template" ;
     ldt:match "/super" ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
-    ldt:update [ a :DefaultSubjectUpdateTemplate ] ;
+    ldt:query :DefaultSubjectQueryTemplateCall ;
+    ldt:update :DefaultSubjectUpdateTemplateCall ;
     rdfs:isDefinedBy : .
 
 :DefaultSubjectTemplate a ldt:Template ;
@@ -49,7 +49,7 @@
 :InvalidQueryTemplate a ldt:Template ;
     rdfs:label "Invalid query template" ;
     ldt:match "/invalid-query" ;
-    ldt:query _:blank ;
+    ldt:query _:query ;
     rdfs:isDefinedBy : .
 
 :MissingUpdateTemplate a ldt:Template ;
@@ -62,7 +62,7 @@
     rdfs:label "Invalid update template" ;
     ldt:match "/invalid-update" ;
     ldt:query :DefaultSubjectQuery ;
-    ldt:update _:blank ;
+    ldt:update _:update ;
     rdfs:isDefinedBy : .
 
 :UnusedParamTemplate a ldt:Template ;
@@ -75,22 +75,22 @@
 :MandatoryParamTemplate a ldt:Template ;
     rdfs:label "Mandatory param template" ;
     ldt:match "/mandatory-param" ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:query :DefaultSubjectQueryTemplateCall ;
     ldt:param :MandatoryParam ;
     rdfs:isDefinedBy : .
 
 :OptionalParamTemplate a ldt:Template ;
     rdfs:label "Optional param template" ;
     ldt:match "/optional-param" ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
-    ldt:update [ a :DefaultSubjectUpdateTemplate ] ;
+    ldt:query :DefaultSubjectQueryTemplateCall ;
+    ldt:update :DefaultSubjectUpdateTemplateCall ;
     ldt:param :OptionalParam ;
     rdfs:isDefinedBy : .
 
 :OptionalDefaultParamTemplate a ldt:Template ;
     rdfs:label "Optional default param template" ;
     ldt:match "/optional-default-param" ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:query :DefaultSubjectQueryTemplateCall ;
     ldt:param :OptionalDefaultParam ;
     rdfs:isDefinedBy : .
 
@@ -104,7 +104,7 @@
 :ValueTypeParamTemplate a ldt:Template ;
     rdfs:label "Value type param template" ;
     ldt:match "/value-type-param" ;
-    ldt:query [ a :DefaultSubjectQueryTemplate ] ;
+    ldt:query :DefaultSubjectQueryTemplateCall ;
     ldt:param :ValueTypeParam ;
     rdfs:isDefinedBy : .
 
@@ -142,6 +142,12 @@
     spl:optional true ;
     spl:valueType xsd:integer ;
     rdfs:isDefinedBy : .
+
+# template calls
+
+:DefaultSubjectQueryTemplateCall a :DefaultSubjectQueryTemplate .
+
+:DefaultSubjectUpdateTemplateCall a :DefaultSubjectUpdateTemplate .
 
 # queries
 
@@ -184,9 +190,16 @@
 }""" ;
     rdfs:isDefinedBy : .
 
-:MissingPropertyQuery a sp:Ask ;
+:MissingPropertyQuery a sp:Construct ;
     rdfs:label "Missing property query" ;
-    sp:text """ASK
+    sp:text """PREFIX spin: <http://spinrdf.org/spin#>
+    
+    CONSTRUCT {
+      _:b0 a spin:ConstraintViolation .
+      _:b0 spin:violationRoot ?this .
+      _:b0 spin:violationPath <http://example.com/constrained-predicate> .
+      _:b0 spin:violationValue ?object .
+  }
 WHERE
   { FILTER NOT EXISTS { ?this  <http://example.com/constrained-predicate>  ?object } }""" ;
     rdfs:isDefinedBy : .

@@ -68,6 +68,8 @@ It uses the [`docker-compose`](https://docs.docker.com/compose/) command.
 
 Run the Processor container together with [Fuseki](https://hub.docker.com/r/atomgraph/fuseki) and [nginx](https://hub.docker.com/_/nginx) container:
 
+    cd examples/fuseki
+    
     docker-compose up
 
 After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
@@ -87,6 +89,8 @@ It uses the [`docker run`](https://docs.docker.com/engine/reference/run/) comman
 
 Run the Processor container (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
 
+    cd examples/wikidata
+    
     docker run --rm \
         -p 8080:8080 \
         -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \

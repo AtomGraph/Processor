@@ -70,6 +70,6 @@ public interface Template extends OntClass
     
     CacheControl getCacheControl();
     
-    boolean hasSuperTemplate(Template superTemplate);
+    List<Template> getSuperTemplates();
 
 }

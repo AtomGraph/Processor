@@ -18,7 +18,7 @@ package com.atomgraph.server.exception;
 
 import org.apache.jena.rdf.model.Model;
 import java.util.List;
-import org.spinrdf.constraints.ConstraintViolation;
+import com.atomgraph.spinrdf.constraints.ConstraintViolation;
 
 /**
  *

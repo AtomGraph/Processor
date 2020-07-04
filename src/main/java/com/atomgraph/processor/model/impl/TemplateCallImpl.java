@@ -27,7 +27,6 @@ import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;
 import org.apache.jena.rdf.model.Resource;
-import org.spinrdf.model.SPINFactory;
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.util.RDFNodeFactory;
@@ -37,7 +36,7 @@ import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
 import org.glassfish.jersey.uri.UriComponent;
-import org.spinrdf.vocabulary.SPL;
+import com.atomgraph.spinrdf.vocabulary.SPL;
 
 /**
  *
@@ -65,8 +64,6 @@ public class TemplateCallImpl extends com.atomgraph.core.util.StateBuilder imple
     @Override
     public final Template getTemplate()
     {
-        // SPIN uses Template registry instead:
-        // return SPINModuleRegistry.get().getTemplate(s.getResource().getURI(), getModel());
         return template;
     }
     
@@ -241,14 +238,14 @@ public class TemplateCallImpl extends com.atomgraph.core.util.StateBuilder imple
     {
         QuerySolutionMap qsm = new QuerySolutionMap();
         
-        org.spinrdf.model.TemplateCall spinTemplateCall = SPINFactory.asTemplateCall(getTemplate().getQuery());
-        if (spinTemplateCall != null)
+        if (getTemplate().getQuery().canAs(com.atomgraph.spinrdf.model.TemplateCall.class))
         {
+            com.atomgraph.spinrdf.model.TemplateCall spinTemplateCall = getTemplate().getQuery().as(com.atomgraph.spinrdf.model.TemplateCall.class);
             qsm = spinTemplateCall.getInitialBinding();
             
-            List<org.spinrdf.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
+            List<com.atomgraph.spinrdf.model.Argument> spinArgs = spinTemplateCall.getTemplate().getArguments(false);
             // add SPIN Arguments that match LDT Arguments (by predicate)
-            for (org.spinrdf.model.Argument spinArg : spinArgs)
+            for (com.atomgraph.spinrdf.model.Argument spinArg : spinArgs)
                 if (getTemplate().getParameters().containsKey(spinArg.getPredicate()) && hasArgument(spinArg.getPredicate()))
                 {
                     Parameter param = getTemplate().getParameters().get(spinArg.getPredicate());

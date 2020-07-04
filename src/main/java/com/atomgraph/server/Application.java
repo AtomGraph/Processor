@@ -48,17 +48,11 @@ import com.atomgraph.server.util.OntologyLoader;
 import com.atomgraph.server.io.SkolemizingModelProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spinrdf.arq.ARQFactory;
-import org.spinrdf.system.SPINModuleRegistry;
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.mapper.ConstraintViolationExceptionMapper;
-import java.util.List;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 import static com.atomgraph.core.Application.getClient;
 import com.atomgraph.core.io.QueryProvider;
 import com.atomgraph.core.model.Service;
@@ -72,6 +66,7 @@ import com.atomgraph.server.mapper.ClientErrorExceptionMapper;
 import com.atomgraph.server.mapper.NotAcceptableExceptionMapper;
 import com.atomgraph.server.mapper.NotSupportedExceptionMapper;
 import com.atomgraph.server.factory.TemplateCallFactory;
+import com.atomgraph.spinrdf.vocabulary.SP;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
 import org.apache.jena.ontology.Ontology;
@@ -165,24 +160,16 @@ public class Application extends com.atomgraph.core.Application
         
         application = new ApplicationImpl(service, ResourceFactory.createResource(ontologyURI));
 
-        List<Rule> rules = Rule.parseRules(rulesString);
-        OntModelSpec rulesSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-        Reasoner reasoner = new GenericRuleReasoner(rules);
-        //reasoner.setDerivationLogging(true);
-        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        rulesSpec.setReasoner(reasoner);
-        this.ontModelSpec = rulesSpec;
+        this.ontModelSpec = OntModelSpec.OWL_MEM_RDFS_INF;
         
+        SP.init(BuiltinPersonalities.model);
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
 
-        SPINModuleRegistry.get().init(); // needs to be called before any SPIN-related code
-        ARQFactory.get().setUseCaches(false); // enabled caching leads to unexpected QueryBuilder behaviour
-        
         DataManager dataManager = new DataManagerImpl(locationMapper, client, mediaTypes, preemptiveAuth);
-        FileManager.setStdLocators((FileManager)dataManager);
-        FileManager.setGlobalFileManager((FileManager)dataManager);
-        if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManager.get());
+//        FileManagerImpl.setStdLocators((FileManager)dataManager);
+//        FileManagerImpl.setGlobalFileManager((FileManager)dataManager);
+//        if (log.isDebugEnabled()) log.debug("FileManager.get(): {}", FileManagerImpl.get());
 
         OntDocumentManager.getInstance().setFileManager((FileManager)dataManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
@@ -266,12 +253,12 @@ public class Application extends com.atomgraph.core.Application
         //if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
     
-    public static FileManager getFileManager(LocationMapper locationMapper)
-    {
-        FileManager fileManager = FileManager.get();
-        fileManager.setLocationMapper(locationMapper);
-        return fileManager;
-    }
+//    public static FileManager getFileManager(LocationMapper locationMapper)
+//    {
+//        FileManager fileManager = FileManager.get();
+//        fileManager.setLocationMapper(locationMapper);
+//        return fileManager;
+//    }
     
     public String getOntologyURI()
     {

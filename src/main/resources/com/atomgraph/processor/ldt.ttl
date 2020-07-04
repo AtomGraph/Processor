@@ -13,7 +13,7 @@
 @prefix vann:	<http://purl.org/vocab/vann/> .
 
 : a owl:Ontology ;
-    owl:imports sp:, spin:, sd: ; # spl:, 
+    owl:imports sp:, spin:, sd: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Linked Data Templates ontology" ;
     rdfs:comment "Must be imported and reused by LDT applications" ;

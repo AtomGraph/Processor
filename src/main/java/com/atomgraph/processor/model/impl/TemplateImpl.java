@@ -36,13 +36,12 @@ import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
-import java.util.Iterator;
-import java.util.Map.Entry;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.util.iterator.ExtendedIterator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.processor.model.Parameter;
+import java.util.stream.Collectors;
 import org.apache.jena.datatypes.xsd.XSDDatatype;
 import org.glassfish.jersey.uri.UriTemplate;
 
@@ -75,12 +74,6 @@ public class TemplateImpl extends OntClassImpl implements Template
         public boolean canWrap(Node node, EnhGraph eg)
         {
             if (eg == null) throw new IllegalArgumentException("EnhGraph cannot be null");
-            
-            /*
-            // node will support being an OntClass facet if it has rdf:type owl:Class or equivalent
-            Profile profile = (eg instanceof OntModel) ? ((OntModel) eg).getProfile() : null;
-            return (profile != null)  &&  profile.isSupported( node, eg, Template.class );
-            */
 
             return eg.asGraph().contains(node, RDF.type.asNode(), LDT.Template.asNode());
         }
@@ -91,58 +84,70 @@ public class TemplateImpl extends OntClassImpl implements Template
         super(n, g);
     }
 
-
     @Override
     public UriTemplate getMatch()
     {
-        Statement path = getProperty(LDT.match);
-        if (path != null)
+        Template lowest = getSelfOrSuperWithProperty(LDT.match);
+        
+        if (lowest != null)
         {
+            Statement path = lowest.getProperty(LDT.match);
             if (!path.getObject().isLiteral() ||
                     path.getObject().asLiteral().getDatatype() == null ||
                     !path.getObject().asLiteral().getDatatype().equals(XSDDatatype.XSDstring))
             {
-                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", getURI(), LDT.match);
-                throw new OntologyException("Class '" + getURI() + "' property '" + LDT.match + "' is not an xsd:string literal");
+                if (log.isErrorEnabled()) log.error("Class {} property {} is not an xsd:string literal", lowest.getURI(), LDT.match);
+                throw new OntologyException("Class '" + lowest.getURI() + "' property '" + LDT.match + "' is not an xsd:string literal");
             }
             
             return new UriTemplate(path.getString());
         }
-        
-        return null;
+        else
+            return null;
     }
 
     @Override
     public String getFragmentTemplate()
     {
-        return getStringValue(LDT.fragment);
+        Template lowest = getSelfOrSuperWithProperty(LDT.fragment);
+        if (lowest != null) return lowest.getProperty(LDT.fragment).getString();
+        else return null;
     }
     
     @Override
     public Resource getQuery()
     {
-        return getPropertyResourceValue(LDT.query);
+        Template lowest = getSelfOrSuperWithProperty(LDT.query);
+        if (lowest != null) return lowest.getPropertyResourceValue(LDT.query);
+        else return null;
     }
 
     @Override
     public Resource getUpdate()
     {
-        return getPropertyResourceValue(LDT.update);
+        Template lowest = getSelfOrSuperWithProperty(LDT.update);
+        if (lowest != null) return lowest.getPropertyResourceValue(LDT.update);
+        else return null;
     }
 
     @Override
     public Double getPriority()
     {
-        Statement priority = getProperty(LDT.priority);
-        if (priority != null) return priority.getDouble();
-        
-        return Double.valueOf(0);
+        Template lowest = getSelfOrSuperWithProperty(LDT.priority);
+        if (lowest != null) return lowest.getProperty(LDT.priority).getDouble();
+        else return Double.valueOf(0);
     }
 
     @Override
     public Map<Property, Parameter> getParameters()
     {
-        return addSuperParameters(this, getLocalParameters());
+        List<Template> templates = new ArrayList<>();
+        templates.add(this);
+        templates.addAll(getSuperTemplates());
+        
+        return templates.stream().
+                flatMap(t -> t.getLocalParameters().entrySet().stream()). // stream param map entries
+                collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue()));
     }
     
     @Override
@@ -180,43 +185,6 @@ public class TemplateImpl extends OntClassImpl implements Template
         return params;
     }
     
-    protected Map<Property, Parameter> addSuperParameters(Template template, Map<Property, Parameter> params)
-    {
-        if (template == null) throw new IllegalArgumentException("Template Set cannot be null");
-        if (params == null) throw new IllegalArgumentException("Parameter Map cannot be null");
-        
-        StmtIterator it = template.listProperties(LDT.extends_);
-        try
-        {
-            while (it.hasNext())
-            {
-                Statement stmt = it.next();
-                if (!stmt.getObject().isResource() || !stmt.getObject().asResource().canAs(Template.class))
-                {
-                    if (log.isErrorEnabled()) log.error("Template's '{}' ldt:extends value '{}' is not an LDT Template", getURI(), stmt.getObject());
-                    throw new OntologyException("Template's '" + getURI() + "' ldt:extends value '" + stmt.getObject() + "' is not an LDT Template");
-                }
-
-                Template superTemplate = stmt.getObject().as(Template.class);
-                Map<Property, Parameter> superArgs = superTemplate.getLocalParameters();
-                Iterator<Entry<Property, Parameter>> entryIt = superArgs.entrySet().iterator();
-                while (entryIt.hasNext())
-                {
-                    Entry<Property, Parameter> entry = entryIt.next();
-                    params.putIfAbsent(entry.getKey(), entry.getValue()); // reject Parameters for existing predicates
-                }
-
-                addSuperParameters(superTemplate, params);  // recursion to super class
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        return params;
-    }
-    
     @Override
     public Map<String, Parameter> getParameterMap()
     {
@@ -234,15 +202,18 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public List<Locale> getLanguages()
     {
-        return getLanguages(LDT.lang);
+        Template lowest = getSelfOrSuperWithProperty(LDT.lang);
+        if (lowest != null) return getLanguages(lowest, LDT.lang);
+        else return new ArrayList<>();
     }
 
-    protected List<Locale> getLanguages(Property property)
+    protected List<Locale> getLanguages(Template template, Property property)
     {
+        if (template == null) throw new IllegalArgumentException("Template cannot be null");
         if (property == null) throw new IllegalArgumentException("Property cannot be null");
         
         List<Locale> languages = new ArrayList<>();
-        Resource langs = getPropertyResourceValue(property);
+        Resource langs = template.getPropertyResourceValue(property);
         if (langs != null)
         {
             if (!langs.canAs(RDFList.class))
@@ -280,7 +251,9 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public Resource getLoadClass()
     {
-        return getPropertyResourceValue(LDT.loadClass);
+        Template lowest = getSelfOrSuperWithProperty(LDT.loadClass);
+        if (lowest != null) return lowest.getPropertyResourceValue(LDT.loadClass);
+        else return null;
     }
     
     /**
@@ -291,28 +264,22 @@ public class TemplateImpl extends OntClassImpl implements Template
     @Override
     public CacheControl getCacheControl()
     {
-        if (hasProperty(LDT.cacheControl))
-            return CacheControl.valueOf(getPropertyValue(LDT.cacheControl).asLiteral().getString()); // will fail on bad config
-
-        return null;
-    }
-    
-    protected String getStringValue(Property property)
-    {
-        if (property == null) throw new IllegalArgumentException("Property cannot be null");
-
-        if (hasProperty(property) && getPropertyValue(property).isLiteral())
-            return getPropertyValue(property).asLiteral().getString();
-        
-        return null;
+        Template lowest = getSelfOrSuperWithProperty(LDT.cacheControl);
+        if (lowest != null) return CacheControl.valueOf(lowest.getPropertyValue(LDT.cacheControl).asLiteral().getString());
+        else return null;
     }
 
     @Override
-    public final boolean hasSuperTemplate(Template superTemplate)
+    public List<Template> getSuperTemplates()
     {
-        if (superTemplate == null) throw new IllegalArgumentException("Template cannot be null");
+        return getSuperTemplates(this);
+    }
+    
+    protected List<Template> getSuperTemplates(Template template)
+    {
+        List<Template> superTemplates = new ArrayList<>();
         
-        StmtIterator it = listProperties(LDT.extends_);
+        StmtIterator it = template.listProperties(LDT.extends_);
         try
         {
             while (it.hasNext())
@@ -324,9 +291,9 @@ public class TemplateImpl extends OntClassImpl implements Template
                     throw new OntologyException("Template's '" + getURI() + "' ldt:extends value '" + stmt.getObject() + "' is not an LDT Template");
                 }
 
-                Template nextTemplate = stmt.getObject().as(Template.class);
-                if (nextTemplate.equals(superTemplate) || nextTemplate.hasSuperTemplate(superTemplate))
-                    return true;
+                Template superTemplate = stmt.getObject().as(Template.class);
+                superTemplates.addAll(getSuperTemplates(superTemplate));
+                superTemplates.add(superTemplate);
             }
         }
         finally
@@ -334,9 +301,27 @@ public class TemplateImpl extends OntClassImpl implements Template
             it.close();
         }
         
-        return false;
+        return superTemplates;
     }
 
+    /**
+     * Returns this template or the first template in the super-template chain that has the specified property.
+     * 
+     * @param property property the template needs to have
+     * @return 
+     */
+    public Template getSelfOrSuperWithProperty(Property property)
+    {
+        List<Template> templates = new ArrayList<>();
+        templates.add(this);
+        templates.addAll(getSuperTemplates());
+        
+        return templates.stream().
+            filter(t -> t.hasProperty(property)).
+            findFirst().
+            orElse(null);
+    }
+    
     @Override
     public String toString()
     {

@@ -41,9 +41,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.spinrdf.vocabulary.SP;
-import org.spinrdf.vocabulary.SPIN;
-import org.spinrdf.vocabulary.SPL;
+import com.atomgraph.spinrdf.vocabulary.SP;
+import com.atomgraph.spinrdf.vocabulary.SPIN;
+import com.atomgraph.spinrdf.vocabulary.SPL;
+import org.apache.jena.sys.JenaSystem;
 
 /**
  *
@@ -62,6 +63,11 @@ public class TemplateCallTest
     private Resource resource;
     private TemplateCall call;
     
+    static
+    {
+        JenaSystem.init();
+    }
+    
     @BeforeClass
     public static void setUpClass()
     {
@@ -73,7 +79,6 @@ public class TemplateCallTest
     public void setUp()
     {
         Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
-        // ontology.addImport(LDT.NAMESPACE);
 
         predicate1 = ontology.getOntModel().createProperty("http://test/" + PREDICATE1_LOCAL_NAME);
         predicate2 = ontology.getOntModel().createProperty("http://test/" + PREDICATE2_LOCAL_NAME);

@@ -33,7 +33,7 @@ import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spinrdf.constraints.ConstraintViolation;
+import com.atomgraph.spinrdf.constraints.ConstraintViolation;
 
 /**
  * Dataset provider that validates read triples in each graph against SPIN constraints in an ontology.

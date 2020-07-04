@@ -32,7 +32,7 @@ import com.atomgraph.processor.util.Validator;
 import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spinrdf.constraints.ConstraintViolation;
+import com.atomgraph.spinrdf.constraints.ConstraintViolation;
 
 /**
  * Model provider that validates read triples against SPIN constraints in an ontology.

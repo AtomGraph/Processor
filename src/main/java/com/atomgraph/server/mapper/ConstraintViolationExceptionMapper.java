@@ -26,8 +26,8 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.spinrdf.constraints.SPINConstraints;
-import org.spinrdf.vocabulary.SPIN;
+import com.atomgraph.spinrdf.constraints.SPINConstraints;
+import com.atomgraph.spinrdf.vocabulary.SPIN;
 
 /**
  *

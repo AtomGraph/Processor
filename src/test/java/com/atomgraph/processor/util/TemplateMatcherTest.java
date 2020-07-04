@@ -23,6 +23,7 @@ import static junit.framework.Assert.assertEquals;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,6 +39,11 @@ public class TemplateMatcherTest
     private Ontology ontology, importedOntology, importedImportedOntology;
     private Template importedImportedTemplate, importedTemplate1, importedTemplate2, template1, template3;
     private TemplateMatcher matcher;
+    
+    static
+    {
+        JenaSystem.init();
+    }
     
     @BeforeClass
     public static void setUpClass()
@@ -95,15 +101,14 @@ public class TemplateMatcherTest
     @Test
     public void testMatchPath()
     {
-        assertEquals(importedImportedTemplate, matcher.match(ontology, "whatever"));
-        assertEquals(importedTemplate1, matcher.match(ontology, "one/two/three"));
-        assertEquals(importedTemplate2, matcher.match(ontology, "one/two"));
-        assertEquals(template1, matcher.match(ontology, "more/specific/something"));
-        assertEquals(template3, matcher.match(ontology, "other/something"));
-        assertEquals(null, matcher.match(ontology, "more/specific/something/and/more"));
+        assertEquals(importedImportedTemplate, matcher.match("whatever"));
+        assertEquals(importedTemplate1, matcher.match("one/two/three"));
+        assertEquals(importedTemplate2, matcher.match("one/two"));
+        assertEquals(template1, matcher.match("more/specific/something"));
+        assertEquals(template3, matcher.match("other/something"));
+        assertEquals(null, matcher.match("more/specific/something/and/more"));
     }
     
-    // TO-DO: move to TemplateImplTest
     @Test(expected = OntologyException.class)
     public void testTemplateWithNoPath()
     {
@@ -112,10 +117,9 @@ public class TemplateMatcherTest
                 as(Template.class);
         invalidTemplate.addProperty(RDFS.isDefinedBy, invalidOntology);
         
-        matcher.match(invalidOntology, "other/something");
+        new TemplateMatcher(invalidOntology).match("other/something");
     }
     
-    // TO-DO: move to TemplateImplTest
     @Test(expected = OntologyException.class)
     public void testTemplateWithNumericalPath()
     {
@@ -125,7 +129,7 @@ public class TemplateMatcherTest
         invalidTemplate.addLiteral(LDT.match, 123).
                 addProperty(RDFS.isDefinedBy, invalidOntology);
         
-        matcher.match(invalidOntology, "other/something");
+        new TemplateMatcher(invalidOntology).match("other/something");
     }
     
 }

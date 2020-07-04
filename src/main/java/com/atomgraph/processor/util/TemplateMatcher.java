@@ -213,6 +213,11 @@ public class TemplateMatcher
         return matches;
     }
     
+    public Template match(CharSequence path)
+    {
+        return match(getOntology(), path);
+    }
+
     /**
      * Given a relative URI and URI template property, returns ontology class with a matching URI template, if any.
      * URIs are matched against the URI templates specified in resource templates (sitemap ontology classes).

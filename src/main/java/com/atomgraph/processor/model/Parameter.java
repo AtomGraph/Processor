@@ -19,7 +19,7 @@ package com.atomgraph.processor.model;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public interface Parameter extends org.spinrdf.model.Argument
+public interface Parameter extends com.atomgraph.spinrdf.model.Argument
 {
     
 }
