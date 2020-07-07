@@ -22,14 +22,23 @@ import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.spinrdf.vocabulary.SP;
 import com.atomgraph.spinrdf.vocabulary.SPL;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+import java.util.stream.Collectors;
+import javax.ws.rs.core.CacheControl;
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
+import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.sys.JenaSystem;
 import org.apache.jena.vocabulary.RDFS;
+import org.glassfish.jersey.uri.UriTemplate;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -50,7 +59,7 @@ public class TemplateTest
 //"[inhTemplate: (?template rdf:type <https://www.w3.org/ns/ldt#Template>), (?template ?p ?o), (?p rdf:type <https://www.w3.org/ns/ldt#InheritedProperty>), (?subTemplate <https://www.w3.org/ns/ldt#extends> ?template), (?subTemplate rdf:type <https://www.w3.org/ns/ldt#Template>), noValue(?subTemplate ?p) -> (?subTemplate ?p ?o) ]\n" +
 //"[rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]";
     private Ontology ontology;
-    private Template subTemplate, superTemplate, template;
+    private Template superSuperTemplate, superTemplate, superTemplateOverriding, subTemplate, subTemplate1, template;
 
     @BeforeClass
     public static void setUpClass()
@@ -73,18 +82,16 @@ public class TemplateTest
         ontology.addImport(LDT.NAMESPACE);
         ontology.getOntModel().loadImports();
         
-        Parameter param = ontology.getOntModel().createIndividual("http://test/ontology/param", LDT.Parameter).
-                addProperty(SPL.predicate, FOAF.name).
-                as(Parameter.class);
-        superTemplate = ontology.getOntModel().createIndividual("http://test/ontology/super-template", LDT.Template).
-                addProperty(LDT.param, param).
+        // build 2 chains of templates that extend each other and inherit properties from the top one
+        // one chain inherits all properties from the super-super-template, the other one overrides them at the super-super level
+        superSuperTemplate = ontology.getOntModel().createIndividual("http://test/ontology/super-super-template", LDT.Template).
                 addLiteral(LDT.priority, 5).
                 addLiteral(LDT.match, "{path}").
                 addLiteral(LDT.fragment, "{fragment}").
-                addProperty(LDT.query, ontology.getOntModel().createIndividual("http://test/query", SP.Describe).
-                        addLiteral(SP.text, "DESCRIBE ?this { ?this ?p ?o }")).
-                addProperty(LDT.update, ontology.getOntModel().createIndividual("http://test/update", SP.DeleteWhere).
-                        addLiteral(SP.text, "DELETE { ?s ?p ?o } WHERE { ?s ?p ?o }")).
+                addProperty(LDT.query, ontology.getOntModel().createIndividual("http://test/query", SP.Describe)).
+                addProperty(LDT.update, ontology.getOntModel().createIndividual("http://test/update", SP.DeleteWhere)).
+                addProperty(LDT.param, ontology.getOntModel().createIndividual("http://test/ontology/param", LDT.Parameter).
+                    addProperty(SPL.predicate, FOAF.name)).
                 addProperty(LDT.lang, ontology.getOntModel().createList().
                         with(ontology.getOntModel().createLiteral("en")).
                         with(ontology.getOntModel().createLiteral("da"))).
@@ -92,8 +99,32 @@ public class TemplateTest
                 addProperty(LDT.loadClass, ontology.getOntModel().createResource("java:some.Class")).
                 addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
+        superTemplate = ontology.getOntModel().createIndividual("http://test/ontology/super-template", LDT.Template).
+                addProperty(LDT.extends_, superSuperTemplate).
+                addProperty(RDFS.isDefinedBy, ontology).
+                as(Template.class);
+        superTemplateOverriding = ontology.getOntModel().createIndividual("http://test/ontology/super-template-overriding", LDT.Template).
+                addProperty(LDT.extends_, superSuperTemplate).
+                addLiteral(LDT.priority, 7).
+                addLiteral(LDT.match, "/whatever").
+                addLiteral(LDT.fragment, "est").
+                addProperty(LDT.query, ontology.getOntModel().createIndividual("http://test/query-overriding", SP.Describe)).
+                addProperty(LDT.update, ontology.getOntModel().createIndividual("http://test/update-overriding", SP.DeleteWhere)).
+                addProperty(LDT.param, ontology.getOntModel().createIndividual("http://test/ontology/param-overriding", LDT.Parameter).
+                    addProperty(SPL.predicate, FOAF.maker)).
+                addProperty(LDT.lang, ontology.getOntModel().createList().
+                        with(ontology.getOntModel().createLiteral("lt")).
+                        with(ontology.getOntModel().createLiteral("da"))).
+                addLiteral(LDT.cacheControl, "max-age=9999").
+                addProperty(LDT.loadClass, ontology.getOntModel().createResource("java:some.OtherClass")).
+                addProperty(RDFS.isDefinedBy, ontology).
+                as(Template.class);
         subTemplate = ontology.getOntModel().createIndividual("http://test/ontology/sub-template", LDT.Template).
                 addProperty(LDT.extends_, superTemplate).
+                addProperty(RDFS.isDefinedBy, ontology).
+                as(Template.class);
+        subTemplate1 = ontology.getOntModel().createIndividual("http://test/ontology/sub-template1", LDT.Template).
+                addProperty(LDT.extends_, superTemplateOverriding).
                 addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
         template = ontology.getOntModel().createIndividual("http://test/ontology/template", LDT.Template).
@@ -102,77 +133,146 @@ public class TemplateTest
     }
 
     @Test
-    public void testNonNullSuperTemplates()
+    public void testSuperTemplates()
     {
-        assertNotNull(template.getSuperTemplates());
+        List<Template> superTemplates = Arrays.asList(superTemplate, superSuperTemplate);
+        assertEquals(superTemplates, subTemplate.getSuperTemplates());
+        
+        List<Template> superTemplates1 = Arrays.asList(superTemplateOverriding, superSuperTemplate);
+        assertEquals(superTemplates1, subTemplate1.getSuperTemplates());
     }
 
     @Test
-    public void testNonNullParams()
+    public void testNoSuperTemplates()
     {
-        assertNotNull(template.getParameters());
+        assertEquals(Collections.emptyList(), template.getSuperTemplates());
     }
-
+    
     @Test
     public void testNonNullLanguages()
     {
-        assertNotNull(template.getLanguages());
+        List<Locale> superSuperLanguages = superSuperTemplate.getProperty(LDT.lang).getList().
+                asJavaList().stream().map(n -> Locale.forLanguageTag(n.asLiteral().getString())).collect(Collectors.toList());
+        assertEquals(superSuperLanguages, superSuperTemplate.getLanguages());
+        assertEquals(superSuperLanguages, superTemplate.getLanguages());
+        assertEquals(superSuperLanguages, subTemplate.getLanguages());
+        
+        List<Locale> superLanguages = superTemplateOverriding.getProperty(LDT.lang).getList().
+                asJavaList().stream().map(n -> Locale.forLanguageTag(n.asLiteral().getString())).collect(Collectors.toList());
+        assertEquals(superLanguages, superTemplateOverriding.getLanguages());
+        assertEquals(superLanguages, subTemplate1.getLanguages());
     }
     
     @Test
     public void testInheritedMatch()
     {
-        assertNotNull(superTemplate.getMatch());
-        assertEquals(subTemplate.getMatch(), superTemplate.getMatch());
+        UriTemplate superSuperMatch = new UriTemplate(superSuperTemplate.getProperty(LDT.match).getString());
+        assertEquals(superSuperMatch, superSuperTemplate.getMatch());
+        assertEquals(superSuperMatch, superTemplate.getMatch());
+        assertEquals(superSuperMatch, subTemplate.getMatch());
+        
+        UriTemplate superMatch = new UriTemplate(superTemplateOverriding.getProperty(LDT.match).getString());
+        assertEquals(superMatch, superTemplateOverriding.getMatch());
+        assertEquals(superMatch, subTemplate1.getMatch());
     }
 
     @Test
     public void testInheritedQuery()
     {
-        assertNotNull(superTemplate.getQuery());
-        assertEquals(subTemplate.getQuery(), superTemplate.getQuery());
+        Resource superSuperQuery = superSuperTemplate.getProperty(LDT.query).getResource();
+        assertEquals(superSuperQuery, superSuperTemplate.getQuery());
+        assertEquals(superSuperQuery, superTemplate.getQuery());
+        assertEquals(superSuperQuery, subTemplate.getQuery());
+        
+        Resource superQuery = superTemplateOverriding.getProperty(LDT.query).getResource();
+        assertEquals(superQuery, superTemplateOverriding.getQuery());
+        assertEquals(superQuery, subTemplate1.getQuery());
     }
 
     @Test
     public void testInheritedUpdate()
     {
-        assertNotNull(superTemplate.getUpdate());
-        assertEquals(subTemplate.getUpdate(), superTemplate.getUpdate());
+        Resource superSuperUpdate = superSuperTemplate.getProperty(LDT.update).getResource();
+        assertEquals(superSuperUpdate, superSuperTemplate.getUpdate());
+        assertEquals(superSuperUpdate, superTemplate.getUpdate());
+        assertEquals(superSuperUpdate, subTemplate.getUpdate());
+        
+        Resource superUpdate = superTemplateOverriding.getProperty(LDT.update).getResource();
+        assertEquals(superUpdate, superTemplateOverriding.getUpdate());
+        assertEquals(superUpdate, subTemplate1.getUpdate());
     }
 
     @Test
     public void testInheritedPriority()
     {
-        assertNotNull(superTemplate.getPriority());
-        assertEquals(subTemplate.getPriority(), superTemplate.getPriority());
+        Double superSuperPriority = superSuperTemplate.getProperty(LDT.priority).getDouble();
+        assertEquals(superSuperPriority, superSuperTemplate.getPriority());
+        assertEquals(superSuperPriority, superTemplate.getPriority());
+        assertEquals(superSuperPriority, subTemplate.getPriority());
+        
+        Double superPriority = superTemplateOverriding.getProperty(LDT.priority).getDouble();
+        assertEquals(superPriority, superTemplateOverriding.getPriority());
+        assertEquals(superPriority, subTemplate1.getPriority());
     }
 
     @Test
     public void testInheritedParams()
     {
-        assertNotNull(superTemplate.getParameters());
-        assertEquals(subTemplate.getParameters(), superTemplate.getParameters());
+        Resource superSuperParam = superSuperTemplate.getPropertyResourceValue(LDT.param);
+        Set<Parameter> superSuperParams = new HashSet<>(superSuperTemplate.getParameters().values());
+        assertEquals(Collections.singleton(superSuperParam), superSuperParams);
+        Set<Parameter> superParams = new HashSet<>(superTemplate.getParameters().values());
+        assertEquals(Collections.singleton(superSuperParam), superParams);
+        Set<Parameter> subParams = new HashSet<>(subTemplate.getParameters().values());
+        assertEquals(Collections.singleton(superSuperParam), subParams);
+        
+        Set<Resource> superParamsOverriding = new HashSet<>();
+        superParamsOverriding.add(superSuperParam);
+        superParamsOverriding.add(superTemplateOverriding.getPropertyResourceValue(LDT.param));
+        
+        Set<Parameter> superParams1 = new HashSet<>(superTemplateOverriding.getParameters().values());
+        assertEquals(superParamsOverriding, superParams1);
+        Set<Parameter> subParams1 = new HashSet<>(subTemplate1.getParameters().values());
+        assertEquals(superParamsOverriding, subParams1);
     }
     
     @Test
     public void testInheritedCacheControl()
     {
-        assertNotNull(superTemplate.getCacheControl());
-        assertEquals(subTemplate.getCacheControl(), superTemplate.getCacheControl());
+        CacheControl superSuperCacheControl = CacheControl.valueOf(superSuperTemplate.getProperty(LDT.cacheControl).getString());
+        assertEquals(superSuperCacheControl, superSuperTemplate.getCacheControl());
+        assertEquals(superSuperCacheControl, superTemplate.getCacheControl());
+        assertEquals(superSuperCacheControl, subTemplate.getCacheControl());
+        
+        CacheControl superCacheControl = CacheControl.valueOf(superTemplateOverriding.getProperty(LDT.cacheControl).getString());
+        assertEquals(superCacheControl, superTemplateOverriding.getCacheControl());
+        assertEquals(superCacheControl, subTemplate1.getCacheControl());
     }
     
     @Test
     public void testInheritedLoadClass()
     {
-        assertNotNull(superTemplate.getLoadClass());
-        assertEquals(subTemplate.getLoadClass(), superTemplate.getLoadClass());
+        Resource superSuperLoadClas = superSuperTemplate.getProperty(LDT.loadClass).getResource();
+        assertEquals(superSuperLoadClas, superSuperTemplate.getLoadClass());
+        assertEquals(superSuperLoadClas, superTemplate.getLoadClass());
+        assertEquals(superSuperLoadClas, subTemplate.getLoadClass());
+        
+        Resource superLoadClass = superTemplateOverriding.getProperty(LDT.loadClass).getResource();
+        assertEquals(superLoadClass, superTemplateOverriding.getLoadClass());
+        assertEquals(superLoadClass, subTemplate1.getLoadClass());
     }
     
     @Test
-    public void testInheritedFragment()
+    public void testInheritedFragmentTemplate()
     {
-        assertNotNull(superTemplate.getFragmentTemplate());
-        assertEquals(subTemplate.getFragmentTemplate(), superTemplate.getFragmentTemplate());
+        String superSuperFragment = superSuperTemplate.getProperty(LDT.fragment).getString();
+        assertEquals(superSuperFragment, superSuperTemplate.getFragmentTemplate());
+        assertEquals(superSuperFragment, superTemplate.getFragmentTemplate());
+        assertEquals(superSuperFragment, subTemplate.getFragmentTemplate());
+        
+        String superFragment = superTemplateOverriding.getProperty(LDT.fragment).getString();
+        assertEquals(superFragment, superTemplateOverriding.getFragmentTemplate());
+        assertEquals(superFragment, subTemplate1.getFragmentTemplate());
     }
 
 }

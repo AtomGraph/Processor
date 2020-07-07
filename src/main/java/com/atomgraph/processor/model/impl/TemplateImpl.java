@@ -292,8 +292,8 @@ public class TemplateImpl extends OntClassImpl implements Template
                 }
 
                 Template superTemplate = stmt.getObject().as(Template.class);
-                superTemplates.addAll(getSuperTemplates(superTemplate));
                 superTemplates.add(superTemplate);
+                superTemplates.addAll(getSuperTemplates(superTemplate));
             }
         }
         finally
