@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
-    <version>2.3.2-SNAPSHOT</version>
+    <version>2.3.3-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
@@ -83,7 +83,7 @@
         <dependency>
             <groupId>com.atomgraph</groupId>
             <artifactId>twirl</artifactId>
-            <version>1.0.3-SNAPSHOT</version>
+            <version>1.0.8-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>

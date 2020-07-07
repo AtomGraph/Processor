@@ -1,6 +1,7 @@
 @base         <https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom> .
 
 @prefix :     <#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 @prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
@@ -110,6 +111,15 @@
 
 # parameters
 
+:object a rdf:Property ;
+    rdfs:isDefinedBy : .
+
+:IgnoredParam a ldt:Parameter ;
+    rdfs:label "Ignored parameter" ;
+    spl:predicate :object ;
+    spl:optional true ;
+    rdfs:isDefinedBy : .
+
 :MandatoryParam a ldt:Parameter ;
     rdfs:label "Mandatory parameter" ;
     spl:predicate :object ;
@@ -134,6 +144,9 @@
     spl:predicate :object ;
     spl:optional false ;
     spl:valueType xsd:integer ;
+    rdfs:isDefinedBy : .
+
+:unused a rdf:Property ;
     rdfs:isDefinedBy : .
 
 :UnusedParam a ldt:Parameter ;

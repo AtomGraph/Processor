@@ -109,7 +109,6 @@ public class Application extends com.atomgraph.core.Application
             servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI())) : false,
             new LocationMapper(servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) : null),
             servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) : null,
-            servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.sitemapRules.getURI()) : null,
             servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI()) != null ? Boolean.valueOf(servletConfig.getServletContext().getInitParameter(AP.cacheSitemap.getURI())) : true
         );
     }
@@ -117,7 +116,7 @@ public class Application extends com.atomgraph.core.Application
     public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI, final String quadStoreURI,
             final String authUser, final String authPwd,
             final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize, final boolean preemptiveAuth,
-            final LocationMapper locationMapper, final String ontologyURI, final String rulesString, boolean cacheSitemap)
+            final LocationMapper locationMapper, final String ontologyURI, boolean cacheSitemap)
     {
         super(dataset, endpointURI, graphStoreURI, quadStoreURI, authUser, authPwd,
                 mediaTypes, client, maxGetRequestSize, preemptiveAuth);
@@ -128,12 +127,6 @@ public class Application extends com.atomgraph.core.Application
             if (log.isErrorEnabled()) log.error("Sitemap ontology URI (" + LDT.ontology.getURI() + ") not configured");
             throw new ConfigurationException(LDT.ontology);
         }
-        if (rulesString == null)
-        {
-            if (log.isErrorEnabled()) log.error("Sitemap Rules (" + AP.sitemapRules.getURI() + ") not configured");
-            throw new ConfigurationException(AP.sitemapRules);
-        }
-        
         this.ontologyURI = ontologyURI;
         this.cacheSitemap = cacheSitemap;
 

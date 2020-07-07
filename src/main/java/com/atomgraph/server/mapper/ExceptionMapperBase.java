@@ -36,7 +36,6 @@ import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
 import java.net.URI;
@@ -46,9 +45,6 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
-import org.apache.jena.reasoner.rulesys.Rule;
 
 /**
  * Abstract base class for ExceptionMappers that build responses with exceptions as RDF resources.
@@ -98,16 +94,7 @@ abstract public class ExceptionMapperBase
         if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
 
         if (getOntology() != null)
-        {
             builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
-
-            Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
-            if (reasoner instanceof GenericRuleReasoner)
-            {
-                List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
-                builder.header("Rules", RulePrinter.print(rules));
-            }
-        }
         
         return builder;
     }
@@ -127,16 +114,7 @@ abstract public class ExceptionMapperBase
         if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
         
         if (getOntology() != null)
-        {
             builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
-
-            Reasoner reasoner = getOntology().getOntModel().getSpecification().getReasoner();
-            if (reasoner instanceof GenericRuleReasoner)
-            {
-                List<Rule> rules = ((GenericRuleReasoner)reasoner).getRules();
-                builder.header("Rules", RulePrinter.print(rules));
-            }
-        }
         
         return builder;
     }

@@ -79,7 +79,11 @@ public class TemplateCallTest
     public void setUp()
     {
         Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
-
+        ontology.addImport(ResourceFactory.createResource(SP.NS));
+        ontology.addImport(ResourceFactory.createResource(SPIN.NS));
+        ontology.addImport(ResourceFactory.createResource(SPL.NS));
+        ontology.getOntModel().loadImports();
+        
         predicate1 = ontology.getOntModel().createProperty("http://test/" + PREDICATE1_LOCAL_NAME);
         predicate2 = ontology.getOntModel().createProperty("http://test/" + PREDICATE2_LOCAL_NAME);
         predicate3 = ontology.getOntModel().createProperty("http://test/" + PREDICATE3_LOCAL_NAME);

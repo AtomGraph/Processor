@@ -20,8 +20,6 @@ import com.atomgraph.core.MediaTypes;
 import org.apache.jena.ontology.*;
 import org.apache.jena.query.*;
 import org.apache.jena.rdf.model.*;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.GenericRuleReasoner;
 import org.apache.jena.update.UpdateRequest;
 import java.net.URI;
 import java.util.List;
@@ -35,7 +33,6 @@ import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.TemplateCall;
-import com.atomgraph.processor.util.RulePrinter;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
 import java.util.Collections;
 import java.util.Iterator;
@@ -361,22 +358,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public ResponseBuilder getResponseBuilder(Dataset dataset)
     {
-        ResponseBuilder rb = super.getResponseBuilder(dataset);
-        
-        rb.cacheControl(getCacheControl());
-
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
-        rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        
-        Reasoner reasoner = getTemplateCall().get().getTemplate().getOntModel().getSpecification().getReasoner();
-        if (reasoner instanceof GenericRuleReasoner)
-        {
-            GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
-            rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
-        }
-        
-        return rb;
+        return super.getResponseBuilder(dataset).
+            cacheControl(getCacheControl()).
+            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
     }
     
     /**
@@ -389,22 +375,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     @Override
     public ResponseBuilder getResponseBuilder(Model model)
     {
-        ResponseBuilder rb = super.getResponseBuilder(model);
-        
-        rb.cacheControl(getCacheControl());
-
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        rb.header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null));
-        rb.header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        
-        Reasoner reasoner = getTemplateCall().get().getTemplate().getOntModel().getSpecification().getReasoner();
-        if (reasoner instanceof GenericRuleReasoner)
-        {
-            GenericRuleReasoner grr = (GenericRuleReasoner)reasoner;
-            rb.header("Rules", RulePrinter.print(grr.getRules())); // grr.getRules().toString() - prevented by JENA-1030 bug
-        }
-        
-        return rb;
+        return super.getResponseBuilder(model).
+            cacheControl(getCacheControl()).
+            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
     }
         
     /**
