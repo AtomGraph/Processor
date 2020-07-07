@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.atomgraph.processor.util;
+package com.atomgraph.processor.model.impl;
 
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.model.Template;
-import com.atomgraph.processor.model.impl.ParameterImpl;
-import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.spinrdf.vocabulary.SP;
 import com.atomgraph.spinrdf.vocabulary.SPL;
