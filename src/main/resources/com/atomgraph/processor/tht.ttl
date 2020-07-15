@@ -15,7 +15,7 @@
 @prefix sioc:	<http://rdfs.org/sioc/ns#> .
 @prefix foaf:	<http://xmlns.com/foaf/0.1/> .
 
-: a ldt:Ontology ;
+: a ldt:Ontology, owl:Ontology ;
     owl:imports ct:, sp: ;
     owl:versionInfo "1.1.4" ;
     rdfs:label "Topic hierarchy templates" ;

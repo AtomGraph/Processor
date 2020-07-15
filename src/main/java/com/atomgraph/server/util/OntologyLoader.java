@@ -56,7 +56,7 @@ public class OntologyLoader
         this.ontologyURI = ontologyURI;
         
         // materialize OntModel inferences to avoid invoking rules engine on every request
-        if (materialize && materializationSpec.getReasoner() != null)
+        if (materialize)
         {
             OntModel ontModel = getOntModel(ontDocumentManager, ontologyURI, materializationSpec);
             Ontology ontology = ontModel.getOntology(ontologyURI);

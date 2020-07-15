@@ -153,7 +153,7 @@ public class Application extends com.atomgraph.core.Application
         
         application = new ApplicationImpl(service, ResourceFactory.createResource(ontologyURI));
 
-        this.ontModelSpec = OntModelSpec.OWL_MEM_RDFS_INF;
+        this.ontModelSpec = OntModelSpec.OWL_MEM; // no inference
         
         SP.init(BuiltinPersonalities.model);
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
@@ -168,7 +168,7 @@ public class Application extends com.atomgraph.core.Application
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         
-        this.ontology = new OntologyLoader(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec, true).getOntology();
+        this.ontology = new OntologyLoader(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec, true).getOntology(); // TO-DO: throw exception if null
     }
     
     /**

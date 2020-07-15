@@ -10,7 +10,7 @@
 @prefix spin: <http://spinrdf.org/spin#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
 
-: a ldt:Ontology ;
+: a ldt:Ontology, owl:Ontology ;
     owl:imports ldt:, sp:, spin:, spl: ;
     rdfs:label "Test ontology" .
 
