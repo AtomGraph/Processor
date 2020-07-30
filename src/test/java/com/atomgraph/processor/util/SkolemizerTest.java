@@ -16,14 +16,11 @@
 package com.atomgraph.processor.util;
 
 import com.atomgraph.processor.exception.OntologyException;
-import com.atomgraph.processor.util.Skolemizer.ClassPrecedence;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import javax.ws.rs.core.UriBuilder;
 import org.apache.jena.ontology.OntClass;
 import org.apache.jena.ontology.Ontology;
@@ -51,10 +48,10 @@ public class SkolemizerTest
     private UriBuilder baseUriBuilder, absolutePathBuilder;
     private Ontology ontology, importedOntology;
     private Skolemizer skolemizer;
-    private OntClass relativePathClass, absolutePathClass, thingClass, importedClass, restrictedClass, undefinedClass;
+    private OntClass relativePathClass, absolutePathClass, thingClass, subClass, superClass, restrictedClass;
     private Model input;
-    private Resource absolute, relative, thing, imported, restricted;
-    private final String absoluteId = "ABCDEFGHI", relativeId = "123456789", thingTitle = "With space", thingFragment = "something", restrictedId = "987654321";
+    private Resource absolute, relative, thing, subInst, superInst, restricted;
+    private final String absoluteId = "ABCDEFGHI", relativeId = "123456789", title = "With space", fragment = "something", restrictedId = "987654321";
     private final String restrictionValue = "http://restricted/";
     
     @Before
@@ -68,28 +65,23 @@ public class SkolemizerTest
         skolemizer = new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder);
         
         relativePathClass = ontology.getOntModel().createClass("http://test/ontology/relative-path-class");
-        relativePathClass.addLiteral(LDT.path, "{identifier}").
-                addProperty(RDFS.isDefinedBy, ontology);
+        relativePathClass.addLiteral(LDT.path, "{identifier}");
         absolutePathClass = ontology.getOntModel().createClass("http://test/ontology/absolute-path-class");
-        absolutePathClass.addLiteral(LDT.path, "/{identifier}").
-                addProperty(RDFS.isDefinedBy, ontology);
+        absolutePathClass.addLiteral(LDT.path, "/{identifier}");
         thingClass = ontology.getOntModel().createClass("http://test/ontology/thing-class");
-        thingClass.addLiteral(LDT.path, "{title}").
-                addProperty(LDT.fragment, "something").
-                addProperty(RDFS.isDefinedBy, ontology);
-        importedClass = importedOntology.getOntModel().createClass("http://test/ontology/import/thing-class");
-        importedClass.addLiteral(LDT.path, "{title}").
-                addProperty(LDT.fragment, "something").
-                addProperty(RDFS.isDefinedBy, importedOntology);
+        thingClass.addLiteral(LDT.path, "thing-{isPrimaryTopicOf.identifier}").
+                addProperty(LDT.fragment, fragment);
+        superClass = importedOntology.getOntModel().createClass("http://test/ontology/import/super-class");
+        superClass.addLiteral(LDT.path, "super-{title}").
+                addProperty(LDT.fragment, "super");
+        subClass = ontology.getOntModel().createClass("http://test/ontology/sub-class");
+        subClass.addProperty(RDFS.subClassOf, FOAF.Document).
+                addProperty(RDFS.subClassOf, superClass);
         restrictedClass = ontology.getOntModel().createClass("http://test/ontology/restricted-class");
         restrictedClass.addLiteral(LDT.path, "{identifier}").
-                addProperty(RDFS.isDefinedBy, ontology).
                 addProperty(RDFS.subClassOf, restrictedClass.getOntModel().createHasValueRestriction(null, SIOC.HAS_CONTAINER, restrictedClass.getOntModel().createResource(restrictionValue)));
         restrictedClass.getOntModel().createResource(SIOC.HAS_CONTAINER.getURI()).
                 addProperty(RDF.type, OWL.ObjectProperty);
-        undefinedClass = ontology.getOntModel().createClass("http://test/ontology/undefined-class");
-        undefinedClass.addLiteral(LDT.path, "{whateverest}"); // does not have rdfs:isDefinedBy
-                
         input = ModelFactory.createDefaultModel();
         absolute = input.createResource().
                 addProperty(RDF.type, absolutePathClass).
@@ -99,10 +91,10 @@ public class SkolemizerTest
                 addLiteral(DCTerms.identifier, relativeId);
         thing = input.createResource().
                 addProperty(RDF.type, thingClass).
-                addLiteral(DCTerms.title, thingTitle);
-        imported = input.createResource().
-                addProperty(RDF.type, importedClass).
-                addLiteral(DCTerms.title, thingTitle);
+                addLiteral(DCTerms.title, title);
+        subInst = input.createResource().
+                addProperty(RDF.type, subClass).
+                addLiteral(DCTerms.title, title);
         restricted = input.createResource().
                 addProperty(RDF.type, restrictedClass).
                 addLiteral(DCTerms.identifier, restrictedId);
@@ -123,15 +115,15 @@ public class SkolemizerTest
         Resource expRelative = expected.createResource(absolutePathBuilder.clone().path(relativeId).build().toString()).
                 addProperty(RDF.type, relativePathClass).
                 addLiteral(DCTerms.identifier, relativeId);
-        Resource expThing = expected.createResource(absolutePathBuilder.clone().path(thingTitle).fragment(thingFragment).build().toString()).
+        Resource expThing = expected.createResource(absolutePathBuilder.clone().path("thing-" + relativeId).fragment(fragment).build().toString()).
                 addProperty(RDF.type, thingClass).
-                addLiteral(DCTerms.title, thingTitle);
-        Resource expImported = expected.createResource(absolutePathBuilder.clone().path(thingTitle).fragment(thingFragment).build().toString()).
-                addProperty(RDF.type, importedClass).
-                addLiteral(DCTerms.title, thingTitle);
+                addLiteral(DCTerms.title, title);
+        Resource expSub = expected.createResource(absolutePathBuilder.clone().path("super-" + title).fragment("super").build().toString()).
+                addProperty(RDF.type, subClass).
+                addLiteral(DCTerms.title, title);
         Resource expRestricted = expected.createResource(UriBuilder.fromUri(restrictionValue).clone().path(restrictedId).build().toString()).
                 addProperty(RDF.type, restrictedClass).
-                addLiteral(DCTerms.identifier, restrictedId);        
+                addLiteral(DCTerms.identifier, restrictedId);
         expRelative.addProperty(FOAF.primaryTopic, expThing);
         expThing.addProperty(FOAF.isPrimaryTopicOf, expRelative);
         
@@ -158,7 +150,7 @@ public class SkolemizerTest
         assertEquals(restrictedExp, restrictedResult);
         
         URI thingResult = skolemizer.build(thing, thingClass);
-        URI thingExp = absolutePathBuilder.clone().path(thingTitle).fragment(thingFragment).build();
+        URI thingExp = absolutePathBuilder.clone().path("thing-" + relativeId).fragment(fragment).build();
         assertEquals(thingExp, thingResult);
     }
     
@@ -167,12 +159,11 @@ public class SkolemizerTest
     {
         Ontology invalidOntology = ModelFactory.createOntologyModel().createOntology("http://test/invalid");
         OntClass invalidPathClass = invalidOntology.getOntModel().createClass("http://test/invalid/path-class");
-        invalidPathClass.addLiteral(LDT.path, 123).
-                addProperty(RDFS.isDefinedBy, invalidOntology);
+        invalidPathClass.addLiteral(LDT.path, 123);
         Resource invalid = ModelFactory.createDefaultModel().createResource();
         
         URI invalidResult = skolemizer.build(invalid, invalidPathClass);
-        URI invalidExp = absolutePathBuilder.clone().path(thingTitle).fragment(thingFragment).build();
+        URI invalidExp = absolutePathBuilder.clone().path(title).fragment(fragment).build();
         assertEquals(invalidExp, invalidResult);
     }
     /**
@@ -249,37 +240,6 @@ public class SkolemizerTest
         Resource resultFail3 = skolemizer.getResource(first, "whatever");
         assertNull(resultFail3); // no such property
     }
-
-    /**
-     * Test of match method, of class Skolemizer.
-     */
-    @Test
-    public void testMatch()
-    {
-        SortedSet<Skolemizer.ClassPrecedence> relativeExp = new TreeSet<>();
-        relativeExp.add(new ClassPrecedence(relativePathClass, 0));
-        SortedSet<Skolemizer.ClassPrecedence> relativeResult = skolemizer.match(ontology, relative, RDF.type, 0);
-        assertEquals(relativeExp, relativeResult);
-        
-        SortedSet<Skolemizer.ClassPrecedence> absoluteExp = new TreeSet<>();
-        absoluteExp.add(new ClassPrecedence(absolutePathClass, 0));
-        SortedSet<Skolemizer.ClassPrecedence> absoluteResult = skolemizer.match(ontology, absolute, RDF.type, 0);
-        assertEquals(absoluteExp, absoluteResult);
-        
-        SortedSet<Skolemizer.ClassPrecedence> thingExp = new TreeSet<>();
-        thingExp.add(new ClassPrecedence(thingClass, 0));
-        SortedSet<Skolemizer.ClassPrecedence> thingResult = skolemizer.match(ontology, thing, RDF.type, 0);
-        assertEquals(thingExp, thingResult);
-        
-        SortedSet<Skolemizer.ClassPrecedence> importedExp = new TreeSet<>();
-        importedExp.add(new ClassPrecedence(importedClass, -1)); // import is minus level
-        SortedSet<Skolemizer.ClassPrecedence> importedResult = skolemizer.match(ontology, imported, RDF.type, 0);
-        assertEquals(importedExp, importedResult);
-        
-        SortedSet<Skolemizer.ClassPrecedence> relativeImportedExp = new TreeSet<>();
-        SortedSet<Skolemizer.ClassPrecedence> relativeImportedResult = skolemizer.match(importedOntology, relative, RDF.type, 0);
-        assertEquals(relativeImportedExp, relativeImportedResult);
-    }
     
     /**
      * Test of getStringValue method, of class Skolemizer.
@@ -287,8 +247,8 @@ public class SkolemizerTest
     @Test
     public void testGetStringValue()
     {
-        String pathResult = skolemizer.getStringValue(thingClass, LDT.path);
-        assertEquals("{title}", pathResult);
+        String pathResult = skolemizer.getStringValue(relativePathClass, LDT.path);
+        assertEquals("{identifier}", pathResult);
     }
 
     @Test
