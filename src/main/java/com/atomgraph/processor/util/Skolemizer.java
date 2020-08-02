@@ -105,27 +105,31 @@ public class Skolemizer
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         
-        OntClass pathClass = getPathClass(resource, RDF.type);
-        if (pathClass != null) return build(resource, pathClass);
+        StmtIterator it = resource.listProperties(RDF.type);
+        
+        try
+        {
+            while (it.hasNext())
+            {
+                Resource type = it.next().getResource(); // will fail if rdf:type object is not a resource
+                OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
+                OntClass pathClass = getPathClass(typeClass);
+                if (pathClass != null) return build(resource, getStringValue(pathClass, LDT.path), typeClass);
+            }
+        }
+        finally
+        {
+            it.close();
+        }
         
         return null;
     }
     
-    public URI build(Resource resource, OntClass pathClass)
-    {
-        return build(resource, getStringValue(pathClass, LDT.path), pathClass);
-    }
-    
-    public URI build(Resource resource, String path, OntClass pathClass)
+    public URI build(Resource resource, String path, OntClass typeClass)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
-        if (pathClass == null) throw new IllegalArgumentException("OntClass cannot be null");
         if (path == null) throw new IllegalArgumentException("Path cannot be null");
-
-        // skolemization template builds with absolute path builder (e.g. "{slug}")
-//        String path = getStringValue(typeClass, LDT.path);
-//        if (path == null)
-//            throw new IllegalStateException("Cannot skolemize resource of class " + typeClass + " which does not have ldt:path annotation");
+        if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 
         final UriBuilder builder;
         // treat paths starting with / as absolute, others as relative (to the current absolute path)
@@ -134,7 +138,7 @@ public class Skolemizer
             builder = getBaseUriBuilder().clone();
         else
         {
-            Resource parent = getParent(pathClass);
+            Resource parent = getParent(typeClass);
             if (parent != null) builder = UriBuilder.fromUri(parent.getURI());
             else builder = getAbsolutePathBuilder().clone();
         }
@@ -143,7 +147,7 @@ public class Skolemizer
         builder.path(path);
 
         // add fragment identifier
-        String fragment = getStringValue(pathClass, LDT.fragment);
+        String fragment = getStringValue(typeClass, LDT.fragment);
         return builder.fragment(fragment).buildFromMap(nameValueMap); // TO-DO: wrap into SkolemizationException
     }
 
@@ -221,28 +225,6 @@ public class Skolemizer
         
         return null;
     }
-    
-    public OntClass getPathClass(Resource resource, Property property)
-    {
-        StmtIterator it = resource.listProperties(property);
-        
-        try
-        {
-            while (it.hasNext())
-            {
-                Resource type = it.next().getResource(); // will fail if rdf:type object is not a resource
-                OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
-                OntClass pathClass = getPathClass(typeClass);
-                if (pathClass != null) return pathClass;
-            }
-        }
-        finally
-        {
-            it.close();
-        }
-        
-        return null;
-    }
 
     public OntClass getPathClass(OntClass ontClass)
     {
@@ -251,6 +233,8 @@ public class Skolemizer
     
     public OntClass getPathClass(OntClass ontClass, String path)
     {
+        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        
         if (path != null) return ontClass;
         else
         {
