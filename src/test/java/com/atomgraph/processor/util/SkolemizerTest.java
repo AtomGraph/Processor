@@ -206,9 +206,12 @@ public class SkolemizerTest
     public void testFragment()
     {
         String fragment = "something";
+        // use inheritance as well
+        OntClass superCls = ontology.getOntModel().createClass();
+        superCls.addLiteral(LDT.fragment, fragment);
         OntClass cls = ontology.getOntModel().createClass();
         cls.addLiteral(LDT.path, "{identifier}").
-                addLiteral(LDT.fragment, fragment);
+                addProperty(RDFS.subClassOf, superCls);
 
         String id = "ABCDEFGHI";
         Resource inst = ModelFactory.createDefaultModel().
@@ -222,7 +225,7 @@ public class SkolemizerTest
     }
     
     @Test(expected = OntologyException.class)
-    public void testBuild_Resource_OntClassInvalidPath()
+    public void testInvalidPath()
     {
         OntClass cls = ontology.getOntModel().createClass();
         cls.addLiteral(LDT.path, 123);

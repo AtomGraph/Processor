@@ -114,7 +114,14 @@ public class Skolemizer
                 Resource type = it.next().getResource(); // will fail if rdf:type object is not a resource
                 OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
                 OntClass pathClass = getPathClass(typeClass);
-                if (pathClass != null) return build(resource, getStringValue(pathClass, LDT.path), typeClass);
+                OntClass fragmentClass = getFragmentClass(typeClass);
+                
+                final String path = getStringValue(pathClass, LDT.path);
+                final String fragment;
+                if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
+                else fragment = null;
+                
+                if (pathClass != null) return build(resource, getUriBuilder(path, typeClass), path, fragment);
             }
         }
         finally
@@ -125,9 +132,8 @@ public class Skolemizer
         return null;
     }
     
-    public URI build(Resource resource, String path, OntClass typeClass)
+    public UriBuilder getUriBuilder(String path, OntClass typeClass)
     {
-        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (path == null) throw new IllegalArgumentException("Path cannot be null");
         if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
 
@@ -142,13 +148,17 @@ public class Skolemizer
             if (parent != null) builder = UriBuilder.fromUri(parent.getURI());
             else builder = getAbsolutePathBuilder().clone();
         }
+        
+        return builder;
+    }
+    
+    public URI build(Resource resource, UriBuilder builder, String path, String fragment)
+    {
+        if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (builder == null) throw new IllegalArgumentException("UriBuilder cannot be null");
 
         Map<String, String> nameValueMap = getNameValueMap(resource, new UriTemplateParser(path));
-        builder.path(path);
-
-        // add fragment identifier
-        String fragment = getStringValue(typeClass, LDT.fragment);
-        return builder.fragment(fragment).buildFromMap(nameValueMap); // TO-DO: wrap into SkolemizationException
+        return builder.path(path).fragment(fragment).buildFromMap(nameValueMap); // TO-DO: wrap into SkolemizationException
     }
 
     protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
@@ -246,6 +256,37 @@ public class Skolemizer
                     OntClass superClass = it.next();
                     OntClass pathClass = getPathClass(superClass);
                     if (pathClass != null) return pathClass;
+                }
+            }
+            finally
+            {
+                it.close();
+            }
+        }
+        
+        return null;
+    }
+    
+    public OntClass getFragmentClass(OntClass ontClass)
+    {
+        return getFragmentClass(ontClass, getStringValue(ontClass, LDT.fragment));
+    }
+    
+    public OntClass getFragmentClass(OntClass ontClass, String fragment)
+    {
+        if (ontClass == null) throw new IllegalArgumentException("OntClass cannot be null");
+        
+        if (fragment != null) return ontClass;
+        else
+        {
+            ExtendedIterator<OntClass> it = ontClass.listSuperClasses();
+            try
+            {
+                while (it.hasNext())
+                {
+                    OntClass superClass = it.next();
+                    OntClass fragmentClass = getFragmentClass(superClass);
+                    if (fragmentClass != null) return fragmentClass;
                 }
             }
             finally
