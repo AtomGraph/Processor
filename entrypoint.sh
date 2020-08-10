@@ -82,16 +82,13 @@ if [ -n "$ONTOLOGY" ] ; then
     ONTOLOGY_PARAM="--stringparam ldt:ontology $ONTOLOGY "
 fi
 if [ -n "$AUTH_USER" ] ; then
-    AUTH_USER_PARAM="--stringparam srv:queryAuthUser $AUTH_USER "
+    AUTH_USER_PARAM="--stringparam a:authUser $AUTH_USER "
 fi
 if [ -n "$AUTH_PWD" ] ; then
-    AUTH_PWD_PARAM="--stringparam srv:queryAuthPwd $AUTH_PWD "
+    AUTH_PWD_PARAM="--stringparam a:authPwd $AUTH_PWD "
 fi
 if [ -n "$PREEMPTIVE_AUTH" ] ; then
     PREEMPTIVE_AUTH_PARAM="--stringparam a:preemptiveAuth $PREEMPTIVE_AUTH "
-fi
-if [ -n "$SITEMAP_RULES" ] ; then
-    SITEMAP_RULES_PARAM="--stringparam ap:sitemapRules $SITEMAP_RULES "
 fi
 
 ### Execution ###
@@ -106,7 +103,6 @@ transform="xsltproc \
   $AUTH_USER_PARAM \
   $AUTH_PWD_PARAM \
   $PREEMPTIVE_AUTH_PARAM \
-  $SITEMAP_RULES_PARAM \
   conf/Catalina/localhost/context.xsl \
   conf/Catalina/localhost/ROOT.xml"
 

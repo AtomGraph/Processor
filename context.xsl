@@ -4,7 +4,6 @@
     <!ENTITY ap     "https://w3id.org/atomgraph/processor#">
     <!ENTITY ldt    "https://www.w3.org/ns/ldt#">
     <!ENTITY sd     "http://www.w3.org/ns/sparql-service-description#">
-    <!ENTITY srv    "http://jena.hpl.hp.com/Service#">
 ]>
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
@@ -12,7 +11,6 @@ xmlns:a="&a;"
 xmlns:ap="&ap;"
 xmlns:ldt="&ldt;"
 xmlns:sd="&sd;"
-xmlns:srv="&srv;"
 >
   
     <xsl:output method="xml" indent="yes"/>
@@ -20,8 +18,8 @@ xmlns:srv="&srv;"
     <xsl:param name="sd:endpoint"/>
     <xsl:param name="a:graphStore"/>
     <xsl:param name="ldt:ontology"/>
-    <xsl:param name="srv:queryAuthUser"/>
-    <xsl:param name="srv:queryAuthPwd"/>
+    <xsl:param name="a:authUser"/>
+    <xsl:param name="a:authPwd"/>
     <xsl:param name="a:preemptiveAuth"/>
     <xsl:param name="ap:sitemapRules"/>
 
@@ -44,11 +42,11 @@ xmlns:srv="&srv;"
             <xsl:if test="$ldt:ontology">
                 <Parameter name="&ldt;ontology" value="{$ldt:ontology}" override="false"/>
             </xsl:if>
-            <xsl:if test="$srv:queryAuthUser">
-                <Parameter name="&srv;queryAuthUser" value="{$srv:queryAuthUser}" override="false"/>
+            <xsl:if test="$a:authUser">
+                <Parameter name="&a;authUser" value="{$a:authUser}" override="false"/>
             </xsl:if>
-            <xsl:if test="$srv:queryAuthPwd">
-                <Parameter name="&srv;queryAuthPwd" value="{$srv:queryAuthPwd}" override="false"/>
+            <xsl:if test="$a:authPwd">
+                <Parameter name="&a;authPwd" value="{$a:authPwd}" override="false"/>
             </xsl:if>
             <xsl:if test="$a:preemptiveAuth">
                 <Parameter name="&a;preemptiveAuth" value="{$a:preemptiveAuth}" override="false"/>
