@@ -28,11 +28,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.model.Service;
-import com.atomgraph.core.util.Link;
-import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.TemplateCall;
+import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
 import java.util.Collections;
 import java.util.Iterator;
@@ -360,9 +359,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         return super.getResponseBuilder(dataset).
             cacheControl(getCacheControl()).
-            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
-            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
-            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
+            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
+            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
     }
     
     /**
@@ -377,9 +376,9 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         return super.getResponseBuilder(model).
             cacheControl(getCacheControl()).
-            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
-            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
-            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
+            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
+            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
     }
         
     /**

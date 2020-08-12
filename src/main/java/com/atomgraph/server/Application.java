@@ -25,7 +25,7 @@ import javax.servlet.ServletConfig;
 import javax.ws.rs.core.Context;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.util.LocationMapper;
-import com.atomgraph.core.provider.DataManagerProvider;
+import com.atomgraph.core.factory.DataManagerFactory;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.provider.QueryParamProvider;
 import com.atomgraph.core.io.ResultSetProvider;
@@ -239,7 +239,7 @@ public class Application extends com.atomgraph.core.Application
         register(new QueryParamProvider());
         register(new QueryProvider());
         register(new UpdateRequestReader());
-        register(new DataManagerProvider(getDataManager()));
+        register(new DataManagerFactory(getDataManager()));
         register(RiotExceptionMapper.class);
         register(ModelExceptionMapper.class);
         register(ConstraintViolationExceptionMapper.class);
@@ -255,13 +255,6 @@ public class Application extends com.atomgraph.core.Application
      
         //if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
-    
-//    public static FileManager getFileManager(LocationMapper locationMapper)
-//    {
-//        FileManager fileManager = FileManager.get();
-//        fileManager.setLocationMapper(locationMapper);
-//        return fileManager;
-//    }
     
     public String getOntologyURI()
     {
