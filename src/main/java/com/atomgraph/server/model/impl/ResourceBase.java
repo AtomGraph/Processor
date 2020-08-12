@@ -29,6 +29,7 @@ import javax.ws.rs.core.*;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.core.model.impl.QueriedResourceBase;
+import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -359,9 +360,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         return super.getResponseBuilder(dataset).
             cacheControl(getCacheControl()).
-            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
-            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
-            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
+            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        
+        // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
+//            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
+//            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
+//            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
     }
     
     /**
@@ -376,9 +382,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         return super.getResponseBuilder(model).
             cacheControl(getCacheControl()).
-            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
-            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
-            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
+            header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(URI.create(getApplication().getOntology().getURI()), LDT.ontology.getURI(), null)).
+            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
+        
+        // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
+//            header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build()).
+//            header(HttpHeaders.LINK, Link.fromUri(getApplication().getOntology().getURI()).rel(LDT.ontology.getURI()).build()).
+//            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
     }
         
     /**
