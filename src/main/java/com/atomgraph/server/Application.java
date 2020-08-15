@@ -29,7 +29,7 @@ import com.atomgraph.core.factory.DataManagerFactory;
 import com.atomgraph.server.model.impl.ResourceBase;
 import com.atomgraph.core.provider.QueryParamProvider;
 import com.atomgraph.core.io.ResultSetProvider;
-import com.atomgraph.core.io.UpdateRequestReader;
+import com.atomgraph.core.io.UpdateRequestProvider;
 import com.atomgraph.core.vocabulary.A;
 import com.atomgraph.core.vocabulary.SD;
 import com.atomgraph.server.mapper.ConfigurationExceptionMapper;
@@ -238,7 +238,7 @@ public class Application extends com.atomgraph.core.Application
         register(new ResultSetProvider());
         register(new QueryParamProvider());
         register(new QueryProvider());
-        register(new UpdateRequestReader());
+        register(new UpdateRequestProvider());
         register(new DataManagerFactory(getDataManager()));
         register(RiotExceptionMapper.class);
         register(ModelExceptionMapper.class);
