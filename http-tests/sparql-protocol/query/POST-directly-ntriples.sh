@@ -8,7 +8,7 @@ curl -f -s \
   -H "Accept: application/n-triples" \
   "${BASE_URL}sparql" \
   --data-binary @- <<EOF
-CONSTRUCT { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } { GRAPH <${BASE_URL}graph-name> { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } }
+CONSTRUCT { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } { GRAPH <${BASE_URL}graphs/name/> { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } }
 EOF
 ) \
 | rapper -q --input nquads --output nquads /dev/stdin - \

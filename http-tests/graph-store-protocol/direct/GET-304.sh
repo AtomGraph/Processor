@@ -6,14 +6,12 @@
 etag=$(
 curl -f -s -I -G \
   -H "Accept: application/n-triples" \
-  "${BASE_URL}service" \
-  --data-urlencode "graph=${BASE_URL}graphs/name/" \
+  "${BASE_URL}graphs/name/" \
 | grep 'ETag' \
 | sed -En 's/^ETag: (.*)/\1/p')
 
 curl -w "%{http_code}\n" -f -s -G \
   -H "Accept: application/n-triples" \
-  "${BASE_URL}service" \
-  --data-urlencode "graph=${BASE_URL}graphs/name/" \
+  "${BASE_URL}graphs/name/" \
   -H "If-None-Match: $etag" \
 | grep -q "${STATUS_NOT_MODIFIED}"

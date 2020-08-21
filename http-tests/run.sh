@@ -70,7 +70,7 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n ### Core Templates ontology tests ###\n\n"
 
-run_tests $(find ./linked-data-templates/ct/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/ct/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### Named Graph Templates ontology tests ###
@@ -83,7 +83,7 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n### Named Graph Templates ontology tests ###\n\n"
 
-run_tests $(find ./linked-data-templates/ngt/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/ngt/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### Custom LDT ontology tests ###
@@ -96,7 +96,7 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n### Custom LDT ontology tests ###\n\n"
 
-run_tests $(find ./linked-data-templates/custom/ -name '*.sh*')
+run_tests $(find ./linked-data-templates/custom/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### SPARQL Protocol query tests ###
@@ -109,7 +109,7 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n### SPARQL Protocol query tests ###\n\n"
 
-run_tests $(find ./sparql-protocol/query/ -name '*.sh*')
+run_tests $(find ./sparql-protocol/query/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### SPARQL Protocol update tests ###
@@ -122,7 +122,7 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n### SPARQL Protocol update tests ###\n\n"
 
-run_tests $(find ./sparql-protocol/update/ -name '*.sh*')
+run_tests $(find ./sparql-protocol/update/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### Graph Store Protocol tests ###
@@ -135,7 +135,20 @@ initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
 printf "\n### Graph Store Protocol tests ###\n\n"
 
-run_tests $(find ./graph-store-protocol/ -name '*.sh*')
+run_tests $(find ./graph-store-protocol/ -maxdepth 1 -type f -name '*.sh*')
+(( error_count += $? ))
+
+# use custom ontology with GraphItem template for direct identification tests
+
+export BASE_URL="http://localhost:8084/"
+export BASE_URL_WRITABLE="http://localhost:8085/"
+
+initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
+initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
+
+printf "\n### Graph Store Protocol (direct identification) tests ###\n\n"
+
+run_tests $(find ./graph-store-protocol/direct/ -type f -name '*.sh*')
 (( error_count += $? ))
 
 ### Exit

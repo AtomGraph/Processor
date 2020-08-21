@@ -52,14 +52,14 @@
 
 }
 
-<graph-name>
+<graphs/name/>
 {
     
     <named-subject> <http://example.com/named-predicate> <named-object>, "named object" .
 
 }
 
-<another-graph-name>
+<graphs/another-name/>
 {
     
     <another-named-subject> <http://example.com/named-predicate> <named-object>, "named object" .

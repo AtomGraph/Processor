@@ -8,7 +8,7 @@ curl -f -s \
   -H "Accept: application/sparql-results+xml" \
   "${BASE_URL}sparql" \
   --data-binary @- <<EOF
-SELECT * { GRAPH <${BASE_URL}graph-name> { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } }
+SELECT * { GRAPH <${BASE_URL}graphs/name/> { <${BASE_URL}named-subject> <http://example.com/named-predicate> ?o } }
 EOF
 ) \
 | tr -s '\n' '\t' \

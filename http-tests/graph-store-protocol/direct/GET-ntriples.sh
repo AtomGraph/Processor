@@ -4,8 +4,7 @@
 
 curl -f -s -G \
   -H "Accept: application/n-triples" \
-  "${BASE_URL}service" \
-  --data-urlencode "graph=${BASE_URL}graphs/name/" \
+  "${BASE_URL}graphs/name/" \
 | rapper -q --input nquads --output nquads /dev/stdin - \
 | tr -s '\n' '\t' \
 | grep "${BASE_URL}named-subject" \

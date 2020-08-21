@@ -32,9 +32,11 @@ import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.TemplateCall;
 import java.util.Optional;
 import javax.inject.Inject;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ResourceContext;
 import org.apache.jena.query.Dataset;
 import org.apache.jena.query.DatasetFactory;
+import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -83,21 +85,32 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     @Override
     public Response put(Dataset dataset)
     {
-        Model existing = getService().getDatasetAccessor().getModel(getURI().toString());
-
-        if (!existing.isEmpty()) // remove existing representation
+        Model existing = ModelFactory.createDefaultModel();
+        
+        try
         {
-            EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(dataset.getDefaultModel())));
-            ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
-            if (rb != null)
+            existing = getService().getDatasetAccessor().getModel(getURI().toString());
+
+            if (!existing.isEmpty())
             {
-                if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
-                return rb.build();
+                EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(dataset.getDefaultModel())));
+                ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
+                if (rb != null)
+                {
+                    if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
+                    return rb.build();
+                }
             }
         }
-        
-        if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore", getURI());
-        getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
+        catch (NotFoundException ex)
+        {
+            // existing graph not found - do nothing
+        }
+        finally
+        {
+            if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore", getURI());
+            getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
+        }
         
         if (existing.isEmpty()) return Response.created(getURI()).build();
         else return Response.ok(dataset).build();

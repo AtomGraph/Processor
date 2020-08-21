@@ -119,7 +119,9 @@ public class TemplateImpl extends OntClassImpl implements Template
     {
         Template lowest = getSelfOrSuperWithProperty(LDT.query);
         if (lowest != null) return lowest.getPropertyResourceValue(LDT.query);
-        else return null;
+        
+        if (log.isErrorEnabled()) log.error("Template '{}' is missing ldt:query value", getURI());
+        throw new OntologyException("Template '" + getURI() + "' is missing ldt:query value");
     }
 
     @Override

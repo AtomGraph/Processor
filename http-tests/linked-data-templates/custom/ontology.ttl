@@ -109,6 +109,15 @@
     ldt:param :ValueTypeParam ;
     rdfs:isDefinedBy : .
 
+# used in ../../graph-store-protocol/direct/ tests
+
+:GraphItem a ldt:Template ;
+    ldt:match "/graphs/{slug}/" ;
+    ldt:query :DefaultSubjectQuery ;
+    ldt:loadClass <java:com.atomgraph.server.resource.graph.Item> ;
+    rdfs:label "Graph document" ;
+    rdfs:isDefinedBy : .
+
 # parameters
 
 :object a rdf:Property ;

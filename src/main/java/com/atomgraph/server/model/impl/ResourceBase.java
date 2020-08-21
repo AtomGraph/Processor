@@ -67,9 +67,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final HttpHeaders httpHeaders;  
     private final QuerySolutionMap querySolutionMap;
     private final Query query;
-    private final Resource queryResource; // , queryType
+    private final Resource queryResource, updateResource;
     private final UpdateRequest update;
-    private final Resource updateResource; //, updateType;
 
     /**
      * Public JAX-RS instance. Suitable for subclassing.
@@ -125,20 +124,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             queryResource = templateCall.get().getTemplate().getQuery();
             if (queryResource != null)
             {
-//                queryType = queryResource.getPropertyResourceValue(RDF.type);
-//
-//                if (queryType != null)
-//                {
-//                    if (queryType.canAs(com.atomgraph.spinrdf.model.Template.class)) // ldt:query value is a spin:Template call, not sp:Query
-//                    {
-//                        com.atomgraph.spinrdf.model.Template queryTemplate = queryType.as(com.atomgraph.spinrdf.model.Template.class);
-//                        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
-//                    }
-//                    else
-//                        this.query = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(queryResource), querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
-//                }
-//                else
-//                    query = null;
                 if (queryResource.canAs(com.atomgraph.spinrdf.model.TemplateCall.class))
                     query = new ParameterizedSparqlString(queryResource.as(com.atomgraph.spinrdf.model.TemplateCall.class).getTemplate().getBody().getText(),
                         querySolutionMap, uriInfo.getBaseUri().toString()).asQuery();
@@ -152,27 +137,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
                 }
             }
             else
-            {
-//                queryType = null;
                 query = null;
-            }
 
             updateResource = templateCall.get().getTemplate().getUpdate();
             if (updateResource != null)
             {
-//                updateType = updateResource.getPropertyResourceValue(RDF.type);
-//                if (updateType != null)
-//                {
-//                    if (updateType.canAs(com.atomgraph.spinrdf.model.Template.class)) // ldt:update value is a spin:Template call, not sp:Update
-//                    {
-//                        com.atomgraph.spinrdf.model.Template updateTemplate = updateType.as(com.atomgraph.spinrdf.model.Template.class);
-//                        update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateTemplate.getBody()), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
-//                    }
-//                    else
-//                        update = new ParameterizedSparqlString(ARQ2SPIN.getTextOnly(updateResource), querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
-//                }
-//                else
-//                    update = null;
                 if (updateResource.canAs(com.atomgraph.spinrdf.model.TemplateCall.class))
                     update = new ParameterizedSparqlString(updateResource.as(com.atomgraph.spinrdf.model.TemplateCall.class).getTemplate().getBody().getText(),
                         querySolutionMap, uriInfo.getBaseUri().toString()).asUpdate();
@@ -186,19 +155,14 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
                 }
             }
             else
-            {
-                //updateType = null;
                 update = null;
-            }
         }
         else
         {
             querySolutionMap = null;
             queryResource = null;
-            //queryType = null;
             query = null;
             updateResource = null;
-            //updateType = null;
             update = null;
         }
 
@@ -455,11 +419,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         return queryResource;
     }
     
-//    public Resource getQueryType()
-//    {
-//        return queryType;
-//    }
-    
     /**
      * Returns update used to remove RDF description of this resource.
      * Query solution bindings are applied by default.
@@ -477,12 +436,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     {
         return updateResource;
     }
-    
-//    public Resource getUpdateType()
-//    {
-//        return updateType;
-//    }
-    
+
     /**
      * Returns HTTP headers of the current request.
      * 

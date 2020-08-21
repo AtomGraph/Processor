@@ -15,6 +15,7 @@
  */
 package com.atomgraph.processor.model.impl;
 
+import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
@@ -174,6 +175,12 @@ public class TemplateTest
         assertEquals(superMatch, subTemplate1.getMatch());
     }
 
+    @Test(expected = OntologyException.class)
+    public void testMissingQuery()
+    {
+        template.getQuery();
+    }
+    
     @Test
     public void testInheritedQuery()
     {

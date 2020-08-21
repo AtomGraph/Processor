@@ -9,7 +9,7 @@ encoded_url=$(curl -w "%{url_effective}\n" -G -s -o /dev/null \
 --data-urlencode "default=true" \
   "${BASE_URL_WRITABLE}service")
 
-# replace new resource description to the default graph
+# replace the default graph
 
 (
 curl -w "%{http_code}\n" -f -s \

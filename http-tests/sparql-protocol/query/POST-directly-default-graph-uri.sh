@@ -4,7 +4,7 @@
 
 # separate URL-encoding step because we cannot combine -G with --data-binary
 encoded_url=$(curl -w "%{url_effective}\n" -G -s -o /dev/null \
---data-urlencode "default-graph-uri=${BASE_URL}graph-name" \
+--data-urlencode "default-graph-uri=${BASE_URL}graphs/name/" \
   "${BASE_URL}sparql")
 
 (
