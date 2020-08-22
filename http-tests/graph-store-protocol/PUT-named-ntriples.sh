@@ -18,8 +18,8 @@ curl -w "%{http_code}\n" -f -s \
      -H "Content-Type: application/n-triples" \
      --data-binary @- \
     "${encoded_url}" <<EOF
-<${BASE_URL_WRITABLE}named-subject-post> <http://example.com/default-predicate> "named object POST" .
-<${BASE_URL_WRITABLE}named-subject-post> <http://example.com/another-predicate> "another named object POST" .
+<${BASE_URL_WRITABLE}named-subject-put> <http://example.com/default-predicate> "named object PUT" .
+<${BASE_URL_WRITABLE}named-subject-put> <http://example.com/another-predicate> "another named object PUT" .
 EOF
 ) \
 | grep -q "${STATUS_OK}"
@@ -30,5 +30,5 @@ curl -f -s -G \
   -H "Accept: application/n-triples" \
   "${encoded_url}" \
 | tr -d '\n' \
-| grep '"named object POST"' \
+| grep '"named object PUT"' \
 | grep -v '"named object"' > /dev/null

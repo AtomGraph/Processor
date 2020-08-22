@@ -11,7 +11,7 @@ curl -w "%{http_code}\n" -f -s \
      -H "Accept: application/n-triples" \
      -H "Content-Type: application/n-triples" \
      --data-binary @- \
-    "${BASE_URL}graphs/name/" <<EOF
+    "${BASE_URL_WRITABLE}graphs/name/" <<EOF
 <${BASE_URL_WRITABLE}named-subject-post> <http://example.com/default-predicate> "named object POST" .
 <${BASE_URL_WRITABLE}named-subject-post> <http://example.com/another-predicate> "another named object POST" .
 EOF
@@ -22,7 +22,7 @@ EOF
 
 curl -f -s -G \
   -H "Accept: application/n-triples" \
-  "${BASE_URL}graphs/name/" \
+  "${BASE_URL_WRITABLE}graphs/name/" \
 | tr -d '\n' \
 | grep '"named object POST"' \
 | grep '"another named object POST"' > /dev/null
