@@ -2,7 +2,7 @@
 
 # use conneg to request N-Triples as the preferred format
 
-curl -f -s -G \
+curl -f -v -G \
   -H "Accept: application/n-triples" \
   "${BASE_URL}graphs/name/" \
 | rapper -q --input nquads --output nquads /dev/stdin - \
