@@ -62,26 +62,21 @@ public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
     
     public Model process(Model model)
     {
-//        if (getRequest().getMethod().equalsIgnoreCase("POST"))
-//        {
-            ResIterator it = model.listSubjects();
-            try
+        ResIterator it = model.listSubjects();
+        try
+        {
+            while (it.hasNext())
             {
-                while (it.hasNext())
-                {
-                    Resource resource = it.next();
-                    process(resource);
-                }
+                Resource resource = it.next();
+                process(resource);
             }
-            finally
-            {
-                it.close();
-            }
-        
-            return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
-//        }
-//        
-//        return model;
+        }
+        finally
+        {
+            it.close();
+        }
+
+        return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
     }
     
     public Resource process(Resource resource)

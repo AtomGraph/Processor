@@ -4,7 +4,7 @@
 
 initialize_dataset "$BASE_URL_WRITABLE" "../dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-# use conneg to request N-Triples as the preferred format
+# delete default graph
 
 curl -w "%{http_code}\n" -f -s -G \
   -X DELETE \

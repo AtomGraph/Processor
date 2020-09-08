@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# attempt to delete non-existing named graph
+
 curl -w "%{http_code}\n" -f -s -G \
   -X DELETE \
   -H "Accept: application/n-triples" \
