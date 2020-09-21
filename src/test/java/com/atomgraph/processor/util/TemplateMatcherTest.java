@@ -19,8 +19,10 @@ import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.LDT;
+import com.atomgraph.server.util.OntologyLoader;
 import static junit.framework.Assert.assertEquals;
 import org.apache.jena.enhanced.BuiltinPersonalities;
+import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sys.JenaSystem;
@@ -92,6 +94,10 @@ public class TemplateMatcherTest
                 addProperty(RDFS.isDefinedBy, ontology).
                 as(Template.class);
         
+        // load the ontology the same way Application loads it
+        OntDocumentManager.getInstance().addModel(ontology.getURI(), ontology.getOntModel());
+        ontology = new OntologyLoader( OntDocumentManager.getInstance(), ontology.getURI(), ontology.getOntModel().getSpecification(), true).getOntology();
+
         matcher = new TemplateMatcher(ontology);
     }
 

@@ -56,6 +56,7 @@ public class SkolemizerTest
     public Skolemizer getSkolemizer(OntDocumentManager ontMgr, OntModel ontModel, String ontologyURI)
     {
 //        Ontology ontology = ontModel.getOntology(ontologyURI);
+        // load the ontology the same way Application loads it
         ontMgr.addModel(ontologyURI, ontModel);
         Ontology ontology = new OntologyLoader(ontMgr, ontologyURI, ontModel.getSpecification(), true).getOntology();
         return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder);
