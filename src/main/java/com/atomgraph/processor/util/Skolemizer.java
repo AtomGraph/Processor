@@ -161,7 +161,7 @@ public class Skolemizer
         return builder.path(path).fragment(fragment).buildFromMap(nameValueMap); // TO-DO: wrap into SkolemizationException
     }
 
-    protected Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
+    public static Map<String, String> getNameValueMap(Resource resource, UriTemplateParser parser)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         if (parser == null) throw new IllegalArgumentException("UriTemplateParser cannot be null");
@@ -178,7 +178,7 @@ public class Skolemizer
         return nameValueMap;
     }
 
-    protected Literal getLiteral(Resource resource, String namePath)
+    public static Literal getLiteral(Resource resource, String namePath)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
 
@@ -211,7 +211,7 @@ public class Skolemizer
         return null;
     }
 
-    protected Resource getResource(Resource resource, String name)
+    public static Resource getResource(Resource resource, String name)
     {
         if (resource == null) throw new IllegalArgumentException("Resource cannot be null");
         

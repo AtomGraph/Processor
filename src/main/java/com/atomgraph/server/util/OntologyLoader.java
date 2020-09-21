@@ -46,19 +46,19 @@ public class OntologyLoader
     private final String ontologyURI;
     
     public OntologyLoader(final OntDocumentManager ontDocumentManager, final String ontologyURI,
-            final OntModelSpec materializationSpec, final boolean materialize)
+            final OntModelSpec ontModelSpec, final boolean materialize)
     {
         if (ontDocumentManager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
-        if (materializationSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
+        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
         
         this.ontDocumentManager = ontDocumentManager;
         this.ontologyURI = ontologyURI;
         
-        // materialize OntModel inferences to avoid invoking rules engine on every request
+        // materialize OntModel inferences to avoid invoking reasoner
         if (materialize)
         {
-            OntModel ontModel = getOntModel(ontDocumentManager, ontologyURI, materializationSpec);
+            OntModel ontModel = ontDocumentManager.getOntology(ontologyURI, ontModelSpec);
             Ontology ontology = ontModel.getOntology(ontologyURI);
 
             ImportCycleChecker checker = new ImportCycleChecker();
@@ -134,61 +134,9 @@ public class OntologyLoader
     
     public Ontology getOntology(OntModelSpec loadSpec)
     {   
-        return getOntModel(getOntDocumentManager(), getOntologyURI(), loadSpec).getOntology(getOntologyURI());
+        return getOntDocumentManager().getOntology(getOntologyURI(), loadSpec).getOntology(getOntologyURI());
     }
     
-    /**
-     * Loads ontology by URI.
-     * 
-     * @param manager
-     * @param ontologyURI ontology location
-     * @param ontModelSpec ontology model specification
-     * @return ontology model
-     */
-    public static OntModel getOntModel(OntDocumentManager manager, String ontologyURI, OntModelSpec ontModelSpec)
-    {
-        if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
-        if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
-        if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
-        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
-
-        try
-        {
-            OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
-
-            // explicitly loading owl:imports -- workaround for Jena bug: https://issues.apache.org/jira/browse/JENA-1210
-            ontModel.enterCriticalSection(Lock.WRITE);
-            try
-            {
-                ontModel.loadImports();
-            }
-            finally
-            {
-                ontModel.leaveCriticalSection();
-            }
-
-            // lock and clone the model to avoid ConcurrentModificationExceptions
-            ontModel.enterCriticalSection(Lock.READ);
-            try
-            {
-                return ModelFactory.createOntologyModel(ontModelSpec,
-                        ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
-            }
-            finally
-            {
-                ontModel.leaveCriticalSection();
-            }
-        }
-        catch (ClientErrorException ex) // thrown by DataManager
-        {
-            // remove ontology from cache, so next time it will be reloaded, possibly with fixed imports
-            manager.getFileManager().removeCacheModel(ontologyURI);
-            
-            if (log.isErrorEnabled()) log.error("Could not load ontology '{}' or its imports", ontologyURI);
-            throw new OntologyException("Could not load ontology '" + ontologyURI + "' or its imports", ex);
-        }
-    }
-
     public OntDocumentManager getOntDocumentManager()
     {
         return ontDocumentManager;

@@ -70,12 +70,7 @@ import com.atomgraph.spinrdf.vocabulary.SP;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
-import org.apache.jena.reasoner.Reasoner;
-import org.apache.jena.reasoner.rulesys.RDFSRuleReasonerFactory;
-import org.apache.jena.vocabulary.ReasonerVocabulary;
 import org.glassfish.hk2.api.TypeLiteral;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.client.ClientConfig;
@@ -92,7 +87,6 @@ public class Application extends com.atomgraph.core.Application
     private final com.atomgraph.processor.model.Application application;
     private final Service service;
     private final String ontologyURI;
-    private final OntModelSpec ontModelSpec;
     private final Ontology ontology;
     private final boolean cacheSitemap;
     
@@ -157,17 +151,6 @@ public class Application extends com.atomgraph.core.Application
         }
         
         application = new ApplicationImpl(service, ResourceFactory.createResource(ontologyURI));
-
-        OntModelSpec rdfsReasonerSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-        Resource reasonerConfig = ModelFactory.createDefaultModel().
-            createResource().
-            addProperty(ReasonerVocabulary.PROPsetRDFSLevel, "simple");
-        Reasoner reasoner = RDFSRuleReasonerFactory.theInstance().
-                create(reasonerConfig);
-        //reasoner.setDerivationLogging(true);
-        //reasoner.setParameter(ReasonerVocabulary.PROPtraceOn, Boolean.TRUE);
-        rdfsReasonerSpec.setReasoner(reasoner);
-        this.ontModelSpec = rdfsReasonerSpec;
         
         SP.init(BuiltinPersonalities.model);
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
@@ -178,7 +161,7 @@ public class Application extends com.atomgraph.core.Application
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
         
-        this.ontology = new OntologyLoader(OntDocumentManager.getInstance(), ontologyURI, ontModelSpec, true).getOntology();
+        this.ontology = new OntologyLoader(OntDocumentManager.getInstance(), ontologyURI, OntModelSpec.OWL_MEM_RDFS_INF, true).getOntology();
     }
     
     /**
@@ -261,10 +244,10 @@ public class Application extends com.atomgraph.core.Application
         return ontologyURI;
     }
     
-    public OntModelSpec getOntModelSpec()
-    {
-        return ontModelSpec;
-    }
+//    public OntModelSpec getOntModelSpec()
+//    {
+//        return ontModelSpec;
+//    }
     
     public final boolean isCacheSitemap()
     {

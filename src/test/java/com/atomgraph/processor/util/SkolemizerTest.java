@@ -18,6 +18,7 @@ package com.atomgraph.processor.util;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
+import com.atomgraph.server.util.OntologyLoader;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -25,11 +26,14 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.jena.ontology.AllValuesFromRestriction;
 import org.apache.jena.ontology.HasValueRestriction;
 import org.apache.jena.ontology.OntClass;
+import org.apache.jena.ontology.OntDocumentManager;
+import org.apache.jena.ontology.OntModel;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
+import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.vocabulary.DCTerms;
 import org.apache.jena.vocabulary.OWL;
@@ -38,7 +42,6 @@ import org.apache.jena.vocabulary.RDFS;
 import org.glassfish.jersey.uri.internal.UriTemplateParser;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.junit.Before;
 
 /**
  *
@@ -47,28 +50,27 @@ import org.junit.Before;
 public class SkolemizerTest
 {
         
-    private UriBuilder baseUriBuilder, absolutePathBuilder;
-    private Ontology ontology, importedOntology;
-    private Skolemizer skolemizer;
+    private final UriBuilder baseUriBuilder = UriBuilder.fromUri("http://base/"), absolutePathBuilder = UriBuilder.fromUri("http://base/absolute/path");
     
-    @Before
-    public void setUp()
+    // we do not want to share the OntDocumentManager between tests because we'll get race conditions
+    public Skolemizer getSkolemizer(OntDocumentManager ontMgr, OntModel ontModel, String ontologyURI)
     {
-        baseUriBuilder = UriBuilder.fromUri("http://base/");
-        absolutePathBuilder = UriBuilder.fromUri("http://base/absolute/path");
-        ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
-        importedOntology = ontology.getOntModel().createOntology("http://test/ontology/import");
-        ontology.addImport(importedOntology);
-        skolemizer = new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder);
+//        Ontology ontology = ontModel.getOntology(ontologyURI);
+        ontMgr.addModel(ontologyURI, ontModel);
+        Ontology ontology = new OntologyLoader(ontMgr, ontologyURI, ontModel.getSpecification(), true).getOntology();
+        return new Skolemizer(ontology, baseUriBuilder, absolutePathBuilder);
     }
 
     @Test
     public void testInheritance()
     {
-        OntClass superClass = importedOntology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        Ontology importedOntology = ontology.getOntModel().createOntology("http://test/ontology/import");
+        ontology.addImport(importedOntology);
+        OntClass superClass = importedOntology.getOntModel().createClass("http://test/ontology/super-class");
         superClass.addLiteral(LDT.path, "super-{title}");
         
-        OntClass cls = ontology.getOntModel().createClass();
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addProperty(RDFS.subClassOf, FOAF.Document).
                 addProperty(RDFS.subClassOf, superClass);
      
@@ -79,14 +81,35 @@ public class SkolemizerTest
                 addLiteral(DCTerms.title, title);
         
         URI expected = absolutePathBuilder.clone().path("super-" + title).build();
-        URI actual = skolemizer.build(subInst);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(subInst);
         assertEquals(expected, actual);
     }
-    
+
+    @Test
+    public void testInvalidSuperClass()
+    {
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
+        cls.addLiteral(LDT.path, "{title}").
+                addProperty(RDFS.subClassOf, FOAF.Document).
+                addProperty(RDFS.subClassOf, ResourceFactory.createResource("http://whatever"));
+     
+        String title = "Whateverest";
+        Resource inst = ModelFactory.createDefaultModel().
+                createResource().
+                addProperty(RDF.type, cls).
+                addLiteral(DCTerms.title, title);
+        
+        URI expected = absolutePathBuilder.clone().path(title).build();
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
+        assertEquals(expected, actual);
+    }
+
     @Test
     public void testAbsolutePath()
     {
-        OntClass cls = ontology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addLiteral(LDT.path, "/{identifier}");
 
         String id = "ABCDEFGHI";
@@ -96,14 +119,15 @@ public class SkolemizerTest
             addLiteral(DCTerms.identifier, id);
 
         URI expected = baseUriBuilder.clone().path(id).build();
-        URI actual = skolemizer.build(inst);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
         assertEquals(expected, actual);
     }
     
     @Test
     public void testRelativePath()
     {
-        OntClass cls = ontology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addLiteral(LDT.path, "{identifier}");
 
         String id = "ABCDEFGHI";
@@ -113,7 +137,7 @@ public class SkolemizerTest
                 addLiteral(DCTerms.identifier, id);
         
         URI expected = absolutePathBuilder.clone().path(id).build();
-        URI actual = skolemizer.build(inst);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
         assertEquals(expected, actual);
     }
     
@@ -121,7 +145,8 @@ public class SkolemizerTest
     public void testPrimaryTopic()
     {
         String id = "123456789";
-        OntClass cls = ontology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addLiteral(LDT.path, "thing-{isPrimaryTopicOf.identifier}");
 
         Model model = ModelFactory.createDefaultModel();
@@ -132,7 +157,7 @@ public class SkolemizerTest
                 addProperty(FOAF.isPrimaryTopicOf, doc);
         
         URI expected = absolutePathBuilder.clone().path("thing-" + id).build();
-        URI actual = skolemizer.build(thing);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(thing);
         assertEquals(expected, actual);
     }
     
@@ -140,14 +165,14 @@ public class SkolemizerTest
     public void testHasValueRestrictionParent()
     {
         String hasValue = "http://restricted/";
-                
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
         HasValueRestriction hvr = ontology.getOntModel().
-                createHasValueRestriction(null, SIOC.HAS_CONTAINER, ontology.getOntModel().
+                createHasValueRestriction("http://test/ontology/hvr", SIOC.HAS_CONTAINER, ontology.getOntModel().
                         createResource(hasValue));
         // use inheritance as well
-        OntClass superCls = ontology.getOntModel().createClass();
+        OntClass superCls = ontology.getOntModel().createClass("http://test/ontology/super-class");
         superCls.addLiteral(LDT.path, "hv-{identifier}");
-        OntClass cls = ontology.getOntModel().createClass();
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addProperty(RDFS.subClassOf, hvr).
                 addProperty(RDFS.subClassOf, superCls);
         // sioc:has_container has to be an owl:ObjectProperty, otherwise we'll get ConversionException
@@ -161,7 +186,7 @@ public class SkolemizerTest
                 addLiteral(DCTerms.identifier, id);
 
         URI expected = UriBuilder.fromUri(hasValue).path("hv-" + id).build();
-        URI actual = skolemizer.build(inst);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
         assertEquals(expected, actual);
     }
     
@@ -169,12 +194,12 @@ public class SkolemizerTest
     public void testAllValuesFromRestrictionParent()
     {
         String hasValue = "http://restricted/";
-
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
         HasValueRestriction hvr = ontology.getOntModel().
-                createHasValueRestriction(null, SIOC.HAS_CONTAINER, ontology.getOntModel().
+                createHasValueRestriction("http://test/ontology/hvr", SIOC.HAS_CONTAINER, ontology.getOntModel().
                         createResource(hasValue));
 
-        OntClass hvrCls = ontology.getOntModel().createClass();
+        OntClass hvrCls = ontology.getOntModel().createClass("http://test/ontology/hvr-class");
         hvrCls.addProperty(RDFS.subClassOf, hvr);
         // sioc:has_container has to be an owl:ObjectProperty, otherwise we'll get ConversionException
         ontology.getOntModel().createResource(SIOC.HAS_CONTAINER.getURI()).
@@ -198,7 +223,7 @@ public class SkolemizerTest
                 addProperty(FOAF.isPrimaryTopicOf, doc);
 
         URI expected = UriBuilder.fromUri(hasValue).path("avf-" + id).build();
-        URI actual = skolemizer.build(thing);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(thing);
         assertEquals(expected, actual);
     }
     
@@ -207,9 +232,10 @@ public class SkolemizerTest
     {
         String fragment = "something";
         // use inheritance as well
-        OntClass superCls = ontology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass superCls = ontology.getOntModel().createClass("http://test/ontology/super-class");
         superCls.addLiteral(LDT.fragment, fragment);
-        OntClass cls = ontology.getOntModel().createClass();
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addLiteral(LDT.path, "{identifier}").
                 addProperty(RDFS.subClassOf, superCls);
 
@@ -220,20 +246,21 @@ public class SkolemizerTest
                 addLiteral(DCTerms.identifier, id);
         
         URI expected = absolutePathBuilder.clone().path(id).fragment(fragment).build();
-        URI actual = skolemizer.build(inst);
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
         assertEquals(expected, actual);
     }
     
     @Test(expected = OntologyException.class)
     public void testInvalidPath()
     {
-        OntClass cls = ontology.getOntModel().createClass();
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
         cls.addLiteral(LDT.path, 123);
         Resource invalid = ModelFactory.createDefaultModel().
                 createResource().
                 addProperty(RDF.type, cls);
         
-        skolemizer.build(invalid);
+        getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(invalid);
     }
     /**
      * Test of getNameValueMap method, of class Skolemizer.
@@ -256,7 +283,7 @@ public class SkolemizerTest
         expected.put("title", firstTitle.getString());
         expected.put("primaryTopic.title", secondTitle.getString());
         
-        Map<String, String> result = skolemizer.getNameValueMap(first, parser);
+        Map<String, String> result = Skolemizer.getNameValueMap(first, parser);
         assertEquals(expected, result);
     }
 
@@ -276,13 +303,13 @@ public class SkolemizerTest
                 addLiteral(DCTerms.title, firstTitle).
                 addProperty(FOAF.primaryTopic, second);
         
-        Literal firstResult = skolemizer.getLiteral(first, "title");
+        Literal firstResult = Skolemizer.getLiteral(first, "title");
         assertEquals(firstTitle, firstResult);
-        Literal secondResult = skolemizer.getLiteral(first, "primaryTopic.title");
+        Literal secondResult = Skolemizer.getLiteral(first, "primaryTopic.title");
         assertEquals(secondTitle, secondResult);
-        Literal resultFail1 = skolemizer.getLiteral(first, "primaryTopic");
+        Literal resultFail1 = Skolemizer.getLiteral(first, "primaryTopic");
         assertNull(resultFail1); // primaryTopic is a resource, not a literal
-        Literal resultFail2 = skolemizer.getLiteral(first, "whatever");
+        Literal resultFail2 = Skolemizer.getLiteral(first, "whatever");
         assertNull(resultFail2); // no such property
     }
 
@@ -300,13 +327,13 @@ public class SkolemizerTest
                 addLiteral(DCTerms.title, "First").
                 addProperty(FOAF.primaryTopic, second);
         
-        Resource secondResult = skolemizer.getResource(first, "primaryTopic");
+        Resource secondResult = Skolemizer.getResource(first, "primaryTopic");
         assertEquals(second, secondResult);
-        Resource resultFail1 = skolemizer.getResource(first, "title");
+        Resource resultFail1 = Skolemizer.getResource(first, "title");
         assertNull(resultFail1); // title is a literal, not a resource
-        Resource resultFail2 = skolemizer.getResource(first, "primaryTopic.title");
+        Resource resultFail2 = Skolemizer.getResource(first, "primaryTopic.title");
         assertNull(resultFail2); // title is a literal, not a resource
-        Resource resultFail3 = skolemizer.getResource(first, "whatever");
+        Resource resultFail3 = Skolemizer.getResource(first, "whatever");
         assertNull(resultFail3); // no such property
     }
     
