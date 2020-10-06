@@ -112,16 +112,19 @@ public class Skolemizer
             while (it.hasNext())
             {
                 Resource type = it.next().getResource(); // will fail if rdf:type object is not a resource
-                OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
-                OntClass pathClass = getPathClass(typeClass);
-                OntClass fragmentClass = getFragmentClass(typeClass);
-                
-                final String path = getStringValue(pathClass, LDT.path);
-                final String fragment;
-                if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
-                else fragment = null;
-                
-                if (pathClass != null) return build(resource, getUriBuilder(path, typeClass), path, fragment);
+                if (getOntology().getOntModel().getOntResource(type).canAs(OntClass.class))
+                {
+                    OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
+                    OntClass pathClass = getPathClass(typeClass);
+                    OntClass fragmentClass = getFragmentClass(typeClass);
+
+                    final String path = getStringValue(pathClass, LDT.path);
+                    final String fragment;
+                    if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
+                    else fragment = null;
+
+                    if (pathClass != null) return build(resource, getUriBuilder(path, typeClass), path, fragment);
+                }
             }
         }
         finally
