@@ -67,6 +67,7 @@ import com.atomgraph.server.mapper.NotAcceptableExceptionMapper;
 import com.atomgraph.server.mapper.NotSupportedExceptionMapper;
 import com.atomgraph.server.factory.TemplateCallFactory;
 import com.atomgraph.spinrdf.vocabulary.SP;
+import java.util.HashMap;
 import java.util.Optional;
 import javax.ws.rs.client.Client;
 import org.apache.jena.ontology.Ontology;
@@ -156,7 +157,8 @@ public class Application extends com.atomgraph.core.Application
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
 
-        DataManager dataManager = new DataManagerImpl(locationMapper, client, mediaTypes, preemptiveAuth);
+        // TO-DO: config property for cacheLoadModels
+        DataManager dataManager = new DataManagerImpl(locationMapper, new HashMap<>(), client, mediaTypes, true, preemptiveAuth);
         OntDocumentManager.getInstance().setFileManager((FileManager)dataManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!
