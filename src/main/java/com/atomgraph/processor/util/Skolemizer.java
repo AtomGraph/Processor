@@ -116,14 +116,18 @@ public class Skolemizer
                 {
                     OntClass typeClass = getOntology().getOntModel().getOntResource(type).asClass();
                     OntClass pathClass = getPathClass(typeClass);
-                    OntClass fragmentClass = getFragmentClass(typeClass);
 
-                    final String path = getStringValue(pathClass, LDT.path);
-                    final String fragment;
-                    if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
-                    else fragment = null;
+                    if (pathClass != null)
+                    {
+                        final String path = getStringValue(pathClass, LDT.path);
 
-                    if (pathClass != null) return build(resource, getUriBuilder(path, typeClass), path, fragment);
+                        OntClass fragmentClass = getFragmentClass(typeClass);
+                        final String fragment;
+                        if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
+                        else fragment = null;
+
+                        return build(resource, getUriBuilder(path, typeClass), path, fragment);
+                    }
                 }
             }
         }

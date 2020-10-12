@@ -106,6 +106,7 @@ public class Application extends com.atomgraph.core.Application
             servletConfig.getServletContext().getInitParameter(A.authPwd.getURI()) != null ? servletConfig.getServletContext().getInitParameter(A.authPwd.getURI()) : null,
             new MediaTypes(), getClient(new ClientConfig()),
             servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI()) != null ? Integer.parseInt(servletConfig.getServletContext().getInitParameter(A.maxGetRequestSize.getURI())) : null,
+            servletConfig.getServletContext().getInitParameter(A.cacheModelLoads.getURI()) != null ? Boolean.parseBoolean(servletConfig.getServletContext().getInitParameter(A.cacheModelLoads.getURI())) : false,
             servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI()) != null ? Boolean.parseBoolean(servletConfig.getServletContext().getInitParameter(A.preemptiveAuth.getURI())) : false,
             new LocationMapper(servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) != null ? servletConfig.getServletContext().getInitParameter(AP.locationMapping.getURI()) : null),
             servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) != null ? servletConfig.getServletContext().getInitParameter(LDT.ontology.getURI()) : null,
@@ -115,11 +116,11 @@ public class Application extends com.atomgraph.core.Application
     
     public Application(final Dataset dataset, final String endpointURI, final String graphStoreURI, final String quadStoreURI,
             final String authUser, final String authPwd,
-            final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize, final boolean preemptiveAuth,
+            final MediaTypes mediaTypes, final Client client, final Integer maxGetRequestSize, final boolean cacheModelLoads, final boolean preemptiveAuth,
             final LocationMapper locationMapper, final String ontologyURI, boolean cacheSitemap)
     {
         super(dataset, endpointURI, graphStoreURI, quadStoreURI, authUser, authPwd,
-                mediaTypes, client, maxGetRequestSize, preemptiveAuth);
+                mediaTypes, client, maxGetRequestSize, cacheModelLoads, preemptiveAuth);
         if (locationMapper == null) throw new IllegalArgumentException("LocationMapper be null");
         
         if (ontologyURI == null)

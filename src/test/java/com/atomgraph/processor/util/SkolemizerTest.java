@@ -87,6 +87,22 @@ public class SkolemizerTest
     }
 
     @Test
+    public void testNoPathClass()
+    {
+        Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
+        OntClass cls = ontology.getOntModel().createClass("http://test/ontology/class");
+
+        String title = "Whateverest";
+        Resource inst = ModelFactory.createDefaultModel().
+                createResource().
+                addProperty(RDF.type, cls).
+                addLiteral(DCTerms.title, title);
+        
+        URI actual = getSkolemizer(new OntDocumentManager(), ontology.getOntModel(), ontology.getURI()).build(inst);
+        assertEquals(null, actual);
+    }
+    
+    @Test
     public void testInvalidTypeClass()
     {
         Ontology ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
