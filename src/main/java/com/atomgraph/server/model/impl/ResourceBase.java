@@ -64,7 +64,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     private final Optional<TemplateCall> templateCall;
     private final OntResource ontResource;
     private final ResourceContext resourceContext;
-    private final HttpHeaders httpHeaders;  
+    private final HttpHeaders httpHeaders;
     private final QuerySolutionMap querySolutionMap;
     private final Query query;
     private final Resource queryResource, updateResource;
@@ -118,6 +118,8 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
 
         if (templateCall.isPresent())
         {
+            if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall.get().getTemplate());
+            
             this.querySolutionMap = templateCall.get().getQuerySolutionMap();
             this.querySolutionMap.add(SPIN.THIS_VAR_NAME, ontResource); // ?this
             
@@ -165,8 +167,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             updateResource = null;
             update = null;
         }
-
-        if (log.isDebugEnabled()) log.debug("Constructing ResourceBase with matched Template: {}", templateCall);
     }
     
     /**

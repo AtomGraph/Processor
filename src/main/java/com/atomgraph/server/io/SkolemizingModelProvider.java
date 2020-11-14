@@ -23,6 +23,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriBuilder;
 import com.atomgraph.server.exception.SkolemizationException;
 import com.atomgraph.processor.util.Skolemizer;
+import javax.ws.rs.HttpMethod;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;
@@ -42,7 +43,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     @Override
     public Model process(Model model)
     {
-        if (getRequest().getMethod().equalsIgnoreCase("POST"))
+        if (getRequest().getMethod().equalsIgnoreCase(HttpMethod.POST))
         {
             ResIterator it = model.listSubjects();
             try
