@@ -1,4 +1,4 @@
-FROM maven:3.5.3-jdk-8 as maven
+FROM maven:3.6.3-jdk-11 as maven
 
 ### Build AtomGraph Processor
 
@@ -10,7 +10,7 @@ RUN mvn -Pstandalone clean install
 
 ### Deploy Processor webapp on Tomcat
 
-FROM tomcat:9.0.31-jdk8
+FROM tomcat:9.0.39-jdk11
 
 WORKDIR $CATALINA_HOME/webapps
 
