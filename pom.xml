@@ -79,12 +79,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>twirl</artifactId>
-            <version>1.0.18-SNAPSHOT</version>
+            <version>1.0.20</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
-            <version>3.0.1-SNAPSHOT</version>
+            <version>3.0.5</version>
         </dependency>
     </dependencies>
 
