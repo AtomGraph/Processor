@@ -247,11 +247,6 @@ public class Application extends com.atomgraph.core.Application
         return ontologyURI;
     }
     
-//    public OntModelSpec getOntModelSpec()
-//    {
-//        return ontModelSpec;
-//    }
-    
     public final boolean isCacheSitemap()
     {
         return cacheSitemap;
