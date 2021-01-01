@@ -22,7 +22,7 @@ services:
       - 8080:8080
       - 8002:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
@@ -37,7 +37,7 @@ services:
       - 8081:8080
       - 8003:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
@@ -49,7 +49,7 @@ services:
       - 8082:8080
       - 8004:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/named-graphs/templates#"
@@ -61,7 +61,7 @@ services:
       - 8083:8080
       - 8005:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/named-graphs/templates#"
@@ -73,7 +73,7 @@ services:
       - 8084:8080
       - 8006:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#"
@@ -90,7 +90,7 @@ services:
       - 8085:8080
       - 8007:8000 # debugger
     environment:
-      - JPDA_ADDRESS=8000 # debugger port
+      - JPDA_ADDRESS=*:8000 # debugger port
       - ENDPOINT="http://fuseki-write:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki-write:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#"

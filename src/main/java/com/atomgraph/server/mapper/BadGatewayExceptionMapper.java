@@ -16,10 +16,10 @@
 
 package com.atomgraph.server.mapper;
 
+import com.atomgraph.core.exception.BadGatewayException;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ClientErrorException;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Resource;
 
@@ -27,14 +27,14 @@ import org.apache.jena.rdf.model.Resource;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ClientErrorExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ClientErrorException>
+public class BadGatewayExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<BadGatewayException>
 {
 
     @Override
-    public Response toResponse(ClientErrorException ex)
+    public Response toResponse(BadGatewayException ex)
     {
         Resource exRes = toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
-            ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError"));
+            ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadGateway"));
             
         return getResponseBuilder(DatasetFactory.create(exRes.getModel())).
                 status(Response.Status.INTERNAL_SERVER_ERROR).

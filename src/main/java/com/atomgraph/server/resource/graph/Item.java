@@ -20,23 +20,18 @@ import com.atomgraph.core.MediaTypes;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import javax.ws.rs.core.Context;
-import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.UriInfo;
 import com.atomgraph.core.model.Service;
 import com.atomgraph.server.model.impl.ResourceBase;
-import com.atomgraph.core.util.ModelUtils;
 import com.atomgraph.processor.model.TemplateCall;
 import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ResourceContext;
 import org.apache.jena.query.Dataset;
-import org.apache.jena.query.DatasetFactory;
-import org.apache.jena.rdf.model.ModelFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,63 +62,56 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     @Override
     public Response get()
     {
-        if (log.isDebugEnabled()) log.debug("GET GRAPH {} from GraphStore {}", getURI());
-        return getResponse(DatasetFactory.create(getService().getDatasetAccessor().getModel(getURI().toString())));
+        if (!getService().getDatasetAccessor().containsModel(getURI().toString()))
+        {
+            if (log.isDebugEnabled()) log.debug("GET Graph Store named graph with URI: {} not found", getURI());
+            throw new NotFoundException("Named graph not found");
+        }
+
+        Model model = getService().getDatasetAccessor().getModel(getURI().toString());
+        if (log.isDebugEnabled()) log.debug("GET Graph Store named graph with URI: {} found, returning Model of size(): {}", getURI(), model.size());
+        return getResponse(model);
     }
 
     @Override
     public Response post(Dataset dataset)
     {
-        if (log.isDebugEnabled()) log.debug("POST GRAPH {} to GraphStore {}", getURI());
-        
-        Dataset newDataset = DatasetFactory.create();
-        newDataset.addNamedModel(getURI().toString(), dataset.getDefaultModel()); // put request entity graph into a named graph
-        
-        return super.post(newDataset);
+        boolean existingGraph = getService().getDatasetAccessor().containsModel(getURI().toString());
+
+        // is this implemented correctly? The specification is not very clear.
+        if (log.isDebugEnabled()) log.debug("POST Model to named graph with URI: {} Did it already exist? {}", getURI(), existingGraph);
+        getService().getDatasetAccessor().add(getURI().toString(), dataset.getDefaultModel());
+
+        if (existingGraph) return Response.ok().build();
+        else return Response.created(getURI()).build();
     }
 
     @Override
     public Response put(Dataset dataset)
     {
-        Model existing = ModelFactory.createDefaultModel();
-        
-        try
-        {
-            existing = getService().getDatasetAccessor().getModel(getURI().toString());
+        boolean existingGraph = getService().getDatasetAccessor().containsModel(getURI().toString());
 
-            if (!existing.isEmpty())
-            {
-                EntityTag entityTag = new EntityTag(Long.toHexString(ModelUtils.hashModel(dataset.getDefaultModel())));
-                ResponseBuilder rb = getRequest().evaluatePreconditions(entityTag);
-                if (rb != null)
-                {
-                    if (log.isDebugEnabled()) log.debug("PUT preconditions were not met for resource: {} with entity tag: {}", this, entityTag);
-                    return rb.build();
-                }
-            }
-        }
-        catch (NotFoundException ex)
-        {
-            // existing graph not found - do nothing
-        }
-        finally
-        {
-            if (log.isDebugEnabled()) log.debug("PUT GRAPH {} to GraphStore", getURI());
-            getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
-        }
-        
-        if (existing.isEmpty()) return Response.created(getURI()).build();
-        else return Response.ok(dataset).build();
+        if (log.isDebugEnabled()) log.debug("PUT Model to named graph with URI: {} Did it already exist? {}", getURI(), existingGraph);
+        getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
+
+        if (existingGraph) return Response.ok().build();
+        else return Response.created(getURI()).build();
     }
 
     @Override
     public Response delete()
     {
-        if (log.isDebugEnabled()) log.debug("DELETE GRAPH {} from GraphStore", getURI());
-        
-        getService().getDatasetAccessor().deleteModel(getURI().toString());
-        
-        return Response.noContent().build();
+        if (!getService().getDatasetAccessor().containsModel(getURI().toString()))
+        {
+            if (log.isDebugEnabled()) log.debug("DELETE named graph with URI {}: not found", getURI());
+            throw new NotFoundException("Named graph not found");
+        }
+        else
+        {
+            if (log.isDebugEnabled()) log.debug("DELETE named graph with URI: {}", getURI());
+            getService().getDatasetAccessor().deleteModel(getURI().toString());
+            return Response.noContent().build(); // TO-DO: NoContentException?
+        }
     }
     
 }

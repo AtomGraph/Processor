@@ -9,17 +9,16 @@ encoded_url=$(curl -w "%{url_effective}\n" -G -s -o /dev/null \
 --data-urlencode "graph=${BASE_URL_WRITABLE}graphs/non-existing/" \
   "${BASE_URL_WRITABLE}service")
 
-# replace the named graph
+# append new triples to the named graph
 
 (
 curl -w "%{http_code}\n" -f -s \
-     -X PUT \
      -H "Accept: application/n-triples" \
      -H "Content-Type: application/n-triples" \
      --data-binary @- \
     "${encoded_url}" <<EOF
-<${BASE_URL_WRITABLE}named-subject-put> <http://example.com/default-predicate> "named object PUT" .
-<${BASE_URL_WRITABLE}named-subject-put> <http://example.com/another-predicate> "another named object PUT" .
+<${BASE_URL_WRITABLE}named-subject-post> <http://example.com/default-predicate> "named object POST" .
+<${BASE_URL_WRITABLE}named-subject-post> <http://example.com/another-predicate> "another named object POST" .
 EOF
 ) \
 | grep -q "${STATUS_CREATED}"
@@ -30,5 +29,5 @@ curl -f -s -G \
   -H "Accept: application/n-triples" \
   "${encoded_url}" \
 | tr -d '\n' \
-| grep '"named object PUT"' \
-| grep -v '"named object"' > /dev/null
+| grep '"named object POST"' \
+| grep '"another named object POST"' > /dev/null
