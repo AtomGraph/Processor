@@ -1,5 +1,7 @@
 name: HTTP-tests
 
+on: push
+
 jobs:
   install:
     name: Install Linux packages
