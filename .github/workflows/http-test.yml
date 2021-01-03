@@ -3,9 +3,9 @@ name: HTTP-tests
 on: push
 
 jobs:
-  runs-on: ubuntu-latest
   http-tests:
     name: Build Docker image and run HTTP test suite against it
+    runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
       - run: docker build -t atomgraph/processor .
