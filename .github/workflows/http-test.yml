@@ -7,17 +7,27 @@ jobs:
     name: Build Docker image and run HTTP test suite against it
     runs-on: ubuntu-latest
     steps:
-      - run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
-      - run: ls -l
-      - run: docker build -t atomgraph/processor .
-      - run: cd http-tests
-      - run: docker-compose up -d # run fuseki and processor containers in the background
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8083 | grep "404" ; do sleep 1 ; done # wait for processor-ngt-write to start
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8084 | grep "404" ; do sleep 1 ; done # wait for processor-custom to start
-      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8085 | grep "404" ; do sleep 1 ; done # wait for processor-custom-write to start
-      - run: bash ./run.sh
-      - run: docker-compose down # shutdown fuseki and processor
+      - name: Checkout code
+        uses: actions/checkout@v2
+      - name: Install Linux packages
+        run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
+      - name: Build Docker image
+        run: docker build -t atomgraph/processor .
+        run: cd http-tests
+      - name: Run Docker containers
+        run: docker-compose up -d # run fuseki and processor containers in the background
+      - name: Wait for servers...
+      - run: |
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8083 | grep "404" ; do sleep 1 ; done # wait for processor-ngt-write to start
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8084 | grep "404" ; do sleep 1 ; done # wait for processor-custom to start
+          while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8085 | grep "404" ; do sleep 1 ; done # wait for processor-custom-write to start
+      - name: Run HTTP test scripts
+        run: ./run.sh
+        shell: bash
+      - name: Stop Docker containers
+        run: docker-compose down # shutdown fuseki and processor
+      - name: Remove Docker containers
       - run: docker-compose rm -f
