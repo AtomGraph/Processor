@@ -17,7 +17,7 @@ jobs:
       - name: Run Docker containers
         run: docker-compose up -d # run fuseki and processor containers in the background
       - name: Wait for servers...
-      - run: |
+        run: |
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
@@ -30,4 +30,4 @@ jobs:
       - name: Stop Docker containers
         run: docker-compose down # shutdown fuseki and processor
       - name: Remove Docker containers
-      - run: docker-compose rm -f
+        run: docker-compose rm -f
