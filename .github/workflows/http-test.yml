@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
+      - run: ll
       - run: docker build -t atomgraph/processor .
       - run: cd http-tests
       - run: docker-compose up -d # run fuseki and processor containers in the background
