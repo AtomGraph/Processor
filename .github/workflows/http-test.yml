@@ -3,34 +3,20 @@ name: HTTP-tests
 on: push
 
 jobs:
-  install:
-    name: Install Linux packages
+  runs-on: ubuntu-latest
+  http-tests:
+    name: Build Docker image and run HTTP test suite against it
     steps:
       - run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
-  build-docker:
-    name: Build Docker image
-    steps:
       - run: docker build -t atomgraph/processor .
-  run-docker:
-    name: Run Docker container
-    steps:
-      - cd http-tests
-      - docker-compose up -d # run fuseki and processor containers in the background
-  wait-for-server:
-    name: Wait for Processor to start...
-    steps:
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8083 | grep "404" ; do sleep 1 ; done # wait for processor-ngt-write to start
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8084 | grep "404" ; do sleep 1 ; done # wait for processor-custom to start
-      - while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8085 | grep "404" ; do sleep 1 ; done # wait for processor-custom-write to start
-  run-tests:
-    name: Run HTTP test scripts
-    steps:
-      - bash ./run.sh
-  clean-up:
-    name: Cleanup Docker containers
-    steps:
-      - docker-compose down # shutdown fuseki and processor
-      - docker-compose rm -f
+      - run: cd http-tests
+      - run: docker-compose up -d # run fuseki and processor containers in the background
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8082 | grep "404" ; do sleep 1 ; done # wait for processor-ngt to start
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8083 | grep "404" ; do sleep 1 ; done # wait for processor-ngt-write to start
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8084 | grep "404" ; do sleep 1 ; done # wait for processor-custom to start
+      - run: while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8085 | grep "404" ; do sleep 1 ; done # wait for processor-custom-write to start
+      - run: bash ./run.sh
+      - run: docker-compose down # shutdown fuseki and processor
+      - run: docker-compose rm -f
