@@ -13,7 +13,7 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
       - name: Build Docker image
         run: docker build -t atomgraph/processor .
-        run: cd http-tests
+      - run: cd http-tests
       - name: Run Docker containers
         run: docker-compose up -d # run fuseki and processor containers in the background
       - name: Wait for servers...
