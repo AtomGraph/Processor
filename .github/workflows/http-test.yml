@@ -13,10 +13,9 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
       - name: Build Docker image
         run: docker build -t atomgraph/processor .
-      - run: ls -l
-      - run: cd http-tests
       - name: Run Docker containers
         run: docker-compose up -d # run fuseki and processor containers in the background
+        working-directory: http-tests
       - name: Wait for servers...
         run: |
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
@@ -28,7 +27,10 @@ jobs:
       - name: Run HTTP test scripts
         run: ./run.sh
         shell: bash
+        working-directory: http-tests
       - name: Stop Docker containers
         run: docker-compose down # shutdown fuseki and processor
+        working-directory: http-tests
       - name: Remove Docker containers
         run: docker-compose rm -f
+        working-directory: http-tests
