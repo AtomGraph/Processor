@@ -7,16 +7,16 @@ jobs:
     name: Build Docker image and run HTTP test suite against it
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
       - name: Install Linux packages
         run: sudo apt-get update && sudo apt-get install -qq raptor2-utils
+      - name: Checkout code
+        uses: actions/checkout@v2
       - name: Build Docker image
         run: docker build -t atomgraph/processor .
       - name: Run Docker containers
         run: docker-compose up -d # run fuseki and processor containers in the background
         working-directory: http-tests
-      - name: Wait for servers...
+      - name: Wait for the servers to start...
         run: |
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8080 | grep "404" ; do sleep 1 ; done # wait for processor-ct to start
           while ! curl -w "%{http_code}\n" -s -o /dev/null http://localhost:8081 | grep "404" ; do sleep 1 ; done # wait for processor-ct-write to start
