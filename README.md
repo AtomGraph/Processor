@@ -87,19 +87,11 @@ The [dataset](https://github.com/AtomGraph/Processor/blob/master/examples/fuseki
 The [Wikidata example](https://github.com/AtomGraph/Processor/tree/master/examples/wikidata) example shows to run Processor with a custom LDT ontology and a remote SPARQL service.
 It uses the [`docker run`](https://docs.docker.com/engine/reference/run/) command.
 
-Run the Processor container (replace `/c/Users/namedgraph/WebRoot/...` paths with your own; the paths have to be _absolute_):
+Run the Processor container with the Wikidata example:
 
     cd examples/wikidata
     
-    docker run --rm \
-        -p 8080:8080 \
-        -e ENDPOINT="https://query.wikidata.org/bigdata/namespace/wdq/sparql" \
-        -e GRAPH_STORE="https://query.wikidata.org/bigdata/namespace/wdq/service" \
-        -e ONTOLOGY="https://github.com/AtomGraph/Processor/blob/develop/examples/wikidata#" \
-        -v "/c/Users/namedgraph/WebRoot/Processor/src/main/resources/log4j.properties":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/log4j.properties" \
-        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata/wikidata.ttl":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/org/wikidata/ldt.ttl" \
-        -v "/c/Users/namedgraph/WebRoot/Processor/examples/wikidata/location-mapping.n3":"/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3" \
-        atomgraph/processor
+    docker-compose up
 
 After that, open one of the following URLs in the browser and you will retrieve RDF descriptions:
 * [`http://localhost:8080/`](http://localhost:8080/) - root resource
