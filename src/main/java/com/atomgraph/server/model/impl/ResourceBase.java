@@ -172,6 +172,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     /**
      * Returns sub-resource class. If we want Jersey to manage the life-cycle of the sub-resource, we need to return a class, not an instance.
      * By default matches any path.
+     * @see <a href="https://eclipse-ee4j.github.io/jersey.github.io/documentation/latest/jaxrs-resources.html#d0e2641">Example 3.20. Sub-resource locators returning sub-type</a>
      * 
      * @return resource object
      */
@@ -196,7 +197,6 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             }
 
             if (log.isDebugEnabled()) log.debug("Loading Java class with URI: {}", javaClass.getURI());
-            //return getResourceContext().getResource(clazz);
             return clazz;
         }
 
