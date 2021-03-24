@@ -88,8 +88,8 @@ run_tests $(find ./linked-data-templates/ngt/ -type f -name '*.sh*')
 
 ### Custom LDT ontology tests ###
 
-export BASE_URL="http://localhost:8084/"
-export BASE_URL_WRITABLE="http://localhost:8085/"
+export BASE_URL="http://localhost:8085/"
+export BASE_URL_WRITABLE="http://localhost:8086/"
 
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
@@ -140,8 +140,8 @@ run_tests $(find ./graph-store-protocol/ -maxdepth 1 -type f -name '*.sh*')
 
 # use custom ontology with GraphItem template for direct identification tests
 
-export BASE_URL="http://localhost:8084/"
-export BASE_URL_WRITABLE="http://localhost:8085/"
+export BASE_URL="http://localhost:8085/"
+export BASE_URL_WRITABLE="http://localhost:8086/"
 
 initialize_dataset "$BASE_URL" "dataset.trig" "$ENDPOINT_URL"
 initialize_dataset "$BASE_URL_WRITABLE" "dataset.trig" "$ENDPOINT_URL_WRITABLE"
