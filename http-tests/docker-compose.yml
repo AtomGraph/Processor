@@ -70,7 +70,7 @@ services:
     depends_on:
       - fuseki
     ports:
-      - 8084:8080
+      - 8085:8080
       - 8006:8000 # debugger
     environment:
       - JPDA_ADDRESS=*:8000 # debugger port
@@ -87,7 +87,7 @@ services:
     depends_on:
       - fuseki-write
     ports:
-      - 8085:8080
+      - 8086:8080
       - 8007:8000 # debugger
     environment:
       - JPDA_ADDRESS=*:8000 # debugger port
