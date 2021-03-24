@@ -13,6 +13,10 @@ jobs:
         uses: actions/checkout@v2
       - name: Build Docker image
         run: docker build -t atomgraph/processor .
+      - name: Debug environment
+        run: |
+          docker ps
+          sudo lsof -i -P -n
       - name: Run Docker containers
         run: docker-compose up -d # run fuseki and processor containers in the background
         working-directory: http-tests
