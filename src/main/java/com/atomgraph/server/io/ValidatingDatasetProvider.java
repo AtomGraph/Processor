@@ -17,7 +17,8 @@ package com.atomgraph.server.io;
 
 import com.atomgraph.core.io.DatasetProvider;
 import com.atomgraph.processor.util.Validator;
-import com.atomgraph.server.exception.ConstraintViolationException;
+import com.atomgraph.server.exception.SHACLConstraintViolationException;
+import com.atomgraph.server.exception.SPINConstraintViolationException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
@@ -34,6 +35,9 @@ import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.spinrdf.constraints.ConstraintViolation;
+import org.apache.jena.shacl.ShaclValidator;
+import org.apache.jena.shacl.Shapes;
+import org.apache.jena.shacl.ValidationReport;
 
 /**
  * Dataset provider that validates read triples in each graph against SPIN constraints in an ontology.
@@ -62,25 +66,43 @@ public class ValidatingDatasetProvider extends DatasetProvider
     
     public Dataset validate(Dataset dataset)
     {
+        // SPIN validation
         Validator validator = new Validator(getOntology().getOntModel());
-        
         List<ConstraintViolation> cvs = validator.validate(dataset.getDefaultModel());
         if (!cvs.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-            throw new ConstraintViolationException(cvs, dataset.getDefaultModel());
+            throw new SPINConstraintViolationException(cvs, dataset.getDefaultModel());
+        }
+
+        // SHACL validation
+        Shapes shapes = Shapes.parse(getOntology().getOntModel().getGraph());
+        ValidationReport report = ShaclValidator.get().validate(shapes, dataset.getDefaultModel().getGraph());
+        if (!report.conforms())
+        {
+            if (log.isDebugEnabled()) log.debug("SHACL constraint violations: {}", report);
+            throw new SHACLConstraintViolationException(report, dataset.getDefaultModel());
         }
         
         Iterator<String> it = dataset.listNames();
         while (it.hasNext())
         {
             String graphURI = it.next();
+            
+            // SPIN validation
             cvs = validator.validate(dataset.getNamedModel(graphURI));
-
             if (!cvs.isEmpty())
             {
                 if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-                throw new ConstraintViolationException(cvs, dataset.getNamedModel(graphURI), graphURI);
+                throw new SPINConstraintViolationException(cvs, dataset.getNamedModel(graphURI), graphURI);
+            }
+            
+            // SHACL validation
+            report = ShaclValidator.get().validate(shapes, dataset.getNamedModel(graphURI).getGraph());
+            if (!report.conforms())
+            {
+                if (log.isDebugEnabled()) log.debug("SHACL constraint violations: {}", report);
+                throw new SHACLConstraintViolationException(report, dataset.getNamedModel(graphURI));
             }
         }
         

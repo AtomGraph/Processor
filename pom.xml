@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
-    <version>3.0.9-SNAPSHOT</version>
+    <version>3.10.0-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
@@ -85,6 +85,11 @@
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
             <version>3.0.10</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.jena</groupId>
+            <artifactId>jena-shacl</artifactId>
+            <version>3.16.0</version>
         </dependency>
     </dependencies>
 

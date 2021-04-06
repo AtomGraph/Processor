@@ -6,6 +6,7 @@
 @prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
 @prefix owl:  <http://www.w3.org/2002/07/owl#> .
 @prefix ldt:  <https://www.w3.org/ns/ldt#> .
+@prefix sh:   <http://www.w3.org/ns/shacl#> .
 @prefix sp:   <http://spinrdf.org/sp#> .
 @prefix spin: <http://spinrdf.org/spin#> .
 @prefix spl:  <http://spinrdf.org/spl#> .
@@ -16,9 +17,21 @@
 
 # classes
 
-:ConstrainedType a rdfs:Class ;
-    rdfs:label "Constrained class" ;
+:SPINConstrainedType a rdfs:Class ;
+    rdfs:label "SPIN constrained class" ;
     spin:constraint :MissingPropertyQuery ;
+    rdfs:isDefinedBy : .
+
+:SHACLConstrainedType a rdfs:Class ;
+    rdfs:label "SHACL constrained class" ;
+    rdfs:isDefinedBy : .
+
+# shapes
+
+:MinCountExampleShape a sh:PropertyShape ;
+    sh:targetClass :SHACLConstrainedType ;
+    sh:path <http://example.com/constrained-predicate> ;
+    sh:minCount 1 ;
     rdfs:isDefinedBy : .
 
 # templates

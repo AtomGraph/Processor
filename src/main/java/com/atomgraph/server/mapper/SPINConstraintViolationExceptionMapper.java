@@ -16,7 +16,7 @@
 
 package com.atomgraph.server.mapper;
 
-import com.atomgraph.server.exception.ConstraintViolationException;
+import com.atomgraph.server.exception.SPINConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.query.DatasetFactory;
@@ -33,13 +33,13 @@ import com.atomgraph.spinrdf.vocabulary.SPIN;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ConstraintViolationExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ConstraintViolationException>
+public class SPINConstraintViolationExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<SPINConstraintViolationException>
 {
 
-    private static final Logger log = LoggerFactory.getLogger(ConstraintViolationExceptionMapper.class);
+    private static final Logger log = LoggerFactory.getLogger(SPINConstraintViolationExceptionMapper.class);
         
     @Override
-    public Response toResponse(ConstraintViolationException ex)
+    public Response toResponse(SPINConstraintViolationException ex)
     {
         Resource exception = toResource(ex, Response.Status.BAD_REQUEST,
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));

@@ -27,12 +27,16 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.ext.Providers;
-import com.atomgraph.server.exception.ConstraintViolationException;
+import com.atomgraph.server.exception.SPINConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
+import com.atomgraph.server.exception.SHACLConstraintViolationException;
 import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.spinrdf.constraints.ConstraintViolation;
+import org.apache.jena.shacl.ShaclValidator;
+import org.apache.jena.shacl.Shapes;
+import org.apache.jena.shacl.ValidationReport;
 
 /**
  * Model provider that validates read triples against SPIN constraints in an ontology.
@@ -60,14 +64,23 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     public Model validate(Model model)
     {
+        // SPIN validation
         List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(model);
-        
         if (!cvs.isEmpty())
         {
             if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-            throw new ConstraintViolationException(cvs, model);
+            throw new SPINConstraintViolationException(cvs, model);
         }
         
+        // SHACL validation
+        Shapes shapes = Shapes.parse(getOntology().getOntModel().getGraph());
+        ValidationReport report = ShaclValidator.get().validate(shapes, model.getGraph());
+        if (!report.conforms())
+        {
+            if (log.isDebugEnabled()) log.debug("SHACL constraint violations: {}", report);
+            throw new SHACLConstraintViolationException(report, model);
+        }
+    
         return model;
     }
         

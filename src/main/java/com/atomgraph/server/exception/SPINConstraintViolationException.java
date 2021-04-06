@@ -24,17 +24,17 @@ import com.atomgraph.spinrdf.constraints.ConstraintViolation;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ConstraintViolationException extends ModelException
+public class SPINConstraintViolationException extends ModelException
 {
     private final List<ConstraintViolation> cvs;
     
-    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model, String graphURI)
+    public SPINConstraintViolationException(List<ConstraintViolation> cvs, Model model, String graphURI)
     {
         super(model);
         this.cvs = cvs;
     }
 
-    public ConstraintViolationException(List<ConstraintViolation> cvs, Model model)
+    public SPINConstraintViolationException(List<ConstraintViolation> cvs, Model model)
     {
         this(cvs, model, null);
     }

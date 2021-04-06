@@ -4,7 +4,7 @@
 
 initialize_dataset "$BASE_URL_WRITABLE" "../../dataset.trig" "$ENDPOINT_URL_WRITABLE"
 
-# expect 400 Bad Request because missing <http://example.com/constrained-predicate> fails ConstrainedType constraint validation
+# expect 400 Bad Request because missing <http://example.com/constrained-predicate> fails SPINConstrainedType constraint validation
 
 (
 curl -w "%{http_code}\n" -f -s \
@@ -13,7 +13,7 @@ curl -w "%{http_code}\n" -f -s \
   -H "Content-Type: application/n-triples" \
   --data-binary @- \
   "${BASE_URL_WRITABLE}default-subject" <<EOF
-<${BASE_URL_WRITABLE}default-subject-post> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#ConstrainedType> .
+<${BASE_URL_WRITABLE}default-subject-post> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <https://github.com/AtomGraph/Processor/blob/develop/http-tests/custom#SPINConstrainedType> .
 EOF
 ) \
 | grep -q "${STATUS_BAD_REQUEST}"
