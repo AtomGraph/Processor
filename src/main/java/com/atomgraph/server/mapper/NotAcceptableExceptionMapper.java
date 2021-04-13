@@ -15,9 +15,14 @@
  */
 package com.atomgraph.server.mapper;
 
+import com.atomgraph.core.MediaTypes;
+import com.atomgraph.processor.model.TemplateCall;
+import java.util.Optional;
+import javax.inject.Inject;
 import javax.ws.rs.NotAcceptableException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
+import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.ResourceFactory;
 
@@ -27,6 +32,12 @@ import org.apache.jena.rdf.model.ResourceFactory;
  */
 public class NotAcceptableExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<NotAcceptableException>
 {
+
+    @Inject
+    public NotAcceptableExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    {
+        super(ontology, templateCall, mediaTypes);
+    }
     
     @Override
     public Response toResponse(NotAcceptableException ex)

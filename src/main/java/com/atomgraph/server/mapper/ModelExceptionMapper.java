@@ -16,14 +16,17 @@
 
 package com.atomgraph.server.mapper;
 
+import com.atomgraph.core.MediaTypes;
+import com.atomgraph.processor.model.TemplateCall;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.server.exception.ModelException;
+import java.util.Optional;
+import javax.inject.Inject;
+import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.DatasetFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -31,8 +34,13 @@ import org.slf4j.LoggerFactory;
  */
 public class ModelExceptionMapper extends ExceptionMapperBase implements ExceptionMapper<ModelException>
 {
-    private static final Logger log = LoggerFactory.getLogger(ModelExceptionMapper.class);
-        
+
+    @Inject
+    public ModelExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    {
+        super(ontology, templateCall, mediaTypes);
+    }
+    
     @Override
     public Response toResponse(ModelException ex)
     {
