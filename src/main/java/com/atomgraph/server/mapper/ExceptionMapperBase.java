@@ -57,10 +57,18 @@ abstract public class ExceptionMapperBase
     @Context private Request request;
     @Context private UriInfo uriInfo;
     
-    @Inject Ontology ontology; // mane Optional<Ontology>? For Exceptions that happen when no ontology is available (yet) i.e. not set in the OntologyFilter
-    @Inject Optional<TemplateCall> templateCall;
-    @Inject MediaTypes mediaTypes;
+    private final Ontology ontology; // mane Optional<Ontology>? For Exceptions that happen when no ontology is available (yet) i.e. not set in the OntologyFilter
+    private final Optional<TemplateCall> templateCall;
+    private final MediaTypes mediaTypes;
     
+    @Inject
+    public ExceptionMapperBase(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    {
+        this.ontology = ontology;
+        this.templateCall = templateCall;
+        this.mediaTypes = mediaTypes;
+    }
+
     public Resource toResource(Exception ex, Response.StatusType status, Resource statusResource)
     {
         if (ex == null) throw new IllegalArgumentException("Exception cannot be null");
