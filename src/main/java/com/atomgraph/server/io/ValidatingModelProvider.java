@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.spinrdf.constraints.ConstraintViolation;
+import java.util.Optional;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.Shapes;
 import org.apache.jena.shacl.ValidationReport;
@@ -49,7 +50,7 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     @Context private Providers providers;
     
-    @Inject Ontology ontology;
+    @Inject Optional<Ontology> ontology;
 
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
@@ -64,27 +65,30 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     public Model validate(Model model)
     {
-        // SPIN validation
-        List<ConstraintViolation> cvs = new Validator(getOntology().getOntModel()).validate(model);
-        if (!cvs.isEmpty())
+        if (getOntology().isPresent())
         {
-            if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
-            throw new SPINConstraintViolationException(cvs, model);
-        }
-        
-        // SHACL validation
-        Shapes shapes = Shapes.parse(getOntology().getOntModel().getGraph());
-        ValidationReport report = ShaclValidator.get().validate(shapes, model.getGraph());
-        if (!report.conforms())
-        {
-            if (log.isDebugEnabled()) log.debug("SHACL constraint violations: {}", report);
-            throw new SHACLConstraintViolationException(report, model);
+            // SPIN validation
+            List<ConstraintViolation> cvs = new Validator(getOntology().get().getOntModel()).validate(model);
+            if (!cvs.isEmpty())
+            {
+                if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
+                throw new SPINConstraintViolationException(cvs, model);
+            }
+
+            // SHACL validation
+            Shapes shapes = Shapes.parse(getOntology().get().getOntModel().getGraph());
+            ValidationReport report = ShaclValidator.get().validate(shapes, model.getGraph());
+            if (!report.conforms())
+            {
+                if (log.isDebugEnabled()) log.debug("SHACL constraint violations: {}", report);
+                throw new SHACLConstraintViolationException(report, model);
+            }
         }
     
         return model;
     }
         
-    public Ontology getOntology()
+    public Optional<Ontology> getOntology()
     {
         return ontology;
     }

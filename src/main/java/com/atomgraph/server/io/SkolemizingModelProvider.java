@@ -59,8 +59,8 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
                 it.close();
             }
         
-            return skolemize(getOntology(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(),
-                    super.process(model));
+            if (getOntology().isPresent()) return skolemize(getOntology().get(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), super.process(model));
+            else return model;
         }
         
         return super.process(model);

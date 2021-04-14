@@ -46,7 +46,7 @@ public class TemplateCallFactory implements Factory<Optional<TemplateCall>>
 
     @Context UriInfo uriInfo;
     
-    @Inject Ontology ontology;
+    @Inject Optional<Ontology> ontology;
 
     @Override
     public Optional<TemplateCall> provide()
@@ -85,7 +85,7 @@ public class TemplateCallFactory implements Factory<Optional<TemplateCall>>
 
     public Template getTemplate()
     {
-        if (getOntology() != null) return getTemplate(getOntology(), getUriInfo());
+        if (getOntology().isPresent()) return getTemplate(getOntology().get(), getUriInfo());
         
         return null;
     }
@@ -95,7 +95,7 @@ public class TemplateCallFactory implements Factory<Optional<TemplateCall>>
         return new TemplateMatcher(ontology).match(uriInfo.getAbsolutePath(), uriInfo.getBaseUri());
     }
     
-    public Ontology getOntology()
+    public Optional<Ontology> getOntology()
     {
         return ontology;
     }
