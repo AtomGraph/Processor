@@ -57,12 +57,12 @@ abstract public class ExceptionMapperBase
     @Context private Request request;
     @Context private UriInfo uriInfo;
     
-    private final Ontology ontology; // mane Optional<Ontology>? For Exceptions that happen when no ontology is available (yet) i.e. not set in the OntologyFilter
+    private final Optional<Ontology> ontology;
     private final Optional<TemplateCall> templateCall;
     private final MediaTypes mediaTypes;
     
     @Inject
-    public ExceptionMapperBase(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ExceptionMapperBase(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         this.ontology = ontology;
         this.templateCall = templateCall;
@@ -98,7 +98,7 @@ abstract public class ExceptionMapperBase
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        if (getOntology() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
+        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().get().getURI()), LDT.ontology.getURI(), null));
                 
             // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
 //            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
@@ -121,7 +121,7 @@ abstract public class ExceptionMapperBase
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
         if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        if (getOntology() != null) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().getURI()), LDT.ontology.getURI(), null));
+        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().get().getURI()), LDT.ontology.getURI(), null));
         
             // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
 //            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
@@ -184,7 +184,7 @@ abstract public class ExceptionMapperBase
         return templateCall;
     }
 
-    public Ontology getOntology()
+    public Optional<Ontology> getOntology()
     {
         return ontology;
     }

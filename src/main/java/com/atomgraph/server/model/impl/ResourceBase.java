@@ -93,7 +93,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
-                service, application, ontology.get(), templateCall,
+                service, application, ontology.orElse(null), templateCall,
                 httpHeaders, resourceContext);
     }
 

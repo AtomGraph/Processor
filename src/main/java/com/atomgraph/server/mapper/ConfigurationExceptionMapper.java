@@ -35,7 +35,7 @@ public class ConfigurationExceptionMapper extends ExceptionMapperBase implements
 {
 
     @Inject
-    public ConfigurationExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ConfigurationExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

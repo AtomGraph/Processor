@@ -36,7 +36,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
 {
 
     @Inject
-    public ModelExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ModelExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

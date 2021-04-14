@@ -35,7 +35,7 @@ public class NotFoundExceptionMapper extends ExceptionMapperBase implements Exce
 {
 
     @Inject
-    public NotFoundExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public NotFoundExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

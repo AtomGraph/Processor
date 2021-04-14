@@ -34,7 +34,7 @@ public class NotSupportedExceptionMapper extends ExceptionMapperBase implements 
 {
 
     @Inject
-    public NotSupportedExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public NotSupportedExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

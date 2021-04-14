@@ -35,7 +35,7 @@ public class RiotExceptionMapper extends ExceptionMapperBase implements Exceptio
 {
 
     @Inject
-    public RiotExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public RiotExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

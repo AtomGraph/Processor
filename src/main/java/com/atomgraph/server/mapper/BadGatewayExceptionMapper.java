@@ -36,7 +36,7 @@ public class BadGatewayExceptionMapper extends ExceptionMapperBase implements Ex
 {
 
     @Inject
-    public BadGatewayExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public BadGatewayExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

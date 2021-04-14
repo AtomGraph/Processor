@@ -35,7 +35,7 @@ public class SHACLConstraintViolationExceptionMapper extends ExceptionMapperBase
 {
 
     @Inject
-    public SHACLConstraintViolationExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public SHACLConstraintViolationExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

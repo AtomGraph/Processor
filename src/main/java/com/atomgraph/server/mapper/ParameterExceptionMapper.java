@@ -35,7 +35,7 @@ public class ParameterExceptionMapper extends ExceptionMapperBase implements Exc
 {
 
     @Inject
-    public ParameterExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ParameterExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

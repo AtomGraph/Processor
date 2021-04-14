@@ -40,7 +40,7 @@ public class SPINConstraintViolationExceptionMapper extends ExceptionMapperBase 
 {
 
     @Inject
-    public SPINConstraintViolationExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public SPINConstraintViolationExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

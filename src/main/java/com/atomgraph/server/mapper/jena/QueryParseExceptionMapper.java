@@ -38,7 +38,7 @@ public class QueryParseExceptionMapper extends ExceptionMapperBase implements Ex
 {
 
     @Inject
-    public QueryParseExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public QueryParseExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

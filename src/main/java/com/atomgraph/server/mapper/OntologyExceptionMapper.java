@@ -34,7 +34,7 @@ public class OntologyExceptionMapper extends ExceptionMapperBase implements Exce
 {
 
     @Inject
-    public OntologyExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public OntologyExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }

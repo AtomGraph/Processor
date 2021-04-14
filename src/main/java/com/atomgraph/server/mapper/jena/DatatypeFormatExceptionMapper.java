@@ -35,7 +35,7 @@ public class DatatypeFormatExceptionMapper extends ExceptionMapperBase implement
 {
 
     @Inject
-    public DatatypeFormatExceptionMapper(Ontology ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public DatatypeFormatExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
     {
         super(ontology, templateCall, mediaTypes);
     }
