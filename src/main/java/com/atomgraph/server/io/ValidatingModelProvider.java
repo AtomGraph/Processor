@@ -50,7 +50,7 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     @Context private Providers providers;
     
-    @Inject Optional<Ontology> ontology;
+    @Inject javax.inject.Provider<Ontology> ontology;
 
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
@@ -65,7 +65,7 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     public Model validate(Model model)
     {
-        if (getOntology().isPresent())
+        if (getOntology().get() != null)
         {
             // SPIN validation
             List<ConstraintViolation> cvs = new Validator(getOntology().get().getOntModel()).validate(model);
@@ -88,7 +88,7 @@ public class ValidatingModelProvider extends BasedModelProvider
         return model;
     }
         
-    public Optional<Ontology> getOntology()
+    public javax.inject.Provider<Ontology> getOntology()
     {
         return ontology;
     }

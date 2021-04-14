@@ -52,7 +52,7 @@ public class ValidatingDatasetProvider extends DatasetProvider
     
     @Context private Providers providers;
     
-    @Inject Optional<Ontology> ontology;
+    @Inject javax.inject.Provider<Optional<Ontology>> ontology;
 
     @Override
     public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
@@ -67,10 +67,10 @@ public class ValidatingDatasetProvider extends DatasetProvider
     
     public Dataset validate(Dataset dataset)
     {
-        if (getOntology().isPresent())
+        if (getOntology().get().isPresent())
         {
             // SPIN validation
-            Validator validator = new Validator(getOntology().get().getOntModel());
+            Validator validator = new Validator(getOntology().get().get().getOntModel());
             List<ConstraintViolation> cvs = validator.validate(dataset.getDefaultModel());
             if (!cvs.isEmpty())
             {
@@ -79,7 +79,7 @@ public class ValidatingDatasetProvider extends DatasetProvider
             }
 
             // SHACL validation
-            Shapes shapes = Shapes.parse(getOntology().get().getOntModel().getGraph());
+            Shapes shapes = Shapes.parse(getOntology().get().get().getOntModel().getGraph());
             ValidationReport report = ShaclValidator.get().validate(shapes, dataset.getDefaultModel().getGraph());
             if (!report.conforms())
             {
@@ -113,7 +113,7 @@ public class ValidatingDatasetProvider extends DatasetProvider
         return dataset;
     }
         
-    public Optional<Ontology> getOntology()
+    public javax.inject.Provider<Optional<Ontology>> getOntology()
     {
         return ontology;
     }
