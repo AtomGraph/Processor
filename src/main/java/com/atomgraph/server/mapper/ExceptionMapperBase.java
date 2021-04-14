@@ -103,7 +103,7 @@ abstract public class ExceptionMapperBase
             // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
 //            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
 //        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build());
-//        if (getOntology() != null) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
+//        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
         
         return builder;
     }
@@ -126,7 +126,7 @@ abstract public class ExceptionMapperBase
             // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
 //            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
 //        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build());
-//        if (getOntology() != null) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
+//        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
         
         return builder;
     }

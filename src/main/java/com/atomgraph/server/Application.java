@@ -192,7 +192,8 @@ public class Application extends com.atomgraph.core.Application
             @Override
             protected void configure()
             {
-                bind(Optional.of(ontology)).to(new TypeLiteral<Optional<Ontology>>() {});
+                bind(Optional.of(ontology)).to(new TypeLiteral<Optional<Ontology>>() {}).
+                proxy(true).proxyForSameScope(false);
             }
         });
         register(new AbstractBinder()
