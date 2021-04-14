@@ -89,11 +89,11 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      */
     @Inject
     public ResourceBase(@Context UriInfo uriInfo, @Context Request request, MediaTypes mediaTypes,
-            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, Optional<TemplateCall> templateCall,
+            Service service, com.atomgraph.processor.model.Application application, Optional<Ontology> ontology, Optional<TemplateCall> templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         this(uriInfo, request, mediaTypes, uriInfo.getAbsolutePath(),
-                service, application, ontology, templateCall,
+                service, application, ontology.get(), templateCall,
                 httpHeaders, resourceContext);
     }
 

@@ -61,7 +61,6 @@ import com.atomgraph.core.util.jena.DataManager;
 import com.atomgraph.core.util.jena.DataManagerImpl;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
-import com.atomgraph.server.factory.OntologyFactory;
 import com.atomgraph.server.filter.response.HypermediaFilter;
 import com.atomgraph.server.io.SkolemizingDatasetProvider;
 import com.atomgraph.server.mapper.BadGatewayExceptionMapper;
@@ -188,22 +187,12 @@ public class Application extends com.atomgraph.core.Application
                 bind(application).to(com.atomgraph.processor.model.Application.class);
             }
         });
-//        register(new AbstractBinder()
-//        {
-//            @Override
-//            protected void configure()
-//            {
-////                bind(ontology).to(Ontology.class);
-//                bind(Optional.of(ontology)).to(new TypeLiteral<Optional<Ontology>>() {});
-//            }
-//        });
         register(new AbstractBinder()
         {
             @Override
             protected void configure()
             {
-                bindFactory(OntologyFactory.class).to(new TypeLiteral<Optional<Ontology>>() {}).
-                in(RequestScoped.class);
+                bind(Optional.of(ontology)).to(new TypeLiteral<Optional<Ontology>>() {});
             }
         });
         register(new AbstractBinder()
