@@ -50,7 +50,7 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     
     @Inject
     public Item(@Context UriInfo uriInfo, @Context Request request, @Context MediaTypes mediaTypes,
-            Service service, com.atomgraph.processor.model.Application application, Ontology ontology, Optional<TemplateCall> templateCall,
+            Service service, com.atomgraph.processor.model.Application application, Optional<Ontology> ontology, Optional<TemplateCall> templateCall,
             @Context HttpHeaders httpHeaders, @Context ResourceContext resourceContext)
     {
         super(uriInfo, request, mediaTypes,
