@@ -65,10 +65,10 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     public Model validate(Model model)
     {
-        if (getOntology().get().isPresent())
+        if (getOntology().isPresent())
         {
             // SPIN validation
-            List<ConstraintViolation> cvs = new Validator(getOntology().get().get().getOntModel()).validate(model);
+            List<ConstraintViolation> cvs = new Validator(getOntology().get().getOntModel()).validate(model);
             if (!cvs.isEmpty())
             {
                 if (log.isDebugEnabled()) log.debug("SPIN constraint violations: {}", cvs);
@@ -76,7 +76,7 @@ public class ValidatingModelProvider extends BasedModelProvider
             }
 
             // SHACL validation
-            Shapes shapes = Shapes.parse(getOntology().get().get().getOntModel().getGraph());
+            Shapes shapes = Shapes.parse(getOntology().get().getOntModel().getGraph());
             ValidationReport report = ShaclValidator.get().validate(shapes, model.getGraph());
             if (!report.conforms())
             {
@@ -88,9 +88,9 @@ public class ValidatingModelProvider extends BasedModelProvider
         return model;
     }
         
-    public javax.inject.Provider<Optional<Ontology>> getOntology()
+    public Optional<Ontology> getOntology()
     {
-        return ontology;
+        return ontology.get();
     }
 
     public Providers getProviders()

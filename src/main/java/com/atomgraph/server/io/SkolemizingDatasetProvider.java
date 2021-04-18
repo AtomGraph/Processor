@@ -76,7 +76,7 @@ public class SkolemizingDatasetProvider extends ValidatingDatasetProvider
             it.close();
         }
 
-        if (getOntology().get().isPresent()) return skolemize(getOntology().get().get(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
+        if (getOntology().isPresent()) return skolemize(getOntology().get(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), model);
         else return model;
     }
     
