@@ -22,7 +22,7 @@ import org.glassfish.hk2.api.Factory;
 
 /**
  *
- * @author Martynas Jusevičius <martynas@atomgraph.com>
+ * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
 @Provider
 public class OntologyFactory implements Factory<Optional<Ontology>>
