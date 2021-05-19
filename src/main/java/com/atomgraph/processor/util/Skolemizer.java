@@ -126,7 +126,7 @@ public class Skolemizer
                         if (fragmentClass != null) fragment = getStringValue(fragmentClass, LDT.fragment);
                         else fragment = null;
 
-                        return build(resource, getUriBuilder(path, typeClass), path, fragment);
+                        return build(resource, getUriBuilder(path, resource, typeClass), path, fragment);
                     }
                 }
             }
@@ -139,7 +139,7 @@ public class Skolemizer
         return null;
     }
     
-    public UriBuilder getUriBuilder(String path, OntClass typeClass)
+    public UriBuilder getUriBuilder(String path, Resource resource, OntClass typeClass)
     {
         if (path == null) throw new IllegalArgumentException("Path cannot be null");
         if (typeClass == null) throw new IllegalArgumentException("OntClass cannot be null");
