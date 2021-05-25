@@ -22,6 +22,7 @@ import org.apache.jena.vocabulary.RDF;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.processor.vocabulary.C;
 import java.util.Optional;
+import javax.inject.Inject;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
@@ -49,7 +50,9 @@ public class HypermediaFilter implements ContainerResponseFilter
 
     @Context Providers providers;
     @Context UriInfo uriInfo;
-    
+
+    @Inject javax.inject.Provider<Optional<TemplateCall>> templateCall;
+
     @Override
     public void filter(ContainerRequestContext request, ContainerResponseContext response)
     {
@@ -58,14 +61,11 @@ public class HypermediaFilter implements ContainerResponseFilter
         
         // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
         if (response.getStatusInfo().getFamily().equals(REDIRECTION) || response.getStatusInfo().equals(CREATED) ||
-                response.getStatusInfo().equals(NOT_FOUND) || response.getStatusInfo().equals(INTERNAL_SERVER_ERROR) || 
-                response.getEntity() == null || (!(response.getEntity() instanceof Model)))
+                response.getStatusInfo().equals(NOT_FOUND) || response.getStatusInfo().equals(INTERNAL_SERVER_ERROR) ||
+                getTemplateCall().isEmpty() || response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return;
         
-        Optional<TemplateCall> templateCall = getTemplateCall();
-        if (!templateCall.isPresent()) return;
-        
-        Resource state = templateCall.get().build();
+        Resource state = getTemplateCall().get().build();
         Resource absolutePath = state.getModel().createResource(request.getUriInfo().getAbsolutePath().toString());
         if (!state.equals(absolutePath)) state.addProperty(C.stateOf, absolutePath);
 
@@ -82,11 +82,7 @@ public class HypermediaFilter implements ContainerResponseFilter
 
     public Optional<TemplateCall> getTemplateCall()
     {
-        if (!getUriInfo().getMatchedResources().isEmpty() &&
-                getUriInfo().getMatchedResources().get(0) instanceof com.atomgraph.server.model.Resource)
-            return ((com.atomgraph.server.model.Resource)getUriInfo().getMatchedResources().get(0)).getTemplateCall();
-        
-        return null;
+        return templateCall.get();
     }
     
     public Providers getProviders()
