@@ -32,7 +32,7 @@ import static javax.ws.rs.core.Response.Status.INTERNAL_SERVER_ERROR;
 import static javax.ws.rs.core.Response.Status.NOT_FOUND;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.Providers;
-import org.apache.jena.query.Dataset;
+import org.apache.jena.rdf.model.Model;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -59,7 +59,7 @@ public class HypermediaFilter implements ContainerResponseFilter
         // do not process hypermedia if the response is a redirect or 201 Created or 404 Not Found
         if (response.getStatusInfo().getFamily().equals(REDIRECTION) || response.getStatusInfo().equals(CREATED) ||
                 response.getStatusInfo().equals(NOT_FOUND) || response.getStatusInfo().equals(INTERNAL_SERVER_ERROR) || 
-                response.getEntity() == null || (!(response.getEntity() instanceof Dataset)))
+                response.getEntity() == null || (!(response.getEntity() instanceof Model)))
             return;
         
         Optional<TemplateCall> templateCall = getTemplateCall();
@@ -75,8 +75,8 @@ public class HypermediaFilter implements ContainerResponseFilter
                 addProperty(RDF.type, C.View);
 
         if (log.isDebugEnabled()) log.debug("Added Number of HATEOAS statements added: {}", state.getModel().size());
-        Dataset newEntity = ((Dataset)response.getEntity());
-        newEntity.getDefaultModel().add(state.getModel());
+        Model newEntity = ((Model)response.getEntity());
+        newEntity.add(state.getModel());
         response.setEntity(newEntity);
     }
 

@@ -247,7 +247,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
                 graph(getURI().toString()).
                 build();
             
-            if (log.isDebugEnabled()) log.debug("INSERT DATA UpdateRequest: {}", insertData);
+            if (log.isDebugEnabled()) log.debug("INSERT DATA UpdateRequest");
             getService().getEndpointAccessor().update(insertData, Collections.<URI>emptyList(), Collections.<URI>emptyList());
         }
         catch (IOException ex)
