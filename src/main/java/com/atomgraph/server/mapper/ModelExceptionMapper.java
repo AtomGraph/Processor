@@ -26,7 +26,6 @@ import com.atomgraph.server.exception.ModelException;
 import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -48,7 +47,7 @@ public class ModelExceptionMapper extends ExceptionMapperBase implements Excepti
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         ex.getModel().add(exception.getModel());
         
-        return getResponseBuilder(DatasetFactory.create(ex.getModel())).status(Response.Status.BAD_REQUEST).build();
+        return getResponseBuilder(ex.getModel()).status(Response.Status.BAD_REQUEST).build();
     }
     
 }

@@ -21,7 +21,6 @@ import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.server.exception.SPINConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
@@ -68,7 +67,7 @@ public class SPINConstraintViolationExceptionMapper extends ExceptionMapperBase 
             it.close();
         }
         
-        return getResponseBuilder(DatasetFactory.create(ex.getModel())).
+        return getResponseBuilder(ex.getModel()).
                 status(Response.Status.BAD_REQUEST).
                 build();
     }

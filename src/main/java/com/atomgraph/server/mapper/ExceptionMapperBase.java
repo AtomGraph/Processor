@@ -43,7 +43,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
-import org.apache.jena.query.Dataset;
 
 /**
  * Abstract base class for ExceptionMappers that build responses with exceptions as RDF resources.
@@ -83,29 +82,6 @@ abstract public class ExceptionMapperBase
         if (ex.getMessage() != null) resource.addLiteral(DCTerms.title, ex.getMessage());
         
         return resource;
-    }
-    
-    public Response.ResponseBuilder getResponseBuilder(Dataset dataset)
-    {
-        Variant variant = getRequest().selectVariant(getVariants(Dataset.class));
-        if (variant == null) return getResponseBuilder(dataset.getDefaultModel()); // if quads are not acceptable, fallback to responding with the default graph
-        
-        Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
-                dataset,
-                null,
-                new EntityTag(Long.toHexString(com.atomgraph.core.model.impl.Response.hashDataset(dataset))),
-                variant).
-                getResponseBuilder().
-            header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().get().getURI()), LDT.ontology.getURI(), null));
-                
-            // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
-//            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
-//        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build());
-//        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
-        
-        return builder;
     }
     
     public Response.ResponseBuilder getResponseBuilder(Model model)

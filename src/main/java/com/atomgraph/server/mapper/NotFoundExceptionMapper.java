@@ -25,7 +25,6 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -43,9 +42,9 @@ public class NotFoundExceptionMapper extends ExceptionMapperBase implements Exce
     @Override
     public Response toResponse(NotFoundException ex)
     {
-        return getResponseBuilder(DatasetFactory.create(toResource(ex, ex.getResponse().getStatusInfo(),
+        return getResponseBuilder(toResource(ex, ex.getResponse().getStatusInfo(),
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#NotFound")).
-                    getModel())).
+                    getModel()).
                 status(ex.getResponse().getStatusInfo()).
                 build();
     }

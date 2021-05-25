@@ -25,7 +25,6 @@ import com.atomgraph.processor.model.TemplateCall;
 import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -43,9 +42,9 @@ public class ParameterExceptionMapper extends ExceptionMapperBase implements Exc
     @Override
     public Response toResponse(ParameterException ex)
     {
-        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.BAD_REQUEST,
+        return getResponseBuilder(toResource(ex, Response.Status.BAD_REQUEST,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest")).
-                    getModel())).
+                    getModel()).
                 status(Response.Status.BAD_REQUEST).
                 build();
     }

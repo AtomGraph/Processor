@@ -25,7 +25,6 @@ import com.atomgraph.processor.model.TemplateCall;
 import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.query.DatasetFactory;
 
 /**
  *
@@ -43,9 +42,9 @@ public class ConfigurationExceptionMapper extends ExceptionMapperBase implements
     @Override
     public Response toResponse(ConfigurationException ex)
     {
-        return getResponseBuilder(DatasetFactory.create(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
+        return getResponseBuilder(toResource(ex, Response.Status.INTERNAL_SERVER_ERROR,
                         ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#InternalServerError")).
-                    getModel())).
+                    getModel()).
                 status(Response.Status.INTERNAL_SERVER_ERROR).
                 build();
     }

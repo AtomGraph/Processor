@@ -23,7 +23,6 @@ import javax.inject.Inject;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.ontology.Ontology;
-import org.apache.jena.query.DatasetFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 
@@ -64,7 +63,7 @@ public class SHACLConstraintViolationExceptionMapper extends ExceptionMapperBase
 //        }
         ex.getModel().add(ex.getValidationReport().getModel());
 
-        return getResponseBuilder(DatasetFactory.create(ex.getModel())).
+        return getResponseBuilder(ex.getModel()).
                 status(Response.Status.BAD_REQUEST).
                 build();
     }

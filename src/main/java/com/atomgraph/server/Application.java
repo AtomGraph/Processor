@@ -188,22 +188,12 @@ public class Application extends com.atomgraph.core.Application
                 bind(application).to(com.atomgraph.processor.model.Application.class);
             }
         });
-//        register(new AbstractBinder()
-//        {
-//            @Override
-//            protected void configure()
-//            {
-//                bind(Optional.of(ontology)).to(new TypeLiteral<Optional<Ontology>>() {});
-//                //proxy(true).proxyForSameScope(false);
-//            }
-//        });
         register(new AbstractBinder()
         {
             @Override
             protected void configure()
             {
                 bindFactory(new OntologyFactory(ontology)).to(new TypeLiteral<Optional<Ontology>>() {});
-                //proxy(true).proxyForSameScope(false);
             }
         });
         register(new AbstractBinder()
@@ -232,7 +222,7 @@ public class Application extends com.atomgraph.core.Application
             }
         });
         
-        register(new SkolemizingDatasetProvider());
+//        register(new SkolemizingDatasetProvider());
         register(new SkolemizingModelProvider());
         register(new ResultSetProvider());
         register(new QueryParamProvider());
