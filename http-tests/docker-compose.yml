@@ -26,9 +26,6 @@ services:
       - ENDPOINT="http://fuseki:3030/ds/" # hostname equals service name
       - GRAPH_STORE="http://fuseki:3030/ds/" # hostname equals service name
       - ONTOLOGY="https://www.w3.org/ns/ldt/core/templates#"
-    #volumes:
-    #  - ../target/ROOT/WEB-INF/classes/com:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/com
-    #  - ../target/ROOT/WEB-INF/lib:/usr/local/tomcat/webapps/ROOT/WEB-INF/lib
   processor-ct-write: # dataset will be modified
     image: atomgraph/processor
     depends_on:
@@ -80,8 +77,6 @@ services:
     volumes:
       - ./linked-data-templates/custom/ontology.ttl:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/com/atomgraph/processor/http-tests/custom/ontology.ttl:ro
       - ./linked-data-templates/custom/location-mapping.n3:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/custom-mapping.n3:ro
-      #- ../target/ROOT/WEB-INF/classes/com:/usr/local/tomcat/webapps/ROOT/WEB-INF/classes/com
-      #- ../target/ROOT/WEB-INF/lib:/usr/local/tomcat/webapps/ROOT/WEB-INF/lib
   processor-custom-write:
     image: atomgraph/processor
     depends_on:
