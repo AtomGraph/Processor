@@ -33,11 +33,13 @@ import com.atomgraph.core.util.Link;
 import com.atomgraph.processor.exception.OntologyException;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
+import com.atomgraph.server.util.InsertDataBuilder;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
+import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Optional;
 import javax.inject.Inject;
+import javax.ws.rs.InternalServerErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ResourceContext;
 import javax.ws.rs.core.Response.Status;
@@ -230,21 +232,28 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
     /**
      * Handles <code>POST</code> method. Appends the submitted RDF representation to the application's dataset.
      * 
-     * @param dataset the RDF payload
+     * @param model the RDF payload
      * @return response <code>200 OK</code>
      */
     @Override
-    public Response post(Dataset dataset)
+    public Response post(Model model)
     {
-        if (dataset == null) throw new IllegalArgumentException("Dataset cannot be null");
+        if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
-        getService().getDatasetAccessor().add(dataset.getDefaultModel());
-        
-        Iterator<String> it = dataset.listNames();
-        while (it.hasNext())
+        try
         {
-            String graphName = it.next();
-            getService().getDatasetAccessor().add(graphName, dataset.getNamedModel(graphName));
+            UpdateRequest insertData = InsertDataBuilder.fromModel(model).
+                base(getUriInfo().getBaseUri().toString()).
+                graph(getURI().toString()).
+                build();
+            
+            if (log.isDebugEnabled()) log.debug("INSERT DATA UpdateRequest: {}", insertData);
+            getService().getEndpointAccessor().update(insertData, Collections.<URI>emptyList(), Collections.<URI>emptyList());
+        }
+        catch (IOException ex)
+        {
+            if (log.isErrorEnabled()) log.error("Error while building INSERT DATA update request for URI: {}", getURI());
+            throw new InternalServerErrorException(ex);
         }
         
         return Response.ok().build();
@@ -254,21 +263,21 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
      * Handles <code>PUT</code> method. Deletes the resource description (if any) and
      * appends the submitted RDF representation to the application's dataset.
      * 
-     * @param dataset RDF payload
+     * @param model RDF payload
      * @return response <code>201 Created</code> if resource did not exist, <code>200 OK</code> if it did
      */
     @Override
-    public Response put(Dataset dataset)
+    public Response put(Model model)
     {
         try
         {
             delete();
             
-            return post(dataset);
+            return post(model);
         }
         catch (NotFoundException ex)
         {
-            post(dataset);
+            post(model);
             
             return Response.created(getURI()).build();
         }

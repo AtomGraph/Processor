@@ -31,7 +31,6 @@ import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.container.ResourceContext;
-import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -74,25 +73,25 @@ public class Item extends ResourceBase // TO-DO: extends GraphStore
     }
 
     @Override
-    public Response post(Dataset dataset)
+    public Response post(Model model)
     {
         boolean existingGraph = getService().getDatasetAccessor().containsModel(getURI().toString());
 
         // is this implemented correctly? The specification is not very clear.
         if (log.isDebugEnabled()) log.debug("POST Model to named graph with URI: {} Did it already exist? {}", getURI(), existingGraph);
-        getService().getDatasetAccessor().add(getURI().toString(), dataset.getDefaultModel());
+        getService().getDatasetAccessor().add(getURI().toString(), model);
 
         if (existingGraph) return Response.ok().build();
         else return Response.created(getURI()).build();
     }
 
     @Override
-    public Response put(Dataset dataset)
+    public Response put(Model model)
     {
         boolean existingGraph = getService().getDatasetAccessor().containsModel(getURI().toString());
 
         if (log.isDebugEnabled()) log.debug("PUT Model to named graph with URI: {} Did it already exist? {}", getURI(), existingGraph);
-        getService().getDatasetAccessor().putModel(getURI().toString(), dataset.getDefaultModel());
+        getService().getDatasetAccessor().putModel(getURI().toString(), model);
 
         if (existingGraph) return Response.ok().build();
         else return Response.created(getURI()).build();
