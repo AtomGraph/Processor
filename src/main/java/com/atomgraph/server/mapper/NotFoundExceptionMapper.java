@@ -17,14 +17,11 @@
 package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.processor.model.TemplateCall;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.NotFoundException;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -34,9 +31,9 @@ public class NotFoundExceptionMapper extends ExceptionMapperBase implements Exce
 {
 
     @Inject
-    public NotFoundExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public NotFoundExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
     
     @Override

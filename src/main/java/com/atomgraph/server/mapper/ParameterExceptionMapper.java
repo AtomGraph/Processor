@@ -21,10 +21,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.processor.exception.ParameterException;
-import com.atomgraph.processor.model.TemplateCall;
-import java.util.Optional;
 import javax.inject.Inject;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -34,9 +31,9 @@ public class ParameterExceptionMapper extends ExceptionMapperBase implements Exc
 {
 
     @Inject
-    public ParameterExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ParameterExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
     
     @Override

@@ -16,7 +16,6 @@
 
 package com.atomgraph.server.mapper;
 
-import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
@@ -34,11 +33,8 @@ import javax.ws.rs.ext.Provider;
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.util.Link;
 import com.atomgraph.core.util.ModelUtils;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.server.vocabulary.HTTP;
-import java.net.URI;
-import java.util.Optional;
 import javax.inject.Inject;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
@@ -56,15 +52,11 @@ abstract public class ExceptionMapperBase
     @Context private Request request;
     @Context private UriInfo uriInfo;
     
-    private final Optional<Ontology> ontology;
-    private final Optional<TemplateCall> templateCall;
     private final MediaTypes mediaTypes;
     
     @Inject
-    public ExceptionMapperBase(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ExceptionMapperBase(MediaTypes mediaTypes)
     {
-        this.ontology = ontology;
-        this.templateCall = templateCall;
         this.mediaTypes = mediaTypes;
     }
 
@@ -84,27 +76,19 @@ abstract public class ExceptionMapperBase
         return resource;
     }
     
+    // TO-DO: set Link headers in a ContainerResponseFilter instead
     public Response.ResponseBuilder getResponseBuilder(Model model)
     {
         Variant variant = getRequest().selectVariant(getVariants(Model.class));
         if (variant == null) variant = new Variant(com.atomgraph.core.MediaType.TEXT_TURTLE_TYPE, (Locale)null, null); // if still not acceptable, default to Turtle
 
-        Response.ResponseBuilder builder = new com.atomgraph.core.model.impl.Response(getRequest(),
+        return new com.atomgraph.core.model.impl.Response(getRequest(),
                 model,
                 null,
                 new EntityTag(Long.toHexString(ModelUtils.hashModel(model))),
                 variant).
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
-        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getTemplateCall().get().getTemplate().getURI()), LDT.template.getURI(), null));
-        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, new Link(URI.create(getOntology().get().getURI()), LDT.ontology.getURI(), null));
-        
-            // Jersey's Link is buggy: https://github.com/eclipse-ee4j/jersey/issues/4545
-//            header(HttpHeaders.LINK, Link.fromUri(getUriInfo().getBaseUri()).rel(LDT.base.getURI()).build());
-//        if (getTemplateCall().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getTemplateCall().get().getTemplate().getURI()).rel(LDT.template.getURI()).build());
-//        if (getOntology().isPresent()) builder.header(HttpHeaders.LINK, Link.fromUri(getOntology().getURI()).rel(LDT.ontology.getURI()).build());
-        
-        return builder;
     }
 
     /**
@@ -153,16 +137,6 @@ abstract public class ExceptionMapperBase
     public Request getRequest()
     {
         return request;
-    }
-    
-    public Optional<TemplateCall> getTemplateCall()
-    {
-        return templateCall;
-    }
-
-    public Optional<Ontology> getOntology()
-    {
-        return ontology;
     }
     
     public MediaTypes getMediaTypes()

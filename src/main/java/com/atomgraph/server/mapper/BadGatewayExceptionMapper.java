@@ -18,13 +18,10 @@ package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.core.exception.BadGatewayException;
-import com.atomgraph.processor.model.TemplateCall;
-import java.util.Optional;
 import javax.inject.Inject;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
-import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Resource;
 
 /**
@@ -35,9 +32,9 @@ public class BadGatewayExceptionMapper extends ExceptionMapperBase implements Ex
 {
 
     @Inject
-    public BadGatewayExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public BadGatewayExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
 
     @Override

@@ -62,12 +62,11 @@ import com.atomgraph.core.util.jena.DataManagerImpl;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.model.impl.ApplicationImpl;
 import com.atomgraph.server.factory.OntologyFactory;
-import com.atomgraph.server.filter.response.HypermediaFilter;
-import com.atomgraph.server.io.SkolemizingDatasetProvider;
 import com.atomgraph.server.mapper.BadGatewayExceptionMapper;
 import com.atomgraph.server.mapper.NotAcceptableExceptionMapper;
 import com.atomgraph.server.mapper.NotSupportedExceptionMapper;
 import com.atomgraph.server.factory.TemplateCallFactory;
+import com.atomgraph.server.filter.response.ResponseHeaderFilter;
 import com.atomgraph.server.mapper.SHACLConstraintViolationExceptionMapper;
 import com.atomgraph.spinrdf.vocabulary.SP;
 import java.util.HashMap;
@@ -178,8 +177,6 @@ public class Application extends com.atomgraph.core.Application
     public void init()
     {
         register(ResourceBase.class); // handles /
-        register(HypermediaFilter.class);
-        
         register(new AbstractBinder()
         {
             @Override
@@ -222,7 +219,6 @@ public class Application extends com.atomgraph.core.Application
             }
         });
         
-//        register(new SkolemizingDatasetProvider());
         register(new SkolemizingModelProvider());
         register(new ResultSetProvider());
         register(new QueryParamProvider());
@@ -243,7 +239,8 @@ public class Application extends com.atomgraph.core.Application
         register(OntologyExceptionMapper.class);
         register(ParameterExceptionMapper.class);
         register(QueryParseExceptionMapper.class);
-     
+        register(new ResponseHeaderFilter());
+        
         //if (log.isTraceEnabled()) log.trace("Application.init() with Classes: {} and Singletons: {}", classes, singletons);
     }
     

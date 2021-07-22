@@ -17,16 +17,13 @@
 package com.atomgraph.server.mapper.jena;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.processor.model.TemplateCall;
 import org.apache.jena.query.QueryParseException;
 import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 import com.atomgraph.server.mapper.ExceptionMapperBase;
-import java.util.Optional;
 import javax.inject.Inject;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -37,9 +34,9 @@ public class QueryParseExceptionMapper extends ExceptionMapperBase implements Ex
 {
 
     @Inject
-    public QueryParseExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public QueryParseExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
     
     @Override

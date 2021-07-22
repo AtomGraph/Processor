@@ -17,7 +17,6 @@
 package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.server.exception.SPINConstraintViolationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
@@ -27,9 +26,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.spinrdf.constraints.SPINConstraints;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
-import java.util.Optional;
 import javax.inject.Inject;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -39,9 +36,9 @@ public class SPINConstraintViolationExceptionMapper extends ExceptionMapperBase 
 {
 
     @Inject
-    public SPINConstraintViolationExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public SPINConstraintViolationExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
 
     @Override

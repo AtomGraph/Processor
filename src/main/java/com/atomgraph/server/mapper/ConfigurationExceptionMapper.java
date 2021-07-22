@@ -21,10 +21,7 @@ import org.apache.jena.rdf.model.ResourceFactory;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.ConfigurationException;
-import com.atomgraph.processor.model.TemplateCall;
-import java.util.Optional;
 import javax.inject.Inject;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -34,9 +31,9 @@ public class ConfigurationExceptionMapper extends ExceptionMapperBase implements
 {
 
     @Inject
-    public ConfigurationExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public ConfigurationExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
 
     @Override

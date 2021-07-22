@@ -16,15 +16,12 @@
 package com.atomgraph.server.mapper.jena;
 
 import com.atomgraph.core.MediaTypes;
-import com.atomgraph.processor.model.TemplateCall;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RiotException;
 import com.atomgraph.server.mapper.ExceptionMapperBase;
-import java.util.Optional;
 import javax.inject.Inject;
-import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -34,9 +31,9 @@ public class RiotExceptionMapper extends ExceptionMapperBase implements Exceptio
 {
 
     @Inject
-    public RiotExceptionMapper(Optional<Ontology> ontology, Optional<TemplateCall> templateCall, MediaTypes mediaTypes)
+    public RiotExceptionMapper(MediaTypes mediaTypes)
     {
-        super(ontology, templateCall, mediaTypes);
+        super(mediaTypes);
     }
 
     @Override
