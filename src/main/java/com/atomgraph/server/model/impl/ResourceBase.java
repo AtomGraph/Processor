@@ -110,7 +110,7 @@ public class ResourceBase extends QueriedResourceBase implements com.atomgraph.s
         // we are not making permanent changes to base ontology because OntologyProvider always makes a copy
         this.application = application;
         this.ontology = ontology;
-        this.ontResource = ontology.getOntModel().createOntResource(getURI().toString());
+        this.ontResource = ontology.getOntModel().createOntResource(uri.toString());
         this.templateCall = templateCall;
         this.httpHeaders = httpHeaders;
         this.resourceContext = resourceContext;
