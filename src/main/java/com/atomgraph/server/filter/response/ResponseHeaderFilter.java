@@ -17,7 +17,6 @@
 package com.atomgraph.server.filter.response;
 
 import com.atomgraph.core.util.Link;
-import com.atomgraph.processor.model.Application;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.io.IOException;
 import java.net.URI;
@@ -29,6 +28,7 @@ import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.UriInfo;
+import org.apache.jena.ontology.Ontology;
 
 /**
  *
@@ -37,7 +37,7 @@ import javax.ws.rs.core.UriInfo;
 public class ResponseHeaderFilter implements ContainerResponseFilter
 {
     
-    @Inject javax.inject.Provider<Optional<Application>> app;
+    @Inject javax.inject.Provider<Optional<Ontology>> ontology;
     @Context UriInfo uriInfo;
     
     @Override
@@ -46,16 +46,16 @@ public class ResponseHeaderFilter implements ContainerResponseFilter
         // add Link rel=ldt:base
         response.getHeaders().add(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
 
-        if (getApplication().isPresent()) // if it's not present, Link headers might be forwarded by ProxyResourceBase
+        if (getOntology().isPresent()) // if it's not present, Link headers might be forwarded by ProxyResourceBase
         {
             // add Link rel=ldt:ontology
-            response.getHeaders().add(HttpHeaders.LINK, new Link(URI.create(getApplication().get().getOntology().getURI()), LDT.ontology.getURI(), null));
+            response.getHeaders().add(HttpHeaders.LINK, new Link(URI.create(getOntology().get().getURI()), LDT.ontology.getURI(), null));
         }
     }
 
-    public Optional<Application> getApplication()
+    public Optional<Ontology> getOntology()
     {
-        return app.get();
+        return ontology.get();
     }
     
     public UriInfo getUriInfo()
