@@ -43,7 +43,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     @Override
     public Model process(Model model)
     {
-        if (getRequest().getMethod().equalsIgnoreCase(HttpMethod.POST))
+        if (getRequest().getMethod().equalsIgnoreCase(HttpMethod.POST) || getRequest().getMethod().equalsIgnoreCase(HttpMethod.PUT))
         {
             ResIterator it = model.listSubjects();
             try
