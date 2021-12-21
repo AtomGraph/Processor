@@ -26,8 +26,8 @@ import org.apache.jena.util.iterator.ExtendedIterator;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.jena.rdf.model.ModelFactory;
-import org.apache.jena.shared.Lock;
 import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.processor.util.OntModelReadOnly;
 import javax.ws.rs.ClientErrorException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -150,23 +150,24 @@ public class OntologyLoader
         if (manager == null) throw new IllegalArgumentException("OntDocumentManager cannot be null");
         if (ontologyURI == null) throw new IllegalArgumentException("URI cannot be null");
         if (ontModelSpec == null) throw new IllegalArgumentException("OntModelSpec cannot be null");
-        if (log.isDebugEnabled()) log.debug("Loading sitemap ontology from URI: {}", ontologyURI);
+        if (log.isDebugEnabled()) log.debug("Loading ontology from URI: {}", ontologyURI);
 
         try
         {
             OntModel ontModel = manager.getOntology(ontologyURI, ontModelSpec);
 
             // lock and clone the model to avoid ConcurrentModificationExceptions
-            ontModel.enterCriticalSection(Lock.READ);
-            try
-            {
-                return ModelFactory.createOntologyModel(ontModelSpec,
-                        ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
-            }
-            finally
-            {
-                ontModel.leaveCriticalSection();
-            }
+//            ontModel.enterCriticalSection(Lock.READ);
+//            try
+//            {
+//                return ModelFactory.createOntologyModel(ontModelSpec,
+//                        ModelFactory.createUnion(ModelFactory.createDefaultModel(), ontModel.getBaseModel()));
+//            }
+//            finally
+//            {
+//                ontModel.leaveCriticalSection();
+//            }
+            return new OntModelReadOnly(ontModel);
         }
         catch (ClientErrorException ex) // thrown by DataManager
         {
