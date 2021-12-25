@@ -76,8 +76,8 @@ import org.apache.jena.rdf.model.NsIterator;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFList;
 import org.apache.jena.rdf.model.RDFNode;
-import org.apache.jena.rdf.model.RDFReader;
-import org.apache.jena.rdf.model.RDFWriter;
+import org.apache.jena.rdf.model.RDFReaderI;
+import org.apache.jena.rdf.model.RDFWriterI;
 import org.apache.jena.rdf.model.RSIterator;
 import org.apache.jena.rdf.model.ReifiedStatement;
 import org.apache.jena.rdf.model.ResIterator;
@@ -91,7 +91,6 @@ import org.apache.jena.reasoner.Derivation;
 import org.apache.jena.reasoner.Reasoner;
 import org.apache.jena.reasoner.ValidityReport;
 import org.apache.jena.shared.AddDeniedException;
-import org.apache.jena.shared.Command;
 import org.apache.jena.shared.Lock;
 import org.apache.jena.shared.PrefixMapping;
 import org.apache.jena.sparql.graph.GraphReadOnly;
@@ -1348,12 +1347,6 @@ public class OntModelReadOnly implements OntModel
     }
 
     @Override
-    public Object executeInTransaction(Command arg0)
-    {
-        return ontModel.executeInTransaction(arg0);
-    }
-
-    @Override
     public void executeInTxn(Runnable arg0)
     {
         ontModel.executeInTxn(arg0);
@@ -2008,63 +2001,27 @@ public class OntModelReadOnly implements OntModel
     }
 
     @Override
-    public RDFReader getReader()
+    public RDFReaderI getReader()
     {
         return ontModel.getReader();
     }
 
     @Override
-    public RDFReader getReader(String arg0)
+    public RDFReaderI getReader(String arg0)
     {
         return ontModel.getReader(arg0);
     }
 
     @Override
-    public String setReaderClassName(String arg0, String arg1)
-    {
-        return ontModel.setReaderClassName(arg0, arg1);
-    }
-
-    @Override
-    public void resetRDFReaderF()
-    {
-        ontModel.resetRDFReaderF();
-    }
-
-    @Override
-    public String removeReader(String arg0) throws IllegalArgumentException
-    {
-        return ontModel.removeReader(arg0);
-    }
-
-    @Override
-    public RDFWriter getWriter()
+    public RDFWriterI getWriter()
     {
         return ontModel.getWriter();
     }
 
     @Override
-    public RDFWriter getWriter(String arg0)
+    public RDFWriterI getWriter(String arg0)
     {
         return ontModel.getWriter(arg0);
-    }
-
-    @Override
-    public String setWriterClassName(String arg0, String arg1)
-    {
-        return ontModel.setWriterClassName(arg0, arg1);
-    }
-
-    @Override
-    public void resetRDFWriterF()
-    {
-        ontModel.resetRDFWriterF();
-    }
-
-    @Override
-    public String removeWriter(String arg0) throws IllegalArgumentException
-    {
-        return ontModel.removeWriter(arg0);
     }
 
     @Override
@@ -2131,5 +2088,11 @@ public class OntModelReadOnly implements OntModel
     public void leaveCriticalSection()
     {
         ontModel.leaveCriticalSection();
+    }
+
+    @Override
+    public boolean hasNoMappings()
+    {
+        return ontModel.hasNoMappings();
     }
 }
