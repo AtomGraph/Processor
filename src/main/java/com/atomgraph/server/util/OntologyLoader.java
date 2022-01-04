@@ -70,10 +70,6 @@ public class OntologyLoader
                 if (log.isErrorEnabled()) log.error("Sitemap contains an ontology which forms an import cycle: {}", checker.getCycleOntology());
                 throw new OntologyException("Sitemap contains an ontology which forms an import cycle: " + checker.getCycleOntology().getURI());
             }
-            
-//            OntModel materializedModel = ModelFactory.createOntologyModel(OntModelSpec.OWL_MEM); // no inference
-//            materializedModel.add(ontModel);
-//            ontDocumentManager.addModel(ontologyURI, materializedModel, true);
         }
     }
 
