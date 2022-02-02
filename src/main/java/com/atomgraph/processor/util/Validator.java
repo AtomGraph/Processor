@@ -17,9 +17,7 @@
 package com.atomgraph.processor.util;
 
 import org.apache.jena.ontology.OntModel;
-import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.rdf.model.Model;
-import org.apache.jena.rdf.model.ModelFactory;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +44,7 @@ public class Validator
     {
         if (model == null) throw new IllegalArgumentException("Model cannot be null");
 
-        OntModel tempModel = ModelFactory.createOntologyModel(getOntModel().getSpecification());
-        tempModel.add(getOntModel()).add(model);
-        return SPINConstraints.check(tempModel);
+        return SPINConstraints.check(model, getOntModel());
     }
 
     public OntModel getOntModel()
