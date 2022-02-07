@@ -23,21 +23,29 @@ import org.apache.jena.rdf.model.Resource;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class ApplicationImpl extends com.atomgraph.core.model.impl.ApplicationImpl implements Application
+public class ApplicationImpl implements Application
 {
     private final Resource ontology;
+    private final Service service;
 
     public ApplicationImpl(Service service, Resource ontology)
     {
-        super(service);
         if (ontology == null) throw new IllegalArgumentException("Resource cannot be null");
+        if (service == null) throw new IllegalArgumentException("Service cannot be null");
         this.ontology = ontology;
+        this.service = service;
     }
     
     @Override
     public Resource getOntology()
     {
         return ontology;
+    }
+    
+    @Override
+    public Service getService()
+    {
+        return service;
     }
     
 }

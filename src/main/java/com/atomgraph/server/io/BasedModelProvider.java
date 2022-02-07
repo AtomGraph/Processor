@@ -63,7 +63,7 @@ public class BasedModelProvider extends ModelProvider
         }
         if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
         
-        return read(model, entityStream, lang, getUriInfo().getBaseUri().toString());
+        return read(model, entityStream, lang, getUriInfo().getAbsolutePath().toString());
     }
     
     @Override
@@ -80,7 +80,7 @@ public class BasedModelProvider extends ModelProvider
         }
         if (log.isDebugEnabled()) log.debug("RDF language used to read Model: {}", lang);
         
-        write(model, entityStream, lang, getUriInfo().getBaseUri().toString());
+        write(model, entityStream, lang, getUriInfo().getAbsolutePath().toString());
     }
     
     public UriInfo getUriInfo()
