@@ -3,10 +3,10 @@
 [] lm:mapping
 
    [ lm:name "https://www.w3.org/ns/ldt#" ;                                     lm:altName "com/atomgraph/processor/ldt.ttl" ] ,
-   [ lm:name "https://www.w3.org/ns/ldt/core/domain#" ;                         lm:altName "com/atomgraph/processor/c.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/core#" ;                                lm:altName "com/atomgraph/processor/c.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/core/templates#" ;                      lm:altName "com/atomgraph/processor/ct.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/named-graphs/templates#" ;              lm:altName "com/atomgraph/processor/ngt.ttl" ] ,
-   [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy/domain#" ;           lm:altName "com/atomgraph/processor/dh.ttl" ] ,
+   [ lm:name "https://www.w3.org/ns/ldt/document-hierarchy#" ;                  lm:altName "com/atomgraph/processor/dh.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/topic-hierarchy/templates#" ;           lm:altName "com/atomgraph/processor/tht.ttl" ] ,
    [ lm:name "https://www.w3.org/ns/ldt/topic-hierarchy-graphs/templates#" ;    lm:altName "com/atomgraph/processor/thgt.ttl" ] ,
    [ lm:name "http://rdfs.org/sioc/ns#" ;                                       lm:altName "com/atomgraph/processor/sioc.owl" ] ,

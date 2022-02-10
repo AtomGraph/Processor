@@ -121,7 +121,7 @@ public class OntologyLoader
     
     public Ontology getOntology()
     {
-        OntModelSpec loadSpec = OntModelSpec.OWL_MEM;
+        OntModelSpec loadSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
         
         // attempt to use DataManager to retrieve owl:import Models
         if (getOntDocumentManager().getFileManager() instanceof DataManager)
