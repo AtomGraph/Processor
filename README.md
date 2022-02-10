@@ -5,7 +5,6 @@ What AtomGraph Processor provides for users as out-of-the-box generic features:
 * control of RDF input quality with SPARQL-based constraints
 * SPARQL endpoint and Graph Store Protocol endpoint
 * HTTP content negotiation and caching support
-* a separate RDF resource for every application state, following the [HATEOAS](http://en.wikipedia.org/wiki/HATEOAS) principle
 
 AtomGraph's direct use of semantic technologies results in extemely extensible and flexible design and leads the way towards declarative Web development. You can forget all about broken hyperlinks and concentrate on building great apps on quality data. For more details, see [articles and presentations](https://github.com/AtomGraph/Processor/wiki/Articles-and-presentations) about AtomGraph.
 
