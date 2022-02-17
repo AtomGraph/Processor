@@ -41,7 +41,7 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
     @Context private Request request;
     
     @Override
-    public Model process(Model model)
+    public Model processRead(Model model)
     {
         if (getRequest().getMethod().equalsIgnoreCase(HttpMethod.POST) || getRequest().getMethod().equalsIgnoreCase(HttpMethod.PUT))
         {
@@ -59,11 +59,11 @@ public class SkolemizingModelProvider extends ValidatingModelProvider
                 it.close();
             }
         
-            if (getOntology().isPresent()) return skolemize(getOntology().get(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), super.process(model));
+            if (getOntology().isPresent()) return skolemize(getOntology().get(), getUriInfo().getBaseUriBuilder(), getUriInfo().getAbsolutePathBuilder(), super.processRead(model));
             else return model;
         }
         
-        return super.process(model);
+        return super.processRead(model);
     }
     
     public Resource process(Resource resource)
