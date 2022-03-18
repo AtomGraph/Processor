@@ -34,6 +34,7 @@ import javax.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.spinrdf.constraints.ConstraintViolation;
+import java.io.OutputStream;
 import java.util.Optional;
 import org.apache.jena.shacl.ShaclValidator;
 import org.apache.jena.shacl.Shapes;
@@ -55,10 +56,10 @@ public class ValidatingModelProvider extends BasedModelProvider
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException
     {
-        return process(super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream));
+        return processRead(super.readFrom(type, genericType, annotations, mediaType, httpHeaders, entityStream));
     }
 
-    public Model process(Model model)
+    public Model processRead(Model model)
     {
         return validate(model);
     }
@@ -88,6 +89,17 @@ public class ValidatingModelProvider extends BasedModelProvider
         return model;
     }
         
+    @Override
+    public void writeTo(Model model, Class<?> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, Object> httpHeaders, OutputStream entityStream) throws IOException
+    {
+        super.writeTo(processWrite(model), type, genericType, annotations, mediaType, httpHeaders, entityStream);
+    }
+    
+    public Model processWrite(Model model)
+    {
+        return model;
+    }
+    
     public Optional<Ontology> getOntology()
     {
         return ontology.get();
