@@ -1,7 +1,7 @@
 version: "2"
 services:
   processor:
-    image: atomgraph/processor
+    build: ../..
     ports:
       - 8080:8080
       - 8010:8000 # debugger

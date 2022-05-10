@@ -54,6 +54,7 @@ import com.atomgraph.server.mapper.SPINConstraintViolationExceptionMapper;
 import org.apache.jena.ontology.OntModelSpec;
 import org.apache.jena.query.Dataset;
 import static com.atomgraph.core.Application.getClient;
+import com.atomgraph.core.client.LinkedDataClient;
 import com.atomgraph.core.io.QueryProvider;
 import com.atomgraph.core.mapper.NoReaderForLangExceptionMapper;
 import com.atomgraph.core.model.Service;
@@ -161,7 +162,7 @@ public class Application extends com.atomgraph.core.Application
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
 
         // TO-DO: config property for cacheLoadModels
-        DataManager dataManager = new DataManagerImpl(locationMapper, new HashMap<>(), client, mediaTypes, true, preemptiveAuth);
+        DataManager dataManager = new DataManagerImpl(locationMapper, new HashMap<>(), LinkedDataClient.create(client, mediaTypes), true, preemptiveAuth);
         OntDocumentManager.getInstance().setFileManager((FileManager)dataManager);
         if (log.isDebugEnabled()) log.debug("OntDocumentManager.getInstance().getFileManager(): {}", OntDocumentManager.getInstance().getFileManager());
         OntDocumentManager.getInstance().setCacheModels(cacheSitemap); // lets cache the ontologies FTW!!

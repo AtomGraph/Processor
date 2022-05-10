@@ -1,15 +1,15 @@
 version: "2"
 services:
   fuseki:
-    image: atomgraph/fuseki
+    image: atomgraph/fuseki:9d331f984dcffcb9d0ba2ac6f12c9c2a77b5d5fe
+    user: root # otherwise fuseki user does not have permissions to the mounted folder which is owner by root
     ports:
       - 3030:3030
     volumes:
-      - ./fuseki.ttl:/mnt/apache-fuseki/configuration/fuseki.ttl:ro
       - ./dataset.ttl:/tmp/data/dataset.ttl:ro
-    command: ["--config", "/mnt/apache-fuseki/configuration/fuseki.ttl"]
+    command: [ "--file", "/tmp/data/dataset.ttl", "/ds" ]
   processor:
-    image: atomgraph/processor
+    build: ../..
     depends_on:
       - fuseki
     ports:
