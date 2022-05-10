@@ -79,12 +79,12 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>twirl</artifactId>
-            <version>1.0.28-SNAPSHOT</version>
+            <version>1.0.28</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
-            <version>3.1.9-SNAPSHOT</version>
+            <version>3.1.10</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
