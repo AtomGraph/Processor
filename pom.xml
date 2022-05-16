@@ -79,17 +79,17 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>twirl</artifactId>
-            <version>1.0.28</version>
+            <version>1.0.30-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
-            <version>3.1.10</version>
+            <version>3.1.12-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-shacl</artifactId>
-            <version>4.3.2</version>
+            <version>4.5.0</version>
             <exclusions>
                 <!-- exclude HTTP Client as its version clashes with Jersey's -->
                 <exclusion>
