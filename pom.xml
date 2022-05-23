@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>processor</artifactId>
-    <version>3.13.19-SNAPSHOT</version>
+    <version>3.13.21-SNAPSHOT</version>
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
@@ -79,17 +79,17 @@
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>twirl</artifactId>
-            <version>1.0.28</version>
+            <version>1.0.30</version>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
             <artifactId>core</artifactId>
-            <version>3.1.10</version>
+            <version>3.1.14</version>
         </dependency>
         <dependency>
             <groupId>org.apache.jena</groupId>
             <artifactId>jena-shacl</artifactId>
-            <version>4.3.2</version>
+            <version>4.5.0</version>
             <exclusions>
                 <!-- exclude HTTP Client as its version clashes with Jersey's -->
                 <exclusion>
