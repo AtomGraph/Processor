@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# SPARQL query directly as POST body
+# SPARQL update directly as POST body
 
 (
 curl -w "%{http_code}\n" -f -s \

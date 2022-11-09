@@ -43,25 +43,10 @@ public class SHACLConstraintViolationExceptionMapper extends ExceptionMapperBase
             ResourceFactory.createResource("http://www.w3.org/2011/http-statusCodes#BadRequest"));
         ex.getModel().add(exception.getModel());
         
-//        SPINConstraints.addConstraintViolationsRDF(ex.getConstraintViolations(), ex.getModel(), true);
-//        ResIterator it = ex.getModel().listSubjectsWithProperty(RDF.type, SPIN.ConstraintViolation);
-//        try
-//        {
-//            while (it.hasNext())
-//            {
-//                Resource violation = it.next();
-//                // connect Response to ConstraintViolations
-//                ex.getModel().add(exception, ResourceFactory.createProperty("http://www.w3.org/ns/prov#wasDerivedFrom"), violation);
-//            }
-//        }
-//        finally
-//        {
-//            it.close();
-//        }
         ex.getModel().add(ex.getValidationReport().getModel());
 
         return getResponseBuilder(ex.getModel()).
-                status(Response.Status.BAD_REQUEST).
+                status(422). // 422 Unprocessable Entity
                 build();
     }
     
