@@ -7,7 +7,7 @@ curl -f -s -I -G \
   -H "Accept: application/n-triples" \
   "${BASE_URL}default-subject" \
 | grep 'ETag' \
-| sed -En 's/^ETag: (.*)$/\1/p')
+| sed -En 's/^ETag: (.*)[^\n]$/\1/p')
 
 curl -w "%{http_code}\n" -f -s -G \
   -H "Accept: application/n-triples" \

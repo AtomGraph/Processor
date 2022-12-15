@@ -1,13 +1,13 @@
 #!/bin/bash
 
-# request N-Triples twice - supply ETag second time and expect 303 Not Modified
+# request N-Triples twice - supply ETag second time and expect 304 Not Modified
 
 etag=$(
 curl -f -s -I -G \
   -H "Accept: application/n-triples" \
   "${BASE_URL}named-subject" \
 | grep 'ETag' \
-| sed -En 's/^ETag: (.*)/\1/p')
+| sed -En 's/^ETag: (.*)[^\n]$/\1/p')
 
 curl -w "%{http_code}\n" -f -s -G \
   -H "Accept: application/n-triples" \
