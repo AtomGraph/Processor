@@ -1,7 +1,7 @@
 version: "2"
 services:
   fuseki:
-    image: atomgraph/fuseki:9d331f984dcffcb9d0ba2ac6f12c9c2a77b5d5fe
+    image: atomgraph/fuseki:9985c4edd850c9277d241f6edc0d883013713ad3
     user: root # otherwise fuseki user does not have permissions to the mounted folder which is owner by root
     ports:
       - 3030:3030
