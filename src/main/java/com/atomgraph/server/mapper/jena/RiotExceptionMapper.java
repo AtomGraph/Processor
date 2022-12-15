@@ -16,12 +16,12 @@
 package com.atomgraph.server.mapper.jena;
 
 import com.atomgraph.core.MediaTypes;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.riot.RiotException;
 import com.atomgraph.server.mapper.ExceptionMapperBase;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  *

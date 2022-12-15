@@ -23,14 +23,14 @@ import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Providers;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.Providers;
 import com.atomgraph.server.exception.SPINConstraintViolationException;
 import com.atomgraph.processor.util.Validator;
 import com.atomgraph.server.exception.SHACLConstraintViolationException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.atomgraph.spinrdf.constraints.ConstraintViolation;
@@ -51,7 +51,7 @@ public class ValidatingModelProvider extends BasedModelProvider
     
     @Context private Providers providers;
     
-    @Inject javax.inject.Provider<Optional<Ontology>> ontology;
+    @Inject jakarta.inject.Provider<Optional<Ontology>> ontology;
 
     @Override
     public Model readFrom(Class<Model> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException

@@ -26,6 +26,7 @@ import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.util.LocationMapper;
 import org.apache.jena.vocabulary.RDFS;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -50,6 +51,8 @@ public class TemplateMatcherTest
     @BeforeClass
     public static void setUpClass()
     {
+        LocationMapper lm = new LocationMapper("location-mapping.ttl");
+        OntDocumentManager.getInstance().getFileManager().setLocationMapper(lm);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
     }
     

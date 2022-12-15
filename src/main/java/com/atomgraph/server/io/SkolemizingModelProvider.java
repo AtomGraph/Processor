@@ -18,12 +18,12 @@ package com.atomgraph.server.io;
 
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Model;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Request;
-import javax.ws.rs.core.UriBuilder;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.Request;
+import jakarta.ws.rs.core.UriBuilder;
 import com.atomgraph.server.exception.SkolemizationException;
 import com.atomgraph.processor.util.Skolemizer;
-import javax.ws.rs.HttpMethod;
+import jakarta.ws.rs.HttpMethod;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.slf4j.Logger;

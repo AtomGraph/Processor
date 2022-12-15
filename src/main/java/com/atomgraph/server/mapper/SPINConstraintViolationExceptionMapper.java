@@ -18,15 +18,15 @@ package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.MediaTypes;
 import com.atomgraph.server.exception.SPINConstraintViolationException;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import org.apache.jena.rdf.model.ResIterator;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.ResourceFactory;
 import org.apache.jena.vocabulary.RDF;
 import com.atomgraph.spinrdf.constraints.SPINConstraints;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  *

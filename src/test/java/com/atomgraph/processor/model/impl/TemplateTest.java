@@ -28,14 +28,16 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
-import javax.ws.rs.core.CacheControl;
+import jakarta.ws.rs.core.CacheControl;
 import static junit.framework.Assert.assertEquals;
 import org.apache.jena.enhanced.BuiltinPersonalities;
+import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.ModelFactory;
 import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.sparql.vocabulary.FOAF;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.util.LocationMapper;
 import org.apache.jena.vocabulary.RDFS;
 import org.glassfish.jersey.uri.UriTemplate;
 import org.junit.Before;
@@ -54,15 +56,14 @@ public class TemplateTest
         JenaSystem.init();
     }
     
-//    private final String rulesString = "[inhClass: (?class rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), (?class ?p ?o), (?p rdf:type <https://www.w3.org/ns/ldt#InheritedProperty>), (?subClass rdfs:subClassOf ?class), (?subClass rdf:type <http://www.w3.org/2000/01/rdf-schema#Class>), noValue(?subClass ?p) -> (?subClass ?p ?o) ]\n" +
-//"[inhTemplate: (?template rdf:type <https://www.w3.org/ns/ldt#Template>), (?template ?p ?o), (?p rdf:type <https://www.w3.org/ns/ldt#InheritedProperty>), (?subTemplate <https://www.w3.org/ns/ldt#extends> ?template), (?subTemplate rdf:type <https://www.w3.org/ns/ldt#Template>), noValue(?subTemplate ?p) -> (?subTemplate ?p ?o) ]\n" +
-//"[rdfs9: (?x rdfs:subClassOf ?y), (?a rdf:type ?x) -> (?a rdf:type ?y)]";
     private Ontology ontology;
     private Template superSuperTemplate, superTemplate, superTemplateOverriding, subTemplate, subTemplate1, template;
 
     @BeforeClass
     public static void setUpClass()
     {
+        LocationMapper lm = new LocationMapper("location-mapping.ttl");
+        OntDocumentManager.getInstance().getFileManager().setLocationMapper(lm);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
     }
@@ -70,14 +71,7 @@ public class TemplateTest
     @Before
     public void setUp()
     {
-        // old reasoner setup with custom inheritance rules
-//        List<Rule> rules = Rule.parseRules(rulesString);
-//        OntModelSpec rulesSpec = new OntModelSpec(OntModelSpec.OWL_MEM);
-//        Reasoner reasoner = new GenericRuleReasoner(rules);
-//        rulesSpec.setReasoner(reasoner);
-//        ontology = ModelFactory.createOntologyModel(rulesSpec).createOntology("http://test/ontology");
-       
-        ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology"); //ModelFactory.createOntologyModel(rulesSpec).createOntology("http://test/ontology");
+        ontology = ModelFactory.createOntologyModel().createOntology("http://test/ontology");
         ontology.addImport(LDT.NAMESPACE);
         ontology.getOntModel().loadImports();
         

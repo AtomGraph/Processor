@@ -18,10 +18,10 @@ package com.atomgraph.server.mapper;
 
 import com.atomgraph.core.MediaTypes;
 import org.apache.jena.rdf.model.ResourceFactory;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
+import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.ext.ExceptionMapper;
 import com.atomgraph.core.exception.ConfigurationException;
-import javax.inject.Inject;
+import jakarta.inject.Inject;
 
 /**
  *

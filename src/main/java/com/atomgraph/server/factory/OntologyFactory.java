@@ -16,7 +16,7 @@
 package com.atomgraph.server.factory;
 
 import java.util.Optional;
-import javax.ws.rs.ext.Provider;
+import jakarta.ws.rs.ext.Provider;
 import org.apache.jena.ontology.Ontology;
 import org.glassfish.hk2.api.Factory;
 

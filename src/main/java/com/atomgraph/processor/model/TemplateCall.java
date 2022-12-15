@@ -15,7 +15,7 @@
  */
 package com.atomgraph.processor.model;
 
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import org.apache.jena.query.QuerySolutionMap;
 import org.apache.jena.rdf.model.Property;
 import org.apache.jena.rdf.model.RDFNode;

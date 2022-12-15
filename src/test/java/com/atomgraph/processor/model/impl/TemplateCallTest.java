@@ -20,8 +20,8 @@ import com.atomgraph.processor.model.Parameter;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.TemplateCall;
 import com.atomgraph.processor.vocabulary.LDT;
-import javax.ws.rs.core.MultivaluedHashMap;
-import javax.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.core.MultivaluedHashMap;
+import jakarta.ws.rs.core.MultivaluedMap;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import org.apache.jena.enhanced.BuiltinPersonalities;
@@ -41,7 +41,9 @@ import org.junit.Test;
 import com.atomgraph.spinrdf.vocabulary.SP;
 import com.atomgraph.spinrdf.vocabulary.SPIN;
 import com.atomgraph.spinrdf.vocabulary.SPL;
+import org.apache.jena.ontology.OntDocumentManager;
 import org.apache.jena.sys.JenaSystem;
+import org.apache.jena.util.LocationMapper;
 
 /**
  *
@@ -68,6 +70,8 @@ public class TemplateCallTest
     @BeforeClass
     public static void setUpClass()
     {
+        LocationMapper lm = new LocationMapper("location-mapping.ttl");
+        OntDocumentManager.getInstance().getFileManager().setLocationMapper(lm);
         BuiltinPersonalities.model.add(Template.class, TemplateImpl.factory);
         BuiltinPersonalities.model.add(Parameter.class, ParameterImpl.factory);
     }

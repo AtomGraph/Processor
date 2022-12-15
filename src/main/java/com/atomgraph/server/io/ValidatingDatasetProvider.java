@@ -25,11 +25,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.Iterator;
 import java.util.List;
-import javax.inject.Inject;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.ext.Providers;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.MultivaluedMap;
+import jakarta.ws.rs.ext.Providers;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.query.Dataset;
 import org.slf4j.Logger;
@@ -52,7 +52,7 @@ public class ValidatingDatasetProvider extends DatasetProvider
     
     @Context private Providers providers;
     
-    @Inject javax.inject.Provider<Optional<Ontology>> ontology;
+    @Inject jakarta.inject.Provider<Optional<Ontology>> ontology;
 
     @Override
     public Dataset readFrom(Class<Dataset> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException

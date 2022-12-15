@@ -22,13 +22,13 @@ import com.atomgraph.processor.vocabulary.LDT;
 import java.io.IOException;
 import java.net.URI;
 import java.util.Optional;
-import javax.inject.Inject;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.container.ContainerResponseContext;
-import javax.ws.rs.container.ContainerResponseFilter;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
+import jakarta.inject.Inject;
+import jakarta.ws.rs.container.ContainerRequestContext;
+import jakarta.ws.rs.container.ContainerResponseContext;
+import jakarta.ws.rs.container.ContainerResponseFilter;
+import jakarta.ws.rs.core.Context;
+import jakarta.ws.rs.core.HttpHeaders;
+import jakarta.ws.rs.core.UriInfo;
 import org.apache.jena.ontology.Ontology;
 
 /**
@@ -38,8 +38,8 @@ import org.apache.jena.ontology.Ontology;
 public class ResponseHeaderFilter implements ContainerResponseFilter
 {
     
-    @Inject javax.inject.Provider<Optional<Ontology>> ontology;
-    @Inject javax.inject.Provider<Optional<TemplateCall>> templateCall;
+    @Inject jakarta.inject.Provider<Optional<Ontology>> ontology;
+    @Inject jakarta.inject.Provider<Optional<TemplateCall>> templateCall;
     
     @Context UriInfo uriInfo;
     
