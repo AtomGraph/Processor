@@ -15,7 +15,7 @@
  */
 package com.atomgraph.processor.model.impl;
 
-import com.atomgraph.core.util.StateBuilder;
+import com.atomgraph.processor.util.StateBuilder;
 import com.atomgraph.processor.exception.ParameterException;
 import com.atomgraph.processor.model.Template;
 import java.util.List;
@@ -42,7 +42,7 @@ import com.atomgraph.spinrdf.vocabulary.SPL;
  *
  * @author Martynas Jusevičius {@literal <martynas@atomgraph.com>}
  */
-public class TemplateCallImpl extends com.atomgraph.core.util.StateBuilder implements TemplateCall
+public class TemplateCallImpl extends com.atomgraph.processor.util.StateBuilder implements TemplateCall
 {
     
     private final Template template;
