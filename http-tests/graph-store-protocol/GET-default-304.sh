@@ -9,7 +9,8 @@ curl -f -s -I -G \
   "${BASE_URL}service" \
   --data-urlencode "default=true" \
 | grep 'ETag' \
-| sed -En 's/^ETag: (.*)[^\n]$/\1/p')
+| tr -d '\r' \
+| sed -En 's/^ETag: (.*)$/\1/p')
 
 curl -w "%{http_code}\n" -f -s -G \
   -H "Accept: application/n-triples" \
