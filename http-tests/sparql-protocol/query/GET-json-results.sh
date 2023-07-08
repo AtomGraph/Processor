@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# use conneg to request XML results as the preferred format
+# use conneg to request JSON results as the preferred format
 
 curl -f -s -G \
   -H "Accept: application/sparql-results+json" \
