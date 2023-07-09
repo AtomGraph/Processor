@@ -3,7 +3,7 @@
 
     <groupId>com.atomgraph</groupId>
     <artifactId>server</artifactId>
-    <version>4.1.0</version>
+    <version>4.1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>AtomGraph Server</name>
@@ -42,7 +42,7 @@
         <url>https://github.com/AtomGraph/Processor</url>
         <connection>scm:git:git://github.com/AtomGraph/Processor.git</connection>
         <developerConnection>scm:git:git@github.com:AtomGraph/Processor.git</developerConnection>
-      <tag>server-4.1.0</tag>
+      <tag>HEAD</tag>
   </scm>
   
     <repositories>
