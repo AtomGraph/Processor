@@ -7,7 +7,7 @@
     <packaging>${packaging.type}</packaging>
 
     <name>AtomGraph Processor</name>
-    <description>Ontology-driven Linked Data processor and server for SPARQL backends</description>
+    <description>Ontology-driven Linked Data processor</description>
     <url>https://github.com/AtomGraph/Processor</url>
     <inceptionYear>2015</inceptionYear>
 
@@ -78,18 +78,8 @@
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
-            <artifactId>twirl</artifactId>
-            <version>1.0.32</version>
-        </dependency>
-        <dependency>
-            <groupId>${project.groupId}</groupId>
-            <artifactId>core</artifactId>
-            <version>4.0.3</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.jena</groupId>
-            <artifactId>jena-shacl</artifactId>
-            <version>4.7.0</version>
+            <artifactId>server</artifactId>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 

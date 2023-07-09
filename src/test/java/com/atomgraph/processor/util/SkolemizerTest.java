@@ -15,10 +15,9 @@
  */
 package com.atomgraph.processor.util;
 
-import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.server.exception.OntologyException;
 import com.atomgraph.processor.vocabulary.LDT;
 import com.atomgraph.processor.vocabulary.SIOC;
-import com.atomgraph.server.util.OntologyLoader;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;

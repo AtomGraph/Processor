@@ -15,11 +15,10 @@
  */
 package com.atomgraph.processor.util;
 
-import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.server.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.model.impl.TemplateImpl;
 import com.atomgraph.processor.vocabulary.LDT;
-import com.atomgraph.server.util.OntologyLoader;
 import static junit.framework.Assert.assertEquals;
 import org.apache.jena.enhanced.BuiltinPersonalities;
 import org.apache.jena.ontology.OntDocumentManager;

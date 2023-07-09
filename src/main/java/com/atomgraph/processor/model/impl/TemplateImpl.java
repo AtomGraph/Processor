@@ -33,7 +33,7 @@ import org.apache.jena.rdf.model.Resource;
 import org.apache.jena.rdf.model.Statement;
 import org.apache.jena.rdf.model.StmtIterator;
 import org.apache.jena.vocabulary.RDF;
-import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.server.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
 import org.apache.jena.rdf.model.RDFList;

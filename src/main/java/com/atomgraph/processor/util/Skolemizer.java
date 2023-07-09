@@ -16,7 +16,7 @@
 
 package com.atomgraph.processor.util;
 
-import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.server.exception.OntologyException;
 import org.apache.jena.ontology.Ontology;
 import org.apache.jena.rdf.model.Literal;
 import org.apache.jena.rdf.model.Model;

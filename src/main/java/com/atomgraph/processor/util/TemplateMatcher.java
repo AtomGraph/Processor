@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import com.atomgraph.processor.exception.OntologyException;
+import com.atomgraph.server.exception.OntologyException;
 import com.atomgraph.processor.model.Template;
 import com.atomgraph.processor.vocabulary.LDT;
 import java.util.Comparator;
