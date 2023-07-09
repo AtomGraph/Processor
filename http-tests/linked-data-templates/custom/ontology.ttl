@@ -127,7 +127,7 @@
 :GraphItem a ldt:Template ;
     ldt:match "/graphs/{slug}/" ;
     ldt:query :DefaultSubjectQuery ;
-    ldt:loadClass <java:com.atomgraph.server.resource.graph.Item> ;
+    ldt:loadClass <java:com.atomgraph.processor.server.resource.graph.Item> ;
     rdfs:label "Graph document" ;
     rdfs:isDefinedBy : .
 
