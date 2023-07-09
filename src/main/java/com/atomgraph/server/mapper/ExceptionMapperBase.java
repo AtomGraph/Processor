@@ -87,7 +87,6 @@ abstract public class ExceptionMapperBase
                 model,
                 null,
                 new EntityTag(Long.toHexString(ModelUtils.hashModel(model))),
-                variants,
                 variant).
                 getResponseBuilder().
             header(HttpHeaders.LINK, new Link(getUriInfo().getBaseUri(), LDT.base.getURI(), null));
