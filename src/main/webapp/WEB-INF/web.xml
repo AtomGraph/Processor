@@ -15,10 +15,10 @@
         <param-value>location-mapping.n3</param-value>
     </context-param>
     <servlet>
-        <servlet-name>com.atomgraph.server.Application</servlet-name>
+        <servlet-name>com.atomgraph.processor.server.Application</servlet-name>
     </servlet>
     <servlet-mapping>
-        <servlet-name>com.atomgraph.server.Application</servlet-name>
+        <servlet-name>com.atomgraph.processor.server.Application</servlet-name>
         <url-pattern>/*</url-pattern>
     </servlet-mapping>
     <listener>
